@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/resources/openal32.rc
+windows.h
+-
+resource.h
+C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/resources/resource.h
+version.h
+C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/resources/version.h
+
+C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/resources/resource.h
+
+engine/thirdparty/openal-soft-master/version.h
+

@@ -1,0 +1,8 @@
+C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
+C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/engine/CMakeFiles/RealWareEngine.dir
+C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/engine/CMakeFiles/edit_cache.dir
+C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/engine/CMakeFiles/rebuild_cache.dir
+C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/samples/Editor/CMakeFiles/RealWareEditor.dir
+C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/samples/Editor/CMakeFiles/edit_cache.dir
+C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/samples/Editor/CMakeFiles/rebuild_cache.dir

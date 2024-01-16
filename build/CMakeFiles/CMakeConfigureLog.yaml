@@ -1,0 +1,1693 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineSystem.cmake:211 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The system is: Windows - 10.0.19045 - AMD64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/gcc.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.exe"
+      
+      The C compiler identification is GNU, found in:
+        C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/3.27.0/CompilerIdC/a.exe
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/c++.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.exe"
+      
+      The CXX compiler identification is GNU, found in:
+        C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/3.27.0/CompilerIdCXX/a.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-4l5ezb"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-4l5ezb"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-4l5ezb'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_0d151/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_0d151.dir\\build.make CMakeFiles/cmTC_0d151.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-4l5ezb'
+        Building C object CMakeFiles/cmTC_0d151.dir/CMakeCCompilerABI.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe   -v -o CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj -c "C:\\Program Files\\CMake\\share\\cmake-3.27\\Modules\\CMakeCCompilerABI.c"
+        Using built-in specs.
+        COLLECT_GCC=C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe
+        Target: x86_64-w64-mingw32
+        Configured with: ../../../src/gcc-13.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 --enable-host-shared --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=posix --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --enable-libstdcxx-filesystem-ts=yes --disable-libssp --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-posix-seh-rev1, Built by MinGW-Builds project' --with-bugurl=https://github.com/niXman/mingw-builds CFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/lib -L/c/buildroot/prerequisites/x86_64-zlib-static/lib -L/c/buildroot/prerequisites/x86_64-w64-mingw32-static/lib ' LD_FOR_TARGET=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/ld.exe --with-boot-ldflags=' -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc'
+        Thread model: posix
+        Supported LTO compression algorithms: zlib
+        gcc version 13.1.0 (x86_64-posix-seh-rev1, Built by MinGW-Builds project) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_0d151.dir\\'
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/cc1.exe -quiet -v -iprefix C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/ -D_REENTRANT C:\\Program Files\\CMake\\share\\cmake-3.27\\Modules\\CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles\\cmTC_0d151.dir\\ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=core2 -march=nocona -version -o C:\\Users\\USER100\\AppData\\Local\\Temp\\cc4zdmM8.s
+        GNU C17 (x86_64-posix-seh-rev1, Built by MinGW-Builds project) version 13.1.0 (x86_64-w64-mingw32)
+        	compiled by GNU C version 13.1.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.25-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include"
+        ignoring nonexistent directory "C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64D:/a/_temp/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../include"
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed"
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include"
+        ignoring nonexistent directory "C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/mingw/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include
+        End of search list.
+        Compiler executable checksum: 01a95d743b0846cbb61de93d2dfa1fb7
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_0d151.dir\\'
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj C:\\Users\\USER100\\AppData\\Local\\Temp\\cc4zdmM8.s
+        GNU assembler version 2.39 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.39
+        COMPILER_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/
+        LIBRARY_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.'
+        Linking C executable cmTC_0d151.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_0d151.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_0d151.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_0d151.dir/objects.a @CMakeFiles\\cmTC_0d151.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe  -v -Wl,--whole-archive CMakeFiles\\cmTC_0d151.dir/objects.a -Wl,--no-whole-archive -o cmTC_0d151.exe -Wl,--out-implib,libcmTC_0d151.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
+        Using built-in specs.
+        COLLECT_GCC=C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe
+        COLLECT_LTO_WRAPPER=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe
+        Target: x86_64-w64-mingw32
+        Configured with: ../../../src/gcc-13.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 --enable-host-shared --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=posix --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --enable-libstdcxx-filesystem-ts=yes --disable-libssp --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-posix-seh-rev1, Built by MinGW-Builds project' --with-bugurl=https://github.com/niXman/mingw-builds CFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/lib -L/c/buildroot/prerequisites/x86_64-zlib-static/lib -L/c/buildroot/prerequisites/x86_64-w64-mingw32-static/lib ' LD_FOR_TARGET=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/ld.exe --with-boot-ldflags=' -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc'
+        Thread model: posix
+        Supported LTO compression algorithms: zlib
+        gcc version 13.1.0 (x86_64-posix-seh-rev1, Built by MinGW-Builds project) 
+        COMPILER_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/
+        LIBRARY_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0d151.exe' '-mtune=core2' '-march=nocona' '-dumpdir' 'cmTC_0d151.'
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/collect2.exe -plugin C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/liblto_plugin.dll -plugin-opt=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\USER100\\AppData\\Local\\Temp\\ccD34h3z.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-liconv -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 --sysroot=C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 -m i386pep -Bdynamic -o cmTC_0d151.exe C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0 -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../.. --whole-archive CMakeFiles\\cmTC_0d151.dir/objects.a --no-whole-archive --out-implib libcmTC_0d151.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -liconv -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0d151.exe' '-mtune=core2' '-march=nocona' '-dumpdir' 'cmTC_0d151.'
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-4l5ezb'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include]
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed]
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include]
+        end of search list found
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include]
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed]
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/include]
+        implicit include dirs: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:152 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld\\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-4l5ezb']
+        ignore line: []
+        ignore line: [Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_0d151/fast]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_0d151.dir\\build.make CMakeFiles/cmTC_0d151.dir/build]
+        ignore line: [mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-4l5ezb']
+        ignore line: [Building C object CMakeFiles/cmTC_0d151.dir/CMakeCCompilerABI.c.obj]
+        ignore line: [C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe   -v -o CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj -c "C:\\Program Files\\CMake\\share\\cmake-3.27\\Modules\\CMakeCCompilerABI.c"]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe]
+        ignore line: [Target: x86_64-w64-mingw32]
+        ignore line: [Configured with: ../../../src/gcc-13.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 --enable-host-shared --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=posix --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --enable-libstdcxx-filesystem-ts=yes --disable-libssp --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-posix-seh-rev1, Built by MinGW-Builds project' --with-bugurl=https://github.com/niXman/mingw-builds CFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/lib -L/c/buildroot/prerequisites/x86_64-zlib-static/lib -L/c/buildroot/prerequisites/x86_64-w64-mingw32-static/lib ' LD_FOR_TARGET=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/ld.exe --with-boot-ldflags=' -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc']
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 13.1.0 (x86_64-posix-seh-rev1  Built by MinGW-Builds project) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_0d151.dir\\']
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/cc1.exe -quiet -v -iprefix C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/ -D_REENTRANT C:\\Program Files\\CMake\\share\\cmake-3.27\\Modules\\CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles\\cmTC_0d151.dir\\ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=core2 -march=nocona -version -o C:\\Users\\USER100\\AppData\\Local\\Temp\\cc4zdmM8.s]
+        ignore line: [GNU C17 (x86_64-posix-seh-rev1  Built by MinGW-Builds project) version 13.1.0 (x86_64-w64-mingw32)]
+        ignore line: [	compiled by GNU C version 13.1.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.25-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include"]
+        ignore line: [ignoring nonexistent directory "C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64D:/a/_temp/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../include"]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed"]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include"]
+        ignore line: [ignoring nonexistent directory "C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/mingw/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include]
+        ignore line: [End of search list.]
+        ignore line: [Compiler executable checksum: 01a95d743b0846cbb61de93d2dfa1fb7]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_0d151.dir\\']
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj C:\\Users\\USER100\\AppData\\Local\\Temp\\cc4zdmM8.s]
+        ignore line: [GNU assembler version 2.39 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.39]
+        ignore line: [COMPILER_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/]
+        ignore line: [LIBRARY_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_0d151.dir\\CMakeCCompilerABI.c.']
+        ignore line: [Linking C executable cmTC_0d151.exe]
+        ignore line: ["C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_0d151.dir\\link.txt --verbose=1]
+        ignore line: ["C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_0d151.dir/objects.a]
+        ignore line: [C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_0d151.dir/objects.a @CMakeFiles\\cmTC_0d151.dir\\objects1.rsp]
+        ignore line: [C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe  -v -Wl --whole-archive CMakeFiles\\cmTC_0d151.dir/objects.a -Wl --no-whole-archive -o cmTC_0d151.exe -Wl --out-implib libcmTC_0d151.dll.a -Wl --major-image-version 0 --minor-image-version 0 ]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe]
+        ignore line: [COLLECT_LTO_WRAPPER=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe]
+        ignore line: [Target: x86_64-w64-mingw32]
+        ignore line: [Configured with: ../../../src/gcc-13.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 --enable-host-shared --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=posix --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --enable-libstdcxx-filesystem-ts=yes --disable-libssp --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-posix-seh-rev1, Built by MinGW-Builds project' --with-bugurl=https://github.com/niXman/mingw-builds CFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/lib -L/c/buildroot/prerequisites/x86_64-zlib-static/lib -L/c/buildroot/prerequisites/x86_64-w64-mingw32-static/lib ' LD_FOR_TARGET=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/ld.exe --with-boot-ldflags=' -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc']
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 13.1.0 (x86_64-posix-seh-rev1  Built by MinGW-Builds project) ]
+        ignore line: [COMPILER_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/]
+        ignore line: [LIBRARY_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0d151.exe' '-mtune=core2' '-march=nocona' '-dumpdir' 'cmTC_0d151.']
+        link line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/collect2.exe -plugin C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/liblto_plugin.dll -plugin-opt=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\USER100\\AppData\\Local\\Temp\\ccD34h3z.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-liconv -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 --sysroot=C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 -m i386pep -Bdynamic -o cmTC_0d151.exe C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0 -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../.. --whole-archive CMakeFiles\\cmTC_0d151.dir/objects.a --no-whole-archive --out-implib libcmTC_0d151.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -liconv -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o]
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/collect2.exe] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/liblto_plugin.dll] ==> ignore
+          arg [-plugin-opt=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe] ==> ignore
+          arg [-plugin-opt=-fresolution=C:\\Users\\USER100\\AppData\\Local\\Temp\\ccD34h3z.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_eh] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmoldname] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lpthread] ==> ignore
+          arg [-plugin-opt=-pass-through=-ladvapi32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lshell32] ==> ignore
+          arg [-plugin-opt=-pass-through=-luser32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [-plugin-opt=-pass-through=-liconv] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_eh] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmoldname] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [--sysroot=C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64] ==> ignore
+          arg [-m] ==> ignore
+          arg [i386pep] ==> ignore
+          arg [-Bdynamic] ==> search dynamic
+          arg [-o] ==> ignore
+          arg [cmTC_0d151.exe] ==> ignore
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o]
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o] ==> obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../..] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../..]
+          arg [--whole-archive] ==> ignore
+          arg [CMakeFiles\\cmTC_0d151.dir/objects.a] ==> ignore
+          arg [--no-whole-archive] ==> ignore
+          arg [--out-implib] ==> ignore
+          arg [libcmTC_0d151.dll.a] ==> ignore
+          arg [--major-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [--minor-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lgcc_eh] ==> lib [gcc_eh]
+          arg [-lmoldname] ==> lib [moldname]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [-lpthread] ==> lib [pthread]
+          arg [-ladvapi32] ==> lib [advapi32]
+          arg [-lshell32] ==> lib [shell32]
+          arg [-luser32] ==> lib [user32]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [-liconv] ==> lib [iconv]
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lgcc_eh] ==> lib [gcc_eh]
+          arg [-lmoldname] ==> lib [moldname]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o] ==> obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o]
+        remove lib [gcc_eh]
+        remove lib [msvcrt]
+        remove lib [gcc_eh]
+        remove lib [msvcrt]
+        collapse obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib/crt2.o]
+        collapse obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o]
+        collapse obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../..] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib]
+        implicit libs: [mingw32;gcc;moldname;mingwex;kernel32;pthread;advapi32;shell32;user32;kernel32;iconv;mingw32;gcc;moldname;mingwex;kernel32]
+        implicit objs: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib/crt2.o;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o]
+        implicit dirs: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rqe384"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rqe384"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rqe384'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_62adb/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_62adb.dir\\build.make CMakeFiles/cmTC_62adb.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rqe384'
+        Building CXX object CMakeFiles/cmTC_62adb.dir/CMakeCXXCompilerABI.cpp.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe   -v -o CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj -c "C:\\Program Files\\CMake\\share\\cmake-3.27\\Modules\\CMakeCXXCompilerABI.cpp"
+        Using built-in specs.
+        COLLECT_GCC=C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe
+        Target: x86_64-w64-mingw32
+        Configured with: ../../../src/gcc-13.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 --enable-host-shared --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=posix --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --enable-libstdcxx-filesystem-ts=yes --disable-libssp --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-posix-seh-rev1, Built by MinGW-Builds project' --with-bugurl=https://github.com/niXman/mingw-builds CFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/lib -L/c/buildroot/prerequisites/x86_64-zlib-static/lib -L/c/buildroot/prerequisites/x86_64-w64-mingw32-static/lib ' LD_FOR_TARGET=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/ld.exe --with-boot-ldflags=' -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc'
+        Thread model: posix
+        Supported LTO compression algorithms: zlib
+        gcc version 13.1.0 (x86_64-posix-seh-rev1, Built by MinGW-Builds project) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_62adb.dir\\'
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/cc1plus.exe -quiet -v -iprefix C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/ -D_REENTRANT C:\\Program Files\\CMake\\share\\cmake-3.27\\Modules\\CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles\\cmTC_62adb.dir\\ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=core2 -march=nocona -version -o C:\\Users\\USER100\\AppData\\Local\\Temp\\ccn0wBYS.s
+        GNU C++17 (x86_64-posix-seh-rev1, Built by MinGW-Builds project) version 13.1.0 (x86_64-w64-mingw32)
+        	compiled by GNU C version 13.1.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.25-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++"
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32"
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward"
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include"
+        ignoring nonexistent directory "C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64D:/a/_temp/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../include"
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed"
+        ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include"
+        ignoring nonexistent directory "C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/mingw/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include
+        End of search list.
+        Compiler executable checksum: 28a1691e735bc8d93a8192a647dda70c
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_62adb.dir\\'
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj C:\\Users\\USER100\\AppData\\Local\\Temp\\ccn0wBYS.s
+        GNU assembler version 2.39 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.39
+        COMPILER_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/
+        LIBRARY_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.'
+        Linking CXX executable cmTC_62adb.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_62adb.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_62adb.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_62adb.dir/objects.a @CMakeFiles\\cmTC_62adb.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe  -v -Wl,--whole-archive CMakeFiles\\cmTC_62adb.dir/objects.a -Wl,--no-whole-archive -o cmTC_62adb.exe -Wl,--out-implib,libcmTC_62adb.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
+        Using built-in specs.
+        COLLECT_GCC=C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe
+        COLLECT_LTO_WRAPPER=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe
+        Target: x86_64-w64-mingw32
+        Configured with: ../../../src/gcc-13.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 --enable-host-shared --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=posix --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --enable-libstdcxx-filesystem-ts=yes --disable-libssp --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-posix-seh-rev1, Built by MinGW-Builds project' --with-bugurl=https://github.com/niXman/mingw-builds CFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/lib -L/c/buildroot/prerequisites/x86_64-zlib-static/lib -L/c/buildroot/prerequisites/x86_64-w64-mingw32-static/lib ' LD_FOR_TARGET=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/ld.exe --with-boot-ldflags=' -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc'
+        Thread model: posix
+        Supported LTO compression algorithms: zlib
+        gcc version 13.1.0 (x86_64-posix-seh-rev1, Built by MinGW-Builds project) 
+        COMPILER_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/
+        LIBRARY_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_62adb.exe' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'cmTC_62adb.'
+         C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/collect2.exe -plugin C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/liblto_plugin.dll -plugin-opt=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\USER100\\AppData\\Local\\Temp\\cckCCnth.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-liconv -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 --sysroot=C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 -m i386pep -Bdynamic -o cmTC_62adb.exe C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0 -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../.. --whole-archive CMakeFiles\\cmTC_62adb.dir/objects.a --no-whole-archive --out-implib libcmTC_62adb.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -liconv -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_62adb.exe' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'cmTC_62adb.'
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rqe384'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++]
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32]
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward]
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include]
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed]
+          add: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include]
+        end of search list found
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++]
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32]
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward]
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include]
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed]
+        collapse include dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/include]
+        implicit include dirs: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:152 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld\\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rqe384']
+        ignore line: []
+        ignore line: [Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_62adb/fast]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_62adb.dir\\build.make CMakeFiles/cmTC_62adb.dir/build]
+        ignore line: [mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rqe384']
+        ignore line: [Building CXX object CMakeFiles/cmTC_62adb.dir/CMakeCXXCompilerABI.cpp.obj]
+        ignore line: [C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe   -v -o CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj -c "C:\\Program Files\\CMake\\share\\cmake-3.27\\Modules\\CMakeCXXCompilerABI.cpp"]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe]
+        ignore line: [Target: x86_64-w64-mingw32]
+        ignore line: [Configured with: ../../../src/gcc-13.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 --enable-host-shared --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=posix --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --enable-libstdcxx-filesystem-ts=yes --disable-libssp --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-posix-seh-rev1, Built by MinGW-Builds project' --with-bugurl=https://github.com/niXman/mingw-builds CFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/lib -L/c/buildroot/prerequisites/x86_64-zlib-static/lib -L/c/buildroot/prerequisites/x86_64-w64-mingw32-static/lib ' LD_FOR_TARGET=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/ld.exe --with-boot-ldflags=' -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc']
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 13.1.0 (x86_64-posix-seh-rev1  Built by MinGW-Builds project) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_62adb.dir\\']
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/cc1plus.exe -quiet -v -iprefix C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/ -D_REENTRANT C:\\Program Files\\CMake\\share\\cmake-3.27\\Modules\\CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles\\cmTC_62adb.dir\\ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=core2 -march=nocona -version -o C:\\Users\\USER100\\AppData\\Local\\Temp\\ccn0wBYS.s]
+        ignore line: [GNU C++17 (x86_64-posix-seh-rev1  Built by MinGW-Builds project) version 13.1.0 (x86_64-w64-mingw32)]
+        ignore line: [	compiled by GNU C version 13.1.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.25-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++"]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32"]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward"]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include"]
+        ignore line: [ignoring nonexistent directory "C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64D:/a/_temp/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../include"]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed"]
+        ignore line: [ignoring duplicate directory "C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include"]
+        ignore line: [ignoring nonexistent directory "C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/mingw/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed]
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/include]
+        ignore line: [End of search list.]
+        ignore line: [Compiler executable checksum: 28a1691e735bc8d93a8192a647dda70c]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_62adb.dir\\']
+        ignore line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj C:\\Users\\USER100\\AppData\\Local\\Temp\\ccn0wBYS.s]
+        ignore line: [GNU assembler version 2.39 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.39]
+        ignore line: [COMPILER_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/]
+        ignore line: [LIBRARY_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_62adb.dir\\CMakeCXXCompilerABI.cpp.']
+        ignore line: [Linking CXX executable cmTC_62adb.exe]
+        ignore line: ["C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_62adb.dir\\link.txt --verbose=1]
+        ignore line: ["C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_62adb.dir/objects.a]
+        ignore line: [C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_62adb.dir/objects.a @CMakeFiles\\cmTC_62adb.dir\\objects1.rsp]
+        ignore line: [C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe  -v -Wl --whole-archive CMakeFiles\\cmTC_62adb.dir/objects.a -Wl --no-whole-archive -o cmTC_62adb.exe -Wl --out-implib libcmTC_62adb.dll.a -Wl --major-image-version 0 --minor-image-version 0 ]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe]
+        ignore line: [COLLECT_LTO_WRAPPER=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe]
+        ignore line: [Target: x86_64-w64-mingw32]
+        ignore line: [Configured with: ../../../src/gcc-13.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 --enable-host-shared --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=posix --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --enable-libstdcxx-filesystem-ts=yes --disable-libssp --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/buildroot/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-posix-seh-rev1, Built by MinGW-Builds project' --with-bugurl=https://github.com/niXman/mingw-builds CFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/include -I/c/buildroot/prerequisites/x86_64-zlib-static/include -I/c/buildroot/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/opt/lib -L/c/buildroot/prerequisites/x86_64-zlib-static/lib -L/c/buildroot/prerequisites/x86_64-w64-mingw32-static/lib ' LD_FOR_TARGET=/c/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/ld.exe --with-boot-ldflags=' -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc']
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 13.1.0 (x86_64-posix-seh-rev1  Built by MinGW-Builds project) ]
+        ignore line: [COMPILER_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/]
+        ignore line: [LIBRARY_PATH=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/]
+        ignore line: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_62adb.exe' '-shared-libgcc' '-mtune=core2' '-march=nocona' '-dumpdir' 'cmTC_62adb.']
+        link line: [ C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/collect2.exe -plugin C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/liblto_plugin.dll -plugin-opt=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\USER100\\AppData\\Local\\Temp\\cckCCnth.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-liconv -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 --sysroot=C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64 -m i386pep -Bdynamic -o cmTC_62adb.exe C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0 -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib -LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../.. --whole-archive CMakeFiles\\cmTC_62adb.dir/objects.a --no-whole-archive --out-implib libcmTC_62adb.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -liconv -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o]
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/collect2.exe] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/liblto_plugin.dll] ==> ignore
+          arg [-plugin-opt=C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/13.1.0/lto-wrapper.exe] ==> ignore
+          arg [-plugin-opt=-fresolution=C:\\Users\\USER100\\AppData\\Local\\Temp\\cckCCnth.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmoldname] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lpthread] ==> ignore
+          arg [-plugin-opt=-pass-through=-ladvapi32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lshell32] ==> ignore
+          arg [-plugin-opt=-pass-through=-luser32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [-plugin-opt=-pass-through=-liconv] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmoldname] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+          arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+          arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+          arg [--sysroot=C:/buildroot/x86_64-1310-posix-seh-ucrt-rt_v11-rev1/mingw64] ==> ignore
+          arg [-m] ==> ignore
+          arg [i386pep] ==> ignore
+          arg [-Bdynamic] ==> search dynamic
+          arg [-o] ==> ignore
+          arg [cmTC_62adb.exe] ==> ignore
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o]
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o] ==> obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib]
+          arg [-LC:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../..] ==> dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../..]
+          arg [--whole-archive] ==> ignore
+          arg [CMakeFiles\\cmTC_62adb.dir/objects.a] ==> ignore
+          arg [--no-whole-archive] ==> ignore
+          arg [--out-implib] ==> ignore
+          arg [libcmTC_62adb.dll.a] ==> ignore
+          arg [--major-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [--minor-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [-lstdc++] ==> lib [stdc++]
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lmoldname] ==> lib [moldname]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [-lpthread] ==> lib [pthread]
+          arg [-ladvapi32] ==> lib [advapi32]
+          arg [-lshell32] ==> lib [shell32]
+          arg [-luser32] ==> lib [user32]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [-liconv] ==> lib [iconv]
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lmoldname] ==> lib [moldname]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o] ==> obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o]
+        remove lib [msvcrt]
+        remove lib [msvcrt]
+        collapse obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib/crt2.o]
+        collapse obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o]
+        collapse obj [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../lib] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/lib] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib]
+        collapse library dir [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../..] ==> [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib]
+        implicit libs: [stdc++;mingw32;gcc_s;gcc;moldname;mingwex;kernel32;pthread;advapi32;shell32;user32;kernel32;iconv;mingw32;gcc_s;gcc;moldname;mingwex;kernel32]
+        implicit objs: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib/crt2.o;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/crtbegin.o;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/crtend.o]
+        implicit dirs: [C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib/gcc;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/x86_64-w64-mingw32/lib;C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/FindThreads.cmake:97 (CHECK_C_SOURCE_COMPILES)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "engine/thirdparty/glfw/CMakeLists.txt:56 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-9ym9l0"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-9ym9l0"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/glfw/CMake/modules"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-9ym9l0'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_1c940/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_1c940.dir\\build.make CMakeFiles/cmTC_1c940.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-9ym9l0'
+        Building C object CMakeFiles/cmTC_1c940.dir/src.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles\\cmTC_1c940.dir\\src.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-9ym9l0\\src.c
+        Linking C executable cmTC_1c940.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_1c940.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_1c940.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_1c940.dir/objects.a @CMakeFiles\\cmTC_1c940.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_1c940.dir/objects.a -Wl,--no-whole-archive -o cmTC_1c940.exe -Wl,--out-implib,libcmTC_1c940.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_1c940.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-9ym9l0'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/glfw/src/CMakeLists.txt:291 (check_include_file)"
+    checks:
+      - "Looking for dinput.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-in3tvr"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-in3tvr"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/glfw/CMake/modules"
+    buildResult:
+      variable: "DINPUT_H_FOUND"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-in3tvr'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_f4385/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_f4385.dir\\build.make CMakeFiles/cmTC_f4385.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-in3tvr'
+        Building C object CMakeFiles/cmTC_f4385.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_f4385.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-in3tvr\\CheckIncludeFile.c
+        Linking C executable cmTC_f4385.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_f4385.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_f4385.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_f4385.dir/objects.a @CMakeFiles\\cmTC_f4385.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_f4385.dir/objects.a -Wl,--no-whole-archive -o cmTC_f4385.exe -Wl,--out-implib,libcmTC_f4385.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_f4385.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-in3tvr'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/glfw/src/CMakeLists.txt:292 (check_include_file)"
+    checks:
+      - "Looking for xinput.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-63jvcu"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-63jvcu"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/glfw/CMake/modules"
+    buildResult:
+      variable: "XINPUT_H_FOUND"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-63jvcu'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_ce605/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_ce605.dir\\build.make CMakeFiles/cmTC_ce605.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-63jvcu'
+        Building C object CMakeFiles/cmTC_ce605.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_ce605.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-63jvcu\\CheckIncludeFile.c
+        Linking C executable cmTC_ce605.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_ce605.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_ce605.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_ce605.dir/objects.a @CMakeFiles\\cmTC_ce605.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_ce605.dir/objects.a -Wl,--no-whole-archive -o cmTC_ce605.exe -Wl,--out-implib,libcmTC_ce605.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_ce605.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-63jvcu'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCXXSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:194 (check_cxx_source_compiles)"
+    checks:
+      - "Performing Test HAVE_STDC_FORMAT_MACROS"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-hrztid"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-hrztid"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "-O0"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_STDC_FORMAT_MACROS"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-hrztid'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_1e452/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_1e452.dir\\build.make CMakeFiles/cmTC_1e452.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-hrztid'
+        Building CXX object CMakeFiles/cmTC_1e452.dir/src.cxx.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe -DHAVE_STDC_FORMAT_MACROS  -O0  -std=gnu++17 -o CMakeFiles\\cmTC_1e452.dir\\src.cxx.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-hrztid\\src.cxx
+        Linking CXX executable cmTC_1e452.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_1e452.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_1e452.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_1e452.dir/objects.a @CMakeFiles\\cmTC_1e452.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe -O0  -Wl,--whole-archive CMakeFiles\\cmTC_1e452.dir/objects.a -Wl,--no-whole-archive -o cmTC_1e452.exe -Wl,--out-implib,libcmTC_1e452.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_1e452.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-hrztid'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCXXSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:223 (check_cxx_source_compiles)"
+    checks:
+      - "Performing Test HAVE___RESTRICT"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6lysa3"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6lysa3"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "-O0"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE___RESTRICT"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6lysa3'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_46359/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_46359.dir\\build.make CMakeFiles/cmTC_46359.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6lysa3'
+        Building CXX object CMakeFiles/cmTC_46359.dir/src.cxx.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe -DHAVE___RESTRICT  -O0  -std=gnu++17 -o CMakeFiles\\cmTC_46359.dir\\src.cxx.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6lysa3\\src.cxx
+        Linking CXX executable cmTC_46359.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_46359.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_46359.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_46359.dir/objects.a @CMakeFiles\\cmTC_46359.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe -O0  -Wl,--whole-archive CMakeFiles\\cmTC_46359.dir/objects.a -Wl,--no-whole-archive -o cmTC_46359.exe -Wl,--out-implib,libcmTC_46359.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_46359.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6lysa3'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCXXSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:234 (check_cxx_source_compiles)"
+    checks:
+      - "Performing Test HAVE_LIBATOMIC"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-1el13m"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-1el13m"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "-O0"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_LIBATOMIC"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-1el13m'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_8e94e/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_8e94e.dir\\build.make CMakeFiles/cmTC_8e94e.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-1el13m'
+        Building CXX object CMakeFiles/cmTC_8e94e.dir/src.cxx.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe -DHAVE_LIBATOMIC  -O0  -std=gnu++17 -o CMakeFiles\\cmTC_8e94e.dir\\src.cxx.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1el13m\\src.cxx
+        Linking CXX executable cmTC_8e94e.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_8e94e.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_8e94e.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_8e94e.dir/objects.a @CMakeFiles\\cmTC_8e94e.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe -O0  -Wl,--whole-archive CMakeFiles\\cmTC_8e94e.dir/objects.a -Wl,--no-whole-archive -o cmTC_8e94e.exe -Wl,--out-implib,libcmTC_8e94e.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_8e94e.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-1el13m'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:288 (check_cxx_compiler_flag)"
+    checks:
+      - "Performing Test HAVE_WNO_CXX20_ATTR_EXT"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-8aicpq"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-8aicpq"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "-O0"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_WNO_CXX20_ATTR_EXT"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-8aicpq'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_29554/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_29554.dir\\build.make CMakeFiles/cmTC_29554.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-8aicpq'
+        Building CXX object CMakeFiles/cmTC_29554.dir/src.cxx.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe -DHAVE_WNO_CXX20_ATTR_EXT  -O0  -std=gnu++17   -Wno-c++20-attribute-extensions -o CMakeFiles\\cmTC_29554.dir\\src.cxx.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-8aicpq\\src.cxx
+        Linking CXX executable cmTC_29554.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_29554.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_29554.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_29554.dir/objects.a @CMakeFiles\\cmTC_29554.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\c++.exe -O0  -Wl,--whole-archive CMakeFiles\\cmTC_29554.dir/objects.a -Wl,--no-whole-archive -o cmTC_29554.exe -Wl,--out-implib,libcmTC_29554.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_29554.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-8aicpq'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCCompilerFlag.cmake:51 (cmake_check_compiler_flag)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:310 (check_c_compiler_flag)"
+    checks:
+      - "Performing Test HAVE_FNO_MATH_ERRNO"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-gb9o9m"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-gb9o9m"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_FNO_MATH_ERRNO"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-gb9o9m'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_4f6bf/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_4f6bf.dir\\build.make CMakeFiles/cmTC_4f6bf.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-gb9o9m'
+        Building C object CMakeFiles/cmTC_4f6bf.dir/src.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -DHAVE_FNO_MATH_ERRNO  -fno-math-errno -o CMakeFiles\\cmTC_4f6bf.dir\\src.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gb9o9m\\src.c
+        Linking C executable cmTC_4f6bf.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_4f6bf.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_4f6bf.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_4f6bf.dir/objects.a @CMakeFiles\\cmTC_4f6bf.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_4f6bf.dir/objects.a -Wl,--no-whole-archive -o cmTC_4f6bf.exe -Wl,--out-implib,libcmTC_4f6bf.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_4f6bf.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-gb9o9m'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCCompilerFlag.cmake:51 (cmake_check_compiler_flag)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:396 (check_c_compiler_flag)"
+    checks:
+      - "Performing Test HAVE_MSSE2_SWITCH"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xnuoxr"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xnuoxr"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_MSSE2_SWITCH"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xnuoxr'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_f0c3b/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_f0c3b.dir\\build.make CMakeFiles/cmTC_f0c3b.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xnuoxr'
+        Building C object CMakeFiles/cmTC_f0c3b.dir/src.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -DHAVE_MSSE2_SWITCH  -Werror   -msse2 -o CMakeFiles\\cmTC_f0c3b.dir\\src.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xnuoxr\\src.c
+        Linking C executable cmTC_f0c3b.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_f0c3b.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_f0c3b.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_f0c3b.dir/objects.a @CMakeFiles\\cmTC_f0c3b.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe   -Werror -Wl,--whole-archive CMakeFiles\\cmTC_f0c3b.dir/objects.a -Wl,--no-whole-archive -o cmTC_f0c3b.exe -Wl,--out-implib,libcmTC_f0c3b.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_f0c3b.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xnuoxr'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:404 (check_include_file)"
+    checks:
+      - "Looking for xmmintrin.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wizxv8"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wizxv8"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_XMMINTRIN_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wizxv8'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_3da3f/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_3da3f.dir\\build.make CMakeFiles/cmTC_3da3f.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wizxv8'
+        Building C object CMakeFiles/cmTC_3da3f.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_3da3f.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wizxv8\\CheckIncludeFile.c
+        Linking C executable cmTC_3da3f.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_3da3f.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_3da3f.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_3da3f.dir/objects.a @CMakeFiles\\cmTC_3da3f.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_3da3f.dir/objects.a -Wl,--no-whole-archive -o cmTC_3da3f.exe -Wl,--out-implib,libcmTC_3da3f.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_3da3f.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wizxv8'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:405 (check_include_file)"
+    checks:
+      - "Looking for emmintrin.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-y84me7"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-y84me7"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_EMMINTRIN_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-y84me7'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_930d3/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_930d3.dir\\build.make CMakeFiles/cmTC_930d3.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-y84me7'
+        Building C object CMakeFiles/cmTC_930d3.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_930d3.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-y84me7\\CheckIncludeFile.c
+        Linking C executable cmTC_930d3.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_930d3.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_930d3.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_930d3.dir/objects.a @CMakeFiles\\cmTC_930d3.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_930d3.dir/objects.a -Wl,--no-whole-archive -o cmTC_930d3.exe -Wl,--out-implib,libcmTC_930d3.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_930d3.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-y84me7'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:406 (check_include_file)"
+    checks:
+      - "Looking for pmmintrin.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-3yryph"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-3yryph"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_PMMINTRIN_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-3yryph'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_83ec0/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_83ec0.dir\\build.make CMakeFiles/cmTC_83ec0.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-3yryph'
+        Building C object CMakeFiles/cmTC_83ec0.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_83ec0.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-3yryph\\CheckIncludeFile.c
+        Linking C executable cmTC_83ec0.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_83ec0.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_83ec0.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_83ec0.dir/objects.a @CMakeFiles\\cmTC_83ec0.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_83ec0.dir/objects.a -Wl,--no-whole-archive -o cmTC_83ec0.exe -Wl,--out-implib,libcmTC_83ec0.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_83ec0.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-3yryph'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:407 (check_include_file)"
+    checks:
+      - "Looking for smmintrin.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-lvtla1"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-lvtla1"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_SMMINTRIN_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-lvtla1'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_6ea07/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_6ea07.dir\\build.make CMakeFiles/cmTC_6ea07.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-lvtla1'
+        Building C object CMakeFiles/cmTC_6ea07.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_6ea07.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lvtla1\\CheckIncludeFile.c
+        Linking C executable cmTC_6ea07.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_6ea07.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_6ea07.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_6ea07.dir/objects.a @CMakeFiles\\cmTC_6ea07.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_6ea07.dir/objects.a -Wl,--no-whole-archive -o cmTC_6ea07.exe -Wl,--out-implib,libcmTC_6ea07.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_6ea07.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-lvtla1'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:408 (check_include_file)"
+    checks:
+      - "Looking for arm_neon.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-jxni0h"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-jxni0h"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_ARM_NEON_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-jxni0h'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_4f52b/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_4f52b.dir\\build.make CMakeFiles/cmTC_4f52b.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-jxni0h'
+        Building C object CMakeFiles/cmTC_4f52b.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_4f52b.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-jxni0h\\CheckIncludeFile.c
+        C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-jxni0h\\CheckIncludeFile.c:1:10: fatal error: arm_neon.h: No such file or directory
+            1 | #include <arm_neon.h>
+              |          ^~~~~~~~~~~~
+        compilation terminated.
+        mingw32-make.exe[1]: *** [CMakeFiles\\cmTC_4f52b.dir\\build.make:77: CMakeFiles/cmTC_4f52b.dir/CheckIncludeFile.c.obj] Error 1
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-jxni0h'
+        mingw32-make.exe: *** [Makefile:126: cmTC_4f52b/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:508 (check_c_source_compiles)"
+    checks:
+      - "Performing Test HAVE_SSE_INTRINSICS"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fh2iz7"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fh2iz7"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_SSE_INTRINSICS"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fh2iz7'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_86fc0/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_86fc0.dir\\build.make CMakeFiles/cmTC_86fc0.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fh2iz7'
+        Building C object CMakeFiles/cmTC_86fc0.dir/src.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -DHAVE_SSE_INTRINSICS   -o CMakeFiles\\cmTC_86fc0.dir\\src.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fh2iz7\\src.c
+        Linking C executable cmTC_86fc0.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_86fc0.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_86fc0.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_86fc0.dir/objects.a @CMakeFiles\\cmTC_86fc0.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_86fc0.dir/objects.a -Wl,--no-whole-archive -o cmTC_86fc0.exe -Wl,--out-implib,libcmTC_86fc0.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_86fc0.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fh2iz7'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:515 (check_include_file)"
+    checks:
+      - "Looking for malloc.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6e7l1p"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6e7l1p"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_MALLOC_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6e7l1p'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_fa3fc/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_fa3fc.dir\\build.make CMakeFiles/cmTC_fa3fc.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6e7l1p'
+        Building C object CMakeFiles/cmTC_fa3fc.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_fa3fc.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6e7l1p\\CheckIncludeFile.c
+        Linking C executable cmTC_fa3fc.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_fa3fc.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_fa3fc.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_fa3fc.dir/objects.a @CMakeFiles\\cmTC_fa3fc.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_fa3fc.dir/objects.a -Wl,--no-whole-archive -o cmTC_fa3fc.exe -Wl,--out-implib,libcmTC_fa3fc.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_fa3fc.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-6e7l1p'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:516 (check_include_file)"
+    checks:
+      - "Looking for cpuid.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fgxev4"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fgxev4"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_CPUID_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fgxev4'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_ace4f/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_ace4f.dir\\build.make CMakeFiles/cmTC_ace4f.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fgxev4'
+        Building C object CMakeFiles/cmTC_ace4f.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_ace4f.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fgxev4\\CheckIncludeFile.c
+        Linking C executable cmTC_ace4f.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_ace4f.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_ace4f.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_ace4f.dir/objects.a @CMakeFiles\\cmTC_ace4f.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_ace4f.dir/objects.a -Wl,--no-whole-archive -o cmTC_ace4f.exe -Wl,--out-implib,libcmTC_ace4f.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_ace4f.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-fgxev4'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:517 (check_include_file)"
+    checks:
+      - "Looking for intrin.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nswcux"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nswcux"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_INTRIN_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nswcux'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_ba055/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_ba055.dir\\build.make CMakeFiles/cmTC_ba055.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nswcux'
+        Building C object CMakeFiles/cmTC_ba055.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_ba055.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nswcux\\CheckIncludeFile.c
+        Linking C executable cmTC_ba055.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_ba055.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_ba055.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_ba055.dir/objects.a @CMakeFiles\\cmTC_ba055.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_ba055.dir/objects.a -Wl,--no-whole-archive -o cmTC_ba055.exe -Wl,--out-implib,libcmTC_ba055.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_ba055.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nswcux'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:518 (check_include_file)"
+    checks:
+      - "Looking for guiddef.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xf7sgq"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xf7sgq"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_GUIDDEF_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xf7sgq'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_22865/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_22865.dir\\build.make CMakeFiles/cmTC_22865.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xf7sgq'
+        Building C object CMakeFiles/cmTC_22865.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_22865.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xf7sgq\\CheckIncludeFile.c
+        Linking C executable cmTC_22865.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_22865.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_22865.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_22865.dir/objects.a @CMakeFiles\\cmTC_22865.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_22865.dir/objects.a -Wl,--no-whole-archive -o cmTC_22865.exe -Wl,--out-implib,libcmTC_22865.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_22865.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xf7sgq'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckLibraryExists.cmake:69 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:525 (check_library_exists)"
+    checks:
+      - "Looking for pow in m"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-uyymrb"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-uyymrb"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_LIBM"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-uyymrb'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_b9ff0/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_b9ff0.dir\\build.make CMakeFiles/cmTC_b9ff0.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-uyymrb'
+        Building C object CMakeFiles/cmTC_b9ff0.dir/CheckFunctionExists.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe   -DCHECK_FUNCTION_EXISTS=pow -o CMakeFiles\\cmTC_b9ff0.dir\\CheckFunctionExists.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-uyymrb\\CheckFunctionExists.c
+        <command-line>: warning: conflicting types for built-in function 'pow'; expected 'double(double,  double)' [-Wbuiltin-declaration-mismatch]
+        C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-uyymrb\\CheckFunctionExists.c:7:3: note: in expansion of macro 'CHECK_FUNCTION_EXISTS'
+            7 |   CHECK_FUNCTION_EXISTS(void);
+              |   ^~~~~~~~~~~~~~~~~~~~~
+        C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-uyymrb\\CheckFunctionExists.c:1:1: note: 'pow' is declared in header '<math.h>'
+          +++ |+#include <math.h>
+            1 | #ifdef CHECK_FUNCTION_EXISTS
+        Linking C executable cmTC_b9ff0.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_b9ff0.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_b9ff0.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_b9ff0.dir/objects.a @CMakeFiles\\cmTC_b9ff0.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe  -DCHECK_FUNCTION_EXISTS=pow -Wl,--whole-archive CMakeFiles\\cmTC_b9ff0.dir/objects.a -Wl,--no-whole-archive -o cmTC_b9ff0.exe -Wl,--out-implib,libcmTC_b9ff0.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_b9ff0.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-uyymrb'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckLibraryExists.cmake:69 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:534 (check_library_exists)"
+    checks:
+      - "Looking for clock_gettime in rt"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ih819g"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ih819g"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_LIBRT"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ih819g'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_6694f/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_6694f.dir\\build.make CMakeFiles/cmTC_6694f.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ih819g'
+        Building C object CMakeFiles/cmTC_6694f.dir/CheckFunctionExists.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe   -DCHECK_FUNCTION_EXISTS=clock_gettime -o CMakeFiles\\cmTC_6694f.dir\\CheckFunctionExists.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ih819g\\CheckFunctionExists.c
+        Linking C executable cmTC_6694f.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_6694f.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_6694f.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_6694f.dir/objects.a @CMakeFiles\\cmTC_6694f.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe  -DCHECK_FUNCTION_EXISTS=clock_gettime -Wl,--whole-archive CMakeFiles\\cmTC_6694f.dir/objects.a -Wl,--no-whole-archive -o cmTC_6694f.exe -Wl,--out-implib,libcmTC_6694f.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_6694f.dir\\linkLibs.rsp
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find -lrt: No such file or directory
+        collect2.exe: error: ld returned 1 exit status
+        mingw32-make.exe[1]: *** [CMakeFiles\\cmTC_6694f.dir\\build.make:100: cmTC_6694f.exe] Error 1
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ih819g'
+        mingw32-make.exe: *** [Makefile:126: cmTC_6694f/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:541 (check_include_file)"
+    checks:
+      - "Looking for dlfcn.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wxldib"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wxldib"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_DLFCN_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wxldib'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_07379/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_07379.dir\\build.make CMakeFiles/cmTC_07379.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wxldib'
+        Building C object CMakeFiles/cmTC_07379.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_07379.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wxldib\\CheckIncludeFile.c
+        C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wxldib\\CheckIncludeFile.c:1:10: fatal error: dlfcn.h: No such file or directory
+            1 | #include <dlfcn.h>
+              |          ^~~~~~~~~
+        compilation terminated.
+        mingw32-make.exe[1]: *** [CMakeFiles\\cmTC_07379.dir\\build.make:77: CMakeFiles/cmTC_07379.dir/CheckIncludeFile.c.obj] Error 1
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-wxldib'
+        mingw32-make.exe: *** [Makefile:126: cmTC_07379/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckLibraryExists.cmake:69 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:542 (check_library_exists)"
+    checks:
+      - "Looking for dlopen in dl"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-iw7lfc"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-iw7lfc"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_LIBDL"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-iw7lfc'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_6ff2e/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_6ff2e.dir\\build.make CMakeFiles/cmTC_6ff2e.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-iw7lfc'
+        Building C object CMakeFiles/cmTC_6ff2e.dir/CheckFunctionExists.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe   -DCHECK_FUNCTION_EXISTS=dlopen -o CMakeFiles\\cmTC_6ff2e.dir\\CheckFunctionExists.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iw7lfc\\CheckFunctionExists.c
+        Linking C executable cmTC_6ff2e.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_6ff2e.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_6ff2e.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_6ff2e.dir/objects.a @CMakeFiles\\cmTC_6ff2e.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe  -DCHECK_FUNCTION_EXISTS=dlopen -Wl,--whole-archive CMakeFiles\\cmTC_6ff2e.dir/objects.a -Wl,--no-whole-archive -o cmTC_6ff2e.exe -Wl,--out-implib,libcmTC_6ff2e.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_6ff2e.dir\\linkLibs.rsp
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find -ldl: No such file or directory
+        collect2.exe: error: ld returned 1 exit status
+        mingw32-make.exe[1]: *** [CMakeFiles\\cmTC_6ff2e.dir\\build.make:100: cmTC_6ff2e.exe] Error 1
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-iw7lfc'
+        mingw32-make.exe: *** [Makefile:126: cmTC_6ff2e/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:551 (check_c_source_compiles)"
+    checks:
+      - "Performing Test HAVE_GCC_GET_CPUID"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ski7n5"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ski7n5"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_GCC_GET_CPUID"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ski7n5'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_cbd3e/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_cbd3e.dir\\build.make CMakeFiles/cmTC_cbd3e.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ski7n5'
+        Building C object CMakeFiles/cmTC_cbd3e.dir/src.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -DHAVE_GCC_GET_CPUID   -o CMakeFiles\\cmTC_cbd3e.dir\\src.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ski7n5\\src.c
+        Linking C executable cmTC_cbd3e.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_cbd3e.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_cbd3e.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_cbd3e.dir/objects.a @CMakeFiles\\cmTC_cbd3e.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_cbd3e.dir/objects.a -Wl,--no-whole-archive -o cmTC_cbd3e.exe -Wl,--out-implib,libcmTC_cbd3e.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_cbd3e.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-ski7n5'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:559 (check_c_source_compiles)"
+    checks:
+      - "Performing Test HAVE_CPUID_INTRINSIC"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-m9n6bh"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-m9n6bh"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_CPUID_INTRINSIC"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-m9n6bh'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_ce6e1/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_ce6e1.dir\\build.make CMakeFiles/cmTC_ce6e1.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-m9n6bh'
+        Building C object CMakeFiles/cmTC_ce6e1.dir/src.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -DHAVE_CPUID_INTRINSIC   -o CMakeFiles\\cmTC_ce6e1.dir\\src.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-m9n6bh\\src.c
+        Linking C executable cmTC_ce6e1.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_ce6e1.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_ce6e1.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_ce6e1.dir/objects.a @CMakeFiles\\cmTC_ce6e1.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_ce6e1.dir/objects.a -Wl,--no-whole-archive -o cmTC_ce6e1.exe -Wl,--out-implib,libcmTC_ce6e1.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_ce6e1.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-m9n6bh'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckSymbolExists.cmake:140 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckSymbolExists.cmake:66 (__CHECK_SYMBOL_EXISTS_IMPL)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:568 (check_symbol_exists)"
+    checks:
+      - "Looking for posix_memalign"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nhx7kp"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nhx7kp"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_POSIX_MEMALIGN"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nhx7kp'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_65911/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_65911.dir\\build.make CMakeFiles/cmTC_65911.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nhx7kp'
+        Building C object CMakeFiles/cmTC_65911.dir/CheckSymbolExists.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_65911.dir\\CheckSymbolExists.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nhx7kp\\CheckSymbolExists.c
+        C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nhx7kp\\CheckSymbolExists.c: In function 'main':
+        C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nhx7kp\\CheckSymbolExists.c:8:19: error: 'posix_memalign' undeclared (first use in this function)
+            8 |   return ((int*)(&posix_memalign))[argc];
+              |                   ^~~~~~~~~~~~~~
+        C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nhx7kp\\CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+        mingw32-make.exe[1]: *** [CMakeFiles\\cmTC_65911.dir\\build.make:77: CMakeFiles/cmTC_65911.dir/CheckSymbolExists.c.obj] Error 1
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-nhx7kp'
+        mingw32-make.exe: *** [Makefile:126: cmTC_65911/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckSymbolExists.cmake:140 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckSymbolExists.cmake:66 (__CHECK_SYMBOL_EXISTS_IMPL)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:569 (check_symbol_exists)"
+    checks:
+      - "Looking for _aligned_malloc"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-eikbcl"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-eikbcl"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE__ALIGNED_MALLOC"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-eikbcl'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_37798/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_37798.dir\\build.make CMakeFiles/cmTC_37798.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-eikbcl'
+        Building C object CMakeFiles/cmTC_37798.dir/CheckSymbolExists.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_37798.dir\\CheckSymbolExists.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eikbcl\\CheckSymbolExists.c
+        Linking C executable cmTC_37798.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_37798.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_37798.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_37798.dir/objects.a @CMakeFiles\\cmTC_37798.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_37798.dir/objects.a -Wl,--no-whole-archive -o cmTC_37798.exe -Wl,--out-implib,libcmTC_37798.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_37798.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-eikbcl'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckSymbolExists.cmake:140 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckSymbolExists.cmake:66 (__CHECK_SYMBOL_EXISTS_IMPL)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:570 (check_symbol_exists)"
+    checks:
+      - "Looking for proc_pidpath"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rrouyh"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rrouyh"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_PROC_PIDPATH"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rrouyh'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_dbd80/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_dbd80.dir\\build.make CMakeFiles/cmTC_dbd80.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rrouyh'
+        Building C object CMakeFiles/cmTC_dbd80.dir/CheckSymbolExists.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_dbd80.dir\\CheckSymbolExists.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rrouyh\\CheckSymbolExists.c
+        C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rrouyh\\CheckSymbolExists.c:2:10: fatal error: libproc.h: No such file or directory
+            2 | #include <libproc.h>
+              |          ^~~~~~~~~~~
+        compilation terminated.
+        mingw32-make.exe[1]: *** [CMakeFiles\\cmTC_dbd80.dir\\build.make:77: CMakeFiles/cmTC_dbd80.dir/CheckSymbolExists.c.obj] Error 1
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-rrouyh'
+        mingw32-make.exe: *** [Makefile:126: cmTC_dbd80/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckSymbolExists.cmake:140 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckSymbolExists.cmake:66 (__CHECK_SYMBOL_EXISTS_IMPL)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:604 (check_symbol_exists)"
+    checks:
+      - "Looking for getopt"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xcnk7j"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xcnk7j"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_GETOPT"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xcnk7j'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_3d182/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_3d182.dir\\build.make CMakeFiles/cmTC_3d182.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xcnk7j'
+        Building C object CMakeFiles/cmTC_3d182.dir/CheckSymbolExists.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_3d182.dir\\CheckSymbolExists.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xcnk7j\\CheckSymbolExists.c
+        Linking C executable cmTC_3d182.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_3d182.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_3d182.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_3d182.dir/objects.a @CMakeFiles\\cmTC_3d182.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_3d182.dir/objects.a -Wl,--no-whole-archive -o cmTC_3d182.exe -Wl,--out-implib,libcmTC_3d182.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_3d182.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-xcnk7j'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:1038 (check_include_file)"
+    checks:
+      - "Looking for dsound.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-awfvl4"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-awfvl4"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_DSOUND_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-awfvl4'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_1d83f/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_1d83f.dir\\build.make CMakeFiles/cmTC_1d83f.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-awfvl4'
+        Building C object CMakeFiles/cmTC_1d83f.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_1d83f.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-awfvl4\\CheckIncludeFile.c
+        Linking C executable cmTC_1d83f.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_1d83f.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_1d83f.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_1d83f.dir/objects.a @CMakeFiles\\cmTC_1d83f.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_1d83f.dir/objects.a -Wl,--no-whole-archive -o cmTC_1d83f.exe -Wl,--out-implib,libcmTC_1d83f.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_1d83f.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-awfvl4'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
+      - "engine/thirdparty/openal-soft-master/CMakeLists.txt:1060 (check_include_file)"
+    checks:
+      - "Looking for mmdeviceapi.h"
+    directories:
+      source: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-vaiewb"
+      binary: "C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-vaiewb"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "C:/Users/USER100/CLionProjects/RealWare/engine/thirdparty/openal-soft-master/cmake"
+    buildResult:
+      variable: "HAVE_MMDEVICEAPI_H"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-vaiewb'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe -f Makefile cmTC_b9227/fast
+        C:/x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_b9227.dir\\build.make CMakeFiles/cmTC_b9227.dir/build
+        mingw32-make.exe[1]: Entering directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-vaiewb'
+        Building C object CMakeFiles/cmTC_b9227.dir/CheckIncludeFile.c.obj
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe    -o CMakeFiles\\cmTC_b9227.dir\\CheckIncludeFile.c.obj -c C:\\Users\\USER100\\CLionProjects\\RealWare\\build\\CMakeFiles\\CMakeScratch\\TryCompile-vaiewb\\CheckIncludeFile.c
+        Linking C executable cmTC_b9227.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_b9227.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_b9227.dir/objects.a
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_b9227.dir/objects.a @CMakeFiles\\cmTC_b9227.dir\\objects1.rsp
+        C:\\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\\mingw64\\bin\\gcc.exe -Wl,--whole-archive CMakeFiles\\cmTC_b9227.dir/objects.a -Wl,--no-whole-archive -o cmTC_b9227.exe -Wl,--out-implib,libcmTC_b9227.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_b9227.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'C:/Users/USER100/CLionProjects/RealWare/build/CMakeFiles/CMakeScratch/TryCompile-vaiewb'
+        
+      exitCode: 0
+...

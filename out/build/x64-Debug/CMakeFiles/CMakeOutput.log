@@ -1,0 +1,238 @@
+The system is: Windows - 10.0.19045 - AMD64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.35.32215/bin/Hostx64/x64/cl.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+Microsoft (R) C/C++ Optimizing Compiler Version 19.35.32216.1 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+CMakeCCompilerId.c
+Microsoft (R) Incremental Linker Version 14.35.32216.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/out:CMakeCCompilerId.exe 
+CMakeCCompilerId.obj 
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.exe"
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.obj"
+
+The C compiler identification is MSVC, found in "C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/3.25.1-msvc1/CompilerIdC/CMakeCCompilerId.exe"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.35.32215/bin/Hostx64/x64/cl.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+Microsoft (R) C/C++ Optimizing Compiler Version 19.35.32216.1 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+CMakeCXXCompilerId.cpp
+Microsoft (R) Incremental Linker Version 14.35.32216.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/out:CMakeCXXCompilerId.exe 
+CMakeCXXCompilerId.obj 
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.exe"
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.obj"
+
+The CXX compiler identification is MSVC, found in "C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/3.25.1-msvc1/CompilerIdCXX/CMakeCXXCompilerId.exe"
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-gktb48
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_8d3b5 && [1/2] Building C object CMakeFiles\cmTC_8d3b5.dir\CMakeCCompilerABI.c.obj
+[2/2] Linking C executable cmTC_8d3b5.exe
+
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-10481f
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_e6bc3 && [1/2] Building CXX object CMakeFiles\cmTC_e6bc3.dir\CMakeCXXCompilerABI.cpp.obj
+[2/2] Linking CXX executable cmTC_e6bc3.exe
+
+
+
+Performing C++ SOURCE FILE Test HAVE_STDC_FORMAT_MACROS succeeded with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-rdygkt
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_78b6e && [1/2] Building CXX object CMakeFiles\cmTC_78b6e.dir\src.cxx.obj
+cl : Command line warning D9002 : ignoring unknown option '-O0'
+[2/2] Linking CXX executable cmTC_78b6e.exe
+
+
+Source file was:
+#include <cinttypes>
+#include <cstdio>
+int main()
+{
+    int64_t i64{};
+    std::printf("%" PRId64, i64);
+}
+
+Performing C++ SOURCE FILE Test HAVE___RESTRICT succeeded with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-2ji8xp
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_939db && [1/2] Building CXX object CMakeFiles\cmTC_939db.dir\src.cxx.obj
+cl : Command line warning D9002 : ignoring unknown option '-O0'
+[2/2] Linking CXX executable cmTC_939db.exe
+
+
+Source file was:
+int *__restrict foo;
+int main() { return 0; }
+
+Determining if the include file xmmintrin.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-r1t03b
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_c5f76 && [1/2] Building C object CMakeFiles\cmTC_c5f76.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_c5f76.exe
+
+
+
+Determining if the include file emmintrin.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-xii4a4
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_e8975 && [1/2] Building C object CMakeFiles\cmTC_e8975.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_e8975.exe
+
+
+
+Determining if the include file pmmintrin.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-xrsa27
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_d01df && [1/2] Building C object CMakeFiles\cmTC_d01df.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_d01df.exe
+
+
+
+Determining if the include file smmintrin.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-hojv7n
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_fb565 && [1/2] Building C object CMakeFiles\cmTC_fb565.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_fb565.exe
+
+
+
+Performing C SOURCE FILE Test HAVE_SSE_INTRINSICS succeeded with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-usovhr
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_ee84c && [1/2] Building C object CMakeFiles\cmTC_ee84c.dir\src.c.obj
+[2/2] Linking C executable cmTC_ee84c.exe
+
+
+Source file was:
+#include <emmintrin.h>
+        int main() {_mm_pause(); return 0;}
+
+Determining if the include file malloc.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-zhnpzh
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_67750 && [1/2] Building C object CMakeFiles\cmTC_67750.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_67750.exe
+
+
+
+Determining if the include file intrin.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-wbjiub
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_71000 && [1/2] Building C object CMakeFiles\cmTC_71000.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_71000.exe
+
+
+
+Determining if the include file guiddef.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-c9b388
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_7b945 && [1/2] Building C object CMakeFiles\cmTC_7b945.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_7b945.exe
+
+
+
+Performing C SOURCE FILE Test HAVE_CPUID_INTRINSIC succeeded with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-7n0fuc
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_4a16d && [1/2] Building C object CMakeFiles\cmTC_4a16d.dir\src.c.obj
+[2/2] Linking C executable cmTC_4a16d.exe
+
+
+Source file was:
+#include <intrin.h>
+        int main()
+        {
+            int regs[4];
+            __cpuid(regs, 0);
+            return regs[0];
+        }
+
+Determining if the _aligned_malloc exist passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-kz0jiy
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_9b71a && [1/2] Building C object CMakeFiles\cmTC_9b71a.dir\CheckSymbolExists.c.obj
+[2/2] Linking C executable cmTC_9b71a.exe
+
+
+File CheckSymbolExists.c:
+/* */
+#include <malloc.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef _aligned_malloc
+  return ((int*)(&_aligned_malloc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the include file dsound.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-0lq0t6
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_e0989 && [1/2] Building C object CMakeFiles\cmTC_e0989.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_e0989.exe
+
+
+
+Determining if the include file mmdeviceapi.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-ek1w4u
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_6d3f1 && [1/2] Building C object CMakeFiles\cmTC_6d3f1.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_6d3f1.exe
+
+
+
+Determining if the include file sys/types.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-dszxkt
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_266a0 && [1/2] Building C object CMakeFiles\cmTC_266a0.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_266a0.exe
+
+
+
+Determining if the include file stdint.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-lqg2cw
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_ecfa7 && [1/2] Building C object CMakeFiles\cmTC_ecfa7.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_ecfa7.exe
+
+
+
+Determining if the include file stddef.h exists passed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-a7d7n7
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_e18f2 && [1/2] Building C object CMakeFiles\cmTC_e18f2.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_e18f2.exe
+
+
+

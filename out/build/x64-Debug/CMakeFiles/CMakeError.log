@@ -1,0 +1,323 @@
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-9os77c
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_f78e0 && [1/2] Building C object CMakeFiles\cmTC_f78e0.dir\src.c.obj
+FAILED: CMakeFiles/cmTC_f78e0.dir/src.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo -DCMAKE_HAVE_LIBC_PTHREAD  /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_f78e0.dir\src.c.obj /FdCMakeFiles\cmTC_f78e0.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-9os77c\src.c
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-9os77c\src.c(1): fatal error C1083: Cannot open include file: 'pthread.h': No such file or directory
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-oacpja
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_e770d && [1/2] Building C object CMakeFiles\cmTC_e770d.dir\CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_e770d.exe
+FAILED: cmTC_e770d.exe 
+cmd.exe /C "cd . && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_e770d.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\mt.exe --manifests  -- C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_e770d.dir\CheckFunctionExists.c.obj  /out:cmTC_e770d.exe /implib:cmTC_e770d.lib /pdb:cmTC_e770d.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  pthreads.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+LINK Pass 1: command "C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_e770d.dir\CheckFunctionExists.c.obj /out:cmTC_e770d.exe /implib:cmTC_e770d.lib /pdb:cmTC_e770d.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\cmTC_e770d.dir/intermediate.manifest CMakeFiles\cmTC_e770d.dir/manifest.res" failed (exit code 1104) with the following output:
+LINK : fatal error LNK1104: cannot open file 'pthreads.lib'
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function pthread_create exists in the pthread failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-8tyz7w
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_51ad4 && [1/2] Building C object CMakeFiles\cmTC_51ad4.dir\CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_51ad4.exe
+FAILED: cmTC_51ad4.exe 
+cmd.exe /C "cd . && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_51ad4.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\mt.exe --manifests  -- C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_51ad4.dir\CheckFunctionExists.c.obj  /out:cmTC_51ad4.exe /implib:cmTC_51ad4.lib /pdb:cmTC_51ad4.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  pthread.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+LINK Pass 1: command "C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_51ad4.dir\CheckFunctionExists.c.obj /out:cmTC_51ad4.exe /implib:cmTC_51ad4.lib /pdb:cmTC_51ad4.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\cmTC_51ad4.dir/intermediate.manifest CMakeFiles\cmTC_51ad4.dir/manifest.res" failed (exit code 1104) with the following output:
+LINK : fatal error LNK1104: cannot open file 'pthread.lib'
+ninja: build stopped: subcommand failed.
+
+
+
+Performing C++ SOURCE FILE Test HAVE_LIBATOMIC failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-5t13wp
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_8064e && [1/2] Building CXX object CMakeFiles\cmTC_8064e.dir\src.cxx.obj
+cl : Command line warning D9002 : ignoring unknown option '-O0'
+[2/2] Linking CXX executable cmTC_8064e.exe
+FAILED: cmTC_8064e.exe 
+cmd.exe /C "cd . && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_8064e.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\mt.exe --manifests  -- C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_8064e.dir\src.cxx.obj  /out:cmTC_8064e.exe /implib:cmTC_8064e.lib /pdb:cmTC_8064e.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  atomic.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+LINK Pass 1: command "C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_8064e.dir\src.cxx.obj /out:cmTC_8064e.exe /implib:cmTC_8064e.lib /pdb:cmTC_8064e.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console atomic.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\cmTC_8064e.dir/intermediate.manifest CMakeFiles\cmTC_8064e.dir/manifest.res" failed (exit code 1104) with the following output:
+LINK : fatal error LNK1104: cannot open file 'atomic.lib'
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <atomic>
+std::atomic<int> foo{0};
+int main() { return foo.fetch_add(2); }
+
+Performing C++ SOURCE FILE Test HAVE_PERMISSIVE_SWITCH failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-4rgnon
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_e2c78 && [1/2] Building CXX object CMakeFiles\cmTC_e2c78.dir\src.cxx.obj
+cl : Command line warning D9002 : ignoring unknown option '-O0'
+[2/2] Linking CXX executable cmTC_e2c78.exe
+
+
+Source file was:
+int main() { return 0; }
+
+Determining if the include file arm_neon.h exists failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-mh2mxp
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_231da && [1/2] Building C object CMakeFiles\cmTC_231da.dir\CheckIncludeFile.c.obj
+FAILED: CMakeFiles/cmTC_231da.dir/CheckIncludeFile.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_231da.dir\CheckIncludeFile.c.obj /FdCMakeFiles\cmTC_231da.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-mh2mxp\CheckIncludeFile.c
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.35.32215\include\arm_neon.h(21): fatal error C1189: #error:  This header is specific to ARM targets
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the include file cpuid.h exists failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-ut22h3
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_8ecc8 && [1/2] Building C object CMakeFiles\cmTC_8ecc8.dir\CheckIncludeFile.c.obj
+FAILED: CMakeFiles/cmTC_8ecc8.dir/CheckIncludeFile.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_8ecc8.dir\CheckIncludeFile.c.obj /FdCMakeFiles\cmTC_8ecc8.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-ut22h3\CheckIncludeFile.c
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-ut22h3\CheckIncludeFile.c(1): fatal error C1083: Cannot open include file: 'cpuid.h': No such file or directory
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function pow exists in the m failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-h8ize8
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_7c619 && [1/2] Building C object CMakeFiles\cmTC_7c619.dir\CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_7c619.exe
+FAILED: cmTC_7c619.exe 
+cmd.exe /C "cd . && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_7c619.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\mt.exe --manifests  -- C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_7c619.dir\CheckFunctionExists.c.obj  /out:cmTC_7c619.exe /implib:cmTC_7c619.lib /pdb:cmTC_7c619.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  m.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+LINK Pass 1: command "C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_7c619.dir\CheckFunctionExists.c.obj /out:cmTC_7c619.exe /implib:cmTC_7c619.lib /pdb:cmTC_7c619.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console m.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\cmTC_7c619.dir/intermediate.manifest CMakeFiles\cmTC_7c619.dir/manifest.res" failed (exit code 1104) with the following output:
+LINK : fatal error LNK1104: cannot open file 'm.lib'
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function clock_gettime exists in the rt failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-5hwhsi
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_c37c5 && [1/2] Building C object CMakeFiles\cmTC_c37c5.dir\CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_c37c5.exe
+FAILED: cmTC_c37c5.exe 
+cmd.exe /C "cd . && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_c37c5.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\mt.exe --manifests  -- C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_c37c5.dir\CheckFunctionExists.c.obj  /out:cmTC_c37c5.exe /implib:cmTC_c37c5.lib /pdb:cmTC_c37c5.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  rt.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+LINK Pass 1: command "C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_c37c5.dir\CheckFunctionExists.c.obj /out:cmTC_c37c5.exe /implib:cmTC_c37c5.lib /pdb:cmTC_c37c5.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console rt.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\cmTC_c37c5.dir/intermediate.manifest CMakeFiles\cmTC_c37c5.dir/manifest.res" failed (exit code 1104) with the following output:
+LINK : fatal error LNK1104: cannot open file 'rt.lib'
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the include file dlfcn.h exists failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-38k0dc
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_3b1ca && [1/2] Building C object CMakeFiles\cmTC_3b1ca.dir\CheckIncludeFile.c.obj
+FAILED: CMakeFiles/cmTC_3b1ca.dir/CheckIncludeFile.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_3b1ca.dir\CheckIncludeFile.c.obj /FdCMakeFiles\cmTC_3b1ca.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-38k0dc\CheckIncludeFile.c
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-38k0dc\CheckIncludeFile.c(1): fatal error C1083: Cannot open include file: 'dlfcn.h': No such file or directory
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function dlopen exists in the dl failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-bfvn7l
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_b92be && [1/2] Building C object CMakeFiles\cmTC_b92be.dir\CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_b92be.exe
+FAILED: cmTC_b92be.exe 
+cmd.exe /C "cd . && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_b92be.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\mt.exe --manifests  -- C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_b92be.dir\CheckFunctionExists.c.obj  /out:cmTC_b92be.exe /implib:cmTC_b92be.lib /pdb:cmTC_b92be.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  dl.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+LINK Pass 1: command "C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_b92be.dir\CheckFunctionExists.c.obj /out:cmTC_b92be.exe /implib:cmTC_b92be.lib /pdb:cmTC_b92be.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console dl.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\cmTC_b92be.dir/intermediate.manifest CMakeFiles\cmTC_b92be.dir/manifest.res" failed (exit code 1104) with the following output:
+LINK : fatal error LNK1104: cannot open file 'dl.lib'
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the posix_memalign exist failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-cdis39
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_54d90 && [1/2] Building C object CMakeFiles\cmTC_54d90.dir\CheckSymbolExists.c.obj
+FAILED: CMakeFiles/cmTC_54d90.dir/CheckSymbolExists.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_54d90.dir\CheckSymbolExists.c.obj /FdCMakeFiles\cmTC_54d90.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-cdis39\CheckSymbolExists.c
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-cdis39\CheckSymbolExists.c(8): error C2065: 'posix_memalign': undeclared identifier
+ninja: build stopped: subcommand failed.
+
+
+File CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef posix_memalign
+  return ((int*)(&posix_memalign))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the proc_pidpath exist failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-vu2l6k
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_0315c && [1/2] Building C object CMakeFiles\cmTC_0315c.dir\CheckSymbolExists.c.obj
+FAILED: CMakeFiles/cmTC_0315c.dir/CheckSymbolExists.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_0315c.dir\CheckSymbolExists.c.obj /FdCMakeFiles\cmTC_0315c.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-vu2l6k\CheckSymbolExists.c
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-vu2l6k\CheckSymbolExists.c(2): fatal error C1083: Cannot open include file: 'libproc.h': No such file or directory
+ninja: build stopped: subcommand failed.
+
+
+File CheckSymbolExists.c:
+/* */
+#include <libproc.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef proc_pidpath
+  return ((int*)(&proc_pidpath))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the getopt exist failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-07a9g2
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_15896 && [1/2] Building C object CMakeFiles\cmTC_15896.dir\CheckSymbolExists.c.obj
+FAILED: CMakeFiles/cmTC_15896.dir/CheckSymbolExists.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_15896.dir\CheckSymbolExists.c.obj /FdCMakeFiles\cmTC_15896.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-07a9g2\CheckSymbolExists.c
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-07a9g2\CheckSymbolExists.c(2): fatal error C1083: Cannot open include file: 'unistd.h': No such file or directory
+ninja: build stopped: subcommand failed.
+
+
+File CheckSymbolExists.c:
+/* */
+#include <unistd.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef getopt
+  return ((int*)(&getopt))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining size of off64_t failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-jyp8kw
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_62e79 && [1/2] Building C object CMakeFiles\cmTC_62e79.dir\OFF64_T.c.obj
+FAILED: CMakeFiles/cmTC_62e79.dir/OFF64_T.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo -DHAVE_STDDEF_H -DHAVE_STDINT_H -DHAVE_SYS_TYPES_H -D_LARGEFILE64_SOURCE=1  /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 -MDd -Zi /showIncludes /FoCMakeFiles\cmTC_62e79.dir\OFF64_T.c.obj /FdCMakeFiles\cmTC_62e79.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-jyp8kw\OFF64_T.c
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-jyp8kw\OFF64_T.c(29): error C2065: 'off64_t': undeclared identifier
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-jyp8kw\OFF64_T.c(30): error C2065: 'off64_t': undeclared identifier
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-jyp8kw\OFF64_T.c(31): error C2065: 'off64_t': undeclared identifier
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-jyp8kw\OFF64_T.c(32): error C2065: 'off64_t': undeclared identifier
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-jyp8kw\OFF64_T.c(33): error C2065: 'off64_t': undeclared identifier
+ninja: build stopped: subcommand failed.
+
+
+OFF64_T.c:
+#include <sys/types.h>
+#include <stdint.h>
+#include <stddef.h>
+
+
+#undef KEY
+#if defined(__i386)
+# define KEY '_','_','i','3','8','6'
+#elif defined(__x86_64)
+# define KEY '_','_','x','8','6','_','6','4'
+#elif defined(__PPC64__)
+# define KEY '_','_','P','P','C','6','4','_','_'
+#elif defined(__ppc64__)
+# define KEY '_','_','p','p','c','6','4','_','_'
+#elif defined(__PPC__)
+# define KEY '_','_','P','P','C','_','_'
+#elif defined(__ppc__)
+# define KEY '_','_','p','p','c','_','_'
+#elif defined(__aarch64__)
+# define KEY '_','_','a','a','r','c','h','6','4','_','_'
+#elif defined(__ARM_ARCH_7A__)
+# define KEY '_','_','A','R','M','_','A','R','C','H','_','7','A','_','_'
+#elif defined(__ARM_ARCH_7S__)
+# define KEY '_','_','A','R','M','_','A','R','C','H','_','7','S','_','_'
+#endif
+
+#define SIZE (sizeof(off64_t))
+static char info_size[] =  {'I', 'N', 'F', 'O', ':', 's','i','z','e','[',
+  ('0' + ((SIZE / 10000)%10)),
+  ('0' + ((SIZE / 1000)%10)),
+  ('0' + ((SIZE / 100)%10)),
+  ('0' + ((SIZE / 10)%10)),
+  ('0' +  (SIZE    % 10)),
+  ']',
+#ifdef KEY
+  ' ','k','e','y','[', KEY, ']',
+#endif
+  '\0'};
+
+#ifdef __CLASSIC_C__
+int main(argc, argv) int argc; char *argv[];
+#else
+int main(int argc, char *argv[])
+#endif
+{
+  int require = 0;
+  require += info_size[argc];
+  (void)argv;
+  return require;
+}
+
+
+Determining if the function fseeko exists failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-zu77i3
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_45c5c && [1/2] Building C object CMakeFiles\cmTC_45c5c.dir\CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_45c5c.exe
+FAILED: cmTC_45c5c.exe 
+cmd.exe /C "cd . && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_45c5c.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100226~1.0\x64\mt.exe --manifests  -- C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_45c5c.dir\CheckFunctionExists.c.obj  /out:cmTC_45c5c.exe /implib:cmTC_45c5c.lib /pdb:cmTC_45c5c.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+LINK Pass 1: command "C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\link.exe /nologo CMakeFiles\cmTC_45c5c.dir\CheckFunctionExists.c.obj /out:cmTC_45c5c.exe /implib:cmTC_45c5c.lib /pdb:cmTC_45c5c.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\cmTC_45c5c.dir/intermediate.manifest CMakeFiles\cmTC_45c5c.dir/manifest.res" failed (exit code 1120) with the following output:
+CheckFunctionExists.c.obj : error LNK2019: unresolved external symbol fseeko referenced in function main
+cmTC_45c5c.exe : fatal error LNK1120: 1 unresolved externals
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the include file unistd.h exists failed with the following output:
+Change Dir: C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/CMakeFiles/CMakeScratch/TryCompile-6zc9jc
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_4f648 && [1/2] Building C object CMakeFiles\cmTC_4f648.dir\CheckIncludeFile.c.obj
+FAILED: CMakeFiles/cmTC_4f648.dir/CheckIncludeFile.c.obj 
+C:\PROGRA~1\MICROS~1\2022\COMMUN~1\VC\Tools\MSVC\1435~1.322\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 -MDd -Zi /showIncludes /FoCMakeFiles\cmTC_4f648.dir\CheckIncludeFile.c.obj /FdCMakeFiles\cmTC_4f648.dir\ /FS -c C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-6zc9jc\CheckIncludeFile.c
+C:\Users\USER100\CLionProjects\RealWare\out\build\x64-Debug\CMakeFiles\CMakeScratch\TryCompile-6zc9jc\CheckIncludeFile.c(1): fatal error C1083: Cannot open include file: 'unistd.h': No such file or directory
+ninja: build stopped: subcommand failed.
+
+
+
