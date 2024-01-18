@@ -900,9 +900,7 @@ namespace realware
             Assimp::Importer importer;
             const aiScene* scene = importer.ReadFile(
                 filename.data(),
-                aiProcess_CalcTangentSpace       |
-                aiProcess_Triangulate            |
-                aiProcess_OptimizeMeshes
+                0
             );
 
             if (scene == nullptr)

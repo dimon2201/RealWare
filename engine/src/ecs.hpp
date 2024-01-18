@@ -52,6 +52,7 @@ namespace realware
         struct sComponent
         {
             entity Owner = {};
+            s64 Info = -1;
         };
 
         struct sEntityScenePair
@@ -369,6 +370,7 @@ namespace realware
                 ComponentType* memory = (ComponentType*)array.Memory;
                 core::usize index = array.ComponentCount;
                 memory[index].Owner = owner;
+                memory[index].Info = -1;
                 array.ComponentCount += 1;
 
                 return &memory[index];
@@ -432,7 +434,7 @@ namespace realware
 
                 if (indexToRemove != -1)
                 {
-                    memory[indexToRemove] = memory[array.ComponentCount];
+                    memory[indexToRemove] = memory[array.ComponentCount - 1];
                     array.ComponentCount -= 1;
                 }
             }

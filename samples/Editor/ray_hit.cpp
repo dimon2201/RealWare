@@ -57,6 +57,10 @@ namespace realware
                         }
                     }
 
+                    if (geometry_->Geometry == nullptr) {
+                        return;
+                    }
+
                     core::sCTransform* transform = scene_->Get<core::sCTransform>(geometry_->Owner);
                     render::sVertex* vertices = (render::sVertex*)geometry_->Geometry->VertexPtr;
                     render::index* indices = (render::index*)geometry_->Geometry->IndexPtr;
@@ -83,16 +87,39 @@ namespace realware
                             v
                         );
 
-                        if (hit && distance < t)
+                        if (hit && distance < t && distance > 0.0f)
                         {
                             resultEntity = geometry_->Owner;
                             resultBool = core::K_TRUE;
-
                             t = distance;
                         }
                     }
                 }
             );
+
+            // Check with large invisible floor triangle
+            glm::vec3 v0 = glm::vec3(-9999.0f, 0.0f, 9999.0f);
+            glm::vec3 v1 = glm::vec3(0.0f, 0.0f, -9999.0f);
+            glm::vec3 v2 = glm::vec3(9999.0f, 0.0f, 9999.0f);
+
+            float distance = 0.0f;
+            float u = 0.0f, v = 0.0f;
+            bool hit = RayTriangleIntersection(
+                rayOrigin,
+                rayDirection,
+                v0,
+                v1,
+                v2,
+                distance,
+                u,
+                v
+            );
+
+            if (hit && distance < t && distance > 0.0f)
+            {
+                resultBool = core::K_TRUE;
+                t = distance;
+            }
 
             p = rayOrigin + (rayDirection * t);
             result = p;

@@ -44,15 +44,22 @@ mUserInput* userInputManager = new mUserInput();
 mFont* fontManager = new mFont();
 mSound* soundManager = new mSound();
 mPhysics* physicsManager = new mPhysics();
+cApplication* editorApp = nullptr;
+cScene* editorScene = nullptr;
 
+std::vector<sVertexBufferGeometry*> editorGeometriesToDraw;
 eSelectMode editorSelectMode = eSelectMode::NONE;
 entity editorSelectedEntity = 0;
-int editorSelectedAssetIndex = 0;
+int editorSelectedAssetIndex = -1;
+int editorUsedAssetIndex = -1;
 glm::vec3 editorPosition = glm::vec3(0.0f), editorRotation = glm::vec3(0.0f), editorScale = glm::vec3(0.0f);
 sTextboxLabel editorPositionX; sTextboxLabel editorPositionY; sTextboxLabel editorPositionZ;
 sTextboxLabel editorRotationX; sTextboxLabel editorRotationY; sTextboxLabel editorRotationZ;
 sTextboxLabel editorScaleX; sTextboxLabel editorScaleY; sTextboxLabel editorScaleZ;
 sTextboxLabel editorWindowEntityName;
+sTextboxLabel editorWindowEntityTexture;
+sTextboxLabel editorWindowEntityGeometry;
+sTextboxLabel editorWindowEntityDiffuseColor;
 cEditorWindow* editorWindowAsset = nullptr;
 cEditorWindow* editorWindowEntity = nullptr;
 cEditorListView* editorWindowAssetListView = nullptr;
@@ -66,8 +73,21 @@ std::vector<std::vector<sAsset>> editorWindowAssetData((int)eAssetSelectedType::
 void EditorUpdateTextboxTransform(sCTransform* transform);
 void EditorUpdateEntityTransform(cScene* scene);
 void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress);
+void EditorWindowAssetDeleteItem(
+    cApplication* app,
+    cScene* scene,
+    const eAssetSelectedType& type,
+    int assetIndex
+);
 void EditorWindowEntityUpdate(int assetIndex);
 void EditorWindowEntitySave(int assetIndex);
+void EditorWindowRenderEntityLogic(
+    cApplication* app,
+    cScene* scene,
+    entity camera,
+    realware::core::boolean lmbPress,
+    realware::core::boolean rmbPress
+);
 
 class MyApp : public cApplication
 {
@@ -78,15 +98,24 @@ public:
 
     virtual void Init() override final
     {
+        editorApp = this;
+
         // Initialize managers
         textureManager->Init(m_renderContext, 1920, 1080, 12);
-        renderManager->Init(m_renderContext, 65536, 65536, 65536, 65536, glm::vec2(m_desc.WindowDesc.Width, m_desc.WindowDesc.Height));
+        renderManager->Init(
+            m_renderContext,
+            4 * 1024 * 1024,
+            4 * 1024 * 1024,
+            65536,
+            65536,
+            glm::vec2(m_desc.WindowDesc.Width, m_desc.WindowDesc.Height)
+        );
         cameraManager->Init();
         userInputManager->Init();
         physicsManager->Init();
 
         // Triangle primitive
-        auto plane = renderManager->CreateModel("data/models/plane.fbx");
+        auto plane = renderManager->CreateModel("data/models/plane.dae");
         m_geomPlane = renderManager->AddGeometry(
             plane->Format,
             plane->VerticesByteSize,
@@ -95,43 +124,34 @@ public:
             plane->Indices
         );
 
-        auto taburet = renderManager->CreateModel("data/models/taburet2.fbx");
-        m_geomTaburet = renderManager->AddGeometry(
-            taburet->Format,
-            taburet->VerticesByteSize,
-            taburet->Vertices,
-            taburet->IndicesByteSize,
-            taburet->Indices
-        );
-
         auto dirtTexture = textureManager->CreateTexture("data/textures/dirt.png", "DirtTexture");
         m_taburetTexture = textureManager->CreateTexture("data/textures/taburet2.png", "TaburetTexture");
 
         // Scene
-        m_scene = new cScene(65536);
+        editorScene = new cScene(4 * 1024 * 1024);
 
         // Physics scene
-        entity physicsSceneEntity = m_scene->CreateEntity("PhysicsSceneEntity");
-        physicsManager->AddScene({ physicsSceneEntity, m_scene });
+        entity physicsSceneEntity = editorScene->CreateEntity("PhysicsSceneEntity");
+        physicsManager->AddScene({ physicsSceneEntity, editorScene });
 
         // Plane entity
-        m_plane = m_scene->CreateEntity("PlaneEntity");
-        sCGeometryInfo* planegi = m_scene->Add<sCGeometryInfo>(m_plane);
+        m_plane = editorScene->CreateEntity("PlaneEntity");
+        sCGeometryInfo* planegi = editorScene->Add<sCGeometryInfo>(m_plane);
         planegi->IsVisible = K_TRUE;
         planegi->IsOpaque = K_TRUE;
-        sCGeometry* planeg = m_scene->Add<sCGeometry>(m_plane);
+        sCGeometry* planeg = editorScene->Add<sCGeometry>(m_plane);
         planeg->Geometry = m_geomPlane;
-        sCTransform* planet = m_scene->Add<sCTransform>(m_plane);
+        sCTransform* planet = editorScene->Add<sCTransform>(m_plane);
         planet->Position = glm::vec3(0.0f);
         planet->Rotation = glm::vec3(0.0f);
-        planet->Scale = glm::vec3(150.0f);
-        sCMaterial* planem = m_scene->Add<sCMaterial>(m_plane);
+        planet->Scale = glm::vec3(5.0f);
+        sCMaterial* planem = editorScene->Add<sCMaterial>(m_plane);
         planem->DiffuseTexture = dirtTexture;
         planem->DiffuseColor = glm::vec4(1.0f);
 
         physicsManager->AddActor(
-            { physicsSceneEntity, m_scene },
-            { m_plane, m_scene },
+            { physicsSceneEntity, editorScene },
+            { m_plane, editorScene },
             mPhysics::eActorDescriptor::STATIC,
             mPhysics::eShapeDescriptor::PLANE,
             glm::vec4(0.0f),
@@ -139,17 +159,17 @@ public:
         );
 
         // Camera entity
-        m_camera = m_scene->CreateEntity("CameraEntity");
-        sCCamera* cameraCamera = m_scene->Add<sCCamera>(m_camera);
+        m_camera = editorScene->CreateEntity("CameraEntity");
+        sCCamera* cameraCamera = editorScene->Add<sCCamera>(m_camera);
         cameraCamera->FOV = 65.0f;
         cameraCamera->ZNear = 0.01f;
         cameraCamera->ZFar = 100.0f;
-        sCTransform* cameraTransform = m_scene->Add<sCTransform>(m_camera);
+        sCTransform* cameraTransform = editorScene->Add<sCTransform>(m_camera);
         cameraTransform->Position = glm::vec3(0.0f, 5.0f, 0.0f);
 
         sCPhysicsCharacterController* controller = physicsManager->AddCharacterController(
-            { physicsSceneEntity, m_scene },
-            { m_camera, m_scene },
+            { physicsSceneEntity, editorScene },
+            { m_camera, editorScene },
             mPhysics::eShapeDescriptor::CAPSULE,
             glm::vec4(1.0f, 2.0f, 0.0f, 0.0f)
         );
@@ -232,10 +252,28 @@ public:
             glm::vec2(offset * 15.0f, offset * 7.0f)
         );
         editorWindowEntityName.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Name",
-            glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 13.0f, offset * 7.0f)
+            glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityName.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
-            glm::vec2(offset * 20.0f, offset * 5.0f), glm::vec2(offset * 90.0f, offset * 7.0f), K_FALSE
+            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE
+        );
+        editorWindowEntityTexture.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Texture",
+            glm::vec2(offset * 3.0f, offset * 14.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
+        );
+        editorWindowEntityTexture.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
+            glm::vec2(offset * 25.0f, offset * 14.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE
+        );
+        editorWindowEntityGeometry.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Geometry",
+            glm::vec2(offset * 3.0f, offset * 23.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
+        );
+        editorWindowEntityGeometry.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
+            glm::vec2(offset * 25.0f, offset * 23.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE
+        );
+        editorWindowEntityDiffuseColor.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Color",
+            glm::vec2(offset * 3.0f, offset * 32.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
+        );
+        editorWindowEntityDiffuseColor.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "255;255;255;255",
+            glm::vec2(offset * 25.0f, offset * 32.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE
         );
 
         // Render window
@@ -336,6 +374,8 @@ public:
         );
 
         userInputManager->FocusWindow();
+
+        editorGeometriesToDraw.push_back(m_geomPlane);
     }
 
     virtual void Update() override final
@@ -368,197 +408,33 @@ public:
             rmbPressGlobal = K_FALSE;
         }
         
-        // Create/transform entity and change selection mode
-        switch (editorSelectMode)
-        {
-            case eSelectMode::NONE:
-            {
-                // Ray triangle intersection
-                realware::core::entity resultEntity = 0;
-                realware::core::boolean resultBool = K_FALSE;
-                glm::vec3 result = glm::vec3(0.0f);
-                cRayHit ray(
-                    this,
-                    m_scene,
-                    {},
-                    {},
-                    m_camera,
-                    userInputManager->GetCursorPosition(),
-                    userInputManager->GetWindowSize(),
-                    resultEntity,
-                    resultBool,
-                    result
-                );
-
-                if (rmbPress == K_TRUE)
-                {
-                    editorSelectMode = eSelectMode::CREATE;
-                }
-                
-                break;
-            }
-
-            case eSelectMode::CREATE:
-            {
-                // Ray triangle intersection
-                realware::core::entity resultEntity = 0;
-                realware::core::boolean resultBool = K_FALSE;
-                glm::vec3 result = glm::vec3(0.0f);
-                cRayHit ray(
-                    this,
-                    m_scene,
-                    {},
-                    {},
-                    m_camera,
-                    userInputManager->GetCursorPosition(),
-                    userInputManager->GetWindowSize(),
-                    resultEntity,
-                    resultBool,
-                    result
-                );
-
-                if (rmbPress == K_TRUE)
-                {
-                    // Create taburet entity
-                    static int i = 0;
-                    auto taburet = m_scene->CreateEntity("TaburetEntity" + std::to_string(i++));
-                    sCGeometryInfo* taburetgi = m_scene->Add<sCGeometryInfo>(taburet);
-                    taburetgi->IsVisible = K_TRUE;
-                    taburetgi->IsOpaque = K_TRUE;
-                    sCGeometry* tabureg = m_scene->Add<sCGeometry>(taburet);
-                    tabureg->Geometry = m_geomTaburet;
-                    sCTransform* taburett = m_scene->Add<sCTransform>(taburet);
-                    taburett->Position = result;
-                    taburett->Rotation = glm::vec3(glm::radians(-90.0f), 0.0f, 0.0f);
-                    taburett->Scale = glm::vec3(1.0f);
-                    sCMaterial* planem = m_scene->Add<sCMaterial>(taburet);
-                    planem->DiffuseTexture = m_taburetTexture;
-                    planem->DiffuseColor = glm::vec4(1.0f);
-                }
-
-                if (lmbPress == K_TRUE && resultBool == K_TRUE)
-                {
-                    editorSelectMode = eSelectMode::TRANSFORM;
-                    editorSelectedEntity = resultEntity;
-
-                    sCMaterial* material = m_scene->Get<sCMaterial>(editorSelectedEntity);
-                    material->DiffuseColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
-
-                    sCTransform* transform = m_scene->Get<sCTransform>(editorSelectedEntity);
-                    EditorUpdateTextboxTransform(transform);
-                }
-
-                break;
-            }
-
-            case eSelectMode::TRANSFORM:
-            {
-                // Ray triangle intersection
-                realware::core::entity resultEntity = 0;
-                realware::core::boolean resultBool = K_FALSE;
-                glm::vec3 result = glm::vec3(0.0f);
-
-                if (lmbPress == K_TRUE)
-                {
-                    cRayHit ray(
-                        this,
-                        m_scene,
-                        {},
-                        {},
-                        m_camera,
-                        userInputManager->GetCursorPosition(),
-                        userInputManager->GetWindowSize(),
-                        resultEntity,
-                        resultBool,
-                        result
-                    );
-
-                    if (resultBool == K_TRUE && resultEntity != editorSelectedEntity)
-                    {
-                        sCMaterial* material = m_scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->DiffuseColor = glm::vec4(1.0f);
-
-                        editorSelectedEntity = resultEntity;
-
-                        material = m_scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->DiffuseColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
-
-                        sCTransform* transform = m_scene->Get<sCTransform>(editorSelectedEntity);
-                        EditorUpdateTextboxTransform(transform);
-                    }
-                    else if (resultBool == K_FALSE || resultEntity == editorSelectedEntity)
-                    {
-                        sCMaterial* material = m_scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->DiffuseColor = glm::vec4(1.0f);
-
-                        editorSelectMode = eSelectMode::CREATE;
-                        editorSelectedEntity = 0;
-
-                        editorPositionX.Textbox->SetText("0.0");
-                        editorPositionY.Textbox->SetText("0.0");
-                        editorPositionZ.Textbox->SetText("0.0");
-                        editorRotationX.Textbox->SetText("0.0");
-                        editorRotationY.Textbox->SetText("0.0");
-                        editorRotationZ.Textbox->SetText("0.0");
-                        editorScaleX.Textbox->SetText("0.0");
-                        editorScaleY.Textbox->SetText("0.0");
-                        editorScaleZ.Textbox->SetText("0.0");
-                    }
-                }
-
-                if (rmbPress == K_TRUE)
-                {
-                    cRayHit ray(
-                        this,
-                        m_scene,
-                        {},
-                        { editorSelectedEntity },
-                        m_camera,
-                        userInputManager->GetCursorPosition(),
-                        userInputManager->GetWindowSize(),
-                        resultEntity,
-                        resultBool,
-                        result
-                    );
-
-                    if (resultBool == K_TRUE)
-                    {
-                        sCTransform* transform = m_scene->Get<sCTransform>(editorSelectedEntity);
-                        transform->Position = result;
-
-                        EditorUpdateTextboxTransform(transform);
-                    }
-                }
-
-                break;
-            }
-        }
-
         // Discard entity selection
         if (userInputManager->GetKey(GLFW_KEY_X) == K_TRUE &&
             editorSelectMode == eSelectMode::TRANSFORM)
         {
-            sCMaterial* material = m_scene->Get<sCMaterial>(editorSelectedEntity);
+            sCMaterial* material = editorScene->Get<sCMaterial>(editorSelectedEntity);
             material->DiffuseColor = glm::vec4(1.0f);
 
             editorSelectMode = eSelectMode::CREATE;
             editorSelectedEntity = 0;
         }
 
-        EditorUpdateEntityTransform(m_scene);
+        EditorWindowRenderEntityLogic(this, editorScene, m_camera, lmbPress, rmbPress);
+        EditorUpdateEntityTransform(editorScene);
 
         physicsManager->Update();
 
-        cameraManager->Update(m_camera, m_scene, K_FALSE, K_TRUE);
+        cameraManager->Update(m_camera, editorScene, K_FALSE, K_TRUE);
         if (userInputManager->GetKey(GLFW_KEY_LEFT_ALT) == K_TRUE) {
-            cameraManager->Update(m_camera, m_scene, K_TRUE, K_FALSE);
+            cameraManager->Update(m_camera, editorScene, K_TRUE, K_FALSE);
         }
 
         // Draw
         renderManager->SetCamera(m_camera);
         renderManager->ClearRenderPasses(glm::vec4(1.0f), 1.0f);
-        renderManager->DrawGeometryOpaque(this, m_geomPlane, m_scene);
-        renderManager->DrawGeometryOpaque(this, m_geomTaburet, m_scene);
+        for (auto vbGeometry : editorGeometriesToDraw) {
+            renderManager->DrawGeometryOpaque(this, vbGeometry, editorScene);
+        }
         renderManager->CompositeFinal();
 
         userInputManager->SwapBuffers();
@@ -575,7 +451,6 @@ public:
     }
 
 private:
-    cScene* m_scene;
     sVertexBufferGeometry* m_geomPlane;
     sVertexBufferGeometry* m_geomTaburet;
     entity m_camera;
@@ -746,6 +621,8 @@ void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress)
 
     AppendMenu(hPopupMenu, MF_STRING, 1, "New");
     AppendMenu(hPopupMenu, MF_STRING, 2, "Delete");
+    AppendMenu(hPopupMenu, MF_SEPARATOR, 0, "");
+    AppendMenu(hPopupMenu, MF_STRING, 3, "Use");
 
     TrackPopupMenu(
         hPopupMenu,
@@ -760,20 +637,319 @@ void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress)
     DestroyMenu(hPopupMenu);
 }
 
+void EditorWindowAssetDeleteItem(
+    cApplication* app,
+    cScene* scene,
+    const eAssetSelectedType& type,
+    int assetIndex
+)
+{
+    sAsset& asset = editorWindowAssetData[(int)type][assetIndex];
+    if (type == eAssetSelectedType::ENTITY)
+    {
+        std::vector<entity> owners;
+        if (asset.Components[0] != nullptr)
+        {
+            // Delete all related components
+            scene->ForEach<sCMaterial>(
+                app,
+                [&asset, &owners, assetIndex](cApplication* app_, cScene* scene_, sCMaterial* material_)
+                {
+                    if (material_->Info == assetIndex)
+                    {
+                        owners.push_back(material_->Owner);
+                        return;
+                    }
+                }
+            );
+
+            // Delete texture
+            textureManager->RemoveTexture(asset.Name + "Texture");
+            delete asset.Components[0];
+        }
+        if (asset.Components[1] != nullptr)
+        {
+            // Delete all related components
+            scene->ForEach<sCGeometry>(
+                app,
+                [&asset, &owners, assetIndex](cApplication* app_, cScene* scene_, sCGeometry* geometry_)
+                {
+                    if (geometry_->Info == assetIndex)
+                    {
+                        owners.push_back(geometry_->Owner);
+                        return;
+                    }
+                }
+            );
+
+            // Delete geometry
+            delete asset.Components[1];
+        }
+
+        // Remove entity from scene
+        for (auto owner : owners)
+        {
+            scene->Remove<sCTransform>(owner);
+            scene->Remove<sCMaterial>(owner);
+            scene->Remove<sCGeometry>(owner);
+            scene->Remove<sCGeometryInfo>(owner);
+            scene->RemoveEntity(scene->GetEntityName(owner));
+        }
+    }
+}
+
 void EditorWindowEntityUpdate(int assetIndex)
 {
     sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
     std::string caption = "Entity - " + asset.Name;
     SetWindowText(editorWindowEntity->GetHWND(), caption.data());
     editorWindowEntityName.Textbox->SetText(asset.Name);
+    editorWindowEntityTexture.Textbox->SetText(asset.Filenames[0]);
+    editorWindowEntityGeometry.Textbox->SetText(asset.Filenames[1]);
 }
 
 void EditorWindowEntitySave(int assetIndex)
 {
     sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
     asset.Name = editorWindowEntityName.Textbox->GetText(100);
+    asset.Filenames[0] = editorWindowEntityTexture.Textbox->GetText(100);
+    asset.Filenames[1] = editorWindowEntityGeometry.Textbox->GetText(100);
+    std::string channels[4] = { "", "", "", "" }; usize channelIndex = 0;
+    for (auto c : editorWindowEntityDiffuseColor.Textbox->GetText(100))
+    {
+        if (c == ';') { channelIndex += 1; }
+        if (c < '0' || c > '9') { continue; }
+        channels[channelIndex] += c;
+    }
+    asset.Color = glm::vec4(
+        std::stoi(channels[0]) / 255.0f,
+        std::stoi(channels[1]) / 255.0f,
+        std::stoi(channels[2]) / 255.0f,
+        std::stoi(channels[3]) / 255.0f
+    );
+    if (asset.Components[0] == nullptr)
+    {
+        // Load texture
+        auto texture = textureManager->CreateTexture(asset.Filenames[0].data(), asset.Name + "Texture");
+        asset.Components[0] = new sCMaterial();
+        ((sCMaterial*)asset.Components[0])->Init(texture, asset.Color);
+    }
+    else
+    {
+        ((sCMaterial*)asset.Components[0])->DiffuseColor = asset.Color;
+    }
+    if (asset.Components[1] == nullptr)
+    {
+        // Load geometry
+        auto geometry = renderManager->CreateModel(asset.Filenames[1]);
+        auto vbGeometry = renderManager->AddGeometry(
+            geometry->Format,
+            geometry->VerticesByteSize,
+            geometry->Vertices,
+            geometry->IndicesByteSize,
+            geometry->Indices
+        );
+        renderManager->FreePrimitive(geometry);
+        asset.Components[1] = new sCGeometry();
+        ((sCGeometry*)asset.Components[1])->Geometry = vbGeometry;
+        editorGeometriesToDraw.push_back(vbGeometry);
+    }
 
     std::string caption = "Entity - " + asset.Name;
     SetWindowText(editorWindowEntity->GetHWND(), caption.data());
     ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());
+}
+
+void EditorWindowRenderEntityLogic(
+    cApplication* app,
+    cScene* scene,
+    entity camera,
+    realware::core::boolean lmbPress,
+    realware::core::boolean rmbPress
+)
+{
+    // Create/transform entity and change selection mode
+    switch (editorSelectMode)
+    {
+        case eSelectMode::NONE:
+        {
+            // Ray triangle intersection
+            realware::core::entity resultEntity = 0;
+            realware::core::boolean resultBool = K_FALSE;
+            glm::vec3 result = glm::vec3(0.0f);
+            cRayHit ray(
+                app,
+                scene,
+                {},
+                {},
+                camera,
+                userInputManager->GetCursorPosition(),
+                userInputManager->GetWindowSize(),
+                resultEntity,
+                resultBool,
+                result
+            );
+
+            break;
+        }
+
+        case eSelectMode::CREATE:
+        {
+            // Ray triangle intersection
+            realware::core::entity resultEntity = 0;
+            realware::core::boolean resultBool = K_FALSE;
+            glm::vec3 result = glm::vec3(0.0f);
+            cRayHit ray(
+                app,
+                scene,
+                {},
+                {},
+                camera,
+                userInputManager->GetCursorPosition(),
+                userInputManager->GetWindowSize(),
+                resultEntity,
+                resultBool,
+                result
+            );
+
+            if (rmbPress == K_TRUE)
+            {
+                if (editorUsedAssetIndex != -1 &&
+                    editorWindowAssetSelectedType == eAssetSelectedType::ENTITY)
+                {
+                    sAsset& asset = editorWindowAssetData[0][editorUsedAssetIndex];
+
+                    // Create entity
+                    static int i = 0;
+                    auto entity = scene->CreateEntity("Entity" + std::to_string(i++));
+                    sCGeometryInfo* entityGeometryInfo = scene->Add<sCGeometryInfo>(entity);
+                    entityGeometryInfo->IsVisible = K_TRUE;
+                    entityGeometryInfo->IsOpaque = K_TRUE;
+                    sCMaterial* entityMaterial = scene->Add<sCMaterial>(entity);
+                    entityMaterial->Info = editorUsedAssetIndex;
+                    entityMaterial->DiffuseColor = ((sCMaterial*)asset.Components[0])->DiffuseColor;
+                    entityMaterial->DiffuseTexture = ((sCMaterial*)asset.Components[0])->DiffuseTexture;
+                    sCGeometry* entityGeometry = scene->Add<sCGeometry>(entity);
+                    entityGeometry->Info = editorUsedAssetIndex;
+                    entityGeometry->Geometry = ((sCGeometry*)asset.Components[1])->Geometry;
+                    sCTransform* entityTransform = scene->Add<sCTransform>(entity);
+                    entityTransform->Position = result;
+                    entityTransform->Rotation = glm::vec3(0.0f);
+                    entityTransform->Scale = glm::vec3(1.0f);
+                }
+            }
+
+            if (lmbPress == K_TRUE && resultBool == K_TRUE)
+            {
+                editorSelectMode = eSelectMode::TRANSFORM;
+                editorSelectedEntity = resultEntity;
+
+                if (editorSelectedEntity > 0)
+                {
+                    sCMaterial* material = scene->Get<sCMaterial>(editorSelectedEntity);
+                    material->DiffuseColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
+
+                    sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
+                    EditorUpdateTextboxTransform(transform);
+                }
+            }
+
+            break;
+        }
+
+        case eSelectMode::TRANSFORM:
+        {
+            // Ray triangle intersection
+            realware::core::entity resultEntity = 0;
+            realware::core::boolean resultBool = K_FALSE;
+            glm::vec3 result = glm::vec3(0.0f);
+
+            if (lmbPress == K_TRUE)
+            {
+                cRayHit ray(
+                    app,
+                    scene,
+                    {},
+                    {},
+                    camera,
+                    userInputManager->GetCursorPosition(),
+                    userInputManager->GetWindowSize(),
+                    resultEntity,
+                    resultBool,
+                    result
+                );
+
+                if (resultBool == K_TRUE && resultEntity != editorSelectedEntity)
+                {
+                    // Select another entity
+                    sCMaterial* material = nullptr;
+
+                    if (editorSelectedEntity > 0)
+                    {
+                        material = scene->Get<sCMaterial>(editorSelectedEntity);
+                        material->DiffuseColor = glm::vec4(1.0f);
+                    }
+
+                    editorSelectedEntity = resultEntity;
+
+                    if (editorSelectedEntity > 0)
+                    {
+                        material = scene->Get<sCMaterial>(editorSelectedEntity);
+                        material->DiffuseColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
+
+                        sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
+                        EditorUpdateTextboxTransform(transform);
+                    }
+                }
+                else if (resultBool == K_FALSE || resultEntity == editorSelectedEntity)
+                {
+                    // Deselect entity
+                    if (editorSelectedEntity > 0)
+                    {
+                        sCMaterial* material = scene->Get<sCMaterial>(editorSelectedEntity);
+                        material->DiffuseColor = glm::vec4(1.0f);
+                    }
+
+                    editorSelectedEntity = 0;
+
+                    editorPositionX.Textbox->SetText("0.0");
+                    editorPositionY.Textbox->SetText("0.0");
+                    editorPositionZ.Textbox->SetText("0.0");
+                    editorRotationX.Textbox->SetText("0.0");
+                    editorRotationY.Textbox->SetText("0.0");
+                    editorRotationZ.Textbox->SetText("0.0");
+                    editorScaleX.Textbox->SetText("0.0");
+                    editorScaleY.Textbox->SetText("0.0");
+                    editorScaleZ.Textbox->SetText("0.0");
+                }
+            }
+
+            if (rmbPress == K_TRUE && editorSelectedEntity != 0)
+            {
+                cRayHit ray(
+                    app,
+                    scene,
+                    {},
+                    { editorSelectedEntity },
+                    camera,
+                    userInputManager->GetCursorPosition(),
+                    userInputManager->GetWindowSize(),
+                    resultEntity,
+                    resultBool,
+                    result
+                );
+
+                if (resultBool == K_TRUE)
+                {
+                    // Move entity
+                    sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
+                    transform->Position = result;
+
+                    EditorUpdateTextboxTransform(transform);
+                }
+            }
+
+            break;
+        }
+    }
 }

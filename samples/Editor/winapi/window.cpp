@@ -6,6 +6,8 @@
 #include "../../../engine/src/ecs.hpp"
 
 using namespace realware::editor;
+
+extern std::vector<realware::render::sVertexBufferGeometry*> editorGeometriesToDraw;
 extern int editorSelectedAssetIndex;
 extern cEditorWindow* editorWindowAsset;
 extern cEditorWindow* editorWindowEntity;

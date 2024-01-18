@@ -5,13 +5,24 @@
 
 #pragma comment(lib, "Comctl32.lib")
 
+extern realware::core::cApplication* editorApp;
+extern realware::core::cScene* editorScene;
+
+extern eSelectMode editorSelectMode;
 extern int editorSelectedAssetIndex;
+extern int editorUsedAssetIndex;
 extern realware::editor::cEditorWindow* editorWindowEntity;
 extern realware::editor::cEditorListView* editorWindowAssetListView;
 extern eAssetSelectedType editorWindowAssetSelectedType;
 extern std::vector<std::vector<sAsset>> editorWindowAssetData;
 
 extern void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress);
+extern void EditorWindowAssetDeleteItem(
+    realware::core::cApplication* app,
+    realware::core::cScene* scene,
+    const eAssetSelectedType& type,
+    int assetIndex
+);
 extern void EditorWindowEntityUpdate(int assetIndex);
 
 namespace realware
@@ -25,7 +36,7 @@ namespace realware
                 if (LOWORD(wp) == 1)
                 {
                     // New
-                    sAsset asset("New");
+                    sAsset asset("New", { "", "" });
                     editorWindowAssetData[editorWindowAssetSelectedType].push_back(asset);
                     editorWindowAssetListView->AddItem(
                         0,
@@ -39,10 +50,27 @@ namespace realware
                     int index = editorWindowAssetListView->GetSelectedIndex();
                     if (index != -1)
                     {
+                        EditorWindowAssetDeleteItem(
+                            editorApp,
+                            editorScene,
+                            editorWindowAssetSelectedType,
+                            index
+                        );
+
                         editorWindowAssetData[editorWindowAssetSelectedType].erase(
                             editorWindowAssetData[editorWindowAssetSelectedType].begin() + index
                         );
                         editorWindowAssetListView->RemoveItem(0, index);
+                    }
+                }
+                else if (LOWORD(wp) == 3)
+                {
+                    // Use
+                    int index = editorWindowAssetListView->GetSelectedIndex();
+                    if (index != -1)
+                    {
+                        editorSelectMode = eSelectMode::CREATE;
+                        editorUsedAssetIndex = index;
                     }
                 }
             }
@@ -80,8 +108,7 @@ namespace realware
                 0,
                 WC_LISTVIEW,
                 windowName.data(),
-                WS_TABSTOP | WS_VISIBLE | WS_CHILD |
-                LVS_SINGLESEL | LVS_REPORT | LVS_EDITLABELS,
+                WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT,
                 position.x,
                 position.y,
                 rcClient.right,
