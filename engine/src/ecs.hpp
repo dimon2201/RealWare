@@ -98,8 +98,9 @@ namespace realware
                 DiffuseColor = diffuseColor;
             }
 
-            sArea* DiffuseTexture;
-            glm::vec4 DiffuseColor;
+            sArea* DiffuseTexture = nullptr;
+            glm::vec4 DiffuseColor = glm::vec4(1.0f);
+            glm::vec4 HighlightColor = glm::vec4(1.0f);
         };
 
         struct sCWidget : public sComponent

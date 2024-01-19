@@ -7,6 +7,9 @@
 
 using namespace realware::editor;
 
+extern realware::core::cApplication* editorApp;
+extern realware::core::cScene* editorScene;
+
 extern std::vector<realware::render::sVertexBufferGeometry*> editorGeometriesToDraw;
 extern int editorSelectedAssetIndex;
 extern cEditorWindow* editorWindowAsset;
@@ -19,7 +22,7 @@ extern cEditorButton* editorWindowEntityCloseButton;
 extern eAssetSelectedType editorWindowAssetSelectedType;
 extern std::vector<std::vector<sAsset>> editorWindowAssetData;
 
-extern void EditorWindowEntitySave(int assetIndex);
+extern void EditorWindowEntitySave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
 
 namespace realware
 {
@@ -49,7 +52,7 @@ namespace realware
                 else if ((HWND)lp == editorWindowEntityOKButton->GetHWND())
                 {
                     editorWindowEntity->Show(core::K_FALSE);
-                    EditorWindowEntitySave(editorSelectedAssetIndex);
+                    EditorWindowEntitySave(editorApp, editorScene, editorSelectedAssetIndex);
                 }
                 // Entities Cancel
                 else if ((HWND)lp == editorWindowEntityCloseButton->GetHWND())

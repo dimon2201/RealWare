@@ -28,6 +28,23 @@ namespace realware
             unsigned char* data = nullptr;
             data = stbi_load(filename, &width, &height, &channels, 4);
 
+            if (channels == 3)
+            {
+                unsigned char* dataTemp = (unsigned char*)malloc(width * height * 4);
+
+                for (s32 i = 0; i < width * height; i++)
+                {
+                    dataTemp[(i * 4)] = data[(i * 3)];
+                    dataTemp[(i * 4) + 1] = data[(i * 3) + 1];
+                    dataTemp[(i * 4) + 2] = data[(i * 3) + 2];
+                    dataTemp[(i * 4) + 3] = 255;
+                }
+
+                free(data);
+
+                data = dataTemp;
+            }
+
             for (int layer = 0; layer < m_atlas->Depth; layer++)
             {
                 for (int y = 0; y < m_atlas->Height; y++)

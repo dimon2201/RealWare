@@ -4,7 +4,7 @@ layout(location = 0) out vec4 Accumulation;
 layout(location = 1) out float Revealage;
 
 in vec3 Texcoord;
-flat in vec4 DiffuseColor;
+flat in vec4 Color;
 
 uniform sampler2DArray TextureAtlas;
 
@@ -13,9 +13,9 @@ void main()
 	vec4 fragColor = texture(TextureAtlas, Texcoord);
 
 	if (Texcoord.z != -1.0) {
-	   fragColor *= DiffuseColor;
+	   fragColor *= Color;
 	} else {
-	   fragColor = DiffuseColor;
+	   fragColor = Color;
 	}
 
 	float weight = clamp(pow(min(1.0, fragColor.a * 10.0) + 0.01, 3.0) * 1e8 *

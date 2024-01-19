@@ -21,13 +21,14 @@ struct Material
 	float UserData[4];
 	vec4 DiffuseTextureInfo;
 	vec4 DiffuseColor;
+	vec4 HighlightColor;
 };
 
 layout(std430, binding = 0) buffer InstanceBuffer { Instance instances[1024]; };
 layout(std430, binding = 1) buffer MaterialBuffer { Material materials[1024]; };
 
 out vec3 Texcoord;
-flat out vec4 DiffuseColor;
+flat out vec4 Color;
 
 uniform mat4 ViewProjection;
 
@@ -39,7 +40,7 @@ void main()
 	Texcoord = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.DiffuseTextureLayerInfo);
 	Texcoord.xy *= vec2(material.DiffuseTextureInfo.zw);
 	Texcoord.xy += material.DiffuseTextureInfo.xy;
-	DiffuseColor = material.DiffuseColor;
+	Color = material.DiffuseColor * material.HighlightColor;
 
 	if (instance.Use2D == 0) {
 		gl_Position = ViewProjection * instance.World * vec4(InPositionLocal, 1.0);

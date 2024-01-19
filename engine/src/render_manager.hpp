@@ -99,6 +99,7 @@ namespace realware
             float UserData[4];
             glm::vec4 DiffuseTextureInfo;
             glm::vec4 DiffuseColor;
+            glm::vec4 HighlightColor;
         };
 
         struct sInstanceList

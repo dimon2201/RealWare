@@ -268,6 +268,7 @@ namespace realware
                             sMaterialInstance m;
                             m.BufferIndex = materialIndex;
                             m.DiffuseColor = material->DiffuseColor;
+                            m.HighlightColor = material->HighlightColor;
                             if (material->DiffuseTexture != nullptr)
                             {
                                 core::sArea* frame = material->DiffuseTexture;

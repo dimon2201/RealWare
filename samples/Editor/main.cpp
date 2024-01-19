@@ -80,7 +80,7 @@ void EditorWindowAssetDeleteItem(
     int assetIndex
 );
 void EditorWindowEntityUpdate(int assetIndex);
-void EditorWindowEntitySave(int assetIndex);
+void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex);
 void EditorWindowRenderEntityLogic(
     cApplication* app,
     cScene* scene,
@@ -101,7 +101,7 @@ public:
         editorApp = this;
 
         // Initialize managers
-        textureManager->Init(m_renderContext, 1920, 1080, 12);
+        textureManager->Init(m_renderContext, 2048, 2048, 12);
         renderManager->Init(
             m_renderContext,
             4 * 1024 * 1024,
@@ -148,6 +148,7 @@ public:
         sCMaterial* planem = editorScene->Add<sCMaterial>(m_plane);
         planem->DiffuseTexture = dirtTexture;
         planem->DiffuseColor = glm::vec4(1.0f);
+        planem->HighlightColor = glm::vec4(1.0f);
 
         physicsManager->AddActor(
             { physicsSceneEntity, editorScene },
@@ -708,7 +709,7 @@ void EditorWindowEntityUpdate(int assetIndex)
     editorWindowEntityGeometry.Textbox->SetText(asset.Filenames[1]);
 }
 
-void EditorWindowEntitySave(int assetIndex)
+void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
 {
     sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
     asset.Name = editorWindowEntityName.Textbox->GetText(100);
@@ -737,6 +738,16 @@ void EditorWindowEntitySave(int assetIndex)
     else
     {
         ((sCMaterial*)asset.Components[0])->DiffuseColor = asset.Color;
+        scene->ForEach<sCMaterial>(
+            app,
+            [&asset, assetIndex](cApplication* app_, cScene* scene_, sCMaterial* material_)
+            {
+                if (material_->Info == assetIndex)
+                {
+                    material_->DiffuseColor = asset.Color;
+                }
+            }
+        );
     }
     if (asset.Components[1] == nullptr)
     {
@@ -828,6 +839,7 @@ void EditorWindowRenderEntityLogic(
                     sCMaterial* entityMaterial = scene->Add<sCMaterial>(entity);
                     entityMaterial->Info = editorUsedAssetIndex;
                     entityMaterial->DiffuseColor = ((sCMaterial*)asset.Components[0])->DiffuseColor;
+                    entityMaterial->HighlightColor = glm::vec4(1.0f);
                     entityMaterial->DiffuseTexture = ((sCMaterial*)asset.Components[0])->DiffuseTexture;
                     sCGeometry* entityGeometry = scene->Add<sCGeometry>(entity);
                     entityGeometry->Info = editorUsedAssetIndex;
@@ -847,7 +859,7 @@ void EditorWindowRenderEntityLogic(
                 if (editorSelectedEntity > 0)
                 {
                     sCMaterial* material = scene->Get<sCMaterial>(editorSelectedEntity);
-                    material->DiffuseColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
+                    material->HighlightColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
 
                     sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
                     EditorUpdateTextboxTransform(transform);
@@ -887,7 +899,7 @@ void EditorWindowRenderEntityLogic(
                     if (editorSelectedEntity > 0)
                     {
                         material = scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->DiffuseColor = glm::vec4(1.0f);
+                        material->HighlightColor = glm::vec4(1.0f);
                     }
 
                     editorSelectedEntity = resultEntity;
@@ -895,7 +907,7 @@ void EditorWindowRenderEntityLogic(
                     if (editorSelectedEntity > 0)
                     {
                         material = scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->DiffuseColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
+                        material->HighlightColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
 
                         sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
                         EditorUpdateTextboxTransform(transform);
@@ -907,7 +919,7 @@ void EditorWindowRenderEntityLogic(
                     if (editorSelectedEntity > 0)
                     {
                         sCMaterial* material = scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->DiffuseColor = glm::vec4(1.0f);
+                        material->HighlightColor = glm::vec4(1.0f);
                     }
 
                     editorSelectedEntity = 0;
