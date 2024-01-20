@@ -328,6 +328,29 @@ namespace realware
                 }
             }
 
+            void RemoveEntities(const std::vector<entity>& exclude)
+            {
+                for (auto it = m_entities.begin(); it != m_entities.end();)
+                {
+                    boolean excluded = K_FALSE;
+
+                    for (auto it2 = exclude.begin(); it2 != exclude.end(); it2++)
+                    {
+                        if ((*it).second == *it2)
+                        {
+                            excluded = K_TRUE;
+                            break;
+                        }
+                    }
+
+                    if (excluded == K_TRUE) {
+                        it++;
+                    } else {
+                        it = m_entities.erase(it);
+                    }
+                }
+            }
+
             entity GetEntity(const std::string& name)
             {
                 auto it = m_entities.find(name);
@@ -348,6 +371,14 @@ namespace realware
                 }
 
                 return "";
+            }
+
+            core::usize GetEntityCount()
+            {
+                core::usize count = 0;
+                for (auto it = m_entities.begin(); it != m_entities.end(); it++) count += 1;
+
+                return count;
             }
 
             template <typename ComponentType>
@@ -448,6 +479,14 @@ namespace realware
                 ComponentType* memory = (ComponentType*)array.Memory;
                 for (core::s32 i = 0; i < array.ComponentCount; i++) {
                     lambda(application, this, &memory[i]);
+                }
+            }
+
+            void ForEachEntity(cApplication* application, std::function<void(cApplication*, cScene*, const std::string&, entity)> lambda)
+            {
+                for (auto it = m_entities.begin(); it != m_entities.end(); it++)
+                {
+                    lambda(application, this, it->first, it->second);
                 }
             }
 

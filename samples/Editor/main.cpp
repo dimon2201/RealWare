@@ -20,6 +20,7 @@
 #include "../../engine/src/font_manager.hpp"
 #include "../../engine/src/widget_manager.hpp"
 #include "../../engine/src/types.hpp"
+#include "map_plugin_loader/map_plugin_loader.hpp"
 #include "winapi/window.hpp"
 #include "winapi/listview.hpp"
 #include "winapi/groupbox.hpp"
@@ -35,6 +36,7 @@ using namespace realware::font;
 using namespace realware::sound;
 using namespace realware::physics;
 using namespace realware::editor;
+using namespace realware::map;
 
 mRender* renderManager = new mRender();
 mTexture* textureManager = new mTexture();
@@ -46,10 +48,13 @@ mSound* soundManager = new mSound();
 mPhysics* physicsManager = new mPhysics();
 cApplication* editorApp = nullptr;
 cScene* editorScene = nullptr;
+entity editorCamera = 0;
 
+realware::core::u64 editorUniqueID = 0;
 std::vector<sVertexBufferGeometry*> editorGeometriesToDraw;
 eSelectMode editorSelectMode = eSelectMode::NONE;
 entity editorSelectedEntity = 0;
+entity editorCopyEntity = 0;
 int editorSelectedAssetIndex = -1;
 int editorUsedAssetIndex = -1;
 glm::vec3 editorPosition = glm::vec3(0.0f), editorRotation = glm::vec3(0.0f), editorScale = glm::vec3(0.0f);
@@ -60,6 +65,7 @@ sTextboxLabel editorWindowEntityName;
 sTextboxLabel editorWindowEntityTexture;
 sTextboxLabel editorWindowEntityGeometry;
 sTextboxLabel editorWindowEntityDiffuseColor;
+cEditorWindow* editorWindowMain = nullptr;
 cEditorWindow* editorWindowAsset = nullptr;
 cEditorWindow* editorWindowEntity = nullptr;
 cEditorListView* editorWindowAssetListView = nullptr;
@@ -79,6 +85,7 @@ void EditorWindowAssetDeleteItem(
     const eAssetSelectedType& type,
     int assetIndex
 );
+void EditorAssetLoadData(eAssetSelectedType type, sAsset& asset);
 void EditorWindowEntityUpdate(int assetIndex);
 void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex);
 void EditorWindowRenderEntityLogic(
@@ -88,6 +95,13 @@ void EditorWindowRenderEntityLogic(
     realware::core::boolean lmbPress,
     realware::core::boolean rmbPress
 );
+void EditorNewPlugin(cApplication* app, cScene* scene);
+void EditorOpenPlugin(cApplication* app, cScene* scene, const std::string& filename);
+void EditorSavePlugin(cApplication* app, cScene* scene, const std::string& filename);
+void EditorNewMap(cApplication* app, cScene* scene);
+void EditorOpenMap(cApplication* app, cScene* scene, const std::string& filename);
+void EditorSaveMap(cApplication* app, cScene* scene, const std::string& filename);
+std::string EditorGetExeFolder();
 
 class MyApp : public cApplication
 {
@@ -160,17 +174,17 @@ public:
         );
 
         // Camera entity
-        m_camera = editorScene->CreateEntity("CameraEntity");
-        sCCamera* cameraCamera = editorScene->Add<sCCamera>(m_camera);
+        editorCamera = editorScene->CreateEntity("CameraEntity");
+        sCCamera* cameraCamera = editorScene->Add<sCCamera>(editorCamera);
         cameraCamera->FOV = 65.0f;
         cameraCamera->ZNear = 0.01f;
         cameraCamera->ZFar = 100.0f;
-        sCTransform* cameraTransform = editorScene->Add<sCTransform>(m_camera);
+        sCTransform* cameraTransform = editorScene->Add<sCTransform>(editorCamera);
         cameraTransform->Position = glm::vec3(0.0f, 5.0f, 0.0f);
 
         sCPhysicsCharacterController* controller = physicsManager->AddCharacterController(
             { physicsSceneEntity, editorScene },
-            { m_camera, editorScene },
+            { editorCamera, editorScene },
             mPhysics::eShapeDescriptor::CAPSULE,
             glm::vec4(1.0f, 2.0f, 0.0f, 0.0f)
         );
@@ -183,17 +197,21 @@ public:
                 (userInputManager->GetMonitorSize().x / 2.0f) - (userInputManager->GetMonitorSize().x * 0.025f) - (userInputManager->GetMonitorSize().x * 0.0125f),
                 (userInputManager->GetMonitorSize().y * 0.142f)
         );
-        auto mainWindow = new cEditorWindow(
+        editorWindowMain = new cEditorWindow(
             nullptr,
             "MainWindow",
             "RealWare Editor",
             glm::vec2(0.0f),
             mainWindowSize
         );
-        auto menus = mainWindow->AddMenu({ "Plugin" });
-        mainWindow->AddSubmenu(menus[0], "New");
-        mainWindow->AddSubmenu(menus[0], "Open");
-        mainWindow->AddSubmenu(menus[0], "Save");
+        auto menus = editorWindowMain->AddMenu({ "File" });
+        editorWindowMain->AddSubmenu(menus[0], 1, "New plugin");
+        editorWindowMain->AddSubmenu(menus[0], 2, "Open plugin");
+        editorWindowMain->AddSubmenu(menus[0], 3, "Save plugin");
+        editorWindowMain->AddSubmenuSeparator(menus[0]);
+        editorWindowMain->AddSubmenu(menus[0], 4, "New map");
+        editorWindowMain->AddSubmenu(menus[0], 5, "Open map");
+        editorWindowMain->AddSubmenu(menus[0], 6, "Save map");
 
         // Asset window
         glm::vec2 assetWindowSize = glm::vec2(
@@ -323,55 +341,55 @@ public:
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionX.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
         editorPositionY.Label = new cEditorLabel(objectPositionGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionY.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
         editorPositionZ.Label = new cEditorLabel(objectPositionGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionZ.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
         editorRotationX.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "X",
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationX.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
         editorRotationY.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationY.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
         editorRotationZ.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationZ.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
         editorScaleX.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "X",
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleX.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
         editorScaleY.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleY.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
         editorScaleZ.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleZ.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_TRUE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
 
         userInputManager->FocusWindow();
@@ -409,29 +427,18 @@ public:
             rmbPressGlobal = K_FALSE;
         }
         
-        // Discard entity selection
-        if (userInputManager->GetKey(GLFW_KEY_X) == K_TRUE &&
-            editorSelectMode == eSelectMode::TRANSFORM)
-        {
-            sCMaterial* material = editorScene->Get<sCMaterial>(editorSelectedEntity);
-            material->DiffuseColor = glm::vec4(1.0f);
-
-            editorSelectMode = eSelectMode::CREATE;
-            editorSelectedEntity = 0;
-        }
-
-        EditorWindowRenderEntityLogic(this, editorScene, m_camera, lmbPress, rmbPress);
+        EditorWindowRenderEntityLogic(this, editorScene, editorCamera, lmbPress, rmbPress);
         EditorUpdateEntityTransform(editorScene);
 
         physicsManager->Update();
 
-        cameraManager->Update(m_camera, editorScene, K_FALSE, K_TRUE);
+        cameraManager->Update(editorCamera, editorScene, K_FALSE, K_TRUE);
         if (userInputManager->GetKey(GLFW_KEY_LEFT_ALT) == K_TRUE) {
-            cameraManager->Update(m_camera, editorScene, K_TRUE, K_FALSE);
+            cameraManager->Update(editorCamera, editorScene, K_TRUE, K_FALSE);
         }
 
         // Draw
-        renderManager->SetCamera(m_camera);
+        renderManager->SetCamera(editorCamera);
         renderManager->ClearRenderPasses(glm::vec4(1.0f), 1.0f);
         for (auto vbGeometry : editorGeometriesToDraw) {
             renderManager->DrawGeometryOpaque(this, vbGeometry, editorScene);
@@ -454,7 +461,6 @@ public:
 private:
     sVertexBufferGeometry* m_geomPlane;
     sVertexBufferGeometry* m_geomTaburet;
-    entity m_camera;
     entity m_plane;
     sArea* m_taburetTexture;
 
@@ -699,10 +705,58 @@ void EditorWindowAssetDeleteItem(
     }
 }
 
+void EditorAssetLoadData(eAssetSelectedType type, sAsset& asset)
+{
+    if (type == eAssetSelectedType::ENTITY)
+    {
+        if (asset.Components[0] == nullptr)
+        {
+            // Load texture
+            auto texture = textureManager->CreateTexture(
+                EditorGetExeFolder() + asset.Filenames[0],
+                asset.Name + "Texture"
+            );
+            if (texture != nullptr)
+            {
+                asset.Components[0] = new sCMaterial();
+                ((sCMaterial*)asset.Components[0])->Init(texture, asset.Color);
+            }
+            else
+            {
+                MessageBox(0, "Couldn't load texture", "Error", MB_ICONERROR);
+            }
+        }
+
+        if (asset.Components[1] == nullptr)
+        {
+            // Load geometry
+            auto geometry = renderManager->CreateModel(EditorGetExeFolder() + asset.Filenames[1]);
+            if (geometry != nullptr)
+            {
+                auto vbGeometry = renderManager->AddGeometry(
+                    geometry->Format,
+                    geometry->VerticesByteSize,
+                    geometry->Vertices,
+                    geometry->IndicesByteSize,
+                    geometry->Indices
+                );
+                renderManager->FreePrimitive(geometry);
+                asset.Components[1] = new sCGeometry();
+                ((sCGeometry*)asset.Components[1])->Geometry = vbGeometry;
+                editorGeometriesToDraw.push_back(vbGeometry);
+            }
+            else
+            {
+                MessageBox(0, "Couldn't load model", "Error", MB_ICONERROR);
+            }
+        }
+    }
+}
+
 void EditorWindowEntityUpdate(int assetIndex)
 {
     sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
-    std::string caption = "Entity - " + asset.Name;
+    std::string caption = "Entity : " + asset.Name;
     SetWindowText(editorWindowEntity->GetHWND(), caption.data());
     editorWindowEntityName.Textbox->SetText(asset.Name);
     editorWindowEntityTexture.Textbox->SetText(asset.Filenames[0]);
@@ -728,14 +782,11 @@ void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
         std::stoi(channels[2]) / 255.0f,
         std::stoi(channels[3]) / 255.0f
     );
-    if (asset.Components[0] == nullptr)
-    {
-        // Load texture
-        auto texture = textureManager->CreateTexture(asset.Filenames[0].data(), asset.Name + "Texture");
-        asset.Components[0] = new sCMaterial();
-        ((sCMaterial*)asset.Components[0])->Init(texture, asset.Color);
-    }
-    else
+
+    EditorAssetLoadData(editorWindowAssetSelectedType, asset);
+    
+    // Update material for every entity
+    if (asset.Components[0] != nullptr)
     {
         ((sCMaterial*)asset.Components[0])->DiffuseColor = asset.Color;
         scene->ForEach<sCMaterial>(
@@ -749,24 +800,8 @@ void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
             }
         );
     }
-    if (asset.Components[1] == nullptr)
-    {
-        // Load geometry
-        auto geometry = renderManager->CreateModel(asset.Filenames[1]);
-        auto vbGeometry = renderManager->AddGeometry(
-            geometry->Format,
-            geometry->VerticesByteSize,
-            geometry->Vertices,
-            geometry->IndicesByteSize,
-            geometry->Indices
-        );
-        renderManager->FreePrimitive(geometry);
-        asset.Components[1] = new sCGeometry();
-        ((sCGeometry*)asset.Components[1])->Geometry = vbGeometry;
-        editorGeometriesToDraw.push_back(vbGeometry);
-    }
 
-    std::string caption = "Entity - " + asset.Name;
+    std::string caption = "Entity : " + asset.Name;
     SetWindowText(editorWindowEntity->GetHWND(), caption.data());
     ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());
 }
@@ -832,7 +867,7 @@ void EditorWindowRenderEntityLogic(
 
                     // Create entity
                     static int i = 0;
-                    auto entity = scene->CreateEntity("Entity" + std::to_string(i++));
+                    auto entity = scene->CreateEntity("Entity" + std::to_string(editorUniqueID++));
                     sCGeometryInfo* entityGeometryInfo = scene->Add<sCGeometryInfo>(entity);
                     entityGeometryInfo->IsVisible = K_TRUE;
                     entityGeometryInfo->IsOpaque = K_TRUE;
@@ -859,10 +894,10 @@ void EditorWindowRenderEntityLogic(
                 if (editorSelectedEntity > 0)
                 {
                     sCMaterial* material = scene->Get<sCMaterial>(editorSelectedEntity);
-                    material->HighlightColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
+                    if (material != nullptr) material->HighlightColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
 
                     sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
-                    EditorUpdateTextboxTransform(transform);
+                    if (transform != nullptr) EditorUpdateTextboxTransform(transform);
                 }
             }
 
@@ -899,7 +934,7 @@ void EditorWindowRenderEntityLogic(
                     if (editorSelectedEntity > 0)
                     {
                         material = scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->HighlightColor = glm::vec4(1.0f);
+                        if (material != nullptr) material->HighlightColor = glm::vec4(1.0f);
                     }
 
                     editorSelectedEntity = resultEntity;
@@ -907,10 +942,10 @@ void EditorWindowRenderEntityLogic(
                     if (editorSelectedEntity > 0)
                     {
                         material = scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->HighlightColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
+                        if (material != nullptr) material->HighlightColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
 
                         sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
-                        EditorUpdateTextboxTransform(transform);
+                        if (transform != nullptr) EditorUpdateTextboxTransform(transform);
                     }
                 }
                 else if (resultBool == K_FALSE || resultEntity == editorSelectedEntity)
@@ -919,7 +954,7 @@ void EditorWindowRenderEntityLogic(
                     if (editorSelectedEntity > 0)
                     {
                         sCMaterial* material = scene->Get<sCMaterial>(editorSelectedEntity);
-                        material->HighlightColor = glm::vec4(1.0f);
+                        if (material != nullptr) material->HighlightColor = glm::vec4(1.0f);
                     }
 
                     editorSelectedEntity = 0;
@@ -955,7 +990,7 @@ void EditorWindowRenderEntityLogic(
                 {
                     // Move entity
                     sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
-                    transform->Position = result;
+                    if (transform != nullptr) transform->Position = result;
 
                     EditorUpdateTextboxTransform(transform);
                 }
@@ -964,4 +999,138 @@ void EditorWindowRenderEntityLogic(
             break;
         }
     }
+
+    // 'V' button press
+    realware::core::boolean vButtonPress = K_FALSE;
+    static realware::core::boolean vButtonPressGlobal = K_FALSE;
+    if (userInputManager->GetKey(GLFW_KEY_V) == K_TRUE && vButtonPressGlobal == K_FALSE) {
+        vButtonPress = vButtonPressGlobal = K_TRUE;
+    } else if (userInputManager->GetKey(GLFW_KEY_V) == K_FALSE) {
+        vButtonPressGlobal = K_FALSE;
+    }
+
+    // Ctrl+C
+    if (userInputManager->GetKey(GLFW_KEY_LEFT_CONTROL) == K_TRUE &&
+        userInputManager->GetKey(GLFW_KEY_C) == K_TRUE &&
+        editorSelectedEntity > 0 &&
+        editorSelectMode == eSelectMode::TRANSFORM)
+    {
+        editorCopyEntity = editorSelectedEntity;
+    }
+
+    // Ctrl+V
+    if (userInputManager->GetKey(GLFW_KEY_LEFT_CONTROL) == K_TRUE &&
+        vButtonPress == K_TRUE &&
+        editorCopyEntity > 0 &&
+        editorSelectMode == eSelectMode::TRANSFORM)
+    {
+        auto entity = scene->CreateEntity("Entity" + std::to_string(editorUniqueID++));
+        sCGeometryInfo* entityGeometryInfo = scene->Add<sCGeometryInfo>(entity);
+        entityGeometryInfo->IsVisible = K_TRUE;
+        entityGeometryInfo->IsOpaque = K_TRUE;
+        sCMaterial* entityMaterial = scene->Add<sCMaterial>(entity);
+        sCMaterial* originalMaterial = scene->Get<sCMaterial>(editorCopyEntity);
+        entityMaterial->Info = originalMaterial->Info;
+        entityMaterial->DiffuseColor = originalMaterial->DiffuseColor;
+        entityMaterial->HighlightColor = glm::vec4(1.0f);
+        entityMaterial->DiffuseTexture = originalMaterial->DiffuseTexture;
+        sCGeometry* entityGeometry = scene->Add<sCGeometry>(entity);
+        sCGeometry* originalGeometry = scene->Get<sCGeometry>(editorCopyEntity);
+        entityGeometry->Info = originalGeometry->Info;
+        entityGeometry->Geometry = originalGeometry->Geometry;
+        sCTransform* entityTransform = scene->Add<sCTransform>(entity);
+        sCTransform* originalTransform = scene->Get<sCTransform>(editorCopyEntity);
+        entityTransform->Position = originalTransform->Position;
+        entityTransform->Rotation = originalTransform->Rotation;
+        entityTransform->Scale = originalTransform->Scale;
+    }
+
+    // Ctrl+X
+    if (userInputManager->GetKey(GLFW_KEY_LEFT_CONTROL) == K_TRUE &&
+        userInputManager->GetKey(GLFW_KEY_X) == K_TRUE &&
+        editorSelectedEntity > 0 &&
+        editorSelectMode == eSelectMode::TRANSFORM)
+    {
+        if (scene->Get<sCGeometryInfo>(editorSelectedEntity)) scene->Remove<sCGeometryInfo>(editorSelectedEntity);
+        if (scene->Get<sCMaterial>(editorSelectedEntity)) scene->Remove<sCMaterial>(editorSelectedEntity);
+        if (scene->Get<sCGeometry>(editorSelectedEntity)) scene->Remove<sCGeometry>(editorSelectedEntity);
+        if (scene->Get<sCTransform>(editorSelectedEntity)) scene->Remove<sCTransform>(editorSelectedEntity);
+        scene->RemoveEntity(scene->GetEntityName(editorSelectedEntity));
+
+        editorSelectedEntity = 0;
+    }
+}
+
+void EditorNewMap(cApplication* app, cScene* scene)
+{
+    if (MessageBox(0, "Current map will be completely deleted. Are you sure?", "Warning", MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
+    {
+        scene->ForEachEntity(
+            app,
+            [](cApplication* app_, cScene* scene_, const std::string& id_, entity entity_)
+            {
+                if (scene_->Get<sCGeometryInfo>(entity_)) scene_->Remove<sCGeometryInfo>(entity_);
+                if (scene_->Get<sCMaterial>(entity_)) scene_->Remove<sCMaterial>(entity_);
+                if (scene_->Get<sCGeometry>(entity_)) scene_->Remove<sCGeometry>(entity_);
+                if (scene_->Get<sCTransform>(entity_)
+                    && scene_->Get<sCTransform>(entity_)->Info != -1) scene_->Remove<sCTransform>(entity_);
+            }
+        );
+        scene->RemoveEntities({ editorCamera });
+    }
+}
+
+void EditorOpenMap(cApplication* app, cScene* scene, const std::string& filename)
+{
+}
+
+void EditorSaveMap(cApplication* app, cScene* scene, const std::string& filename)
+{
+    cMapPluginLoader loader;
+    loader.SaveMap(filename, app, scene, 65536, { editorCamera });
+}
+
+void EditorNewPlugin(cApplication* app, cScene* scene)
+{
+    if (MessageBox(0, "Current plugin will be completely deleted. Are you sure?", "Warning", MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
+    {
+        for (realware::core::s32 i = 0; i < eAssetSelectedType::_COUNT; i++)
+        {
+            for (realware::core::s32 j = 0; j < editorWindowAssetData[i].size(); j++)
+            {
+                EditorWindowAssetDeleteItem(app, scene, (eAssetSelectedType)i, j);
+            }
+
+            editorWindowAssetData[i].clear();
+            editorWindowAssetData[i].shrink_to_fit();
+        }
+
+        ListView_DeleteAllItems(editorWindowAssetListView->GetHWND());
+    }
+}
+
+void EditorOpenPlugin(cApplication* app, cScene* scene, const std::string& filename)
+{
+    cMapPluginLoader loader;
+    loader.LoadPlugin(filename, app, scene);
+}
+
+void EditorSavePlugin(cApplication* app, cScene* scene, const std::string& filename)
+{
+    cMapPluginLoader loader;
+    loader.SavePlugin(filename, app, scene, 65536);
+}
+
+std::string EditorGetExeFolder()
+{
+    char path[MAX_PATH] = {};
+    GetModuleFileNameA(NULL, &path[0], MAX_PATH);
+
+    realware::core::s32 i;
+    for (i = MAX_PATH - 1; i > 0; i--)
+    {
+        if (path[i] == '/' || path[i] == '\\') break;
+    }
+
+    return std::string(&path[0]).substr(0, i) + "\\";
 }

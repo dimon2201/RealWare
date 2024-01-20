@@ -12,6 +12,7 @@ extern realware::core::cScene* editorScene;
 
 extern std::vector<realware::render::sVertexBufferGeometry*> editorGeometriesToDraw;
 extern int editorSelectedAssetIndex;
+extern cEditorWindow* editorWindowMain;
 extern cEditorWindow* editorWindowAsset;
 extern cEditorWindow* editorWindowEntity;
 extern cEditorListView* editorWindowAssetListView;
@@ -23,6 +24,12 @@ extern eAssetSelectedType editorWindowAssetSelectedType;
 extern std::vector<std::vector<sAsset>> editorWindowAssetData;
 
 extern void EditorWindowEntitySave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
+extern void EditorNewPlugin(realware::core::cApplication* app, realware::core::cScene* scene);
+extern void EditorOpenPlugin(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
+extern void EditorSavePlugin(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
+extern void EditorNewMap(realware::core::cApplication* app, realware::core::cScene* scene);
+extern void EditorOpenMap(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
+extern void EditorSaveMap(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
 
 namespace realware
 {
@@ -32,7 +39,64 @@ namespace realware
         {
             if (wm == WM_COMMAND)
             {
-                // Entities
+                // New plugin menu option
+                if (LOWORD(wp) == 1)
+                {
+                    EditorNewPlugin(editorApp, editorScene);
+                }
+                // Open plugin menu option
+                else if (LOWORD(wp) == 2)
+                {
+                    char filename[MAX_PATH] = "unnamed.rwp";
+
+                    OPENFILENAME ofn = {};
+                    ofn.lStructSize = sizeof(OPENFILENAME);
+                    ofn.lpstrFilter = "Plugin Files (*.rwp)\0*.rwp\0";
+                    ofn.lpstrFile = filename;
+                    ofn.nMaxFile = MAX_PATH;
+                    ofn.Flags = OFN_OVERWRITEPROMPT;
+                    if (GetOpenFileName(&ofn) && ofn.lpstrFile != nullptr)
+                        EditorOpenPlugin(editorApp, editorScene, std::string(ofn.lpstrFile));
+                }
+                // Save plugin menu option
+                else if (LOWORD(wp) == 3)
+                {
+                    char filename[MAX_PATH] = "unnamed.rwp";
+
+                    OPENFILENAME ofn = {};
+                    ofn.lStructSize = sizeof(OPENFILENAME);
+                    ofn.lpstrFilter = "Plugin Files (*.rwp)\0*.rwp\0";
+                    ofn.lpstrFile = filename;
+                    ofn.nMaxFile = MAX_PATH;
+                    ofn.Flags = OFN_OVERWRITEPROMPT;
+                    if (GetSaveFileName(&ofn) && ofn.lpstrFile != nullptr)
+                        EditorSavePlugin(editorApp, editorScene, std::string(ofn.lpstrFile));
+                }
+                // New map menu option
+                else if (LOWORD(wp) == 4)
+                {
+                    EditorNewMap(editorApp, editorScene);
+                }
+                // Open map menu option
+                else if (LOWORD(wp) == 5)
+                {
+                }
+                // Save map menu option
+                else if (LOWORD(wp) == 6)
+                {
+                    char filename[MAX_PATH] = "unnamed.rwm";
+
+                    OPENFILENAME ofn = {};
+                    ofn.lStructSize = sizeof(OPENFILENAME);
+                    ofn.lpstrFilter = "Map Files (*.rwm)\0*.rwm\0";
+                    ofn.lpstrFile = filename;
+                    ofn.nMaxFile = MAX_PATH;
+                    ofn.Flags = OFN_OVERWRITEPROMPT;
+                    if (GetSaveFileName(&ofn) && ofn.lpstrFile != nullptr)
+                        EditorSaveMap(editorApp, editorScene, std::string(ofn.lpstrFile));
+                }
+
+                // Entities button
                 if ((HWND)lp == editorWindowAssetEntitiesButton->GetHWND())
                 {
                     editorWindowAssetSelectedType = eAssetSelectedType::ENTITY;
@@ -40,7 +104,7 @@ namespace realware
                         editorWindowAssetData[editorWindowAssetSelectedType]
                     );
                 }
-                // Materials
+                // Materials button
                 else if ((HWND)lp == editorWindowAssetMaterialsButton->GetHWND())
                 {
                     editorWindowAssetSelectedType = eAssetSelectedType::MATERIAL;
@@ -48,13 +112,13 @@ namespace realware
                         editorWindowAssetData[editorWindowAssetSelectedType]
                     );
                 }
-                // Entities OK
+                // Entities window OK button
                 else if ((HWND)lp == editorWindowEntityOKButton->GetHWND())
                 {
                     editorWindowEntity->Show(core::K_FALSE);
                     EditorWindowEntitySave(editorApp, editorScene, editorSelectedAssetIndex);
                 }
-                // Entities Cancel
+                // Entities window Cancel button
                 else if ((HWND)lp == editorWindowEntityCloseButton->GetHWND())
                 {
                     editorWindowEntity->Show(core::K_FALSE);
@@ -139,9 +203,14 @@ namespace realware
             return menus;
         }
 
-        void cEditorWindow::AddSubmenu(HMENU& parent, const std::string& name)
+        void cEditorWindow::AddSubmenu(HMENU& parent, core::u32 id, const std::string& name)
         {
-            AppendMenuA(parent, MF_STRING, 0, name.data());
+            AppendMenuA(parent, MF_STRING, id, name.data());
+        }
+
+        void cEditorWindow::AddSubmenuSeparator(HMENU& parent)
+        {
+            AppendMenuA(parent, MF_SEPARATOR, 0, 0);
         }
     }
 }

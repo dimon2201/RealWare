@@ -22,11 +22,15 @@ namespace realware
             delete m_atlas;
         }
 
-        sArea* mTexture::CreateTexture(const char* filename, const std::string& tag)
+        sArea* mTexture::CreateTexture(const std::string& filename, const std::string& tag)
         {
             int width = 0, height = 0, channels = 0;
             unsigned char* data = nullptr;
-            data = stbi_load(filename, &width, &height, &channels, 4);
+            data = stbi_load(filename.data(), &width, &height, &channels, 4);
+
+            if (data == nullptr || channels < 3) {
+                return nullptr;
+            }
 
             if (channels == 3)
             {

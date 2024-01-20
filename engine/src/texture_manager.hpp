@@ -38,7 +38,7 @@ namespace realware
 
             void Init(render::cRenderContext* context, s32 width, s32 height, s32 depth);
             void Free();
-            sArea* CreateTexture(const char* filename, const std::string& tag);
+            sArea* CreateTexture(const std::string& filename, const std::string& tag);
             void RemoveTexture(const std::string& tag);
             void LoadAnimation(const std::vector<const char*>& filenames, const std::string& tag, std::vector<sArea*>& frames);
             void PlayAnimation(entity object, cScene* scene, float speed);

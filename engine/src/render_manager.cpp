@@ -906,7 +906,6 @@ namespace realware
 
             if (scene == nullptr)
             {
-                MessageBox(0, "Couldn't load model", "Error", MB_ICONERROR);
                 return nullptr;
             }
 

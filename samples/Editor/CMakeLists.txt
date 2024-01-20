@@ -7,6 +7,7 @@ link_libraries(RealWareEngine)
 
 add_executable(
     RealWareEditor
+    map_plugin_loader/map_plugin_loader.cpp
     winapi/window.cpp
     winapi/listview.cpp
     winapi/groupbox.cpp

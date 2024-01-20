@@ -44,7 +44,8 @@ namespace realware
             ~cEditorWindow();
 
             std::vector<HMENU> AddMenu(const std::vector<std::string>& popups);
-            void AddSubmenu(HMENU& parent, const std::string& name);
+            void AddSubmenu(HMENU& parent, core::u32 id, const std::string& name);
+            void AddSubmenuSeparator(HMENU& parent);
             inline void Show(core::boolean isVisible)
             {
                 if (isVisible == core::K_TRUE) {
