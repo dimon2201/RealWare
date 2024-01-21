@@ -100,6 +100,7 @@ void EditorWindowRenderEntityLogic(
     realware::core::boolean rmbPress
 );
 void EditorWindowObjectLogic(cApplication* app, cScene* scene);
+void EditorWindowAssetLogic();
 void EditorNewMap(cApplication* app, cScene* scene);
 void EditorOpenMap(cApplication* app, cScene* scene, const std::string& filename);
 void EditorSaveMap(cApplication* app, cScene* scene, const std::string& filename);
@@ -423,6 +424,7 @@ public:
             rmbPressGlobal = K_FALSE;
         }
         
+        EditorWindowAssetLogic();
         EditorWindowObjectLogic(this, editorScene);
         EditorWindowRenderEntityLogic(this, editorScene, editorCamera, lmbPress, rmbPress);
         EditorUpdateEntityTransform(editorScene);
@@ -1087,6 +1089,7 @@ void EditorWindowObjectLogic(cApplication* app, cScene* scene)
 {
     if (editorSelectedEntity <= 0) return;
     
+    // Change 'Is visible' checkbox
     if (editorIsVisible->GetCheck())
     {
         scene->Get<sCGeometryInfo>(editorSelectedEntity)->IsVisible = K_TRUE;
@@ -1094,6 +1097,23 @@ void EditorWindowObjectLogic(cApplication* app, cScene* scene)
     else
     {
         scene->Get<sCGeometryInfo>(editorSelectedEntity)->IsVisible = K_TRUE;//+ 1;
+    }
+}
+
+void EditorWindowAssetLogic()
+{
+    // Do search
+    std::string text = editorWindowAssetSearch.Textbox->GetText(100);
+
+    if (text == "") return;
+
+    for (s32 i = 0; i < editorWindowAssetData[(int)editorWindowAssetSelectedType].size(); i++)
+    {
+        const sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][i];
+        if (asset.Name == text)
+        {
+            editorWindowAssetListView->SetSelected(i);
+        }
     }
 }
 

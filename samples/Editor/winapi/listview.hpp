@@ -33,6 +33,9 @@ namespace realware
             inline int GetSelectedIndex() {
                 return ListView_GetNextItem(m_HWND, -1, LVNI_SELECTED);
             }
+            inline void SetSelected(int idx) {
+                ListView_SetItemState(m_HWND, idx, 0xF, LVIS_SELECTED);
+            }
 
         private:
             HWND m_HWND = nullptr;
