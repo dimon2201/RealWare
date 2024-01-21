@@ -2,6 +2,7 @@
 #include "listview.hpp"
 #include "../../../engine/src/ecs.hpp"
 #include "../editor_types.hpp"
+#include "../../../engine/thirdparty/stb-master/stb_image.h"
 
 #pragma comment(lib, "Comctl32.lib")
 
@@ -98,24 +99,26 @@ namespace realware
             HWND parent,
             const std::string& className,
             const std::string& windowName,
-            const glm::vec2& position
+            const glm::vec2& position,
+            float monitorSizeCoef
         )
         {
-            RECT rcClient;
+            HINSTANCE hInstance = GetModuleHandle(0);
 
+            RECT rcClient;
             GetClientRect(parent, &rcClient);
             m_HWND = CreateWindowEx(
                 0,
                 WC_LISTVIEW,
                 windowName.data(),
-                WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT,
+                WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SMALLICON,
                 position.x,
                 position.y,
-                rcClient.right,
-                rcClient.bottom,
+                rcClient.right - (monitorSizeCoef * 10.0f),
+                rcClient.bottom - (monitorSizeCoef * 10.0f),
                 parent,
                 0,
-                GetModuleHandle(0),
+                hInstance,
                 0
             );
 
@@ -125,6 +128,45 @@ namespace realware
                 MessageBox(0, TEXT("Could not create listview"), 0, MB_ICONERROR);
                 return;
             }
+
+            core::u32* nullMem = new core::u32[32 * 32];
+            memset(nullMem, 0, 32 * 32 * 4);
+            int width0 = 0, height0 = 0, channels0 = 0,
+                width1 = 0, height1 = 0, channels1 = 0;
+            unsigned char* data0 = nullptr, *data1 = nullptr;
+            data0 = stbi_load("icons/icon0.png", &width0, &height0, &channels0, 4);
+            data1 = stbi_load("icons/icon1.png", &width1, &height1, &channels1, 4);
+            for (core::s32 i = 0; i < width0 * height0; i++)
+            {
+                core::u8 r = data0[i * 4];
+                core::u8 g = data0[(i * 4) + 1];
+                core::u8 b = data0[(i * 4) + 2];
+                core::u8 a = data0[(i * 4) + 3];
+                data0[(i * 4)] = b;
+                data0[(i * 4) + 1] = g;
+                data0[(i * 4) + 2] = r;
+                data0[(i * 4) + 3] = a;
+            }
+            for (core::s32 i = 0; i < width1 * height1; i++)
+            {
+                core::u8 r = data1[i * 4];
+                core::u8 g = data1[(i * 4) + 1];
+                core::u8 b = data1[(i * 4) + 2];
+                core::u8 a = data1[(i * 4) + 3];
+                data1[(i * 4)] = b;
+                data1[(i * 4) + 1] = g;
+                data1[(i * 4) + 2] = r;
+                data1[(i * 4) + 3] = a;
+            }
+
+            auto icon0 = CreateIcon(hInstance, 32, 32, 1, 32, (const BYTE*)nullMem, (const BYTE*)data0);
+            auto icon1 = CreateIcon(hInstance, 32, 32, 1, 32, (const BYTE*)nullMem, (const BYTE*)data1);
+            auto imageList = ImageList_Create(32, 32, ILC_MASK, 2, 2);
+            ImageList_AddIcon(imageList, icon0);
+            ImageList_AddIcon(imageList, icon1);
+            ListView_SetImageList(m_HWND, imageList, LVSIL_SMALL);
+
+            stbi_image_free(data0);
         }
 
         cEditorListView::~cEditorListView()
@@ -147,9 +189,17 @@ namespace realware
             {
                 LVITEM itm = {};
                 itm.pszText = LPSTR(name.data());
-                itm.mask = LVIF_TEXT;
+                itm.mask = LVIF_TEXT | LVIF_IMAGE;
                 itm.iSubItem = 0;
                 itm.iItem = index;
+                if (editorWindowAssetSelectedType == eAssetSelectedType::ENTITY)
+                {
+                    itm.iImage = 0;
+                }
+                else if (editorWindowAssetSelectedType == eAssetSelectedType::SOUND)
+                {
+                    itm.iImage = 1;
+                }
                 ListView_InsertItem(m_HWND, &itm);
 
             }
@@ -157,9 +207,17 @@ namespace realware
             {
                 LVITEM itm = {};
                 itm.pszText = LPSTR(name.data());
-                itm.mask = LVIF_TEXT;
+                itm.mask = LVIF_TEXT | LVIF_IMAGE;
                 itm.iSubItem = columnIndex;
                 itm.iItem = index;
+                if (editorWindowAssetSelectedType == eAssetSelectedType::ENTITY)
+                {
+                    itm.iImage = 0;
+                }
+                else if (editorWindowAssetSelectedType == eAssetSelectedType::SOUND)
+                {
+                    itm.iImage = 1;
+                }
                 ListView_SetItem(m_HWND, &itm);
             }
         }

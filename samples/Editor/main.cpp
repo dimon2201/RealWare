@@ -68,12 +68,13 @@ sTextboxLabel editorWindowEntityName;
 sTextboxLabel editorWindowEntityTexture;
 sTextboxLabel editorWindowEntityGeometry;
 sTextboxLabel editorWindowEntityDiffuseColor;
+sTextboxLabel editorWindowAssetSearch;
 cEditorWindow* editorWindowMain = nullptr;
 cEditorWindow* editorWindowAsset = nullptr;
 cEditorWindow* editorWindowEntity = nullptr;
 cEditorListView* editorWindowAssetListView = nullptr;
 cEditorButton* editorWindowAssetEntitiesButton = nullptr;
-cEditorButton* editorWindowAssetMaterialsButton = nullptr;
+cEditorButton* editorWindowAssetSoundsButton = nullptr;
 cEditorButton* editorWindowEntityOKButton = nullptr;
 cEditorButton* editorWindowEntityCloseButton = nullptr;
 eAssetSelectedType editorWindowAssetSelectedType = eAssetSelectedType::ENTITY;
@@ -211,7 +212,8 @@ public:
             editorWindowAsset->GetHWND(),
             "AssetListView",
             "Asset view",
-            glm::vec2(0.0f, offset * 20.0f)
+            glm::vec2(0.0f, offset * 20.0f),
+            offset
         );
         editorWindowAssetListView->AddColumn(0, "Name", 150);
 
@@ -221,11 +223,18 @@ public:
             glm::vec2(offset * 2.0f),
             glm::vec2(offset * 25.0f, offset * 7.0f)
         );
-        editorWindowAssetMaterialsButton = new cEditorButton(
+        editorWindowAssetSoundsButton = new cEditorButton(
             editorWindowAsset->GetHWND(),
-            "Materials",
+            "Sounds",
             glm::vec2(offset * 28.0f, offset * 2.0f),
             glm::vec2(offset * 25.0f, offset * 7.0f)
+        );
+
+        editorWindowAssetSearch.Label = new cEditorLabel(editorWindowAsset->GetHWND(), "Search",
+            glm::vec2(offset * 2.0f, offset * 13.0f), glm::vec2(offset * 15.0f, offset * 6.0f)
+        );
+        editorWindowAssetSearch.Textbox = new cEditorTextbox(editorWindowAsset->GetHWND(), "",
+            glm::vec2(offset * 19.0f, offset * 13.0f), glm::vec2(offset * 55.0f, offset * 6.0f), K_FALSE
         );
 
         // Entity window
@@ -783,6 +792,13 @@ void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
     // Update material for every entity
     if (asset.Components[0] != nullptr)
     {
+        // Delete material
+        textureManager->RemoveTexture(((sCMaterial*)asset.Components[0])->DiffuseTexture->Tag);
+        delete asset.Components[0];
+        asset.Components[0] = nullptr;
+
+        EditorAssetLoadData(editorWindowAssetSelectedType, asset);
+
         ((sCMaterial*)asset.Components[0])->DiffuseColor = asset.Color;
         scene->ForEach<sCMaterial>(
             app,

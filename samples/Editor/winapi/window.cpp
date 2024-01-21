@@ -17,7 +17,7 @@ extern cEditorWindow* editorWindowAsset;
 extern cEditorWindow* editorWindowEntity;
 extern cEditorListView* editorWindowAssetListView;
 extern cEditorButton* editorWindowAssetEntitiesButton;
-extern cEditorButton* editorWindowAssetMaterialsButton;
+extern cEditorButton* editorWindowAssetSoundsButton;
 extern cEditorButton* editorWindowEntityOKButton;
 extern cEditorButton* editorWindowEntityCloseButton;
 extern eAssetSelectedType editorWindowAssetSelectedType;
@@ -114,10 +114,10 @@ namespace realware
                         editorWindowAssetData[editorWindowAssetSelectedType]
                     );
                 }
-                // Materials button
-                else if ((HWND)lp == editorWindowAssetMaterialsButton->GetHWND())
+                // Sounds button
+                else if ((HWND)lp == editorWindowAssetSoundsButton->GetHWND())
                 {
-                    editorWindowAssetSelectedType = eAssetSelectedType::MATERIAL;
+                    editorWindowAssetSelectedType = eAssetSelectedType::SOUND;
                     editorWindowAssetListView->AddItemsFromData(
                         editorWindowAssetData[editorWindowAssetSelectedType]
                     );

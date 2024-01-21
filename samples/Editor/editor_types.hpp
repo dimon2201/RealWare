@@ -22,7 +22,7 @@ struct sTextboxLabel
 	realware::editor::cEditorTextbox* Textbox;
 	realware::editor::cEditorLabel* Label;
 };
-enum eAssetSelectedType { ENTITY = 0, MATERIAL = 1, _COUNT = 2 };
+enum eAssetSelectedType { ENTITY = 0, SOUND = 1, _COUNT = 2 };
 struct sAsset
 {
 	sAsset() = default;

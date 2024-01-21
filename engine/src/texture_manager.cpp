@@ -1,4 +1,3 @@
-#include <lodepng.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../thirdparty/stb-master/stb_image.h"
 #include "texture_manager.hpp"

@@ -19,7 +19,8 @@ namespace realware
                 HWND parent,
                 const std::string& className,
                 const std::string& windowName,
-                const glm::vec2& position
+                const glm::vec2& position,
+                float monitorSizeCoef
             );
             ~cEditorListView();
 
