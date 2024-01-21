@@ -14,6 +14,7 @@ add_executable(
     winapi/textbox.cpp
     winapi/label.cpp
     winapi/button.cpp
+    winapi/checkbox.cpp
     ray_hit.cpp
     main.cpp)
 

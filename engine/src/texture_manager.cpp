@@ -12,7 +12,14 @@ namespace realware
         void mTexture::Init(render::cRenderContext* context, s32 width, s32 height, s32 depth)
         {
             m_context = context;
-            m_atlas = m_context->CreateTexture(width, height, depth, render::sTexture::eType::TEXTURE_2D_ARRAY, render::sTexture::eFormat::RGBA8, nullptr);
+            m_atlas = m_context->CreateTexture(
+                width,
+                height,
+                depth,
+                render::sTexture::eType::TEXTURE_2D_ARRAY,
+                render::sTexture::eFormat::RGBA8_MIPS,
+                nullptr
+            );
             m_atlas->Slot = 0;
         }
 
@@ -100,6 +107,8 @@ namespace realware
                             m_textures.push_back(area);
 
                             m_context->WriteTexture(m_atlas, area->Offset, area->Size, data);
+                            if (m_atlas->Format == render::sTexture::eFormat::RGBA8_MIPS)
+                                m_context->GenerateTextureMips(m_atlas);
 
                             free(data);
 

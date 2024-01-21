@@ -80,6 +80,16 @@ namespace realware
                 // Open map menu option
                 else if (LOWORD(wp) == 5)
                 {
+                    char filename[MAX_PATH] = "unnamed.rwm";
+
+                    OPENFILENAME ofn = {};
+                    ofn.lStructSize = sizeof(OPENFILENAME);
+                    ofn.lpstrFilter = "Map Files (*.rwm)\0*.rwm\0";
+                    ofn.lpstrFile = filename;
+                    ofn.nMaxFile = MAX_PATH;
+                    ofn.Flags = OFN_OVERWRITEPROMPT;
+                    if (GetOpenFileName(&ofn) && ofn.lpstrFile != nullptr)
+                        EditorOpenMap(editorApp, editorScene, std::string(ofn.lpstrFile));
                 }
                 // Save map menu option
                 else if (LOWORD(wp) == 6)

@@ -472,7 +472,8 @@ namespace realware
                 channelsGL = GL_RED;
                 formatComponentGL = GL_FLOAT;
             }
-            else if (texture->Format == sTexture::eFormat::RGBA8)
+            else if (texture->Format == sTexture::eFormat::RGBA8 ||
+                texture->Format == sTexture::eFormat::RGBA8_MIPS)
             {
                 formatGL = GL_RGBA8;
                 channelsGL = GL_RGBA;
@@ -503,8 +504,16 @@ namespace realware
                 glTexImage2D(GL_TEXTURE_2D, 0, formatGL, texture->Width, texture->Height, 0, channelsGL, formatComponentGL, data);
                 if (texture->Format != sTexture::eFormat::DEPTH_STENCIL)
                 {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    if (texture->Format == sTexture::eFormat::RGBA8_MIPS)
+                    {
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                    }
+                    else
+                    {
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    }
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 }
@@ -514,8 +523,16 @@ namespace realware
             {
                 glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
                 glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatGL, texture->Width, texture->Height, texture->Depth, 0, channelsGL, formatComponentGL, data);
-                glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                if (texture->Format == sTexture::eFormat::RGBA8_MIPS)
+                {
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                }
+                else
+                {
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                }
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
@@ -637,6 +654,22 @@ namespace realware
                 lodepng_encode32_file(filename, (const unsigned char*)pixels, texture->Width, texture->Height);
 
                 free(pixels);
+            }
+        }
+
+        void cOpenGLRenderContext::GenerateTextureMips(sTexture* texture)
+        {
+            if (texture->Type == sTexture::eType::TEXTURE_2D)
+            {
+                glBindTexture(GL_TEXTURE_2D, texture->Instance);
+                glGenerateMipmap(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
+            {
+                glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
+                glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
             }
         }
 

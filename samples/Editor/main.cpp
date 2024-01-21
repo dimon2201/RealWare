@@ -27,6 +27,7 @@
 #include "winapi/textbox.hpp"
 #include "winapi/label.hpp"
 #include "winapi/button.hpp"
+#include "winapi/checkbox.hpp"
 #include "ray_hit.hpp"
 #include "editor_types.hpp"
 
@@ -49,10 +50,11 @@ mPhysics* physicsManager = new mPhysics();
 cApplication* editorApp = nullptr;
 cScene* editorScene = nullptr;
 entity editorCamera = 0;
+entity editorPhysicsScene = 0;
 
 realware::core::u64 editorUniqueID = 0;
 std::vector<sVertexBufferGeometry*> editorGeometriesToDraw;
-eSelectMode editorSelectMode = eSelectMode::NONE;
+eSelectMode editorSelectMode = eSelectMode::CREATE;
 entity editorSelectedEntity = 0;
 entity editorCopyEntity = 0;
 int editorSelectedAssetIndex = -1;
@@ -61,6 +63,7 @@ glm::vec3 editorPosition = glm::vec3(0.0f), editorRotation = glm::vec3(0.0f), ed
 sTextboxLabel editorPositionX; sTextboxLabel editorPositionY; sTextboxLabel editorPositionZ;
 sTextboxLabel editorRotationX; sTextboxLabel editorRotationY; sTextboxLabel editorRotationZ;
 sTextboxLabel editorScaleX; sTextboxLabel editorScaleY; sTextboxLabel editorScaleZ;
+cEditorCheckbox* editorIsVisible = nullptr;
 sTextboxLabel editorWindowEntityName;
 sTextboxLabel editorWindowEntityTexture;
 sTextboxLabel editorWindowEntityGeometry;
@@ -95,12 +98,13 @@ void EditorWindowRenderEntityLogic(
     realware::core::boolean lmbPress,
     realware::core::boolean rmbPress
 );
-void EditorNewPlugin(cApplication* app, cScene* scene);
-void EditorOpenPlugin(cApplication* app, cScene* scene, const std::string& filename);
-void EditorSavePlugin(cApplication* app, cScene* scene, const std::string& filename);
+void EditorWindowObjectLogic(cApplication* app, cScene* scene);
 void EditorNewMap(cApplication* app, cScene* scene);
 void EditorOpenMap(cApplication* app, cScene* scene, const std::string& filename);
 void EditorSaveMap(cApplication* app, cScene* scene, const std::string& filename);
+void EditorNewPlugin(cApplication* app, cScene* scene);
+void EditorOpenPlugin(cApplication* app, cScene* scene, const std::string& filename);
+void EditorSavePlugin(cApplication* app, cScene* scene, const std::string& filename);
 std::string EditorGetExeFolder();
 
 class MyApp : public cApplication
@@ -145,34 +149,9 @@ public:
         editorScene = new cScene(4 * 1024 * 1024);
 
         // Physics scene
-        entity physicsSceneEntity = editorScene->CreateEntity("PhysicsSceneEntity");
-        physicsManager->AddScene({ physicsSceneEntity, editorScene });
-
-        // Plane entity
-        m_plane = editorScene->CreateEntity("PlaneEntity");
-        sCGeometryInfo* planegi = editorScene->Add<sCGeometryInfo>(m_plane);
-        planegi->IsVisible = K_TRUE;
-        planegi->IsOpaque = K_TRUE;
-        sCGeometry* planeg = editorScene->Add<sCGeometry>(m_plane);
-        planeg->Geometry = m_geomPlane;
-        sCTransform* planet = editorScene->Add<sCTransform>(m_plane);
-        planet->Position = glm::vec3(0.0f);
-        planet->Rotation = glm::vec3(0.0f);
-        planet->Scale = glm::vec3(5.0f);
-        sCMaterial* planem = editorScene->Add<sCMaterial>(m_plane);
-        planem->DiffuseTexture = dirtTexture;
-        planem->DiffuseColor = glm::vec4(1.0f);
-        planem->HighlightColor = glm::vec4(1.0f);
-
-        physicsManager->AddActor(
-            { physicsSceneEntity, editorScene },
-            { m_plane, editorScene },
-            mPhysics::eActorDescriptor::STATIC,
-            mPhysics::eShapeDescriptor::PLANE,
-            glm::vec4(0.0f),
-            nullptr
-        );
-
+        editorPhysicsScene = editorScene->CreateEntity("PhysicsSceneEntity");
+        physicsManager->AddScene({ editorPhysicsScene, editorScene });
+        
         // Camera entity
         editorCamera = editorScene->CreateEntity("CameraEntity");
         sCCamera* cameraCamera = editorScene->Add<sCCamera>(editorCamera);
@@ -183,7 +162,7 @@ public:
         cameraTransform->Position = glm::vec3(0.0f, 5.0f, 0.0f);
 
         sCPhysicsCharacterController* controller = physicsManager->AddCharacterController(
-            { physicsSceneEntity, editorScene },
+            { editorPhysicsScene, editorScene },
             { editorCamera, editorScene },
             mPhysics::eShapeDescriptor::CAPSULE,
             glm::vec4(1.0f, 2.0f, 0.0f, 0.0f)
@@ -212,6 +191,8 @@ public:
         editorWindowMain->AddSubmenu(menus[0], 4, "New map");
         editorWindowMain->AddSubmenu(menus[0], 5, "Open map");
         editorWindowMain->AddSubmenu(menus[0], 6, "Save map");
+
+        RemoveWindowSysmenu(editorWindowMain->GetHWND());
 
         // Asset window
         glm::vec2 assetWindowSize = glm::vec2(
@@ -392,9 +373,15 @@ public:
             glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
         );
 
-        userInputManager->FocusWindow();
+        editorIsVisible = new cEditorCheckbox(
+            objectComponentsGroupbox->GetHWND(),
+            "Is visible",
+            glm::vec2(offset * 2.0f, offset * 7.0f),
+            glm::vec2(offset * 25.0f, offset * 5.0f),
+            true
+        );
 
-        editorGeometriesToDraw.push_back(m_geomPlane);
+        userInputManager->FocusWindow();
     }
 
     virtual void Update() override final
@@ -427,6 +414,7 @@ public:
             rmbPressGlobal = K_FALSE;
         }
         
+        EditorWindowObjectLogic(this, editorScene);
         EditorWindowRenderEntityLogic(this, editorScene, editorCamera, lmbPress, rmbPress);
         EditorUpdateEntityTransform(editorScene);
 
@@ -461,7 +449,6 @@ public:
 private:
     sVertexBufferGeometry* m_geomPlane;
     sVertexBufferGeometry* m_geomTaburet;
-    entity m_plane;
     sArea* m_taburetTexture;
 
 };
@@ -667,6 +654,10 @@ void EditorWindowAssetDeleteItem(
                         owners.push_back(material_->Owner);
                         return;
                     }
+                    else if (material_->Info > assetIndex)
+                    {
+                        material_->Info -= 1;
+                    }
                 }
             );
 
@@ -685,6 +676,10 @@ void EditorWindowAssetDeleteItem(
                     {
                         owners.push_back(geometry_->Owner);
                         return;
+                    }
+                    else if (geometry_->Info > assetIndex)
+                    {
+                        geometry_->Info -= 1;
                     }
                 }
             );
@@ -869,6 +864,7 @@ void EditorWindowRenderEntityLogic(
                     static int i = 0;
                     auto entity = scene->CreateEntity("Entity" + std::to_string(editorUniqueID++));
                     sCGeometryInfo* entityGeometryInfo = scene->Add<sCGeometryInfo>(entity);
+                    entityGeometryInfo->Info = editorUsedAssetIndex;
                     entityGeometryInfo->IsVisible = K_TRUE;
                     entityGeometryInfo->IsOpaque = K_TRUE;
                     sCMaterial* entityMaterial = scene->Add<sCMaterial>(entity);
@@ -880,6 +876,7 @@ void EditorWindowRenderEntityLogic(
                     entityGeometry->Info = editorUsedAssetIndex;
                     entityGeometry->Geometry = ((sCGeometry*)asset.Components[1])->Geometry;
                     sCTransform* entityTransform = scene->Add<sCTransform>(entity);
+                    entityTransform->Info = editorUsedAssetIndex;
                     entityTransform->Position = result;
                     entityTransform->Rotation = glm::vec3(0.0f);
                     entityTransform->Scale = glm::vec3(1.0f);
@@ -971,7 +968,8 @@ void EditorWindowRenderEntityLogic(
                 }
             }
 
-            if (rmbPress == K_TRUE && editorSelectedEntity != 0)
+            if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_RIGHT) == mUserInput::eButtonState::PRESSED &&
+                editorSelectedEntity != 0)
             {
                 cRayHit ray(
                     app,
@@ -1024,22 +1022,30 @@ void EditorWindowRenderEntityLogic(
         editorCopyEntity > 0 &&
         editorSelectMode == eSelectMode::TRANSFORM)
     {
+        // Create entity
         auto entity = scene->CreateEntity("Entity" + std::to_string(editorUniqueID++));
         sCGeometryInfo* entityGeometryInfo = scene->Add<sCGeometryInfo>(entity);
+        sCGeometryInfo* originalGeometryInfo = scene->Get<sCGeometryInfo>(editorCopyEntity);
+        entityGeometryInfo->Owner = entity;
+        entityGeometryInfo->Info = originalGeometryInfo->Info;
         entityGeometryInfo->IsVisible = K_TRUE;
         entityGeometryInfo->IsOpaque = K_TRUE;
         sCMaterial* entityMaterial = scene->Add<sCMaterial>(entity);
         sCMaterial* originalMaterial = scene->Get<sCMaterial>(editorCopyEntity);
+        entityMaterial->Owner = entity;
         entityMaterial->Info = originalMaterial->Info;
         entityMaterial->DiffuseColor = originalMaterial->DiffuseColor;
         entityMaterial->HighlightColor = glm::vec4(1.0f);
         entityMaterial->DiffuseTexture = originalMaterial->DiffuseTexture;
         sCGeometry* entityGeometry = scene->Add<sCGeometry>(entity);
         sCGeometry* originalGeometry = scene->Get<sCGeometry>(editorCopyEntity);
+        entityGeometry->Owner = entity;
         entityGeometry->Info = originalGeometry->Info;
         entityGeometry->Geometry = originalGeometry->Geometry;
         sCTransform* entityTransform = scene->Add<sCTransform>(entity);
         sCTransform* originalTransform = scene->Get<sCTransform>(editorCopyEntity);
+        entityTransform->Owner = entity;
+        entityTransform->Info = originalTransform->Info;
         entityTransform->Position = originalTransform->Position;
         entityTransform->Rotation = originalTransform->Rotation;
         entityTransform->Scale = originalTransform->Scale;
@@ -1051,13 +1057,27 @@ void EditorWindowRenderEntityLogic(
         editorSelectedEntity > 0 &&
         editorSelectMode == eSelectMode::TRANSFORM)
     {
-        if (scene->Get<sCGeometryInfo>(editorSelectedEntity)) scene->Remove<sCGeometryInfo>(editorSelectedEntity);
-        if (scene->Get<sCMaterial>(editorSelectedEntity)) scene->Remove<sCMaterial>(editorSelectedEntity);
-        if (scene->Get<sCGeometry>(editorSelectedEntity)) scene->Remove<sCGeometry>(editorSelectedEntity);
-        if (scene->Get<sCTransform>(editorSelectedEntity)) scene->Remove<sCTransform>(editorSelectedEntity);
+        if (scene->Get<sCGeometryInfo>(editorSelectedEntity) != nullptr) scene->Remove<sCGeometryInfo>(editorSelectedEntity);
+        if (scene->Get<sCMaterial>(editorSelectedEntity) != nullptr) scene->Remove<sCMaterial>(editorSelectedEntity);
+        if (scene->Get<sCGeometry>(editorSelectedEntity) != nullptr) scene->Remove<sCGeometry>(editorSelectedEntity);
+        if (scene->Get<sCTransform>(editorSelectedEntity) != nullptr) scene->Remove<sCTransform>(editorSelectedEntity);
         scene->RemoveEntity(scene->GetEntityName(editorSelectedEntity));
 
         editorSelectedEntity = 0;
+    }
+}
+
+void EditorWindowObjectLogic(cApplication* app, cScene* scene)
+{
+    if (editorSelectedEntity <= 0) return;
+    
+    if (editorIsVisible->GetCheck())
+    {
+        scene->Get<sCGeometryInfo>(editorSelectedEntity)->IsVisible = K_TRUE;
+    }
+    else
+    {
+        scene->Get<sCGeometryInfo>(editorSelectedEntity)->IsVisible = K_TRUE;//+ 1;
     }
 }
 
@@ -1069,25 +1089,27 @@ void EditorNewMap(cApplication* app, cScene* scene)
             app,
             [](cApplication* app_, cScene* scene_, const std::string& id_, entity entity_)
             {
-                if (scene_->Get<sCGeometryInfo>(entity_)) scene_->Remove<sCGeometryInfo>(entity_);
-                if (scene_->Get<sCMaterial>(entity_)) scene_->Remove<sCMaterial>(entity_);
-                if (scene_->Get<sCGeometry>(entity_)) scene_->Remove<sCGeometry>(entity_);
-                if (scene_->Get<sCTransform>(entity_)
-                    && scene_->Get<sCTransform>(entity_)->Info != -1) scene_->Remove<sCTransform>(entity_);
+                scene_->Remove<sCGeometryInfo>(entity_);
+                scene_->Remove<sCMaterial>(entity_);
+                scene_->Remove<sCGeometry>(entity_);
+                if (scene_->Get<sCTransform>(entity_) != nullptr &&
+                    scene_->Get<sCTransform>(entity_)->Info != -1) scene_->Remove<sCTransform>(entity_);
             }
         );
-        scene->RemoveEntities({ editorCamera });
+        scene->RemoveEntities({ editorCamera, editorPhysicsScene });
     }
 }
 
 void EditorOpenMap(cApplication* app, cScene* scene, const std::string& filename)
 {
+    cMapPluginLoader loader;
+    loader.LoadMap(filename, app, scene);
 }
 
 void EditorSaveMap(cApplication* app, cScene* scene, const std::string& filename)
 {
     cMapPluginLoader loader;
-    loader.SaveMap(filename, app, scene, 65536, { editorCamera });
+    loader.SaveMap(filename, app, scene, 65536, { editorCamera, editorPhysicsScene });
 }
 
 void EditorNewPlugin(cApplication* app, cScene* scene)

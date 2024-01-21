@@ -59,7 +59,8 @@ namespace realware
                 RGBA8 = 2,
                 RGB16F = 3,
                 RGBA16F = 4,
-                DEPTH_STENCIL = 5
+                DEPTH_STENCIL = 5,
+                RGBA8_MIPS = 6
             };
 
             core::s32 Width;
@@ -150,6 +151,7 @@ namespace realware
             virtual void UnbindTexture(const sTexture* texture) = 0;
             virtual void WriteTexture(sTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data) = 0;
             virtual void WriteTextureToFile(const sTexture* texture, const char* filename) = 0;
+            virtual void GenerateTextureMips(sTexture* texture) = 0;
             virtual void DeleteTexture(sTexture* texture) = 0;
             virtual sRenderTarget* CreateRenderTarget(const std::vector<sTexture*>& colorAttachments, const sTexture* depthAttachment) = 0;
             virtual void ResizeRenderTargetColors(sRenderTarget* renderTarget, const glm::vec2& size) = 0;
@@ -206,6 +208,7 @@ namespace realware
             virtual void UnbindTexture(const sTexture* texture) override final;
             virtual void WriteTexture(sTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data) override final;
             virtual void WriteTextureToFile(const sTexture* texture, const char* filename) override final;
+            virtual void GenerateTextureMips(sTexture* texture) override final;
             virtual void DeleteTexture(sTexture* texture) override final;
             virtual sRenderTarget* CreateRenderTarget(const std::vector<sTexture*>& colorAttachments, const sTexture* depthAttachment) override final;
             virtual void ResizeRenderTargetColors(sRenderTarget* renderTarget, const glm::vec2& size) override final;
