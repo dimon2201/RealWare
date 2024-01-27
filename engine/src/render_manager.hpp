@@ -102,6 +102,13 @@ namespace realware
             glm::vec4 HighlightColor;
         };
 
+        struct sLightInstance
+        {
+            glm::vec4 Position;
+            glm::vec4 Color;
+            glm::vec4 DirectionAndScale;
+        };
+
         struct sInstanceList
         {
             sInstanceList(sVertexBufferGeometry* geometry, core::cScene* scene, core::usize instanceCount)
@@ -121,7 +128,15 @@ namespace realware
             mRender() {}
             ~mRender() {}
 
-            void Init(const cRenderContext* context, core::usize vertexBufferSize, core::usize indexBufferSize, core::usize instanceBufferSize, core::usize materialBufferSize, const glm::vec2& windowSize);
+            void Init(
+                const cRenderContext* context,
+                core::usize vertexBufferSize,
+                core::usize indexBufferSize,
+                core::usize instanceBufferSize,
+                core::usize materialBufferSize,
+                core::usize lightBufferSize,
+                const glm::vec2& windowSize
+            );
             void Free();
             sVertexArray* CreateDefaultVertexArray();
             sVertexBufferGeometry* AddGeometry(const sVertexBufferGeometry::eFormat& format, core::usize verticesByteSize, const void* vertices, core::usize indicesByteSize, const void* indices);
@@ -130,6 +145,7 @@ namespace realware
             inline void DeleteInstanceList(sInstanceList* list) { delete list; }
             void ClearRenderPass(sRenderPass* renderPass, core::boolean clearColor, core::usize bufferIndex, const glm::vec4& color, core::boolean clearDepth, float depth);
             void ClearRenderPasses(const glm::vec4& clearColor, const float clearDepth);
+            void UpdateLights(core::cApplication* app, core::cScene* scene);
             void DrawGeometryOpaque(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene);
             void DrawGeometryTransparent(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene);
             void DrawTexts(core::cApplication* app, core::cScene* scene);
@@ -150,6 +166,7 @@ namespace realware
             sBuffer* GetIndexBuffer() { return m_indexBuffer; }
             sBuffer* GetInstanceBuffer() { return m_instanceBuffer; }
             sBuffer* GetMaterialBuffer() { return m_materialBuffer; }
+            sBuffer* GetLightBuffer() { return m_lightBuffer; }
             inline sRenderPass* GetOpaqueRenderPass() { return m_opaque; }
             inline sRenderPass* GetTransparentRenderPass() { return m_transparent; }
             inline sRenderPass* GetWidgetRenderPass() { return m_widget; }
@@ -164,6 +181,7 @@ namespace realware
             sBuffer* m_indexBuffer;
             sBuffer* m_instanceBuffer;
             sBuffer* m_materialBuffer;
+            sBuffer* m_lightBuffer;
             void* m_vertices;
             core::usize m_verticesByteSize;
             void* m_indices;
@@ -172,6 +190,8 @@ namespace realware
             core::usize m_instancesByteSize;
             void* m_materials;
             core::usize m_materialsByteSize;
+            void* m_lights;
+            core::usize m_lightsByteSize;
             std::unordered_map<core::sCMaterial*, core::s32>* m_materialsMap;
             sRenderPass* m_opaque;
             sRenderPass* m_transparent;

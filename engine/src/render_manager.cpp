@@ -24,6 +24,7 @@ namespace realware
             core::usize indexBufferSize,
             core::usize instanceBufferSize,
             core::usize materialBufferSize,
+            core::usize lightBufferSize,
             const glm::vec2& windowSize
         )
         {
@@ -34,6 +35,8 @@ namespace realware
             m_instanceBuffer->Slot = 0;
             m_materialBuffer = m_context->CreateBuffer(materialBufferSize, sBuffer::eType::LARGE, nullptr);
             m_materialBuffer->Slot = 1;
+            m_lightBuffer = m_context->CreateBuffer(lightBufferSize, sBuffer::eType::LARGE, nullptr);
+            m_lightBuffer->Slot = 2;
             m_vertices = malloc(vertexBufferSize);
             m_verticesByteSize = 0;
             m_indices = malloc(indexBufferSize);
@@ -42,6 +45,8 @@ namespace realware
             m_instancesByteSize = 0;
             m_materials = malloc(materialBufferSize);
             m_materialsByteSize = 0;
+            m_lights = malloc(lightBufferSize);
+            m_lightsByteSize = 0;
             m_materialsMap = new std::unordered_map<core::sCMaterial*, core::s32>();
 
             sTexture* color = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
@@ -59,6 +64,7 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetLightBuffer());
                 renderPassDesc.InputTextures.emplace_back(textureManager->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.Shader = m_context->BindOpaqueShader();
@@ -233,6 +239,43 @@ namespace realware
             m_context->ClearColor(0, glm::vec4(0.0f));
             m_context->ClearColor(1, glm::vec4(1.0f));
             m_context->UnbindRenderPass(m_transparent);
+        }
+
+        void mRender::UpdateLights(core::cApplication* application, core::cScene* scene)
+        {
+            glm::uvec4 lightCount = glm::uvec4(0);
+            m_lightsByteSize = 16;
+
+            memset(m_lights, 0, 16 + (sizeof(sLightInstance) * 16));
+
+            scene->ForEach<core::sCLight>(
+                application,
+                [this, &lightCount]
+                (core::cApplication* app_, core::cScene* scene_, core::sCLight* light_)
+                {
+                    core::sCTransform* transform = scene_->Get<core::sCTransform>(light_->Owner);
+                    if (transform == nullptr) return;
+
+                    sLightInstance i;
+                    i.Position = glm::vec4(transform->Position, 0.0f);
+                    i.Color = glm::vec4(light_->Color, 0.0f);
+                    i.DirectionAndScale = glm::vec4(
+                        light_->Direction.x,
+                        light_->Direction.y,
+                        light_->Direction.z,
+                        light_->Scale
+                    );
+
+                    memcpy((void*)((core::usize)m_lights + (core::usize)m_lightsByteSize), &i, sizeof(sLightInstance));
+                    m_lightsByteSize += sizeof(sLightInstance);
+
+                    lightCount.x += 1;
+                }
+            );
+
+            memcpy((void*)(core::usize)m_lights, &lightCount, sizeof(glm::uvec4));
+
+            m_context->WriteBuffer(m_lightBuffer, 0, m_lightsByteSize, m_lights);
         }
 
         void mRender::DrawGeometryOpaque(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene)

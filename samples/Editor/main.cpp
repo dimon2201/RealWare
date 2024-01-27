@@ -64,6 +64,9 @@ sTextboxLabel editorPositionX; sTextboxLabel editorPositionY; sTextboxLabel edit
 sTextboxLabel editorRotationX; sTextboxLabel editorRotationY; sTextboxLabel editorRotationZ;
 sTextboxLabel editorScaleX; sTextboxLabel editorScaleY; sTextboxLabel editorScaleZ;
 cEditorCheckbox* editorIsVisible = nullptr;
+cEditorCheckbox* editorIsLight = nullptr;
+sTextboxLabel editorLightScale;
+sTextboxLabel editorLightColor;
 sTextboxLabel editorWindowEntityName;
 sTextboxLabel editorWindowEntityTexture;
 sTextboxLabel editorWindowEntityGeometry;
@@ -81,7 +84,8 @@ eAssetSelectedType editorWindowAssetSelectedType = eAssetSelectedType::ENTITY;
 std::vector<std::vector<sAsset>> editorWindowAssetData((int)eAssetSelectedType::_COUNT);
 
 void EditorUpdateTextboxTransform(sCTransform* transform);
-void EditorUpdateEntityTransform(cScene* scene);
+void EditorUpdateTextboxLight(sCLight* light);
+void EditorUpdateEntityFields(cScene* scene);
 void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress);
 void EditorWindowAssetDeleteItem(
     cApplication* app,
@@ -126,6 +130,7 @@ public:
             m_renderContext,
             4 * 1024 * 1024,
             4 * 1024 * 1024,
+            65536,
             65536,
             65536,
             glm::vec2(m_desc.WindowDesc.Width, m_desc.WindowDesc.Height)
@@ -391,6 +396,26 @@ public:
             true
         );
 
+        editorIsLight = new cEditorCheckbox(
+            objectComponentsGroupbox->GetHWND(),
+            "Is light",
+            glm::vec2(offset * 2.0f, offset * 14.0f),
+            glm::vec2(offset * 25.0f, offset * 5.0f),
+            true
+        );
+        editorLightScale.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Scale",
+            glm::vec2(offset * 29.0f, offset * 14.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
+        );
+        editorLightScale.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "1",
+            glm::vec2(offset * 46.0f, offset * 14.0f), glm::vec2(offset * 8.0f, offset * 5.0f), K_FALSE
+        );
+        editorLightColor.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Color",
+            glm::vec2(offset * 56.0f, offset * 14.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
+        );
+        editorLightColor.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "255;255;255;255",
+            glm::vec2(offset * 73.0f, offset * 14.0f), glm::vec2(offset * 40.0f, offset * 5.0f), K_FALSE
+        );
+
         userInputManager->FocusWindow();
     }
 
@@ -427,7 +452,7 @@ public:
         EditorWindowAssetLogic();
         EditorWindowObjectLogic(this, editorScene);
         EditorWindowRenderEntityLogic(this, editorScene, editorCamera, lmbPress, rmbPress);
-        EditorUpdateEntityTransform(editorScene);
+        EditorUpdateEntityFields(editorScene);
 
         physicsManager->Update();
 
@@ -510,16 +535,30 @@ void EditorUpdateTextboxTransform(sCTransform* transform)
     editorScale = glm::vec3(std::stof(sclXStr), std::stof(sclYStr), std::stof(sclZStr));
 }
 
-void EditorUpdateEntityTransform(cScene* scene)
+void EditorUpdateTextboxLight(sCLight* light)
 {
-    if (editorSelectedEntity == 0) {
-        return;
-    }
+    // Scale
+    std::string scaleStr = std::to_string(light->Scale); scaleStr.resize(3);
+    editorLightScale.Textbox->SetText(scaleStr);
+
+    // Color
+    std::string colorStr =
+        std::to_string((realware::core::u32)(light->Color.x * 255.0f)) + std::string(";") +
+        std::to_string((realware::core::u32)(light->Color.y * 255.0f)) + std::string(";") +
+        std::to_string((realware::core::u32)(light->Color.z * 255.0f)) + std::string(";") +
+        std::string("255");
+    colorStr.resize(100);
+    editorLightColor.Textbox->SetText(colorStr);
+}
+
+void EditorUpdateEntityFields(cScene* scene)
+{
+    if (editorSelectedEntity == 0) return;
 
     // Position
     std::string str1 = editorPositionX.Textbox->GetText(6);
     if (str1 == "") { str1 = "0.0"; }
-    for (s32 i = 0; i < str1.size(); i++) { if (str1[1] < '.' || str1[i] > '9') { str1[i] = '0'; } }
+    for (s32 i = 0; i < str1.size(); i++) { if (str1[1] < '.' || str1[i] > '9' || str1[i] == '/') { str1[i] = '0'; } }
     float textPosX = std::stof(str1);
     if (textPosX != editorPosition.x)
     {
@@ -529,7 +568,7 @@ void EditorUpdateEntityTransform(cScene* scene)
     }
     std::string str2 = editorPositionY.Textbox->GetText(6);
     if (str2 == "") { str2 = "0.0"; }
-    for (s32 i = 0; i < str2.size(); i++) { if (str2[1] < '.' || str2[i] > '9') { str2[i] = '0'; } }
+    for (s32 i = 0; i < str2.size(); i++) { if (str2[1] < '.' || str2[i] > '9' || str2[i] == '/') { str2[i] = '0'; } }
     float textPosY = std::stof(str2);
     if (textPosY != editorPosition.y)
     {
@@ -539,7 +578,7 @@ void EditorUpdateEntityTransform(cScene* scene)
     }
     std::string str3 = editorPositionZ.Textbox->GetText(6);
     if (str3 == "") { str3 = "0.0"; }
-    for (s32 i = 0; i < str3.size(); i++) { if (str3[1] < '.' || str3[i] > '9') { str3[i] = '0'; } }
+    for (s32 i = 0; i < str3.size(); i++) { if (str3[1] < '.' || str3[i] > '9' || str3[i] == '/') { str3[i] = '0'; } }
     float textPosZ = std::stof(str3);
     if (textPosZ != editorPosition.z)
     {
@@ -551,7 +590,7 @@ void EditorUpdateEntityTransform(cScene* scene)
     // Rotation
     std::string str4 = editorRotationX.Textbox->GetText(6);
     if (str4 == "") { str4 = "0.0"; }
-    for (s32 i = 0; i < str4.size(); i++) { if (str4[1] < '.' || str4[i] > '9') { str4[i] = '0'; } }
+    for (s32 i = 0; i < str4.size(); i++) { if (str4[1] < '.' || str4[i] > '9' || str4[i] == '/') { str4[i] = '0'; } }
     float textRotX = std::stof(str4);
     if (textRotX != editorRotation.x)
     {
@@ -561,7 +600,7 @@ void EditorUpdateEntityTransform(cScene* scene)
     }
     std::string str5 = editorRotationY.Textbox->GetText(6);
     if (str5 == "") { str5 = "0.0"; }
-    for (s32 i = 0; i < str5.size(); i++) { if (str5[1] < '.' || str5[i] > '9') { str5[i] = '0'; } }
+    for (s32 i = 0; i < str5.size(); i++) { if (str5[1] < '.' || str5[i] > '9' || str5[i] == '/') { str5[i] = '0'; } }
     float textRotY = std::stof(str5);
     if (textRotY != editorRotation.y)
     {
@@ -571,7 +610,7 @@ void EditorUpdateEntityTransform(cScene* scene)
     }
     std::string str6 = editorRotationZ.Textbox->GetText(6);
     if (str6 == "") { str6 = "0.0"; }
-    for (s32 i = 0; i < str6.size(); i++) { if (str6[1] < '.' || str6[i] > '9') { str6[i] = '0'; } }
+    for (s32 i = 0; i < str6.size(); i++) { if (str6[1] < '.' || str6[i] > '9' || str6[i] == '/') { str6[i] = '0'; } }
     float textRotZ = std::stof(str6);
     if (textRotZ != editorRotation.z)
     {
@@ -583,7 +622,7 @@ void EditorUpdateEntityTransform(cScene* scene)
     // Scale
     std::string str7 = editorScaleX.Textbox->GetText(6);
     if (str7 == "") { str7 = "0.0"; }
-    for (s32 i = 0; i < str7.size(); i++) { if (str7[1] < '.' || str7[i] > '9') { str7[i] = '0'; } }
+    for (s32 i = 0; i < str7.size(); i++) { if (str7[1] < '.' || str7[i] > '9' || str7[i] == '/') { str7[i] = '0'; } }
     float textSclX = std::stof(str7);
     if (textSclX != editorScale.x)
     {
@@ -593,7 +632,7 @@ void EditorUpdateEntityTransform(cScene* scene)
     }
     std::string str8 = editorScaleY.Textbox->GetText(6);
     if (str8 == "") { str8 = "0.0"; }
-    for (s32 i = 0; i < str8.size(); i++) { if (str8[1] < '.' || str8[i] > '9') { str8[i] = '0'; } }
+    for (s32 i = 0; i < str8.size(); i++) { if (str8[1] < '.' || str8[i] > '9' || str8[i] == '/') { str8[i] = '0'; } }
     float textSclY = std::stof(str8);
     if (textSclY != editorScale.y)
     {
@@ -603,13 +642,38 @@ void EditorUpdateEntityTransform(cScene* scene)
     }
     std::string str9 = editorScaleZ.Textbox->GetText(6);
     if (str9 == "") { str3 = "0.0"; }
-    for (s32 i = 0; i < str9.size(); i++) { if (str9[1] < '.' || str9[i] > '9') { str9[i] = '0'; } }
+    for (s32 i = 0; i < str9.size(); i++) { if (str9[1] < '.' || str9[i] > '9' || str9[i] == '/') { str9[i] = '0'; } }
     float textSclZ = std::stof(str9);
     if (textSclZ != editorScale.z)
     {
         sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
         transform->Scale.z = textSclZ;
         editorScale.z = textSclZ;
+    }
+
+    // Light scale
+    std::string str10 = editorLightScale.Textbox->GetText(3);
+    if (str10 == "") { str10 = "0.0"; }
+    for (s32 i = 0; i < str10.size(); i++) { if (str10[1] < '.' || str10[i] > '9' || str10[i] == '/') { str10[i] = '0'; } }
+    float textScale = std::stof(str10);
+    sCLight* light = scene->Get<sCLight>(editorSelectedEntity);
+    if (light != nullptr)
+    {
+        std::string channels[4] = { "", "", "", "" }; usize channelIndex = 0;
+        std::string lightColorStr = editorLightColor.Textbox->GetText(100);
+        for (auto c : lightColorStr)
+        {
+            if (c == ';') { channelIndex += 1; }
+            if (c < '0' || c > '9') { continue; }
+            channels[channelIndex] += c;
+        }
+        light->Color = glm::vec3(
+            std::stoi(channels[0]) / 255.0f,
+            std::stoi(channels[1]) / 255.0f,
+            std::stoi(channels[2]) / 255.0f
+        );
+        light->Scale = textScale;
+        renderManager->UpdateLights(editorApp, editorScene);
     }
 }
 
@@ -660,14 +724,11 @@ void EditorWindowAssetDeleteItem(
                 app,
                 [&asset, &owners, assetIndex](cApplication* app_, cScene* scene_, sCMaterial* material_)
                 {
-                    if (material_->Info == assetIndex)
+                    if (std::string((const char*)&scene_->Get<sCAssetName>(material_->Owner)->AssetName[0])
+                        == asset.Name)
                     {
                         owners.push_back(material_->Owner);
                         return;
-                    }
-                    else if (material_->Info > assetIndex)
-                    {
-                        material_->Info -= 1;
                     }
                 }
             );
@@ -683,14 +744,11 @@ void EditorWindowAssetDeleteItem(
                 app,
                 [&asset, &owners, assetIndex](cApplication* app_, cScene* scene_, sCGeometry* geometry_)
                 {
-                    if (geometry_->Info == assetIndex)
+                    if (std::string((const char*)&scene_->Get<sCAssetName>(geometry_->Owner)->AssetName[0])
+                        == asset.Name)
                     {
                         owners.push_back(geometry_->Owner);
                         return;
-                    }
-                    else if (geometry_->Info > assetIndex)
-                    {
-                        geometry_->Info -= 1;
                     }
                 }
             );
@@ -702,6 +760,7 @@ void EditorWindowAssetDeleteItem(
         // Remove entity from scene
         for (auto owner : owners)
         {
+            scene->Remove<sCAssetName>(owner);
             scene->Remove<sCTransform>(owner);
             scene->Remove<sCMaterial>(owner);
             scene->Remove<sCGeometry>(owner);
@@ -806,10 +865,9 @@ void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
             app,
             [&asset, assetIndex](cApplication* app_, cScene* scene_, sCMaterial* material_)
             {
-                if (material_->Info == assetIndex)
-                {
+                if (std::string((const char*)&scene_->Get<sCAssetName>(material_->Owner)->AssetName[0])
+                    == asset.Name)
                     material_->DiffuseColor = asset.Color;
-                }
             }
         );
     }
@@ -876,25 +934,25 @@ void EditorWindowRenderEntityLogic(
                 if (editorUsedAssetIndex != -1 &&
                     editorWindowAssetSelectedType == eAssetSelectedType::ENTITY)
                 {
-                    sAsset& asset = editorWindowAssetData[0][editorUsedAssetIndex];
+                    sAsset& asset = editorWindowAssetData[eAssetSelectedType::ENTITY][editorUsedAssetIndex];
 
                     // Create entity
-                    static int i = 0;
-                    auto entity = scene->CreateEntity("Entity" + std::to_string(editorUniqueID++));
+                    auto entity = scene->CreateEntity(asset.Name + std::to_string(editorUniqueID++));
+                    sCAssetName* entityAssetName = scene->Add<sCAssetName>(entity);
+                    memcpy(&entityAssetName->AssetName[0], asset.Name.data(), asset.Name.size());
                     sCGeometryInfo* entityGeometryInfo = scene->Add<sCGeometryInfo>(entity);
-                    entityGeometryInfo->Info = editorUsedAssetIndex;
                     entityGeometryInfo->IsVisible = K_TRUE;
                     entityGeometryInfo->IsOpaque = K_TRUE;
                     sCMaterial* entityMaterial = scene->Add<sCMaterial>(entity);
-                    entityMaterial->Info = editorUsedAssetIndex;
-                    entityMaterial->DiffuseColor = ((sCMaterial*)asset.Components[0])->DiffuseColor;
-                    entityMaterial->HighlightColor = glm::vec4(1.0f);
-                    entityMaterial->DiffuseTexture = ((sCMaterial*)asset.Components[0])->DiffuseTexture;
+                    if (entityMaterial != nullptr && (sCMaterial*)asset.Components[0] != nullptr)
+                    {
+                        entityMaterial->DiffuseColor = ((sCMaterial*)asset.Components[0])->DiffuseColor;
+                        entityMaterial->HighlightColor = glm::vec4(1.0f);
+                        entityMaterial->DiffuseTexture = ((sCMaterial*)asset.Components[0])->DiffuseTexture;
+                    }
                     sCGeometry* entityGeometry = scene->Add<sCGeometry>(entity);
-                    entityGeometry->Info = editorUsedAssetIndex;
                     entityGeometry->Geometry = ((sCGeometry*)asset.Components[1])->Geometry;
                     sCTransform* entityTransform = scene->Add<sCTransform>(entity);
-                    entityTransform->Info = editorUsedAssetIndex;
                     entityTransform->Position = result;
                     entityTransform->Rotation = glm::vec3(0.0f);
                     entityTransform->Scale = glm::vec3(1.0f);
@@ -909,10 +967,19 @@ void EditorWindowRenderEntityLogic(
                 if (editorSelectedEntity > 0)
                 {
                     sCMaterial* material = scene->Get<sCMaterial>(editorSelectedEntity);
-                    if (material != nullptr) material->HighlightColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
-
+                    if (material != nullptr) material->HighlightColor = glm::vec4(1.5f);
                     sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
                     if (transform != nullptr) EditorUpdateTextboxTransform(transform);
+                    sCLight* light = scene->Get<sCLight>(editorSelectedEntity);
+                    if (light != nullptr)
+                    {
+                        editorIsLight->SetCheck(1);
+                        EditorUpdateTextboxLight(light);
+                    }
+                    else
+                    {
+                        editorIsLight->SetCheck(0);
+                    }
                 }
             }
 
@@ -957,10 +1024,19 @@ void EditorWindowRenderEntityLogic(
                     if (editorSelectedEntity > 0)
                     {
                         material = scene->Get<sCMaterial>(editorSelectedEntity);
-                        if (material != nullptr) material->HighlightColor = glm::vec4(1.0f, 0.25f, 0.25f, 1.0f);
-
+                        if (material != nullptr) material->HighlightColor = glm::vec4(1.5f);
                         sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
                         if (transform != nullptr) EditorUpdateTextboxTransform(transform);
+                        sCLight* light = scene->Get<sCLight>(editorSelectedEntity);
+                        if (light != nullptr)
+                        {
+                            editorIsLight->SetCheck(1);
+                            EditorUpdateTextboxLight(light);
+                        }
+                        else
+                        {
+                            editorIsLight->SetCheck(0);
+                        }
                     }
                 }
                 else if (resultBool == K_FALSE || resultEntity == editorSelectedEntity)
@@ -1007,7 +1083,6 @@ void EditorWindowRenderEntityLogic(
                     // Move entity
                     sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
                     if (transform != nullptr) transform->Position = result;
-
                     EditorUpdateTextboxTransform(transform);
                 }
             }
@@ -1041,29 +1116,29 @@ void EditorWindowRenderEntityLogic(
         editorSelectMode == eSelectMode::TRANSFORM)
     {
         // Create entity
-        auto entity = scene->CreateEntity("Entity" + std::to_string(editorUniqueID++));
+        sCAssetName* originalAssetName = scene->Get<sCAssetName>(editorCopyEntity);
+        auto entity = scene->CreateEntity(std::string((const char*)&originalAssetName->AssetName[0]) + std::to_string(editorUniqueID++));
+        sCAssetName* entityAssetName = scene->Add<sCAssetName>(entity);
+        entityAssetName->Owner = entity;
+        memcpy(&entityAssetName->AssetName[0], &originalAssetName->AssetName[0], 256);
         sCGeometryInfo* entityGeometryInfo = scene->Add<sCGeometryInfo>(entity);
-        sCGeometryInfo* originalGeometryInfo = scene->Get<sCGeometryInfo>(editorCopyEntity);
         entityGeometryInfo->Owner = entity;
-        entityGeometryInfo->Info = originalGeometryInfo->Info;
+        sCGeometryInfo* originalGeometryInfo = scene->Get<sCGeometryInfo>(editorCopyEntity);
         entityGeometryInfo->IsVisible = K_TRUE;
         entityGeometryInfo->IsOpaque = K_TRUE;
         sCMaterial* entityMaterial = scene->Add<sCMaterial>(entity);
-        sCMaterial* originalMaterial = scene->Get<sCMaterial>(editorCopyEntity);
         entityMaterial->Owner = entity;
-        entityMaterial->Info = originalMaterial->Info;
+        sCMaterial* originalMaterial = scene->Get<sCMaterial>(editorCopyEntity);
         entityMaterial->DiffuseColor = originalMaterial->DiffuseColor;
         entityMaterial->HighlightColor = glm::vec4(1.0f);
         entityMaterial->DiffuseTexture = originalMaterial->DiffuseTexture;
         sCGeometry* entityGeometry = scene->Add<sCGeometry>(entity);
-        sCGeometry* originalGeometry = scene->Get<sCGeometry>(editorCopyEntity);
         entityGeometry->Owner = entity;
-        entityGeometry->Info = originalGeometry->Info;
+        sCGeometry* originalGeometry = scene->Get<sCGeometry>(editorCopyEntity);
         entityGeometry->Geometry = originalGeometry->Geometry;
         sCTransform* entityTransform = scene->Add<sCTransform>(entity);
-        sCTransform* originalTransform = scene->Get<sCTransform>(editorCopyEntity);
         entityTransform->Owner = entity;
-        entityTransform->Info = originalTransform->Info;
+        sCTransform* originalTransform = scene->Get<sCTransform>(editorCopyEntity);
         entityTransform->Position = originalTransform->Position;
         entityTransform->Rotation = originalTransform->Rotation;
         entityTransform->Scale = originalTransform->Scale;
@@ -1075,6 +1150,7 @@ void EditorWindowRenderEntityLogic(
         editorSelectedEntity > 0 &&
         editorSelectMode == eSelectMode::TRANSFORM)
     {
+        if (scene->Get<sCAssetName>(editorSelectedEntity) != nullptr) scene->Remove<sCAssetName>(editorSelectedEntity);
         if (scene->Get<sCGeometryInfo>(editorSelectedEntity) != nullptr) scene->Remove<sCGeometryInfo>(editorSelectedEntity);
         if (scene->Get<sCMaterial>(editorSelectedEntity) != nullptr) scene->Remove<sCMaterial>(editorSelectedEntity);
         if (scene->Get<sCGeometry>(editorSelectedEntity) != nullptr) scene->Remove<sCGeometry>(editorSelectedEntity);
@@ -1097,6 +1173,18 @@ void EditorWindowObjectLogic(cApplication* app, cScene* scene)
     else
     {
         scene->Get<sCGeometryInfo>(editorSelectedEntity)->IsVisible = K_TRUE;//+ 1;
+    }
+
+    // Change 'Is light' checkbox
+    if (editorIsLight->GetCheck())
+    {
+        if (scene->Get<sCLight>(editorSelectedEntity) == nullptr)
+            scene->Add<sCLight>(editorSelectedEntity);
+    }
+    else
+    {
+        if (scene->Get<sCLight>(editorSelectedEntity) != nullptr)
+            scene->Remove<sCLight>(editorSelectedEntity);
     }
 }
 
@@ -1125,11 +1213,13 @@ void EditorNewMap(cApplication* app, cScene* scene)
             app,
             [](cApplication* app_, cScene* scene_, const std::string& id_, entity entity_)
             {
+                if (scene_->Get<sCAssetName>(entity_) != nullptr)
+                    scene_->Remove<sCAssetName>(entity_);
                 scene_->Remove<sCGeometryInfo>(entity_);
                 scene_->Remove<sCMaterial>(entity_);
                 scene_->Remove<sCGeometry>(entity_);
                 if (scene_->Get<sCTransform>(entity_) != nullptr &&
-                    scene_->Get<sCTransform>(entity_)->Info != -1) scene_->Remove<sCTransform>(entity_);
+                    scene_->Get<sCAssetName>(entity_) != nullptr) scene_->Remove<sCTransform>(entity_);
             }
         );
         scene->RemoveEntities({ editorCamera, editorPhysicsScene });

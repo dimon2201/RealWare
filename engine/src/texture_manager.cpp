@@ -12,8 +12,8 @@ namespace realware
         {
             m_context = context;
             m_atlas = m_context->CreateTexture(
-                width,
-                height,
+                512,
+                512,
                 depth,
                 render::sTexture::eType::TEXTURE_2D_ARRAY,
                 render::sTexture::eFormat::RGBA8_MIPS,

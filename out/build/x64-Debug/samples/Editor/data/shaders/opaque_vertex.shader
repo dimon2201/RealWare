@@ -24,11 +24,20 @@ struct Material
 	vec4 HighlightColor;
 };
 
+struct Light
+{
+	vec4 Position;
+	vec4 Color;
+	vec4 DirectionAndScale;
+};
+
 layout(std430, binding = 0) buffer InstanceBuffer { Instance instances[1024]; };
 layout(std430, binding = 1) buffer MaterialBuffer { Material materials[1024]; };
+layout(std430, binding = 2) buffer LightBuffer { uvec4 lightCount; Light lights[1024]; };
 
 out vec3 Texcoord;
 flat out vec4 Color;
+flat out uint LightCount;
 
 uniform mat4 ViewProjection;
 
@@ -41,6 +50,7 @@ void main()
 	Texcoord.xy *= vec2(material.DiffuseTextureInfo.zw);
 	Texcoord.xy += material.DiffuseTextureInfo.xy;
 	Color = material.DiffuseColor * material.HighlightColor;
+	LightCount = lightCount.x;
 
 	if (instance.Use2D == 0) {
 		gl_Position = ViewProjection * instance.World * vec4(InPositionLocal, 1.0);

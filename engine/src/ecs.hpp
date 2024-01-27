@@ -52,7 +52,6 @@ namespace realware
         struct sComponent
         {
             entity Owner = {};
-            s64 Info = -1;
         };
 
         struct sEntityScenePair
@@ -62,6 +61,11 @@ namespace realware
 
             entity Entity;
             cScene* Scene = nullptr;
+        };
+
+        struct sCAssetName : public sComponent
+        {
+            u8 AssetName[256] = {};
         };
 
         struct sCTransform : public sComponent
@@ -262,6 +266,13 @@ namespace realware
             boolean IsGravityEnabled = K_TRUE;
         };
 
+        struct sCLight : public sComponent
+        {
+            glm::vec3 Color;
+            glm::vec3 Direction;
+            float Scale;
+        };
+
         struct sComponentArray
         {
             sComponentArray(core::usize componentCount, void* memory) : ComponentCount(componentCount), Memory(memory)
@@ -280,6 +291,7 @@ namespace realware
             {
                 m_arrayByteSize = arrayByteSize;
 
+                RegisterComponent<sCAssetName>();
                 RegisterComponent<sCTransform>();
                 RegisterComponent<sCMaterial>();
                 RegisterComponent<sCWidget>();
@@ -298,6 +310,7 @@ namespace realware
                 RegisterComponent<sCPhysicsScene>();
                 RegisterComponent<sCPhysicsActor>();
                 RegisterComponent<sCPhysicsCharacterController>();
+                RegisterComponent<sCLight>();
             }
 
             ~cScene()
@@ -402,7 +415,6 @@ namespace realware
                 ComponentType* memory = (ComponentType*)array.Memory;
                 core::usize index = array.ComponentCount;
                 memory[index].Owner = owner;
-                memory[index].Info = -1;
                 array.ComponentCount += 1;
 
                 return &memory[index];
