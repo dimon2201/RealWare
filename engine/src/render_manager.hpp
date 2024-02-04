@@ -107,6 +107,7 @@ namespace realware
             glm::vec4 Position;
             glm::vec4 Color;
             glm::vec4 DirectionAndScale;
+            glm::vec4 Attenuation;
         };
 
         struct sInstanceList

@@ -271,6 +271,7 @@ namespace realware
             glm::vec3 Color;
             glm::vec3 Direction;
             float Scale;
+            glm::vec3 Attenuation;
         };
 
         struct sComponentArray

@@ -17,7 +17,8 @@ namespace realware
                 const std::string& windowName,
                 const glm::vec2& position,
                 const glm::vec2& size,
-                core::boolean isNumberOnly
+                core::boolean isNumberOnly,
+                core::boolean isMultiline
             );
             ~cEditorTextbox();
 

@@ -11,7 +11,8 @@ namespace realware
             const std::string& windowName,
             const glm::vec2& position,
             const glm::vec2& size,
-            core::boolean isNumberOnly
+            core::boolean isNumberOnly,
+            core::boolean isMultiline
         )
         {
             HINSTANCE hInstance = GetModuleHandle(0);
@@ -20,7 +21,8 @@ namespace realware
                 WS_EX_CLIENTEDGE,
                 "EDIT",
                 windowName.data(),
-                WS_CHILD | WS_VISIBLE | (isNumberOnly == core::K_TRUE ? ES_NUMBER : 0),
+                WS_CHILD | WS_VISIBLE | (isNumberOnly == core::K_TRUE ? ES_NUMBER : 0) |
+                (isMultiline == core::K_TRUE ? WS_VSCROLL | ES_MULTILINE : 0),
                 position.x,
                 position.y,
                 size.x,

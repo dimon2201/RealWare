@@ -41,11 +41,11 @@ using namespace realware::map;
 
 mRender* renderManager = new mRender();
 mTexture* textureManager = new mTexture();
+mSound* soundManager = new mSound();
 mCamera* cameraManager = new mCamera();
 mFileSystem* fileSystemManager = new mFileSystem();
 mUserInput* userInputManager = new mUserInput();
 mFont* fontManager = new mFont();
-mSound* soundManager = new mSound();
 mPhysics* physicsManager = new mPhysics();
 cApplication* editorApp = nullptr;
 cScene* editorScene = nullptr;
@@ -65,21 +65,35 @@ sTextboxLabel editorRotationX; sTextboxLabel editorRotationY; sTextboxLabel edit
 sTextboxLabel editorScaleX; sTextboxLabel editorScaleY; sTextboxLabel editorScaleZ;
 cEditorCheckbox* editorIsVisible = nullptr;
 cEditorCheckbox* editorIsLight = nullptr;
+cEditorCheckbox* editorIsScripted = nullptr;
 sTextboxLabel editorLightScale;
 sTextboxLabel editorLightColor;
+sTextboxLabel editorLightAttenuation;
+sTextboxLabel editorScript;
 sTextboxLabel editorWindowEntityName;
 sTextboxLabel editorWindowEntityTexture;
 sTextboxLabel editorWindowEntityGeometry;
 sTextboxLabel editorWindowEntityDiffuseColor;
+sTextboxLabel editorWindowSoundName;
+sTextboxLabel editorWindowSoundFile;
+sTextboxLabel editorWindowScriptName;
+sTextboxLabel editorWindowScriptCode;
 sTextboxLabel editorWindowAssetSearch;
 cEditorWindow* editorWindowMain = nullptr;
 cEditorWindow* editorWindowAsset = nullptr;
 cEditorWindow* editorWindowEntity = nullptr;
+cEditorWindow* editorWindowSound = nullptr;
+cEditorWindow* editorWindowScript = nullptr;
 cEditorListView* editorWindowAssetListView = nullptr;
 cEditorButton* editorWindowAssetEntitiesButton = nullptr;
 cEditorButton* editorWindowAssetSoundsButton = nullptr;
+cEditorButton* editorWindowAssetScriptsButton = nullptr;
 cEditorButton* editorWindowEntityOKButton = nullptr;
 cEditorButton* editorWindowEntityCloseButton = nullptr;
+cEditorButton* editorWindowSoundOKButton = nullptr;
+cEditorButton* editorWindowSoundCloseButton = nullptr;
+cEditorButton* editorWindowScriptOKButton = nullptr;
+cEditorButton* editorWindowScriptCloseButton = nullptr;
 eAssetSelectedType editorWindowAssetSelectedType = eAssetSelectedType::ENTITY;
 std::vector<std::vector<sAsset>> editorWindowAssetData((int)eAssetSelectedType::_COUNT);
 
@@ -96,6 +110,10 @@ void EditorWindowAssetDeleteItem(
 void EditorAssetLoadData(eAssetSelectedType type, sAsset& asset);
 void EditorWindowEntityUpdate(int assetIndex);
 void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex);
+void EditorWindowSoundUpdate(int assetIndex);
+void EditorWindowSoundSave(cApplication* app, cScene* scene, int assetIndex);
+void EditorWindowScriptUpdate(int assetIndex);
+void EditorWindowScriptSave(cApplication* app, cScene* scene, int assetIndex);
 void EditorWindowRenderEntityLogic(
     cApplication* app,
     cScene* scene,
@@ -126,6 +144,7 @@ public:
 
         // Initialize managers
         textureManager->Init(m_renderContext, 2048, 2048, 12);
+        soundManager->Init(new cOpenALSoundContext());
         renderManager->Init(
             m_renderContext,
             4 * 1024 * 1024,
@@ -198,6 +217,8 @@ public:
         editorWindowMain->AddSubmenu(menus[0], 4, "New map");
         editorWindowMain->AddSubmenu(menus[0], 5, "Open map");
         editorWindowMain->AddSubmenu(menus[0], 6, "Save map");
+        editorWindowMain->AddSubmenuSeparator(menus[0]);
+        editorWindowMain->AddSubmenu(menus[0], 7, "Exit");
 
         RemoveWindowSysmenu(editorWindowMain->GetHWND());
 
@@ -235,12 +256,18 @@ public:
             glm::vec2(offset * 28.0f, offset * 2.0f),
             glm::vec2(offset * 25.0f, offset * 7.0f)
         );
+        editorWindowAssetScriptsButton = new cEditorButton(
+            editorWindowAsset->GetHWND(),
+            "Scripts",
+            glm::vec2(offset * 55.0f, offset * 2.0f),
+            glm::vec2(offset * 25.0f, offset * 7.0f)
+        );
 
         editorWindowAssetSearch.Label = new cEditorLabel(editorWindowAsset->GetHWND(), "Search",
             glm::vec2(offset * 2.0f, offset * 13.0f), glm::vec2(offset * 15.0f, offset * 6.0f)
         );
         editorWindowAssetSearch.Textbox = new cEditorTextbox(editorWindowAsset->GetHWND(), "",
-            glm::vec2(offset * 19.0f, offset * 13.0f), glm::vec2(offset * 55.0f, offset * 6.0f), K_FALSE
+            glm::vec2(offset * 19.0f, offset * 13.0f), glm::vec2(offset * 55.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
 
         // Entity window
@@ -270,25 +297,97 @@ public:
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityName.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE
+            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
         );
         editorWindowEntityTexture.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Texture",
             glm::vec2(offset * 3.0f, offset * 14.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityTexture.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 14.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE
+            glm::vec2(offset * 25.0f, offset * 14.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
         );
         editorWindowEntityGeometry.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Geometry",
             glm::vec2(offset * 3.0f, offset * 23.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityGeometry.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 23.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE
+            glm::vec2(offset * 25.0f, offset * 23.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
         );
         editorWindowEntityDiffuseColor.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Color",
             glm::vec2(offset * 3.0f, offset * 32.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityDiffuseColor.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "255;255;255;255",
-            glm::vec2(offset * 25.0f, offset * 32.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE
+            glm::vec2(offset * 25.0f, offset * 32.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+        );
+
+        // Sound window
+        editorWindowSound = new cEditorWindow(
+            nullptr,
+            "SoundWindow",
+            "Sound",
+            glm::vec2(0.0f),
+            glm::vec2(offset * 120.0f, offset * 50.0f)
+        );
+        editorWindowSound->Show(K_FALSE);
+        RemoveWindowSysmenu(editorWindowSound->GetHWND());
+
+        editorWindowSoundOKButton = new cEditorButton(
+            editorWindowSound->GetHWND(),
+            "OK",
+            glm::vec2(offset * 106.0f, offset * 30.0f),
+            glm::vec2(offset * 7.0f, offset * 7.0f)
+        );
+        editorWindowSoundCloseButton = new cEditorButton(
+            editorWindowSound->GetHWND(),
+            "Close",
+            glm::vec2(offset * 90.0f, offset * 30.0f),
+            glm::vec2(offset * 15.0f, offset * 7.0f)
+        );
+        editorWindowSoundName.Label = new cEditorLabel(editorWindowSound->GetHWND(), "Name",
+            glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
+        );
+        editorWindowSoundName.Textbox = new cEditorTextbox(editorWindowSound->GetHWND(), "",
+            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+        );
+        editorWindowSoundFile.Label = new cEditorLabel(editorWindowSound->GetHWND(), "File",
+            glm::vec2(offset * 3.0f, offset * 14.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
+        );
+        editorWindowSoundFile.Textbox = new cEditorTextbox(editorWindowSound->GetHWND(), "",
+            glm::vec2(offset * 25.0f, offset * 14.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+        );
+
+        // Script window
+        editorWindowScript = new cEditorWindow(
+            nullptr,
+            "ScriptWindow",
+            "Script",
+            glm::vec2(0.0f),
+            glm::vec2(offset * 120.0f, offset * 140.0f)
+        );
+        editorWindowScript->Show(K_FALSE);
+        RemoveWindowSysmenu(editorWindowScript->GetHWND());
+
+        editorWindowScriptOKButton = new cEditorButton(
+            editorWindowScript->GetHWND(),
+            "OK",
+            glm::vec2(offset * 106.0f, offset * 120.0f),
+            glm::vec2(offset * 7.0f, offset * 7.0f)
+        );
+        editorWindowScriptCloseButton = new cEditorButton(
+            editorWindowScript->GetHWND(),
+            "Close",
+            glm::vec2(offset * 90.0f, offset * 120.0f),
+            glm::vec2(offset * 15.0f, offset * 7.0f)
+        );
+        editorWindowScriptName.Label = new cEditorLabel(editorWindowScript->GetHWND(), "Name",
+            glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
+        );
+        editorWindowScriptName.Textbox = new cEditorTextbox(editorWindowScript->GetHWND(), "",
+            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+        );
+        editorWindowScriptCode.Label = new cEditorLabel(editorWindowScript->GetHWND(), "Code",
+            glm::vec2(offset * 3.0f, offset * 14.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
+        );
+        editorWindowScriptCode.Textbox = new cEditorTextbox(editorWindowScript->GetHWND(), "",
+            glm::vec2(offset * 3.0f, offset * 22.0f), glm::vec2(offset * 110.0f, offset * 90.0f), K_FALSE, K_TRUE
         );
 
         // Render window
@@ -337,55 +436,55 @@ public:
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionX.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorPositionY.Label = new cEditorLabel(objectPositionGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionY.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorPositionZ.Label = new cEditorLabel(objectPositionGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionZ.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorRotationX.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "X",
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationX.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorRotationY.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationY.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorRotationZ.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationZ.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorScaleX.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "X",
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleX.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorScaleY.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleY.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorScaleZ.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleZ.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
 
         editorIsVisible = new cEditorCheckbox(
@@ -401,22 +500,44 @@ public:
             "Is light",
             glm::vec2(offset * 2.0f, offset * 14.0f),
             glm::vec2(offset * 25.0f, offset * 5.0f),
-            true
+            false
         );
         editorLightScale.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Scale",
             glm::vec2(offset * 29.0f, offset * 14.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
         );
         editorLightScale.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 46.0f, offset * 14.0f), glm::vec2(offset * 8.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 46.0f, offset * 14.0f), glm::vec2(offset * 8.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
         editorLightColor.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Color",
             glm::vec2(offset * 56.0f, offset * 14.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
         );
         editorLightColor.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "255;255;255;255",
-            glm::vec2(offset * 73.0f, offset * 14.0f), glm::vec2(offset * 40.0f, offset * 5.0f), K_FALSE
+            glm::vec2(offset * 73.0f, offset * 14.0f), glm::vec2(offset * 40.0f, offset * 6.0f), K_FALSE, K_FALSE
+        );
+        editorLightAttenuation.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Attenuation",
+            glm::vec2(offset * 29.0f, offset * 21.0f), glm::vec2(offset * 25.0f, offset * 5.0f)
+        );
+        editorLightAttenuation.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "1.0;1.0;1.0",
+            glm::vec2(offset * 56.0f, offset * 21.0f), glm::vec2(offset * 35.0f, offset * 6.0f), K_FALSE, K_FALSE
+        );
+
+        editorIsScripted = new cEditorCheckbox(
+            objectComponentsGroupbox->GetHWND(),
+            "Is scripted",
+            glm::vec2(offset * 2.0f, offset * 28.0f),
+            glm::vec2(offset * 26.0f, offset * 5.0f),
+            false
+        );
+        editorScript.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Name",
+            glm::vec2(offset * 29.0f, offset * 28.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
+        );
+        editorScript.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "",
+            glm::vec2(offset * 46.0f, offset * 28.0f), glm::vec2(offset * 40.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
 
         userInputManager->FocusWindow();
+
+        ShowWindow(GetConsoleWindow(), SW_HIDE);
     }
 
     virtual void Update() override final
@@ -549,6 +670,17 @@ void EditorUpdateTextboxLight(sCLight* light)
         std::string("255");
     colorStr.resize(100);
     editorLightColor.Textbox->SetText(colorStr);
+
+    // Attenuation
+    std::string attenuationX = std::to_string(light->Attenuation.x); attenuationX.resize(3);
+    std::string attenuationY = std::to_string(light->Attenuation.y); attenuationY.resize(3);
+    std::string attenuationZ = std::to_string(light->Attenuation.z); attenuationZ.resize(3);
+    std::string attenuationStr =
+        attenuationX + std::string(";") +
+        attenuationY + std::string(";") +
+        attenuationZ;
+    attenuationStr.resize(11);
+    editorLightAttenuation.Textbox->SetText(attenuationStr);
 }
 
 void EditorUpdateEntityFields(cScene* scene)
@@ -651,7 +783,7 @@ void EditorUpdateEntityFields(cScene* scene)
         editorScale.z = textSclZ;
     }
 
-    // Light scale
+    // Light
     std::string str10 = editorLightScale.Textbox->GetText(3);
     if (str10 == "") { str10 = "0.0"; }
     for (s32 i = 0; i < str10.size(); i++) { if (str10[1] < '.' || str10[i] > '9' || str10[i] == '/') { str10[i] = '0'; } }
@@ -659,20 +791,38 @@ void EditorUpdateEntityFields(cScene* scene)
     sCLight* light = scene->Get<sCLight>(editorSelectedEntity);
     if (light != nullptr)
     {
-        std::string channels[4] = { "", "", "", "" }; usize channelIndex = 0;
+        // Scale
+        std::string colorChannels[4] = { "", "", "", "" }; usize colorChannelIndex = 0;
         std::string lightColorStr = editorLightColor.Textbox->GetText(100);
         for (auto c : lightColorStr)
         {
-            if (c == ';') { channelIndex += 1; }
+            if (c == ';') { colorChannelIndex += 1; }
             if (c < '0' || c > '9') { continue; }
-            channels[channelIndex] += c;
+            colorChannels[colorChannelIndex] += c;
         }
+
+        // Attenuation
+        std::string attenuationChannels[4] = { "", "", "", "" }; usize attenuationChannelIndex = 0;
+        std::string lightAttenuationStr = editorLightAttenuation.Textbox->GetText(100);
+        for (auto c : lightAttenuationStr)
+        {
+            if (c == ';') { attenuationChannelIndex += 1; }
+            if ((c < '0' || c > '9') && c != '.') { continue; }
+            attenuationChannels[attenuationChannelIndex] += c;
+        }
+
         light->Color = glm::vec3(
-            std::stoi(channels[0]) / 255.0f,
-            std::stoi(channels[1]) / 255.0f,
-            std::stoi(channels[2]) / 255.0f
+            std::stoi(colorChannels[0]) / 255.0f,
+            std::stoi(colorChannels[1]) / 255.0f,
+            std::stoi(colorChannels[2]) / 255.0f
+        );
+        light->Attenuation = glm::vec3(
+            (std::trunc(std::stof(attenuationChannels[0]) * 100.0f)) / 100.0f,
+            (std::trunc(std::stof(attenuationChannels[1]) * 100.0f)) / 100.0f,
+            (std::trunc(std::stof(attenuationChannels[2]) * 100.0f)) / 100.0f
         );
         light->Scale = textScale;
+
         renderManager->UpdateLights(editorApp, editorScene);
     }
 }
@@ -816,6 +966,27 @@ void EditorAssetLoadData(eAssetSelectedType type, sAsset& asset)
             }
         }
     }
+    else if (type == eAssetSelectedType::SOUND)
+    {
+        if (asset.Components[0] == nullptr)
+        {
+            // Load sound
+            auto sound = soundManager->LoadSound(
+                (EditorGetExeFolder() + asset.Filenames[0]).c_str(),
+                sSound::eFormat::WAV,
+                asset.Name + "Texture"
+            );
+            if (sound != nullptr)
+            {
+                asset.Components[0] = new sCSound();
+                ((sCSound*)asset.Components[0])->Sound = sound;
+            }
+            else
+            {
+                MessageBox(0, "Couldn't load sound", "Error", MB_ICONERROR);
+            }
+        }
+    }
 }
 
 void EditorWindowEntityUpdate(int assetIndex)
@@ -874,6 +1045,58 @@ void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
 
     std::string caption = "Entity : " + asset.Name;
     SetWindowText(editorWindowEntity->GetHWND(), caption.data());
+    ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());
+}
+
+void EditorWindowSoundUpdate(int assetIndex)
+{
+    sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
+    std::string caption = "Sound : " + asset.Name;
+    SetWindowText(editorWindowSound->GetHWND(), caption.data());
+    editorWindowSoundName.Textbox->SetText(asset.Name);
+    editorWindowSoundFile.Textbox->SetText(asset.Filenames[0]);
+}
+
+void EditorWindowSoundSave(cApplication* app, cScene* scene, int assetIndex)
+{
+    sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
+    asset.Name = editorWindowSoundName.Textbox->GetText(100);
+    asset.Filenames[0] = editorWindowSoundFile.Textbox->GetText(100);
+    
+    EditorAssetLoadData(editorWindowAssetSelectedType, asset);
+
+    if (asset.Components[0] != nullptr)
+    {
+        // Delete material
+        soundManager->RemoveSound(((sCSound*)asset.Components[0])->Sound->Tag);
+        delete asset.Components[0];
+        asset.Components[0] = nullptr;
+
+        EditorAssetLoadData(editorWindowAssetSelectedType, asset);
+    }
+
+    std::string caption = "Sound : " + asset.Name;
+    SetWindowText(editorWindowSound->GetHWND(), caption.data());
+    ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());
+}
+
+void EditorWindowScriptUpdate(int assetIndex)
+{
+    sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
+    std::string caption = "Script : " + asset.Name;
+    SetWindowText(editorWindowScript->GetHWND(), caption.data());
+    editorWindowScriptName.Textbox->SetText(asset.Name);
+    editorWindowScriptCode.Textbox->SetText(asset.Code);
+}
+
+void EditorWindowScriptSave(cApplication* app, cScene* scene, int assetIndex)
+{
+    sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
+    asset.Name = editorWindowScriptName.Textbox->GetText(100);
+    asset.Code = editorWindowScriptCode.Textbox->GetText(100);
+
+    std::string caption = "Script : " + asset.Name;
+    SetWindowText(editorWindowScript->GetHWND(), caption.data());
     ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());
 }
 
@@ -967,7 +1190,7 @@ void EditorWindowRenderEntityLogic(
                 if (editorSelectedEntity > 0)
                 {
                     sCMaterial* material = scene->Get<sCMaterial>(editorSelectedEntity);
-                    if (material != nullptr) material->HighlightColor = glm::vec4(1.5f);
+                    if (material != nullptr) material->HighlightColor = glm::vec4(1.75f);
                     sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
                     if (transform != nullptr) EditorUpdateTextboxTransform(transform);
                     sCLight* light = scene->Get<sCLight>(editorSelectedEntity);
@@ -1024,7 +1247,7 @@ void EditorWindowRenderEntityLogic(
                     if (editorSelectedEntity > 0)
                     {
                         material = scene->Get<sCMaterial>(editorSelectedEntity);
-                        if (material != nullptr) material->HighlightColor = glm::vec4(1.5f);
+                        if (material != nullptr) material->HighlightColor = glm::vec4(1.75f);
                         sCTransform* transform = scene->Get<sCTransform>(editorSelectedEntity);
                         if (transform != nullptr) EditorUpdateTextboxTransform(transform);
                         sCLight* light = scene->Get<sCLight>(editorSelectedEntity);
@@ -1223,6 +1446,7 @@ void EditorNewMap(cApplication* app, cScene* scene)
             }
         );
         scene->RemoveEntities({ editorCamera, editorPhysicsScene });
+        editorSelectedEntity = 0;
     }
 }
 
@@ -1252,8 +1476,8 @@ void EditorNewPlugin(cApplication* app, cScene* scene)
             editorWindowAssetData[i].clear();
             editorWindowAssetData[i].shrink_to_fit();
         }
-
         ListView_DeleteAllItems(editorWindowAssetListView->GetHWND());
+        editorSelectedEntity = 0;
     }
 }
 

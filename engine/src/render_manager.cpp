@@ -265,6 +265,12 @@ namespace realware
                         light_->Direction.z,
                         light_->Scale
                     );
+                    i.Attenuation = glm::vec4(
+                        light_->Attenuation.x,
+                        light_->Attenuation.y,
+                        light_->Attenuation.z,
+                        0.0f
+                    );
 
                     memcpy((void*)((core::usize)m_lights + (core::usize)m_lightsByteSize), &i, sizeof(sLightInstance));
                     m_lightsByteSize += sizeof(sLightInstance);

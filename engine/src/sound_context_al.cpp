@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdio>
 #include <string>
+#include <windows.h>
 
 #include "sound_context.hpp"
 
@@ -144,8 +145,10 @@ namespace realware
 
             FILE* fp = nullptr;
             errno_t err = fopen_s(&fp, &filename[0], "rb");
-            if (err != 0) {
+            if (err != 0)
+            {
                 std::cout << "Error opening WAV file at '" << filename << "'!" << std::endl;
+                MessageBox(0, "Error opening WAV file", 0, MB_ICONERROR);
             }
 
             // Chunk

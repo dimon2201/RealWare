@@ -15,15 +15,24 @@ extern int editorSelectedAssetIndex;
 extern cEditorWindow* editorWindowMain;
 extern cEditorWindow* editorWindowAsset;
 extern cEditorWindow* editorWindowEntity;
+extern cEditorWindow* editorWindowSound;
+extern cEditorWindow* editorWindowScript;
 extern cEditorListView* editorWindowAssetListView;
 extern cEditorButton* editorWindowAssetEntitiesButton;
 extern cEditorButton* editorWindowAssetSoundsButton;
+extern cEditorButton* editorWindowAssetScriptsButton;
 extern cEditorButton* editorWindowEntityOKButton;
 extern cEditorButton* editorWindowEntityCloseButton;
+extern cEditorButton* editorWindowSoundOKButton;
+extern cEditorButton* editorWindowSoundCloseButton;
+extern cEditorButton* editorWindowScriptOKButton;
+extern cEditorButton* editorWindowScriptCloseButton;
 extern eAssetSelectedType editorWindowAssetSelectedType;
 extern std::vector<std::vector<sAsset>> editorWindowAssetData;
 
 extern void EditorWindowEntitySave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
+extern void EditorWindowSoundSave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
+extern void EditorWindowScriptSave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
 extern void EditorNewPlugin(realware::core::cApplication* app, realware::core::cScene* scene);
 extern void EditorOpenPlugin(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
 extern void EditorSavePlugin(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
@@ -105,6 +114,16 @@ namespace realware
                     if (GetSaveFileName(&ofn) && ofn.lpstrFile != nullptr)
                         EditorSaveMap(editorApp, editorScene, std::string(ofn.lpstrFile));
                 }
+                // Exit option
+                else if (LOWORD(wp) == 7)
+                {
+                    if (MessageBox(
+                        0,
+                        "Current working progress will be completely deleted. Are you sure?",
+                        "Warning",
+                        MB_ICONWARNING | MB_YESNOCANCEL) == IDYES
+                    ) exit(0);
+                }
 
                 // Entities button
                 if ((HWND)lp == editorWindowAssetEntitiesButton->GetHWND())
@@ -122,6 +141,14 @@ namespace realware
                         editorWindowAssetData[editorWindowAssetSelectedType]
                     );
                 }
+                // Scripts button
+                else if ((HWND)lp == editorWindowAssetScriptsButton->GetHWND())
+                {
+                    editorWindowAssetSelectedType = eAssetSelectedType::SCRIPT;
+                    editorWindowAssetListView->AddItemsFromData(
+                        editorWindowAssetData[editorWindowAssetSelectedType]
+                    );
+                }
                 // Entities window OK button
                 else if ((HWND)lp == editorWindowEntityOKButton->GetHWND())
                 {
@@ -132,6 +159,32 @@ namespace realware
                 else if ((HWND)lp == editorWindowEntityCloseButton->GetHWND())
                 {
                     editorWindowEntity->Show(core::K_FALSE);
+                }
+                // Sound window OK button
+                else if (editorWindowSoundOKButton != nullptr &&
+                    (HWND)lp == editorWindowSoundOKButton->GetHWND())
+                {
+                    editorWindowSound->Show(core::K_FALSE);
+                    EditorWindowSoundSave(editorApp, editorScene, editorSelectedAssetIndex);
+                }
+                // Sound window Cancel button
+                else if (editorWindowSoundCloseButton != nullptr &&
+                    (HWND)lp == editorWindowSoundCloseButton->GetHWND())
+                {
+                    editorWindowSound->Show(core::K_FALSE);
+                }
+                // Script window OK button
+                else if (editorWindowScriptOKButton != nullptr &&
+                    (HWND)lp == editorWindowScriptOKButton->GetHWND())
+                {
+                    editorWindowScript->Show(core::K_FALSE);
+                    EditorWindowScriptSave(editorApp, editorScene, editorSelectedAssetIndex);
+                }
+                // Script window Cancel button
+                else if (editorWindowScriptCloseButton != nullptr &&
+                    (HWND)lp == editorWindowScriptCloseButton->GetHWND())
+                {
+                    editorWindowScript->Show(core::K_FALSE);
                 }
 
                 return 0;
