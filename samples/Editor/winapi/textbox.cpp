@@ -15,6 +15,9 @@ namespace realware
             core::boolean isMultiline
         )
         {
+            m_isNumberOnly = isNumberOnly;
+            m_isMultiline = isMultiline;
+
             HINSTANCE hInstance = GetModuleHandle(0);
 
             m_HWND = CreateWindowEx(

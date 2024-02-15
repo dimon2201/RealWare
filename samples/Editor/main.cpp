@@ -508,18 +508,21 @@ public:
         editorLightScale.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "1",
             glm::vec2(offset * 46.0f, offset * 14.0f), glm::vec2(offset * 8.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
+        editorLightScale.Textbox->SetReadonly(K_TRUE);
         editorLightColor.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Color",
             glm::vec2(offset * 56.0f, offset * 14.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
         );
         editorLightColor.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "255;255;255;255",
             glm::vec2(offset * 73.0f, offset * 14.0f), glm::vec2(offset * 40.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
+        editorLightColor.Textbox->SetReadonly(K_TRUE);
         editorLightAttenuation.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Attenuation",
             glm::vec2(offset * 29.0f, offset * 21.0f), glm::vec2(offset * 25.0f, offset * 5.0f)
         );
         editorLightAttenuation.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "1.0;1.0;1.0",
             glm::vec2(offset * 56.0f, offset * 21.0f), glm::vec2(offset * 35.0f, offset * 6.0f), K_FALSE, K_FALSE
         );
+        editorLightAttenuation.Textbox->SetReadonly(K_TRUE);
 
         editorIsScripted = new cEditorCheckbox(
             objectComponentsGroupbox->GetHWND(),
@@ -1403,11 +1406,17 @@ void EditorWindowObjectLogic(cApplication* app, cScene* scene)
     {
         if (scene->Get<sCLight>(editorSelectedEntity) == nullptr)
             scene->Add<sCLight>(editorSelectedEntity);
+        editorLightScale.Textbox->SetReadonly(K_TRUE);
+        editorLightColor.Textbox->SetReadonly(K_TRUE);
+        editorLightAttenuation.Textbox->SetReadonly(K_TRUE);
     }
     else
     {
         if (scene->Get<sCLight>(editorSelectedEntity) != nullptr)
             scene->Remove<sCLight>(editorSelectedEntity);
+        editorLightScale.Textbox->SetReadonly(K_FALSE);
+        editorLightColor.Textbox->SetReadonly(K_FALSE);
+        editorLightAttenuation.Textbox->SetReadonly(K_FALSE);
     }
 }
 
