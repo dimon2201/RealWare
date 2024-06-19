@@ -6,12 +6,13 @@ namespace realware
 {
     namespace sound
     {
-        void mSound::Init(const cSoundContext* context)
+        mSound::mSound(cApplication* app, const cSoundContext* context)
         {
+            m_app = app;
             m_context = (cSoundContext*)context;
         }
 
-        void mSound::Free()
+        mSound::~mSound()
         {
         }
 

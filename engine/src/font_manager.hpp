@@ -10,6 +10,7 @@ namespace realware
 {
     namespace core
     {
+        class cApplication;
         class cUserInput;
     }
 
@@ -19,6 +20,8 @@ namespace realware
         struct sTexture;
     }
 
+    using namespace core;
+
     namespace font
     {
         struct sFont
@@ -26,8 +29,8 @@ namespace realware
             struct sGlyph
             {
                 char Character;
-                core::u32 Width;
-                core::u32 Height;
+                core::s32 Width;
+                core::s32 Height;
                 core::s32 Left;
                 core::s32 Top;
                 float AdvanceX;
@@ -48,15 +51,32 @@ namespace realware
             render::sTexture* Atlas;
         };
 
+        class cText
+        {
+
+        public:
+            cText(sFont* font, const std::string& text)
+            {
+                m_font = font;
+                m_text = text;
+            }
+            ~cText() = default;
+
+            inline sFont* GetFont() { return m_font; }
+            inline std::string GetText() { return m_text; }
+
+        private:
+            sFont* m_font = nullptr;
+            std::string m_text = "";
+
+        };
+
         class mFont
         {
 
         public:
-            mFont() {}
-            ~mFont() {}
-
-            void Init(render::cRenderContext* context);
-            void Free();
+            mFont(cApplication* app, render::cRenderContext* context);
+            ~mFont();
 
             sFont* NewFont(const char* filename, core::usize glyphSize, float whitespaceOffset, float newlineOffset, float spaceOffset);
             void DeleteFont(sFont* font);
@@ -71,6 +91,7 @@ namespace realware
         private:
             void FillUnicodeTable();
 
+            cApplication* m_app;
             core::u16 m_unicode[256] = {};
             render::cRenderContext* m_context = nullptr;
             FT_Library m_lib;

@@ -15,6 +15,7 @@ namespace realware
         using u32 = uint32_t;
         using s64 = int64_t;
         using u64 = uint64_t;
+        using f32 = float;
         using usize = size_t;
         using dword = u32;
         using qword = u64;

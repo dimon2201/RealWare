@@ -5,6 +5,7 @@
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "ecs.hpp"
 #include "texture_manager.hpp"
+#include "gameobject_manager.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -12,6 +13,7 @@ namespace realware
     namespace core
     {
         struct sRenderComponent;
+        class cApplication;
         class cUserInput;
         class cTextureAtlas;
     }
@@ -20,6 +22,8 @@ namespace realware
     {
         struct sFont;
     }
+
+    using namespace core;
 
     namespace render
     {
@@ -70,8 +74,90 @@ namespace realware
         {
         };
 
+
+        struct cTransform
+        {
+
+        public:
+            cTransform() = default;
+            cTransform(cGameObject* gameObject)
+            {
+                m_use2D = gameObject->GetIs2D();
+                m_position = gameObject->GetPosition();
+                m_rotation = gameObject->GetRotation();
+                m_scale = gameObject->GetScale();
+            }
+            ~cTransform() = default;
+
+            void Transform()
+            {
+                glm::quat quatX = glm::angleAxis(m_rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+                glm::quat quatY = glm::angleAxis(m_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::quat quatZ = glm::angleAxis(m_rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+                m_world = glm::translate(glm::mat4(1.0f), m_position) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), m_scale);
+            }
+
+            inline boolean GetIs2D() { return m_use2D; }
+            inline glm::vec3 GetPosition() { return m_position; }
+            inline glm::vec3 GetRotation() { return m_rotation; }
+            inline glm::vec3 GetScale() { return m_scale; }
+            inline glm::mat4 GetWorldMatrix() { return m_world; }
+            inline glm::vec3& GetPositionRef() { return m_position; }
+            inline glm::vec3& GetRotationRef() { return m_rotation; }
+            inline glm::vec3& GetScaleRef() { return m_scale; }
+            inline glm::mat4& GetWorldMatrixRef() { return m_world; }
+
+        private:
+            boolean m_use2D = K_FALSE;
+            glm::vec3 m_position = glm::vec3(0.0f);
+            glm::vec3 m_rotation = glm::vec3(0.0f);
+            glm::vec3 m_scale = glm::vec3(1.0f);
+            glm::mat4 m_world = glm::mat4(1.0f);
+
+        };
+
+        struct cMaterial
+        {
+
+        public:
+            cMaterial() = default;
+            cMaterial(
+                const std::string& id,
+                sArea* diffuseTexture,
+                const glm::vec4& diffuseColor,
+                const glm::vec4& highlightColor
+            )
+            {
+                m_id = id;
+                m_diffuseTexture = diffuseTexture;
+                m_diffuseColor = diffuseColor;
+                m_highlightColor = highlightColor;
+            }
+            ~cMaterial() = default;
+
+            std::string& GetID() { return m_id; }
+            sArea* GetDiffuseTexture() { return m_diffuseTexture; }
+            glm::vec4 GetDiffuseColor() { return m_diffuseColor; }
+            glm::vec4 GetHighlightColor() { return m_highlightColor; }
+
+        private:
+            std::string m_id = "";
+            sArea* m_diffuseTexture = nullptr;
+            glm::vec4 m_diffuseColor = glm::vec4(1.0f);
+            glm::vec4 m_highlightColor = glm::vec4(1.0f);
+
+        };
+
         struct sRenderInstance
         {
+            sRenderInstance(core::s32 materialIndex, cTransform& transform)
+            {
+                Use2D = transform.GetIs2D();
+                MaterialIndex = materialIndex;
+                World = transform.GetWorldMatrix();
+            }
+
             float Use2D;
             core::s32 MaterialIndex;
             unsigned _pad[2];
@@ -86,6 +172,13 @@ namespace realware
 
         struct sMaterialInstance
         {
+            sMaterialInstance(core::s32 materialIndex, cMaterial* material)
+            {
+                BufferIndex = materialIndex;
+                DiffuseColor = material->GetDiffuseColor();
+                HighlightColor = material->GetHighlightColor();
+            }
+
             void SetDiffuseTexture(const core::sArea& area)
             {
                 DiffuseTextureLayerInfo = area.Offset.z;
@@ -126,19 +219,26 @@ namespace realware
         {
 
         public:
-            mRender() {}
-            ~mRender() {}
-
-            void Init(
+            mRender(
+                cApplication* app,
                 const cRenderContext* context,
                 core::usize vertexBufferSize,
                 core::usize indexBufferSize,
                 core::usize instanceBufferSize,
                 core::usize materialBufferSize,
                 core::usize lightBufferSize,
+                core::usize maxMaterialCount,
                 const glm::vec2& windowSize
             );
-            void Free();
+            ~mRender();
+
+            cMaterial* CreateMaterial(
+                const std::string& id,
+                sArea* diffuseTexture,
+                const glm::vec4& diffuseColor,
+                const glm::vec4& highlightColor
+            );
+            void DeleteMaterial(const std::string& id);
             sVertexArray* CreateDefaultVertexArray();
             sVertexBufferGeometry* AddGeometry(const sVertexBufferGeometry::eFormat& format, core::usize verticesByteSize, const void* vertices, core::usize indicesByteSize, const void* indices);
             inline void DeleteGeometry(sVertexBufferGeometry* geometry) { delete geometry; }
@@ -147,9 +247,17 @@ namespace realware
             void ClearRenderPass(sRenderPass* renderPass, core::boolean clearColor, core::usize bufferIndex, const glm::vec4& color, core::boolean clearDepth, float depth);
             void ClearRenderPasses(const glm::vec4& clearColor, const float clearDepth);
             void UpdateLights(core::cApplication* app, core::cScene* scene);
-            void DrawGeometryOpaque(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene);
+            void DrawGeometryOpaque(
+                core::cApplication* application,
+                sVertexBufferGeometry* geometry,
+                std::vector<cGameObject>& objects,
+                const std::string& cameraObjectID
+            );
             void DrawGeometryTransparent(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene);
-            void DrawTexts(core::cApplication* app, core::cScene* scene);
+            void DrawTexts(
+                core::cApplication* application,
+                std::vector<cGameObject>& objects
+            );
             void DrawCaptions(core::cApplication* app, core::cScene* scene);
             void DrawButtons(core::cApplication* app, core::cScene* scene);
             void DrawPopupMenus(core::cApplication* app, core::cScene* scene);
@@ -174,9 +282,9 @@ namespace realware
             inline sRenderPass* GetTextRenderPass() { return m_text; }
             inline sRenderPass* GetCompositeTransparentRenderPass() { return m_compositeTransparent; }
             inline sRenderPass* GetCompositeFinalRenderPass() { return m_compositeFinal; }
-            inline void SetCamera(core::entity camera) { m_camera = camera; }
 
         private:
+            cApplication* m_app;
             cRenderContext* m_context;
             sBuffer* m_vertexBuffer;
             sBuffer* m_indexBuffer;
@@ -193,14 +301,15 @@ namespace realware
             core::usize m_materialsByteSize;
             void* m_lights;
             core::usize m_lightsByteSize;
-            std::unordered_map<core::sCMaterial*, core::s32>* m_materialsMap;
+            std::unordered_map<render::cMaterial*, core::s32>* m_materialsMap;
             sRenderPass* m_opaque;
             sRenderPass* m_transparent;
             sRenderPass* m_widget;
             sRenderPass* m_text;
             sRenderPass* m_compositeTransparent;
             sRenderPass* m_compositeFinal;
-            core::entity m_camera;
+            usize m_materialCountCPU = 0;
+            std::vector<cMaterial> m_materialsCPU;
 
         };
     }

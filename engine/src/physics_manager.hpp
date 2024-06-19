@@ -22,10 +22,17 @@ namespace physx
 
 namespace realware
 {
+    namespace core
+    {
+        class cApplication;
+    }
+
     namespace render
     {
         struct sVertexBufferGeometry;
     }
+
+    using namespace core;
 
     namespace physics
     {
@@ -94,11 +101,8 @@ namespace realware
                 TRIANGLE_MESH = 4
             };
 
-            mPhysics() {}
-            ~mPhysics() {}
-
-            void Init();
-            void Free();
+            mPhysics(cApplication* app);
+            ~mPhysics();
 
             void Update();
             core::sCPhysicsScene* AddScene(const core::sEntityScenePair& scene);
@@ -124,6 +128,7 @@ namespace realware
             );
 
         private:
+            cApplication* m_app = nullptr;
             cAllocator* m_allocator = nullptr;
             cError* m_error = nullptr;
             cCPUDispatcher* m_cpuDispatcher = nullptr;

@@ -6,5 +6,5 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "/O0")
 
 add_subdirectory(engine)
-add_subdirectory(samples/Editor)
-#add_subdirectory(samples/Sample01)
+#add_subdirectory(samples/Survapunk)
+add_subdirectory(samples/Sample01)

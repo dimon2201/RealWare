@@ -10,8 +10,11 @@ namespace realware
 {
     namespace core
     {
+        class cApplication;
         class cCamera;
     }
+
+    using namespace core;
 
     namespace render
     {
@@ -180,7 +183,7 @@ namespace realware
         {
 
         public:
-            cOpenGLRenderContext();
+            cOpenGLRenderContext(cApplication* app);
             ~cOpenGLRenderContext();
 
             virtual sBuffer* CreateBuffer(core::usize byteSize, const sBuffer::eType& type, const void* data) override final;
@@ -230,6 +233,9 @@ namespace realware
             virtual void Draw(core::usize indexCount, core::usize vertexOffset, core::usize indexOffset, core::usize instanceCount) override final;
             virtual void DrawQuad() override final;
             virtual void DrawQuads(core::usize count) override final;
+
+        private:
+            cApplication* m_app = nullptr;
 
         };
     }

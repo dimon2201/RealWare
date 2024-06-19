@@ -6,6 +6,8 @@ namespace realware
 {
     namespace core
     {
+        class cApplication;
+
         struct sFile
         {
             sFile(u8* data, usize byteSize) : Data(data), ByteSize(byteSize) {}
@@ -18,13 +20,15 @@ namespace realware
         {
 
         public:
-            mFileSystem() {}
-            ~mFileSystem() {}
+            mFileSystem(cApplication* app);
+            ~mFileSystem();
 
-            void Init();
-            void Free();
-            void DeleteFile(const sFile& buffer);
+            void UnloadFile(const sFile& buffer);
             sFile LoadFile(const char* filepath, boolean isString);
+
+        private:
+            cApplication* m_app;
+
         };
     }
 }

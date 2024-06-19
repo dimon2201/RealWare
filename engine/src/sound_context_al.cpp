@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <string>
 #include <windows.h>
-
 #include "sound_context.hpp"
 
 namespace realware

@@ -1,17 +1,23 @@
 #include "widget_manager.hpp"
 #include "ecs.hpp"
 #include "texture_manager.hpp"
-#include "user_input_manager.hpp"
 #include "render_manager.hpp"
 #include "font_manager.hpp"
-
-extern realware::core::mUserInput* userInputManager;
-extern realware::font::mFont* fontManager;
+#include "application.hpp"
 
 namespace realware
 {
     namespace ui
     {
+        mWidget::mWidget(cApplication* app)
+        {
+            m_app = app;
+        }
+
+        mWidget::~mWidget()
+        {
+        }
+
         core::entity mWidget::CreatePopupMenu(mWidget::sCreatePopupDescriptor* desc)
         {
             core::entity popupMenu = desc->Scene->CreateEntity(desc->Name);
@@ -177,7 +183,7 @@ namespace realware
                         core::sCTransform* transform = scene_->Get<core::sCTransform>(widget_->Owner);
                         core::sCCaption* caption = scene_->Get<core::sCCaption>(widget_->Owner);
 
-                        glm::vec2 mousePositionClipSpace = userInputManager->GetCursorPosition() / userInputManager->GetWindowSize();
+                        glm::vec2 mousePositionClipSpace = app_->GetCursorPosition() / app_->GetWindowSize();
                         mousePositionClipSpace.y = 1.0f - mousePositionClipSpace.y;
 
                         if (mousePositionClipSpace.x > transform->Position.x &&
@@ -188,7 +194,7 @@ namespace realware
                             widget_->IsHovered = core::K_TRUE;
                             widget_->OnHover(app_, scene_, widget_);
 
-                            if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == core::mUserInput::eButtonState::PRESSED)
+                            if (app_->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == core::cApplication::eButtonState::PRESSED)
                             {
                                 if ((widget_->StateBits & 1) == 1 && (widget_->StateBits & 2) == 2)
                                 {
@@ -200,7 +206,7 @@ namespace realware
                                     widget_->OnClick(app_, scene_, widget_);
                                 }
                             }
-                            else if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == userInputManager->eButtonState::RELEASED)
+                            else if (app_->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == app_->eButtonState::RELEASED)
                             {
                                 if (widget_->StateBits == 1) {
                                     widget_->StateBits |= 2;
@@ -215,8 +221,8 @@ namespace realware
                         if (caption != nullptr)
                         {
                             const glm::vec3 textSize = glm::vec3(
-                                fontManager->GetTextWidth(caption->Font, caption->Text),
-                                fontManager->GetTextHeight(caption->Font, caption->Text),
+                                app_->GetFontManager()->GetTextWidth(caption->Font, caption->Text),
+                                app_->GetFontManager()->GetTextHeight(caption->Font, caption->Text),
                                 0.0f
                             );
 
@@ -248,7 +254,7 @@ namespace realware
                         core::sCTransform* transform = scene_->Get<core::sCTransform>(widget_->Owner);
                         core::sCCaption* caption = scene_->Get<core::sCCaption>(widget_->Owner);
 
-                        glm::vec2 mousePositionClipSpace = userInputManager->GetCursorPosition() / userInputManager->GetWindowSize();
+                        glm::vec2 mousePositionClipSpace = app_->GetCursorPosition() / app_->GetWindowSize();
                         mousePositionClipSpace.y = 1.0f - mousePositionClipSpace.y;
 
                         if (mousePositionClipSpace.x > transform->Position.x &&
@@ -259,7 +265,7 @@ namespace realware
                             widget_->IsHovered = core::K_TRUE;
                             widget_->OnHover(app_, scene_, widget_);
 
-                            if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == userInputManager->eButtonState::PRESSED)
+                            if (app_->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == app_->eButtonState::PRESSED)
                             {
                                 if ((widget_->StateBits & 1) == 1 && (widget_->StateBits & 2) == 2)
                                 {
@@ -276,7 +282,7 @@ namespace realware
                                     widget_->OnClick(app_, scene_, widget_);
                                 }
                             }
-                            else if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == userInputManager->eButtonState::RELEASED)
+                            else if (app_->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == app_->eButtonState::RELEASED)
                             {
                                 if (widget_->StateBits == 1) {
                                     widget_->StateBits |= 2;
@@ -330,8 +336,8 @@ namespace realware
                         }
 
                         const glm::vec3 textSize = glm::vec3(
-                            fontManager->GetTextWidth(caption->Font, caption->Text),
-                            fontManager->GetTextHeight(caption->Font, caption->Text),
+                            app_->GetFontManager()->GetTextWidth(caption->Font, caption->Text),
+                            app_->GetFontManager()->GetTextHeight(caption->Font, caption->Text),
                             0.0f
                         );
 
@@ -354,7 +360,7 @@ namespace realware
                         core::sCTransform* transform = scene_->Get<core::sCTransform>(widget_->Owner);
                         core::sCCaption* caption = scene_->Get<core::sCCaption>(widget_->Owner);
 
-                        glm::vec2 mousePositionClipSpace = userInputManager->GetCursorPosition() / userInputManager->GetWindowSize();
+                        glm::vec2 mousePositionClipSpace = app_->GetCursorPosition() / app_->GetWindowSize();
                         mousePositionClipSpace.y = 1.0f - mousePositionClipSpace.y;
 
                         if (mousePositionClipSpace.x > transform->Position.x &&
@@ -365,7 +371,7 @@ namespace realware
                             widget_->IsHovered = core::K_TRUE;
                             widget_->OnHover(app_, scene_, widget_);
 
-                            if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == userInputManager->eButtonState::PRESSED)
+                            if (app_->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == app_->eButtonState::PRESSED)
                             {
                                 if ((widget_->StateBits & 1) == 1 && (widget_->StateBits & 2) == 2)
                                 {
@@ -379,7 +385,7 @@ namespace realware
                                     widget_->OnClick(app_, scene_, widget_);
                                 }
                             }
-                            else if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == userInputManager->eButtonState::RELEASED)
+                            else if (app_->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT) == app_->eButtonState::RELEASED)
                             {
                                 if (widget_->StateBits == 1) {
                                     widget_->StateBits |= 2;
@@ -392,8 +398,8 @@ namespace realware
                         }
 
                         const glm::vec3 textSize = glm::vec3(
-                            fontManager->GetTextWidth(caption->Font, caption->Text),
-                            fontManager->GetTextHeight(caption->Font, caption->Text),
+                            app_->GetFontManager()->GetTextWidth(caption->Font, caption->Text),
+                            app_->GetFontManager()->GetTextHeight(caption->Font, caption->Text),
                             0.0f
                         );
 

@@ -1,16 +1,15 @@
 #include <iostream>
 #include "font_manager.hpp"
-#include "user_input_manager.hpp"
 #include "render_context.hpp"
-
-extern realware::core::mUserInput* userInputManager;
+#include "application.hpp"
 
 namespace realware
 {
     namespace font
     {
-        void mFont::Init(render::cRenderContext* context)
+        mFont::mFont(cApplication* app, render::cRenderContext* context)
         {
+            m_app = app;
             m_context = context;
             FillUnicodeTable();
 
@@ -19,7 +18,7 @@ namespace realware
             }
         }
 
-        void mFont::Free()
+        mFont::~mFont()
         {
             FT_Done_FreeType(m_lib);
         }
@@ -32,7 +31,7 @@ namespace realware
             {
                 FT_Select_Charmap(font->Font, FT_ENCODING_UNICODE);
 
-                if (FT_Set_Pixel_Sizes(font->Font, 0, glyphSize) == 0)
+                if (FT_Set_Pixel_Sizes(font->Font, glyphSize, glyphSize) == 0)
                 {
                     font->GlyphCount = 0;
                     font->GlyphSize = glyphSize;
@@ -64,7 +63,7 @@ namespace realware
                             glyph.Left = font->Font->glyph->bitmap_left;
                             glyph.Top = font->Font->glyph->bitmap_top;
                             glyph.AdvanceX = font->Font->glyph->advance.x;
-                            glyph.AdvanceY = 0.0f;
+                            glyph.AdvanceY = font->Font->glyph->advance.y;
                             glyph.BitmapData = malloc(glyph.Width * glyph.Height);
 
                             memcpy(glyph.BitmapData, font->Font->glyph->bitmap.buffer, glyph.Width * glyph.Height);
@@ -206,7 +205,7 @@ namespace realware
             float textWidth = 0.0f;
             float maxTextWidth = 0.0f;
             core::usize textByteSize = strlen(text);
-            const glm::vec2 windowSize = userInputManager->GetWindowSize();
+            const glm::vec2 windowSize = m_app->GetWindowSize();
 
             for (core::s32 i = 0; i < textByteSize; i++)
             {
@@ -247,7 +246,7 @@ namespace realware
             float textHeight = 0.0f;
             float maxHeight = 0.0f;
             core::usize textByteSize = strlen(text);
-            const glm::vec2 windowSize = userInputManager->GetWindowSize();
+            const glm::vec2 windowSize = m_app->GetWindowSize();
 
             for (core::s32 i = 0; i < textByteSize; i++)
             {
@@ -296,6 +295,7 @@ namespace realware
 
         void mFont::FillUnicodeTable()
         {
+            m_unicode[' '] = 20;
             m_unicode['+'] = 43; m_unicode[','] = 44; m_unicode['.'] = 46;
             m_unicode['0'] = 48; m_unicode['1'] = 49; m_unicode['2'] = 50; m_unicode['3'] = 51;
             m_unicode['4'] = 52; m_unicode['5'] = 53; m_unicode['6'] = 54; m_unicode['7'] = 55;

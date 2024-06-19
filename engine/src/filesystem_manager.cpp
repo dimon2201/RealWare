@@ -8,15 +8,16 @@ namespace realware
 {
     namespace core
     {
-        void mFileSystem::Init()
+        mFileSystem::mFileSystem(cApplication* app)
+        {
+            m_app = app;
+        }
+
+        mFileSystem::~mFileSystem()
         {
         }
 
-        void mFileSystem::Free()
-        {
-        }
-
-        void mFileSystem::DeleteFile(const sFile& file)
+        void mFileSystem::UnloadFile(const sFile& file)
         {
             if (file.Data == nullptr || file.ByteSize == 0) {
                 return;

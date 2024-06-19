@@ -28,8 +28,9 @@ namespace realware
 
         }
 
-        void mPhysics::Init()
+        mPhysics::mPhysics(cApplication* app)
         {
+            m_app = app;
             m_allocator = new cAllocator();
             m_error = new cError();
             m_cpuDispatcher = new cCPUDispatcher();
@@ -62,7 +63,7 @@ namespace realware
             }
         }
 
-        void mPhysics::Free()
+        mPhysics::~mPhysics()
         {
             m_physics->release();
             m_foundation->release();

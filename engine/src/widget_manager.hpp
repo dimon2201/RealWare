@@ -23,14 +23,16 @@ namespace realware
         class cFontManager;
     }
 
+    using namespace core;
+
     namespace ui
     {
         class mWidget
         {
 
         public:
-            mWidget() {}
-            ~mWidget() {}
+            mWidget(cApplication* app);
+            ~mWidget();
 
             struct sCreatePopupDescriptor
             {
@@ -77,6 +79,7 @@ namespace realware
             inline void SetFont(const font::sFont* font) { m_font = (font::sFont*)font; }
 
         private:
+            cApplication* m_app = nullptr;
             font::sFont* m_font = nullptr;
             core::sCWidget* m_activeWidgetComponent = nullptr;
 

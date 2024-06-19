@@ -16,6 +16,7 @@ namespace realware
 
     namespace core
     {
+        class cApplication;
         class cScene;
         class mTexture;
 
@@ -33,11 +34,9 @@ namespace realware
         {
 
         public:
-            mTexture() {}
-            ~mTexture() {}
+            mTexture(cApplication* app, render::cRenderContext* context, s32 width, s32 height, s32 depth);
+            ~mTexture();
 
-            void Init(render::cRenderContext* context, s32 width, s32 height, s32 depth);
-            void Free();
             sArea* CreateTexture(const std::string& filename, const std::string& tag);
             void RemoveTexture(const std::string& tag);
             void LoadAnimation(const std::vector<const char*>& filenames, const std::string& tag, std::vector<sArea*>& frames);
@@ -56,6 +55,7 @@ namespace realware
             s32 GetDepth();
 
         protected:
+            cApplication* m_app;
             render::cRenderContext* m_context;
             render::sTexture* m_atlas;
             std::vector<sArea*> m_textures;

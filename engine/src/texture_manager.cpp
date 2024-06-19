@@ -8,12 +8,13 @@ namespace realware
 {
     namespace core
     {
-        void mTexture::Init(render::cRenderContext* context, s32 width, s32 height, s32 depth)
+        mTexture::mTexture(cApplication* app, render::cRenderContext* context, s32 width, s32 height, s32 depth)
         {
+            m_app = app;
             m_context = context;
             m_atlas = m_context->CreateTexture(
-                512,
-                512,
+                width,
+                height,
                 depth,
                 render::sTexture::eType::TEXTURE_2D_ARRAY,
                 render::sTexture::eFormat::RGBA8_MIPS,
@@ -22,7 +23,7 @@ namespace realware
             m_atlas->Slot = 0;
         }
 
-        void mTexture::Free()
+        mTexture::~mTexture()
         {
             m_context->DeleteTexture(m_atlas);
             delete m_atlas;

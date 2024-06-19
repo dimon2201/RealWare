@@ -10,6 +10,7 @@ namespace realware
     {
         class cRenderContext;
         struct sRenderPass;
+        class cTransform;
     }
 
     namespace core
@@ -25,19 +26,30 @@ namespace realware
                 ROLL = 2
             };
 
-            mCamera() {}
-            ~mCamera() {}
+            mCamera(cApplication* app);
+            ~mCamera();
 
-            void Init();
-            void Free();
-            void Update(entity object, cScene* scene, boolean updateMouseLook, boolean updateMovement);
-            void AddEuler(sCCamera* camera, const eEulerAngle& angle, float value);
-            void Move(cScene* scene, sCCamera* camera, sCTransform* transform, float value);
-            void Strafe(cScene* scene, sCCamera* camera, sCTransform* transform, float value);
-            void Lift(cScene* scene, sCCamera* camera, sCTransform* transform, float value);
+            void Update(boolean updateMouseLook, boolean updateMovement);
+            void AddEuler(const eEulerAngle& angle, float value);
+            void Move(float value);
+            void Strafe(float value);
+            void Lift(float value);
+
+            inline glm::mat4 GetViewProjectionMatrix() { return m_viewProjection; }
 
         private:
+            cApplication* m_app;
             render::cRenderContext* m_context;
+            render::cTransform* m_transform = nullptr;
+            glm::vec3 m_euler = glm::vec3(0.0f);
+            glm::vec3 m_direction = glm::vec3(0.0f);
+            glm::mat4 m_view = glm::mat4(1.0f);
+            glm::mat4 m_projection = glm::mat4(1.0f);
+            glm::mat4 m_viewProjection = glm::mat4(1.0f);
+            core::f32 m_fov = 60.0f;
+            core::f32 m_zNear = 0.01f;
+            core::f32 m_zFar = 100.0f;
+            core::boolean m_isMoving = K_FALSE;
 
         };
     }

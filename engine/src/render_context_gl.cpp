@@ -6,15 +6,15 @@
 #include "render_context.hpp"
 #include "filesystem_manager.hpp"
 #include "types.hpp"
-
-extern realware::core::mFileSystem* fileSystemManager;
+#include "application.hpp"
 
 namespace realware
 {
     namespace render
     {
-        cOpenGLRenderContext::cOpenGLRenderContext()
+        cOpenGLRenderContext::cOpenGLRenderContext(cApplication* app)
         {
+            m_app = app;
             glewInit();
             glEnable(GL_DEPTH_TEST);
             //glEnable(GL_CULL_FACE);
@@ -180,10 +180,10 @@ namespace realware
             {
                 shader = new sShader();
 
-                core::sFile vertexShaderFile = fileSystemManager->LoadFile("data/shaders/opaque_vertex.shader", core::K_TRUE);
+                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/opaque_vertex.shader", core::K_TRUE);
                 const char* vertex = (const char*)vertexShaderFile.Data;
 
-                core::sFile fragmentShaderFile = fileSystemManager->LoadFile("data/shaders/opaque_fragment.shader", core::K_TRUE);
+                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/opaque_fragment.shader", core::K_TRUE);
                 const char* fragment = (const char*)fragmentShaderFile.Data;
 
                 GLint vertexByteSize = strlen(vertex);
@@ -207,8 +207,8 @@ namespace realware
                 glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
                 std::cout << b << std::endl;
 
-                fileSystemManager->DeleteFile(vertexShaderFile);
-                fileSystemManager->DeleteFile(fragmentShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
             }
 
             glUseProgram(shader->Instance);
@@ -224,10 +224,10 @@ namespace realware
             {
                 shader = new sShader();
 
-                core::sFile vertexShaderFile = fileSystemManager->LoadFile("data/shaders/transparent_vertex.shader", core::K_TRUE);
+                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/transparent_vertex.shader", core::K_TRUE);
                 const char* vertex = (const char*)vertexShaderFile.Data;
 
-                core::sFile fragmentShaderFile = fileSystemManager->LoadFile("data/shaders/transparent_fragment.shader", core::K_TRUE);
+                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/transparent_fragment.shader", core::K_TRUE);
                 const char* fragment = (const char*)fragmentShaderFile.Data;
 
                 GLint vertexByteSize = strlen(vertex);
@@ -251,8 +251,8 @@ namespace realware
                 glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
                 std::cout << b << std::endl;
 
-                fileSystemManager->DeleteFile(vertexShaderFile);
-                fileSystemManager->DeleteFile(fragmentShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
             }
 
             glUseProgram(shader->Instance);
@@ -268,10 +268,10 @@ namespace realware
             {
                 shader = new sShader();
 
-                core::sFile vertexShaderFile = fileSystemManager->LoadFile("data/shaders/quad_vertex.shader", core::K_TRUE);
+                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/quad_vertex.shader", core::K_TRUE);
                 const char* vertex = (const char*)vertexShaderFile.Data;
 
-                core::sFile fragmentShaderFile = fileSystemManager->LoadFile("data/shaders/quad_fragment.shader", core::K_TRUE);
+                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/quad_fragment.shader", core::K_TRUE);
                 const char* fragment = (const char*)fragmentShaderFile.Data;
 
                 GLint vertexByteSize = strlen(vertex);
@@ -295,8 +295,8 @@ namespace realware
                 glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
                 std::cout << b << std::endl;
 
-                fileSystemManager->DeleteFile(vertexShaderFile);
-                fileSystemManager->DeleteFile(fragmentShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
             }
 
             glUseProgram(shader->Instance);
@@ -312,10 +312,10 @@ namespace realware
             {
                 shader = new sShader();
 
-                core::sFile vertexShaderFile = fileSystemManager->LoadFile("data/shaders/text_vertex.shader", core::K_TRUE);
+                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/text_vertex.shader", core::K_TRUE);
                 const char* vertex = (const char*)vertexShaderFile.Data;
 
-                core::sFile fragmentShaderFile = fileSystemManager->LoadFile("data/shaders/text_fragment.shader", core::K_TRUE);
+                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/text_fragment.shader", core::K_TRUE);
                 const char* fragment = (const char*)fragmentShaderFile.Data;
 
                 GLint vertexByteSize = strlen(vertex);
@@ -339,8 +339,8 @@ namespace realware
                 glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
                 std::cout << b << std::endl;
 
-                fileSystemManager->DeleteFile(vertexShaderFile);
-                fileSystemManager->DeleteFile(fragmentShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
             }
 
             glUseProgram(shader->Instance);
@@ -356,10 +356,10 @@ namespace realware
             {
                 shader = new sShader();
 
-                core::sFile vertexShaderFile = fileSystemManager->LoadFile("data/shaders/widget_vertex.shader", core::K_TRUE);
+                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/widget_vertex.shader", core::K_TRUE);
                 const char* vertex = (const char*)vertexShaderFile.Data;
 
-                core::sFile fragmentShaderFile = fileSystemManager->LoadFile("data/shaders/widget_fragment.shader", core::K_TRUE);
+                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/widget_fragment.shader", core::K_TRUE);
                 const char* fragment = (const char*)fragmentShaderFile.Data;
 
                 GLint vertexByteSize = strlen(vertex);
@@ -383,8 +383,8 @@ namespace realware
                 glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
                 std::cout << b << std::endl;
 
-                fileSystemManager->DeleteFile(vertexShaderFile);
-                fileSystemManager->DeleteFile(fragmentShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
             }
 
             glUseProgram(shader->Instance);
@@ -400,10 +400,10 @@ namespace realware
             {
                 shader = new sShader();
 
-                core::sFile vertexShaderFile = fileSystemManager->LoadFile("data/shaders/composite_transparent_vertex.shader", core::K_TRUE);
+                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/composite_transparent_vertex.shader", core::K_TRUE);
                 const char* vertex = (const char*)vertexShaderFile.Data;
 
-                core::sFile fragmentShaderFile = fileSystemManager->LoadFile("data/shaders/composite_transparent_fragment.shader", core::K_TRUE);
+                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/composite_transparent_fragment.shader", core::K_TRUE);
                 const char* fragment = (const char*)fragmentShaderFile.Data;
 
                 GLint vertexByteSize = strlen(vertex);
@@ -427,8 +427,8 @@ namespace realware
                 glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
                 std::cout << b << std::endl;
 
-                fileSystemManager->DeleteFile(vertexShaderFile);
-                fileSystemManager->DeleteFile(fragmentShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
             }
 
             glUseProgram(shader->Instance);

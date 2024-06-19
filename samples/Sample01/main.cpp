@@ -5,22 +5,24 @@
 
 #include "../../engine/thirdparty/glm/glm/glm.hpp"
 #include "../../engine/thirdparty/glm/glm/gtc/matrix_transform.hpp"
-#include "../../engine/src/core/application.hpp"
-#include "../../engine/src/core/ecs.hpp"
-#include "../../engine/src/core/user_input_manager.hpp"
-#include "../../engine/src/core/camera_manager.hpp"
-#include "../../engine/src/core/texture_manager.hpp"
-#include "../../engine/src/render/render_manager.hpp"
-#include "../../engine/src/render/render_context.hpp"
-#include "../../engine/src/sound/sound_context.hpp"
-#include "../../engine/src/sound/sound_manager.hpp"
-#include "../../engine/src/font/font_manager.hpp"
-#include "../../engine/src/ui/widget_manager.hpp"
+#include "../../engine/src/application.hpp"
+#include "../../engine/src/ecs.hpp"
+#include "../../engine/src/camera_manager.hpp"
+#include "../../engine/src/texture_manager.hpp"
+#include "../../engine/src/render_manager.hpp"
+#include "../../engine/src/render_context.hpp"
+#include "../../engine/src/sound_context.hpp"
+#include "../../engine/src/sound_manager.hpp"
+#include "../../engine/src/font_manager.hpp"
+#include "../../engine/src/widget_manager.hpp"
+#include "../../engine/src/filesystem_manager.hpp"
+#include "../../engine/src/physics_manager.hpp"
 
 using namespace realware::core;
 using namespace realware::render;
 using namespace realware::font;
 using namespace realware::sound;
+using namespace realware::physics;
 
 class MyApp : public cApplication
 {
@@ -31,15 +33,9 @@ public:
 
     virtual void Init() override final
     {
-        // Initialize managers
-        textureManager->Init(m_renderContext, 1920, 1080, 12);
-        mRender::Init(m_renderContext, 65536, 65536, 65536, 65536, glm::vec2(m_desc.WindowDesc.Width, m_desc.WindowDesc.Height));
-        mFont::Init(m_renderContext);
-        mSound::Init(m_soundContext);
-
         // Triangle primitive
-        auto triangle = mRender::CreateTriangle();
-        m_geometry = mRender::AddGeometry(
+        auto triangle = this->GetRenderManager()->CreateTriangle();
+        m_geometryTriangle = this->GetRenderManager()->AddGeometry(
             triangle->Format,
             triangle->VerticesByteSize,
             triangle->Vertices,
@@ -47,45 +43,41 @@ public:
             triangle->Indices
         );
 
-        // Scene
-        m_scene = new cScene(65536);
+        cMaterial* material = this->GetRenderManager()->CreateMaterial(
+            "Material1",
+            nullptr,
+            glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+            glm::vec4(1.0f)
+        );
 
-        // Triangle entity
-        entity triangleEntity = m_scene->CreateEntity("TriangleEntity");
-        sCGeometryInfo* triangleGeometryInfo = m_scene->Add<sCGeometryInfo>(triangleEntity);
-        triangleGeometryInfo->IsVisible = K_TRUE;
-        triangleGeometryInfo->IsOpaque = K_TRUE;
-        sCGeometry* triangleGeometry = m_scene->Add<sCGeometry>(triangleEntity);
-        triangleGeometry->Geometry = m_geometry;
-        sCTransform* triangleTransform = m_scene->Add<sCTransform>(triangleEntity);
-        triangleTransform->Position = glm::vec3(0.0f, 0.0f, -1.0f);
-        triangleTransform->Scale = glm::vec3(1.0f);
-        sCMaterial* triangleMaterial = m_scene->Add<sCMaterial>(triangleEntity);
-        triangleMaterial->DiffuseTexture = nullptr;
-        triangleMaterial->DiffuseColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+        cGameObject* triangleObject = this->GetGameObjectManager()->CreateGameObject("TriangleObject");
+        triangleObject->SetVisible(K_TRUE);
+        triangleObject->SetOpaque(K_TRUE);
+        triangleObject->SetGeometry(m_geometryTriangle);
+        triangleObject->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
+        triangleObject->SetScale(glm::vec3(1.0f));
+        triangleObject->SetMaterial(material);
 
-        // Triangle transparent entity
-        entity triangleEntityTransparent = m_scene->CreateEntity("TriangleTransparentEntity");
-        sCGeometryInfo* triangleTransparentGeometryInfo = m_scene->Add<sCGeometryInfo>(triangleEntityTransparent);
-        triangleTransparentGeometryInfo->IsVisible = K_TRUE;
-        triangleTransparentGeometryInfo->IsOpaque = K_FALSE;
-        sCGeometry* triangleTransparentGeometry = m_scene->Add<sCGeometry>(triangleEntityTransparent);
-        triangleTransparentGeometry->Geometry = m_geometry;
-        sCTransform* triangleTransparentTransform = m_scene->Add<sCTransform>(triangleEntityTransparent);
-        triangleTransparentTransform->Position = glm::vec3(0.0f, 0.0f, 0.0f);
-        triangleTransparentTransform->Scale = glm::vec3(1.0f);
-        sCMaterial* triangleTransparentMaterial = m_scene->Add<sCMaterial>(triangleEntityTransparent);
-        triangleTransparentMaterial->DiffuseTexture = nullptr;
-        triangleTransparentMaterial->DiffuseColor = glm::vec4(0.0f, 0.0f, 1.0f, 0.25f);
+        cGameObject* cameraObject = this->GetGameObjectManager()->CreateGameObject("CameraObject");
+        triangleObject->SetVisible(K_TRUE);
+        triangleObject->SetPosition(glm::vec3(0.0f));
 
-        // Camera entity
-        m_camera = m_scene->CreateEntity("CameraEntity");
-        sCCamera* cameraCamera = m_scene->Add<sCCamera>(m_camera);
-        cameraCamera->FOV = 65.0f;
-        cameraCamera->ZNear = 0.01f;
-        cameraCamera->ZFar = 100.0f;
-        sCTransform* cameraTransform = m_scene->Add<sCTransform>(m_camera);
-        cameraTransform->Position = glm::vec3(0.0f);
+        sFont* font = this->GetFontManager()->NewFont(
+            "data/fonts/BrahmsGotischCyr.ttf",
+            42,
+            1,
+            1,
+            1
+        );
+        cText* text = new cText(font, "Hello World!");
+
+        cGameObject* textObject = this->GetGameObjectManager()->CreateGameObject("TextObject");
+        textObject->SetVisible(K_TRUE);
+        textObject->SetOpaque(K_TRUE);
+        textObject->SetPosition(glm::vec3(0.5f, 0.5f, 0.0f));
+        textObject->SetScale(glm::vec3(1.0f));
+        textObject->SetMaterial(material);
+        textObject->SetText(text);
     }
 
     virtual void Update() override final
@@ -93,18 +85,28 @@ public:
         static float deltaTime = 0.0f;
         static float lastTime = clock();
 
-        mUserInput::PollEvents();
-        mUserInput::Update();
+        this->PollEvents();
 
-        mCamera::Update(m_camera, m_scene);
+        this->GetCameraManager()->Update(K_TRUE, K_TRUE);
+        this->GetGameObjectManager()->FindGameObject("CameraObject")->SetViewProjectionMatrix(
+            this->GetCameraManager()->GetViewProjectionMatrix()
+        );
 
         // Draw
-        mRender::DrawGeometryOpaque(this, m_geometry, m_camera, m_scene, glm::vec4(1.0f), 1.0f);
-        mRender::DrawGeometryTransparent(this, m_geometry, m_camera, m_scene);
-        mRender::CompositeTransparent();
-        mRender::CompositeFinal();
+        this->GetRenderManager()->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
+        this->GetRenderManager()->DrawGeometryOpaque(
+            this,
+            m_geometryTriangle,
+            this->GetGameObjectManager()->GetObjects(),
+            "CameraObject"
+        );
+        this->GetRenderManager()->DrawTexts(
+            this,
+            this->GetGameObjectManager()->GetObjects()
+        );
+        this->GetRenderManager()->CompositeFinal();
 
-        mUserInput::SwapBuffers();
+        this->SwapBuffers();
 
         clock_t t = clock();
 
@@ -114,12 +116,12 @@ public:
 
     virtual void Free() override final
     {
-        mFont::Free();
+        this->FreeManagers();
     }
 
 private:
     cScene* m_scene;
-    sVertexBufferGeometry* m_geometryPlane;
+    sVertexBufferGeometry* m_geometryTriangle;
     entity m_camera;
 
 };
@@ -128,9 +130,9 @@ int main()
 {
     sApplicationDescriptor appDesc;
     appDesc.WindowDesc.Title = "Test Window";
-    appDesc.WindowDesc.Width = 1366;
-    appDesc.WindowDesc.Height = 768;
-    appDesc.WindowDesc.IsFullscreen = K_TRUE;
+    appDesc.WindowDesc.Width = 640;
+    appDesc.WindowDesc.Height = 480;
+    appDesc.WindowDesc.IsFullscreen = K_FALSE;
 
     MyApp app = MyApp(appDesc);
     app.Run();

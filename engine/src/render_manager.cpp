@@ -5,29 +5,28 @@
 #include <assimp/postprocess.h>
 #include "render_manager.hpp"
 #include "render_context.hpp"
-#include "user_input_manager.hpp"
 #include "ecs.hpp"
 #include "texture_manager.hpp"
 #include "font_manager.hpp"
-
-extern realware::core::mTexture* textureManager;
-extern realware::core::mUserInput* userInputManager;
-extern realware::font::mFont* fontManager;
+#include "application.hpp"
 
 namespace realware
 {
     namespace render
     {
-        void mRender::Init(
+        mRender::mRender(
+            cApplication* app,
             const cRenderContext* context,
             core::usize vertexBufferSize,
             core::usize indexBufferSize,
             core::usize instanceBufferSize,
             core::usize materialBufferSize,
             core::usize lightBufferSize,
+            core::usize maxMaterialCount,
             const glm::vec2& windowSize
         )
         {
+            m_app = app;
             m_context = (cOpenGLRenderContext*)context;
             m_vertexBuffer = m_context->CreateBuffer(vertexBufferSize, sBuffer::eType::VERTEX, nullptr);
             m_indexBuffer = m_context->CreateBuffer(indexBufferSize, sBuffer::eType::INDEX, nullptr);
@@ -47,7 +46,8 @@ namespace realware
             m_materialsByteSize = 0;
             m_lights = malloc(lightBufferSize);
             m_lightsByteSize = 0;
-            m_materialsMap = new std::unordered_map<core::sCMaterial*, core::s32>();
+            m_materialsMap = new std::unordered_map<render::cMaterial*, core::s32>();
+            m_materialsCPU.resize(maxMaterialCount);
 
             sTexture* color = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
             sTexture* accumulation = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA16F, nullptr);
@@ -65,7 +65,7 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetLightBuffer());
-                renderPassDesc.InputTextures.emplace_back(textureManager->GetAtlas());
+                renderPassDesc.InputTextures.emplace_back(m_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.Shader = m_context->BindOpaqueShader();
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
@@ -84,7 +84,7 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
-                renderPassDesc.InputTextures.emplace_back(textureManager->GetAtlas());
+                renderPassDesc.InputTextures.emplace_back(m_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.Shader = m_context->BindTransparentShader();
                 renderPassDesc.RenderTarget = transparentRenderTarget;
@@ -103,7 +103,7 @@ namespace realware
                 renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::NONE;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
-                renderPassDesc.InputTextures.emplace_back(textureManager->GetAtlas());
+                renderPassDesc.InputTextures.emplace_back(m_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.Shader = m_context->BindWidgetShader();
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
@@ -156,7 +156,7 @@ namespace realware
             }
         }
 
-        void mRender::Free()
+        mRender::~mRender()
         {
             m_context->DeleteBuffer(m_vertexBuffer);
             m_context->DeleteBuffer(m_indexBuffer);
@@ -168,6 +168,35 @@ namespace realware
             free(m_vertices);
             free(m_indices);
             free(m_instances);
+        }
+
+        cMaterial* mRender::CreateMaterial(
+            const std::string& id,
+            sArea* diffuseTexture,
+            const glm::vec4& diffuseColor,
+            const glm::vec4& highlightColor
+        )
+        {
+            m_materialsCPU[m_materialCountCPU] = cMaterial(id, diffuseTexture, diffuseColor, highlightColor);
+            m_materialCountCPU += 1;
+
+            return &m_materialsCPU[m_materialCountCPU - 1];
+        }
+
+        void mRender::DeleteMaterial(const std::string& id)
+        {
+            for (usize i = 0; i < m_materialCountCPU; i++)
+            {
+                if (m_materialsCPU[i].GetID() == id)
+                {
+                    if (m_materialCountCPU > 1)
+                    {
+                        m_materialsCPU[i] = m_materialsCPU[m_materialCountCPU - 1];
+                    }
+
+                    return;
+                }
+            }
         }
 
         sVertexArray* mRender::CreateDefaultVertexArray()
@@ -284,29 +313,40 @@ namespace realware
             m_context->WriteBuffer(m_lightBuffer, 0, m_lightsByteSize, m_lights);
         }
 
-        void mRender::DrawGeometryOpaque(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene)
+        void mRender::DrawGeometryOpaque(
+            core::cApplication* application,
+            sVertexBufferGeometry* geometry,
+            std::vector<cGameObject>& objects,
+            const std::string& cameraObjectID
+        )
         {
-            core::sCCamera* cam = scene->Get<core::sCCamera>(m_camera);
+            cGameObject* camera = nullptr;
+            for (auto& it : objects)
+            {
+                if (it.GetID() == cameraObjectID)
+                {
+                    camera = &it;
+                    break;
+                }
+            }
+            if (camera == nullptr) { return; }
 
+            core::s32 instanceCount = 0;
             m_instancesByteSize = 0;
             m_materialsByteSize = 0;
             m_materialsMap->clear();
 
-            sInstanceList* list = new sInstanceList((sVertexBufferGeometry*)geometry, scene, 0);
-            scene->ForEach<core::sCGeometry>(
-                application,
-                [this, geometry, list]
-                (core::cApplication* app, core::cScene* scene_, core::sCGeometry* geometry_)
+            for (auto& it : objects)
+            {
+                if (it.GetGeometry() == geometry)
                 {
-                    core::sCGeometryInfo* geometryInfo = scene_->Get<core::sCGeometryInfo>(geometry_->Owner);
-                    if (geometry_->Geometry == geometry &&
-                        geometryInfo->IsVisible == core::K_TRUE &&
-                        geometryInfo->IsOpaque == core::K_TRUE)
+                    core::boolean isVisible = it.GetVisible();
+                    core::boolean isOpaque = it.GetOpaque();
+                    if (isVisible == core::K_TRUE && isOpaque == core::K_TRUE)
                     {
-                        core::sCTransform* transform = list->Scene->Get<core::sCTransform>(geometry_->Owner);
-                        core::sCMaterial* material = list->Scene->Get<core::sCMaterial>(geometry_->Owner);
-                        core::sCAnimation* animation = list->Scene->Get<core::sCAnimation>(geometry_->Owner);
-                        transform->Transform();
+                        render::cTransform transform(&it);
+                        render::cMaterial* material = it.GetMaterial();
+                        transform.Transform();
 
                         core::s32 materialIndex = -1;
                         auto it = m_materialsMap->find(material);
@@ -314,30 +354,20 @@ namespace realware
                         {
                             materialIndex = m_materialsMap->size();
 
-                            sMaterialInstance m;
-                            m.BufferIndex = materialIndex;
-                            m.DiffuseColor = material->DiffuseColor;
-                            m.HighlightColor = material->HighlightColor;
-                            if (material->DiffuseTexture != nullptr)
+                            sMaterialInstance mi(materialIndex, material);
+                            if (material->GetDiffuseTexture() != nullptr)
                             {
-                                core::sArea* frame = material->DiffuseTexture;
-                                m.SetDiffuseTexture(textureManager->CalculateNormalizedArea(*frame));
+                                core::sArea* frame = material->GetDiffuseTexture();
+                                mi.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else
                             {
-                                m.DiffuseTextureLayerInfo = -1.0f;
-                            }
-
-                            if (animation != nullptr)
-                            {
-                                core::sArea* frame = animation->Frames[animation->CurrentAnimationIndex]->at(animation->CurrentFrameIndex[animation->CurrentAnimationIndex]);
-                                m.SetDiffuseTexture(*frame);
-                                m.DiffuseColor.a = 1.0f - animation->Fade;
+                                mi.DiffuseTextureLayerInfo = -1.0f;
                             }
 
                             m_materialsMap->insert({ material, materialIndex });
 
-                            memcpy((void*)((core::usize)m_materials + (core::usize)m_materialsByteSize), &m, sizeof(sMaterialInstance));
+                            memcpy((void*)((core::usize)m_materials + (core::usize)m_materialsByteSize), &mi, sizeof(sMaterialInstance));
                             m_materialsByteSize += sizeof(sMaterialInstance);
                         }
                         else
@@ -345,39 +375,34 @@ namespace realware
                             materialIndex = it->second;
                         }
 
-                        sRenderInstance i;
-                        i.Use2D = transform->Use2D;
-                        i.MaterialIndex = materialIndex;
-                        i.World = transform->World;
+                        sRenderInstance ri(materialIndex, transform);
 
-                        memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &i, sizeof(sRenderInstance));
+                        memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &ri, sizeof(sRenderInstance));
                         m_instancesByteSize += sizeof(sRenderInstance);
 
-                        list->InstanceCount += 1;
+                        instanceCount += 1;
                     }
                 }
-            );
+            }
 
             m_context->WriteBuffer(m_instanceBuffer, 0, m_instancesByteSize, m_instances);
             m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
 
             m_context->BindRenderPass(m_opaque);
 
-            m_context->SetShaderUniform(m_opaque->Desc.Shader, "ViewProjection", cam->ViewProjection);
+            m_context->SetShaderUniform(m_opaque->Desc.Shader, "ViewProjection", camera->GetViewProjectionMatrix());
 
             m_context->Draw(
-                list->Geometry->IndexCount,
-                list->Geometry->VertexOffset / (core::usize)list->Geometry->Format,
-                list->Geometry->IndexOffset,
-                list->InstanceCount
+                geometry->IndexCount,
+                geometry->VertexOffset / (core::usize)geometry->Format,
+                geometry->IndexOffset,
+                instanceCount
             );
 
             m_context->UnbindRenderPass(m_opaque);
-
-            delete list;
         }
 
-        void mRender::DrawGeometryTransparent(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene)
+        /*void mRender::DrawGeometryTransparent(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene)
         {
             core::sCCamera* cam = scene->Get<core::sCCamera>(m_camera);
 
@@ -413,7 +438,7 @@ namespace realware
                             if (material->DiffuseTexture != nullptr)
                             {
                                 core::sArea* frame = material->DiffuseTexture;
-                                m.SetDiffuseTexture(textureManager->CalculateNormalizedArea(*frame));
+                                m.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else
                             {
@@ -465,97 +490,101 @@ namespace realware
             );
 
             m_context->UnbindRenderPass(m_transparent);
-        }
+        }*/
 
-        void mRender::DrawTexts(core::cApplication* app, core::cScene* scene)
+        void mRender::DrawTexts(
+            core::cApplication* application,
+            std::vector<cGameObject>& objects
+        )
         {
-            scene->ForEach<core::sCText>(
-                app,
-                [this](core::cApplication* app_, core::cScene* scene_, core::sCText* text_)
+            for (auto& it : objects)
+            {
+                if (it.GetText() == nullptr)
                 {
-                    m_instancesByteSize = 0;
-                    m_materialsByteSize = 0;
-                    m_materialsMap->clear();
-
-                    core::sCTransform* transform = scene_->Get<core::sCTransform>(text_->Owner);
-
-                    glm::vec2 windowSize = userInputManager->GetWindowSize();
-                    glm::vec2 position = glm::vec2((transform->Position.x * 2.0f) - 1.0f, (transform->Position.y * 2.0f) - 1.0f);
-                    glm::vec2 scaleFactor = glm::vec2(
-                        (transform->Scale.x - fontManager->GetTextWidth(text_->Font, text_->Text)) / (float)fontManager->GetCharacterCount(text_->Text),
-                        (transform->Scale.y - fontManager->GetTextHeight(text_->Font, text_->Text)) / ((float)fontManager->GetNewlineCount(text_->Text) + 1)
-                    );
-
-                    core::usize charCount = strlen(text_->Text);
-
-                    core::usize actualCharCount = 0;
-                    glm::vec2 offset = glm::vec2(0.0f);
-
-                    for (core::s32 i = 0; i < charCount; i++) {
-                        if (text_->Text[i] == '\n') {
-                            offset.y += scaleFactor.y + (float)text_->Font->OffsetNewline;
-                        }
-                    }
-
-                    for (core::s32 i = 0; i < charCount; i++)
-                    {
-                        char glyphChar = text_->Text[i];
-                        if (glyphChar == '\n') { glyphChar = ' '; }
-
-                        if (text_->Text[i] == '\t')
-                        {
-                            offset.x += scaleFactor.x + (float)text_->Font->OffsetWhitespace;
-                            continue;
-                        }
-                        else if (text_->Text[i] == '\n')
-                        {
-                            offset.x = 0.0f;
-                            offset.y -= scaleFactor.y + (float)text_->Font->OffsetNewline;
-                            continue;
-                        }
-                        else if (text_->Text[i] == ' ')
-                        {
-                            offset.x += scaleFactor.x + (float)text_->Font->OffsetSpace;
-                            continue;
-                        }
-
-                        const font::sFont::sGlyph& glyph = text_->Font->Alphabet.find(glyphChar)->second;
-
-                        sTextInstance t;
-                        t.Info.x = position.x + offset.x;
-                        t.Info.y = position.y + (offset.y - (float)((glyph.Height - glyph.Top) / windowSize.y));
-                        t.Info.z = scaleFactor.x + ((float)glyph.Width / windowSize.x);
-                        t.Info.w = scaleFactor.y + ((float)glyph.Height / windowSize.y);
-                        t.AtlasInfo.x = (float)glyph.AtlasXOffset / (float)text_->Font->Atlas->Width;
-                        t.AtlasInfo.y = (float)glyph.AtlasYOffset / (float)text_->Font->Atlas->Height;
-                        t.AtlasInfo.z = (float)glyph.Width / (float)text_->Font->Atlas->Width;
-                        t.AtlasInfo.w = (float)glyph.Height / (float)text_->Font->Atlas->Height;
-
-                        offset.x += scaleFactor.x + ((float)glyph.Width / windowSize.x) + (0.5f * (glyph.Left / windowSize.x));
-
-                        memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &t, sizeof(sTextInstance));
-                        m_instancesByteSize += sizeof(sTextInstance);
-
-                        actualCharCount += 1;
-                    }
-
-                    core::sCMaterial* material = scene_->Get<core::sCMaterial>(text_->Owner);
-                    sMaterialInstance m;
-                    m.BufferIndex = 0;
-                    m.DiffuseColor = material->DiffuseColor;
-
-                    memcpy(m_materials, &m, sizeof(sMaterialInstance));
-                    m_materialsByteSize += sizeof(sMaterialInstance);
-
-                    m_context->WriteBuffer(m_instanceBuffer, 0, m_instancesByteSize, m_instances);
-                    m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
-
-                    m_context->BindRenderPass(m_text);
-                    m_context->BindTexture(m_text->Desc.Shader, "FontAtlas", text_->Font->Atlas);
-                    m_context->DrawQuads(actualCharCount);
-                    m_context->UnbindRenderPass(m_text);
+                    continue;
                 }
-            );
+
+                cText* text = it.GetText();
+
+                m_instancesByteSize = 0;
+                m_materialsByteSize = 0;
+                m_materialsMap->clear();
+
+                render::cTransform transform(&it);
+
+                glm::vec2 windowSize = m_app->GetWindowSize();
+                glm::vec2 position = glm::vec2((transform.GetPosition().x * 2.0f) - 1.0f, (transform.GetPosition().y * 2.0f) - 1.0f);
+                glm::vec2 scale = glm::vec2(
+                    (1.0f / windowSize.x) * it.GetScale().x,
+                    (1.0f / windowSize.y) * it.GetScale().y
+                );
+
+                core::usize charCount = text->GetText().length();
+                core::usize actualCharCount = 0;
+                glm::vec2 offset = glm::vec2(0.0f);
+                for (core::s32 i = 0; i < charCount; i++)
+                {
+                    if (text->GetText()[i] == '\n')
+                    {
+                        offset.y += (float)text->GetFont()->OffsetNewline;
+                    }
+                }
+                for (core::s32 i = 0; i < charCount; i++)
+                {
+                    char glyphChar = text->GetText()[i];
+                    if (glyphChar == '\n') { glyphChar = ' '; }
+
+                    if (text->GetText()[i] == '\t')
+                    {
+                        //offset.x += (float)text->GetFont()->OffsetWhitespace;
+                        //continue;
+                    }
+                    else if (text->GetText()[i] == '\n')
+                    {
+                        //offset.x = 0.0f;
+                        //offset.y -= (float)text->GetFont()->OffsetNewline;
+                        //continue;
+                    }
+                    else if (text->GetText()[i] == ' ')
+                    {
+                        const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(' ')->second;
+                        offset.x += glyph.Width * scale.x;
+                        continue;
+                    }
+
+                    const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(glyphChar)->second;
+                    sTextInstance t;
+                    t.Info.x = position.x + offset.x;
+                    t.Info.y = position.y + (offset.y - (float)((glyph.Height - glyph.Top) * scale.y));
+                    t.Info.z = ((float)glyph.Width * scale.x);
+                    t.Info.w = ((float)glyph.Height * scale.y);
+                    t.AtlasInfo.x = (float)glyph.AtlasXOffset / (float)text->GetFont()->Atlas->Width;
+                    t.AtlasInfo.y = (float)glyph.AtlasYOffset / (float)text->GetFont()->Atlas->Height;
+                    t.AtlasInfo.z = (float)glyph.Width / (float)text->GetFont()->Atlas->Width;
+                    t.AtlasInfo.w = (float)glyph.Height / (float)text->GetFont()->Atlas->Height;
+
+                    offset.x += (glyph.AdvanceX / 64.0f) * scale.x;
+                    //offset.x += ((float)glyph.Width / windowSize.x) + (0.5f * (glyph.Left / windowSize.x));
+
+                    memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &t, sizeof(sTextInstance));
+                    m_instancesByteSize += sizeof(sTextInstance);
+
+                    actualCharCount += 1;
+                }
+
+                render::cMaterial* material = it.GetMaterial();
+                sMaterialInstance mi(0, material);
+                memcpy(m_materials, &mi, sizeof(sMaterialInstance));
+                m_materialsByteSize += sizeof(sMaterialInstance);
+
+                m_context->WriteBuffer(m_instanceBuffer, 0, m_instancesByteSize, m_instances);
+                m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
+
+                m_context->BindRenderPass(m_text);
+                m_context->BindTexture(m_text->Desc.Shader, "FontAtlas", text->GetFont()->Atlas);
+                m_context->DrawQuads(actualCharCount);
+                m_context->UnbindRenderPass(m_text);
+            }
         }
 
         void mRender::CompositeTransparent()
@@ -572,7 +601,7 @@ namespace realware
             m_context->UnbindRenderPass(m_compositeFinal);
         }
 
-        void mRender::DrawCaptions(core::cApplication* app, core::cScene* scene)
+        /*void mRender::DrawCaptions(core::cApplication* app, core::cScene* scene)
         {
             m_context->BindRenderPass(m_text);
 
@@ -588,7 +617,7 @@ namespace realware
                         return;
                     }
 
-                    glm::vec2 windowSize = userInputManager->GetWindowSize();
+                    glm::vec2 windowSize = m_app->GetWindowSize();
                     glm::vec2 position = (widget_->Position * 2.0f) - 1.0f;
 
                     core::usize charCount = strlen(widget_->Text);
@@ -654,9 +683,9 @@ namespace realware
             );
 
             m_context->UnbindRenderPass(m_text);
-        }
+        }*/
 
-        void mRender::DrawButtons(core::cApplication* app, core::cScene* scene)
+        /*void mRender::DrawButtons(core::cApplication* app, core::cScene* scene)
         {
             m_instancesByteSize = 0;
             m_materialsByteSize = 0;
@@ -688,7 +717,7 @@ namespace realware
                             if (material->DiffuseTexture != nullptr)
                             {
                                 core::sArea* frame = material->DiffuseTexture;
-                                m.SetDiffuseTexture(textureManager->CalculateNormalizedArea(*frame));
+                                m.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else if (animation != nullptr)
                             {
@@ -726,9 +755,9 @@ namespace realware
             m_context->BindRenderPass(m_widget);
             m_context->DrawQuads(widgetCount);
             m_context->UnbindRenderPass(m_widget);
-        }
+        }*/
 
-        void mRender::DrawPopupMenus(core::cApplication* app, core::cScene* scene)
+        /*void mRender::DrawPopupMenus(core::cApplication* app, core::cScene* scene)
         {
             m_instancesByteSize = 0;
             m_materialsByteSize = 0;
@@ -760,7 +789,7 @@ namespace realware
                             if (material->DiffuseTexture != nullptr)
                             {
                                 core::sArea* frame = material->DiffuseTexture;
-                                m.SetDiffuseTexture(textureManager->CalculateNormalizedArea(*frame));
+                                m.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else if (animation != nullptr)
                             {
@@ -798,9 +827,9 @@ namespace realware
             m_context->BindRenderPass(m_widget);
             m_context->DrawQuads(widgetCount);
             m_context->UnbindRenderPass(m_widget);
-        }
+        }*/
 
-        void mRender::DrawCheckboxes(core::cApplication* app, core::cScene* scene)
+        /*void mRender::DrawCheckboxes(core::cApplication* app, core::cScene* scene)
         {
             m_instancesByteSize = 0;
             m_materialsByteSize = 0;
@@ -832,7 +861,7 @@ namespace realware
                            if (material->DiffuseTexture != nullptr)
                            {
                                core::sArea* frame = material->DiffuseTexture;
-                               m.SetDiffuseTexture(textureManager->CalculateNormalizedArea(*frame));
+                               m.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                            }
                            else if (animation != nullptr)
                            {
@@ -870,15 +899,15 @@ namespace realware
             m_context->BindRenderPass(m_widget);
             m_context->DrawQuads(widgetCount);
             m_context->UnbindRenderPass(m_widget);
-        }
+        }*/
 
-        void mRender::DrawWidgets(core::cApplication* app, core::cScene* scene)
+        /*void mRender::DrawWidgets(core::cApplication* app, core::cScene* scene)
         {
             DrawCaptions(app, scene);
             DrawButtons(app, scene);
             DrawPopupMenus(app, scene);
             DrawCheckboxes(app, scene);
-        }
+        }*/
 
         sPrimitive* mRender::CreateTriangle()
         {
@@ -1016,6 +1045,8 @@ namespace realware
             m_transparent->Desc.Viewport[2] = size.x;
             m_transparent->Desc.Viewport[3] = size.y;
             m_context->ResizeRenderTargetColors(m_transparent->Desc.RenderTarget, size);
+            m_text->Desc.Viewport[2] = size.x;
+            m_text->Desc.Viewport[3] = size.y;
             m_opaque->Desc.RenderTarget->DepthAttachment = m_context->ResizeTexture(m_opaque->Desc.RenderTarget->DepthAttachment, size);
             m_transparent->Desc.RenderTarget->DepthAttachment = m_opaque->Desc.RenderTarget->DepthAttachment;
             m_context->UpdateRenderTargetBuffers(m_opaque->Desc.RenderTarget);
@@ -1025,19 +1056,15 @@ namespace realware
 
             m_compositeTransparent->Desc.Viewport[2] = size.x;
             m_compositeTransparent->Desc.Viewport[3] = size.y;
-            m_compositeTransparent->Desc.InputTextures.clear();
-            m_compositeTransparent->Desc.InputTextureNames.clear();
-            m_compositeTransparent->Desc.InputTextures.emplace_back(m_transparent->Desc.RenderTarget->ColorAttachments[0]);
-            m_compositeTransparent->Desc.InputTextureNames.emplace_back("AccumulationTexture");
-            m_compositeTransparent->Desc.InputTextures.emplace_back(m_transparent->Desc.RenderTarget->ColorAttachments[1]);
-            m_compositeTransparent->Desc.InputTextureNames.emplace_back("RevealageTexture");
+            m_compositeTransparent->Desc.InputTextures[0] = m_transparent->Desc.RenderTarget->ColorAttachments[0];
+            m_compositeTransparent->Desc.InputTextureNames[0] = "AccumulationTexture";
+            m_compositeTransparent->Desc.InputTextures[1] = m_transparent->Desc.RenderTarget->ColorAttachments[1];
+            m_compositeTransparent->Desc.InputTextureNames[1] = "RevealageTexture";
 
             m_compositeFinal->Desc.Viewport[2] = size.x;
             m_compositeFinal->Desc.Viewport[3] = size.y;
-            m_compositeFinal->Desc.InputTextures.clear();
-            m_compositeFinal->Desc.InputTextureNames.clear();
-            m_compositeFinal->Desc.InputTextures.emplace_back(m_opaque->Desc.RenderTarget->ColorAttachments[0]);
-            m_compositeFinal->Desc.InputTextureNames.emplace_back("ColorTexture");
+            m_compositeFinal->Desc.InputTextures[0] = m_opaque->Desc.RenderTarget->ColorAttachments[0];
+            m_compositeFinal->Desc.InputTextureNames[0] = "ColorTexture";
         }
     }
 }
