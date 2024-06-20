@@ -270,43 +270,28 @@ namespace realware
             m_context->UnbindRenderPass(m_transparent);
         }
 
-        void mRender::UpdateLights(core::cApplication* application, core::cScene* scene)
+        void mRender::UpdateLights(core::cApplication* application, std::vector<cGameObject>& objects)
         {
-            glm::uvec4 lightCount = glm::uvec4(0);
-            m_lightsByteSize = 16;
-
+            m_lightsByteSize = 16; // because vec4 (16 bytes) goes first (contains light count)
             memset(m_lights, 0, 16 + (sizeof(sLightInstance) * 16));
 
-            scene->ForEach<core::sCLight>(
-                application,
-                [this, &lightCount]
-                (core::cApplication* app_, core::cScene* scene_, core::sCLight* light_)
+            glm::uvec4 lightCount = glm::uvec4(0);
+
+            for (auto& it : objects)
+            {
+                if (it.GetLight() != nullptr)
                 {
-                    core::sCTransform* transform = scene_->Get<core::sCTransform>(light_->Owner);
-                    if (transform == nullptr) return;
+                    render::cTransform transform(&it);
+                    transform.Transform();
 
-                    sLightInstance i;
-                    i.Position = glm::vec4(transform->Position, 0.0f);
-                    i.Color = glm::vec4(light_->Color, 0.0f);
-                    i.DirectionAndScale = glm::vec4(
-                        light_->Direction.x,
-                        light_->Direction.y,
-                        light_->Direction.z,
-                        light_->Scale
-                    );
-                    i.Attenuation = glm::vec4(
-                        light_->Attenuation.x,
-                        light_->Attenuation.y,
-                        light_->Attenuation.z,
-                        0.0f
-                    );
+                    sLightInstance li(&it);
 
-                    memcpy((void*)((core::usize)m_lights + (core::usize)m_lightsByteSize), &i, sizeof(sLightInstance));
+                    memcpy((void*)((core::usize)m_lights + (core::usize)m_lightsByteSize), &li, sizeof(sLightInstance));
                     m_lightsByteSize += sizeof(sLightInstance);
 
                     lightCount.x += 1;
                 }
-            );
+            }
 
             memcpy((void*)(core::usize)m_lights, &lightCount, sizeof(glm::uvec4));
 

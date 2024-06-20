@@ -74,6 +74,15 @@ namespace realware
         {
         };
 
+        struct sLight
+        {
+            glm::vec3 Color;
+            glm::vec3 Direction;
+            f32 Scale;
+            f32 AttenuationConstant;
+            f32 AttenuationLinear;
+            f32 AttenuationQuadratic;
+        };
 
         struct cTransform
         {
@@ -197,6 +206,20 @@ namespace realware
 
         struct sLightInstance
         {
+            sLightInstance(cGameObject* object)
+            {
+                sLight* light = object->GetLight();
+                Position = glm::vec4(object->GetPosition(), 0.0f);
+                Color = glm::vec4(light->Color, 0.0f);
+                DirectionAndScale = glm::vec4(light->Direction, light->Scale);
+                Attenuation = glm::vec4(
+                    light->AttenuationConstant,
+                    light->AttenuationLinear,
+                    light->AttenuationQuadratic,
+                    0.0f
+                );
+            }
+
             glm::vec4 Position;
             glm::vec4 Color;
             glm::vec4 DirectionAndScale;
@@ -246,7 +269,7 @@ namespace realware
             inline void DeleteInstanceList(sInstanceList* list) { delete list; }
             void ClearRenderPass(sRenderPass* renderPass, core::boolean clearColor, core::usize bufferIndex, const glm::vec4& color, core::boolean clearDepth, float depth);
             void ClearRenderPasses(const glm::vec4& clearColor, const float clearDepth);
-            void UpdateLights(core::cApplication* app, core::cScene* scene);
+            void UpdateLights(core::cApplication* app, std::vector<cGameObject>& objects);
             void DrawGeometryOpaque(
                 core::cApplication* application,
                 sVertexBufferGeometry* geometry,
