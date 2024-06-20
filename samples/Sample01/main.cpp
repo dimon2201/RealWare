@@ -64,7 +64,7 @@ public:
 
         sFont* font = this->GetFontManager()->NewFont(
             "data/fonts/BrahmsGotischCyr.ttf",
-            42,
+            64,
             1,
             1,
             1

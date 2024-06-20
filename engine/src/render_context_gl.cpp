@@ -180,14 +180,19 @@ namespace realware
             {
                 shader = new sShader();
 
-                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/opaque_vertex.shader", core::K_TRUE);
-                const char* vertex = (const char*)vertexShaderFile.Data;
+                std::string appendPathOpaqueVertexStr = "#version 430\n\n#define RENDER_PATH_OPAQUE\n\n";
+                std::string appendPathOpaqueFragmentStr = "#version 430\n\n#define RENDER_PATH_OPAQUE\n\n";
 
-                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/opaque_fragment.shader", core::K_TRUE);
-                const char* fragment = (const char*)fragmentShaderFile.Data;
+                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/main_vertex.shader", core::K_TRUE);
+                std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile.Data));
+                const char* vertex = vertexStr.c_str();
 
-                GLint vertexByteSize = strlen(vertex);
-                GLint fragmentByteSize = strlen(fragment);
+                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/main_fragment.shader", core::K_TRUE);
+                std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile.Data));
+                const char* fragment = fragmentStr.c_str();
+
+                GLint vertexByteSize = vertexStr.length();
+                GLint fragmentByteSize = fragmentStr.length();
 
                 shader->Instance = glCreateProgram();
                 auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -312,14 +317,19 @@ namespace realware
             {
                 shader = new sShader();
 
-                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/text_vertex.shader", core::K_TRUE);
-                const char* vertex = (const char*)vertexShaderFile.Data;
+                std::string appendPathTextVertexStr = "#version 430\n\n#define RENDER_PATH_TEXT\n\n";
+                std::string appendPathTextFragmentStr = "#version 430\n\n#define RENDER_PATH_TEXT\n\n";
 
-                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/text_fragment.shader", core::K_TRUE);
-                const char* fragment = (const char*)fragmentShaderFile.Data;
+                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/main_vertex.shader", core::K_TRUE);
+                std::string vertexStr = appendPathTextVertexStr.append(std::string((const char*)vertexShaderFile.Data));
+                const char* vertex = vertexStr.c_str();
+                
+                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/main_fragment.shader", core::K_TRUE);
+                std::string fragmentStr = appendPathTextFragmentStr.append(std::string((const char*)fragmentShaderFile.Data));
+                const char* fragment = fragmentStr.c_str();
 
-                GLint vertexByteSize = strlen(vertex);
-                GLint fragmentByteSize = strlen(fragment);
+                GLint vertexByteSize = vertexStr.length();
+                GLint fragmentByteSize = fragmentStr.length();
 
                 shader->Instance = glCreateProgram();
                 auto vertexShader = glCreateShader(GL_VERTEX_SHADER);

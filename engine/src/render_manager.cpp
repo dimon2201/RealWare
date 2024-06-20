@@ -548,7 +548,7 @@ namespace realware
                     else if (text->GetText()[i] == ' ')
                     {
                         const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(' ')->second;
-                        offset.x += glyph.Width * scale.x;
+                        offset.x += (glyph.AdvanceX / 64.0f) * scale.x;
                         continue;
                     }
 
