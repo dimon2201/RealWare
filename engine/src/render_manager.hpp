@@ -5,7 +5,6 @@
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "ecs.hpp"
 #include "texture_manager.hpp"
-#include "gameobject_manager.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -16,6 +15,7 @@ namespace realware
         class cApplication;
         class cUserInput;
         class cTextureAtlas;
+        class cGameObject;
     }
 
     namespace font
@@ -84,46 +84,25 @@ namespace realware
             f32 AttenuationQuadratic;
         };
 
-        struct cTransform
+        struct sTransform
         {
-
-        public:
-            cTransform() = default;
-            cTransform(cGameObject* gameObject)
-            {
-                m_use2D = gameObject->GetIs2D();
-                m_position = gameObject->GetPosition();
-                m_rotation = gameObject->GetRotation();
-                m_scale = gameObject->GetScale();
-            }
-            ~cTransform() = default;
+            sTransform() = default;
+            sTransform(cGameObject* gameObject);
 
             void Transform()
             {
-                glm::quat quatX = glm::angleAxis(m_rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-                glm::quat quatY = glm::angleAxis(m_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-                glm::quat quatZ = glm::angleAxis(m_rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+                glm::quat quatX = glm::angleAxis(Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+                glm::quat quatY = glm::angleAxis(Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::quat quatZ = glm::angleAxis(Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-                m_world = glm::translate(glm::mat4(1.0f), m_position) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), m_scale);
+                World = glm::translate(glm::mat4(1.0f), Position) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), Scale);
             }
 
-            inline boolean GetIs2D() { return m_use2D; }
-            inline glm::vec3 GetPosition() { return m_position; }
-            inline glm::vec3 GetRotation() { return m_rotation; }
-            inline glm::vec3 GetScale() { return m_scale; }
-            inline glm::mat4 GetWorldMatrix() { return m_world; }
-            inline glm::vec3& GetPositionRef() { return m_position; }
-            inline glm::vec3& GetRotationRef() { return m_rotation; }
-            inline glm::vec3& GetScaleRef() { return m_scale; }
-            inline glm::mat4& GetWorldMatrixRef() { return m_world; }
-
-        private:
-            boolean m_use2D = K_FALSE;
-            glm::vec3 m_position = glm::vec3(0.0f);
-            glm::vec3 m_rotation = glm::vec3(0.0f);
-            glm::vec3 m_scale = glm::vec3(1.0f);
-            glm::mat4 m_world = glm::mat4(1.0f);
-
+            boolean Use2D = K_FALSE;
+            glm::vec3 Position = glm::vec3(0.0f);
+            glm::vec3 Rotation = glm::vec3(0.0f);
+            glm::vec3 Scale = glm::vec3(1.0f);
+            glm::mat4 World = glm::mat4(1.0f);
         };
 
         struct cMaterial
@@ -160,11 +139,11 @@ namespace realware
 
         struct sRenderInstance
         {
-            sRenderInstance(core::s32 materialIndex, cTransform& transform)
+            sRenderInstance(core::s32 materialIndex, sTransform& transform)
             {
-                Use2D = transform.GetIs2D();
+                Use2D = transform.Use2D;
                 MaterialIndex = materialIndex;
-                World = transform.GetWorldMatrix();
+                World = transform.World;
             }
 
             float Use2D;
@@ -206,19 +185,7 @@ namespace realware
 
         struct sLightInstance
         {
-            sLightInstance(cGameObject* object)
-            {
-                sLight* light = object->GetLight();
-                Position = glm::vec4(object->GetPosition(), 0.0f);
-                Color = glm::vec4(light->Color, 0.0f);
-                DirectionAndScale = glm::vec4(light->Direction, light->Scale);
-                Attenuation = glm::vec4(
-                    light->AttenuationConstant,
-                    light->AttenuationLinear,
-                    light->AttenuationQuadratic,
-                    0.0f
-                );
-            }
+            sLightInstance(cGameObject* object);
 
             glm::vec4 Position;
             glm::vec4 Color;
@@ -269,7 +236,7 @@ namespace realware
             inline void DeleteInstanceList(sInstanceList* list) { delete list; }
             void ClearRenderPass(sRenderPass* renderPass, core::boolean clearColor, core::usize bufferIndex, const glm::vec4& color, core::boolean clearDepth, float depth);
             void ClearRenderPasses(const glm::vec4& clearColor, const float clearDepth);
-            void UpdateLights(core::cApplication* app, std::vector<cGameObject>& objects);
+            void UpdateLights(core::cApplication* app);
             void DrawGeometryOpaque(
                 core::cApplication* application,
                 sVertexBufferGeometry* geometry,

@@ -2,6 +2,7 @@
 
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "ecs.hpp"
+#include "render_manager.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -40,7 +41,7 @@ namespace realware
         private:
             cApplication* m_app;
             render::cRenderContext* m_context;
-            render::cTransform* m_transform = nullptr;
+            render::sTransform m_transform;
             glm::vec3 m_euler = glm::vec3(0.0f);
             glm::vec3 m_direction = glm::vec3(0.0f);
             glm::mat4 m_view = glm::mat4(1.0f);

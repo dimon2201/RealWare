@@ -2,7 +2,6 @@
 #include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
 #include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
 #include "camera_manager.hpp"
-#include "render_manager.hpp"
 #include "physics_manager.hpp"
 #include "render_context.hpp"
 #include "application.hpp"
@@ -14,12 +13,10 @@ namespace realware
         mCamera::mCamera(cApplication* app)
         {
             m_app = app;
-            m_transform = new render::cTransform();
         }
 
         mCamera::~mCamera()
         {
-            delete m_transform;
         }
 
         void mCamera::Update(boolean updateMouseLook, boolean updateMovement)
@@ -38,7 +35,7 @@ namespace realware
             glm::quat quatZ = glm::angleAxis(m_euler.z, glm::vec3(0.0f, 0.0f, 1.0f));
             m_direction = quatZ * quatY * quatX * glm::vec3(0.0f, 0.0f, -1.0f);
 
-            m_view = glm::lookAtRH(m_transform->GetPosition(), m_transform->GetPosition() + m_direction, glm::vec3(0.0f, 1.0f, 0.0f));
+            m_view = glm::lookAtRH(m_transform.Position, m_transform.Position + m_direction, glm::vec3(0.0f, 1.0f, 0.0f));
             m_projection = glm::perspective(glm::radians(m_fov), (float)m_app->GetWindowSize().x / (float)m_app->GetWindowSize().y, m_zNear, m_zFar);
             m_viewProjection = m_projection * m_view;
 
@@ -84,7 +81,7 @@ namespace realware
 
         void mCamera::Move(float value)
         {
-            m_transform->GetPositionRef() += m_direction * value;
+            m_transform.Position += m_direction * value;
 
             /*sCPhysicsCharacterController* controller =
                 scene->Get<sCPhysicsCharacterController>(camera->Owner);
@@ -100,7 +97,7 @@ namespace realware
         void mCamera::Strafe(float value)
         {
             glm::vec3 right = glm::cross(m_direction, glm::vec3(0.0f, 1.0f, 0.0f));
-            m_transform->GetPositionRef() += right * value;
+            m_transform.Position += right * value;
 
             /*sCPhysicsCharacterController* controller =
                 scene->Get<sCPhysicsCharacterController>(camera->Owner);
@@ -115,7 +112,7 @@ namespace realware
 
         void mCamera::Lift(float value)
         {
-            m_transform->GetPositionRef().y += value;
+            m_transform.Position.y += value;
 
             /*sCPhysicsCharacterController* controller =
                 scene->Get<sCPhysicsCharacterController>(camera->Owner);

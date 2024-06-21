@@ -7,6 +7,7 @@
 #include "render_context.hpp"
 #include "ecs.hpp"
 #include "texture_manager.hpp"
+#include "gameobject_manager.hpp"
 #include "font_manager.hpp"
 #include "application.hpp"
 
@@ -14,6 +15,28 @@ namespace realware
 {
     namespace render
     {
+        sTransform::sTransform(cGameObject* gameObject)
+        {
+            Use2D = gameObject->GetIs2D();
+            Position = gameObject->GetPosition();
+            Rotation = gameObject->GetRotation();
+            Scale = gameObject->GetScale();
+        }
+
+        sLightInstance::sLightInstance(cGameObject* object)
+        {
+            sLight* light = object->GetLight();
+            Position = glm::vec4(object->GetPosition(), 0.0f);
+            Color = glm::vec4(light->Color, 0.0f);
+            DirectionAndScale = glm::vec4(light->Direction, light->Scale);
+            Attenuation = glm::vec4(
+                light->AttenuationConstant,
+                light->AttenuationLinear,
+                light->AttenuationQuadratic,
+                0.0f
+            );
+        }
+
         mRender::mRender(
             cApplication* app,
             const cRenderContext* context,
@@ -270,20 +293,17 @@ namespace realware
             m_context->UnbindRenderPass(m_transparent);
         }
 
-        void mRender::UpdateLights(core::cApplication* application, std::vector<cGameObject>& objects)
+        void mRender::UpdateLights(core::cApplication* application)
         {
             m_lightsByteSize = 16; // because vec4 (16 bytes) goes first (contains light count)
             memset(m_lights, 0, 16 + (sizeof(sLightInstance) * 16));
 
             glm::uvec4 lightCount = glm::uvec4(0);
 
-            for (auto& it : objects)
+            for (auto& it : application->GetGameObjectManager()->GetObjects())
             {
                 if (it.GetLight() != nullptr)
                 {
-                    render::cTransform transform(&it);
-                    transform.Transform();
-
                     sLightInstance li(&it);
 
                     memcpy((void*)((core::usize)m_lights + (core::usize)m_lightsByteSize), &li, sizeof(sLightInstance));
@@ -329,7 +349,7 @@ namespace realware
                     core::boolean isOpaque = it.GetOpaque();
                     if (isVisible == core::K_TRUE && isOpaque == core::K_TRUE)
                     {
-                        render::cTransform transform(&it);
+                        render::sTransform transform(&it);
                         render::cMaterial* material = it.GetMaterial();
                         transform.Transform();
 
@@ -495,10 +515,10 @@ namespace realware
                 m_materialsByteSize = 0;
                 m_materialsMap->clear();
 
-                render::cTransform transform(&it);
+                render::sTransform transform(&it);
 
                 glm::vec2 windowSize = m_app->GetWindowSize();
-                glm::vec2 position = glm::vec2((transform.GetPosition().x * 2.0f) - 1.0f, (transform.GetPosition().y * 2.0f) - 1.0f);
+                glm::vec2 position = glm::vec2((transform.Position.x * 2.0f) - 1.0f, (transform.Position.y * 2.0f) - 1.0f);
                 glm::vec2 scale = glm::vec2(
                     (1.0f / windowSize.x) * it.GetScale().x,
                     (1.0f / windowSize.y) * it.GetScale().y
