@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/USER100/CLionProjects/RealWare
+# Install script for directory: C:/DDD/RealWare
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Users/USER100/CLionProjects/RealWare/out/install/x64-Debug")
+  set(CMAKE_INSTALL_PREFIX "C:/DDD/RealWare/out/install/x64-Debug")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,12 +34,12 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/engine/cmake_install.cmake")
+  include("C:/DDD/RealWare/out/build/x64-Debug/engine/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/samples/Editor/cmake_install.cmake")
+  include("C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/Users/USER100/CLionProjects/RealWare/out/build/x64-Debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/DDD/RealWare/out/build/x64-Debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

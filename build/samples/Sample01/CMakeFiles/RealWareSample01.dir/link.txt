@@ -1,3 +1,0 @@
-"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\RealWareSample01.dir/objects.a
-C:\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\mingw64\bin\ar.exe qc CMakeFiles\RealWareSample01.dir/objects.a @CMakeFiles\RealWareSample01.dir\objects1.rsp
-C:\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\mingw64\bin\c++.exe -O0 -O2 -g -DNDEBUG -Wl,--whole-archive CMakeFiles\RealWareSample01.dir/objects.a -Wl,--no-whole-archive -o RealWareSample01.exe -Wl,--out-implib,libRealWareSample01.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\RealWareSample01.dir\linkLibs.rsp

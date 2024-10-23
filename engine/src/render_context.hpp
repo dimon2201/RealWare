@@ -197,6 +197,11 @@ namespace realware
             virtual void UnbindVertexArray() override final;
             virtual void DeleteVertexArray(sVertexArray* vertexArray) override final;
             virtual void BindShader(const sShader* shader) override final;
+            sShader* LoadShader(
+                const std::string& appendStr,
+                const char* vertexPath,
+                const char* fragmentPath
+            );
             virtual sShader* BindOpaqueShader() override final;
             virtual sShader* BindTransparentShader() override final;
             virtual sShader* BindQuadShader() override final;

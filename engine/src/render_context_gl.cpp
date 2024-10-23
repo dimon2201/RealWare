@@ -172,48 +172,73 @@ namespace realware
             glUseProgram((GLuint)(core::u64)shader->Instance);
         }
 
+        sShader* cOpenGLRenderContext::LoadShader(
+            const std::string& header,
+            const char* vertexPath,
+            const char* fragmentPath
+        )
+        {
+            sShader* shader = new sShader();
+
+            std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
+            std::string appendPathOpaqueVertexStr = appendStr;
+            std::string appendPathOpaqueFragmentStr = appendStr;
+
+            core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile(vertexPath, core::K_TRUE);
+            std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile.Data));
+            const char* vertex = vertexStr.c_str();
+
+            core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile(fragmentPath, core::K_TRUE);
+            std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile.Data));
+            const char* fragment = fragmentStr.c_str();
+
+            GLint vertexByteSize = strlen(vertex);
+            GLint fragmentByteSize = strlen(fragment);
+
+            shader->Instance = glCreateProgram();
+            auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
+            auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+            glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
+            glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
+            glCompileShader(vertexShader);
+            glCompileShader(fragmentShader);
+            glAttachShader(shader->Instance, vertexShader);
+            glAttachShader(shader->Instance, fragmentShader);
+            glLinkProgram(shader->Instance);
+
+            GLint bl = 0;
+            char b[1024] = {};
+            glGetShaderInfoLog(vertexShader, 1024, &bl, &b[0]);
+            if (bl > 0)
+            {
+                std::cout << "Vertex shader error, header: " << header << ", path: " << vertexPath << std::endl;
+                std::cout << b << std::endl;
+            }
+            bl = 0;
+            glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
+            if (bl > 0)
+            {
+                std::cout << "Fragment shader error, header: " << header << ", path: " << fragmentPath << std::endl;
+                std::cout << b << std::endl;
+            }
+
+            m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
+            m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+
+            return shader;
+        }
+
         sShader* cOpenGLRenderContext::BindOpaqueShader()
         {
             static sShader* shader = nullptr;
 
             if (shader == nullptr)
             {
-                shader = new sShader();
-
-                std::string appendPathOpaqueVertexStr = "#version 430\n\n#define RENDER_PATH_OPAQUE\n\n";
-                std::string appendPathOpaqueFragmentStr = "#version 430\n\n#define RENDER_PATH_OPAQUE\n\n";
-
-                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/main_vertex.shader", core::K_TRUE);
-                std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile.Data));
-                const char* vertex = vertexStr.c_str();
-
-                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/main_fragment.shader", core::K_TRUE);
-                std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile.Data));
-                const char* fragment = fragmentStr.c_str();
-
-                GLint vertexByteSize = vertexStr.length();
-                GLint fragmentByteSize = fragmentStr.length();
-
-                shader->Instance = glCreateProgram();
-                auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-                auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-                glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
-                glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
-                glCompileShader(vertexShader);
-                glCompileShader(fragmentShader);
-                glAttachShader(shader->Instance, vertexShader);
-                glAttachShader(shader->Instance, fragmentShader);
-                glLinkProgram(shader->Instance);
-
-                GLint bl = 1024;
-                char b[1024] = {};
-                glGetShaderInfoLog(vertexShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-                glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-
-                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+                shader = this->LoadShader(
+                    "RENDER_PATH_OPAQUE",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
             }
 
             glUseProgram(shader->Instance);
@@ -227,37 +252,11 @@ namespace realware
 
             if (shader == nullptr)
             {
-                shader = new sShader();
-
-                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/transparent_vertex.shader", core::K_TRUE);
-                const char* vertex = (const char*)vertexShaderFile.Data;
-
-                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/transparent_fragment.shader", core::K_TRUE);
-                const char* fragment = (const char*)fragmentShaderFile.Data;
-
-                GLint vertexByteSize = strlen(vertex);
-                GLint fragmentByteSize = strlen(fragment);
-
-                shader->Instance = glCreateProgram();
-                auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-                auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-                glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
-                glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
-                glCompileShader(vertexShader);
-                glCompileShader(fragmentShader);
-                glAttachShader(shader->Instance, vertexShader);
-                glAttachShader(shader->Instance, fragmentShader);
-                glLinkProgram(shader->Instance);
-
-                GLint bl = 1024;
-                char b[1024] = {};
-                glGetShaderInfoLog(vertexShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-                glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-
-                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+                shader = this->LoadShader(
+                    "RENDER_PATH_TRANSPARENT",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
             }
 
             glUseProgram(shader->Instance);
@@ -271,37 +270,11 @@ namespace realware
 
             if (shader == nullptr)
             {
-                shader = new sShader();
-
-                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/quad_vertex.shader", core::K_TRUE);
-                const char* vertex = (const char*)vertexShaderFile.Data;
-
-                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/quad_fragment.shader", core::K_TRUE);
-                const char* fragment = (const char*)fragmentShaderFile.Data;
-
-                GLint vertexByteSize = strlen(vertex);
-                GLint fragmentByteSize = strlen(fragment);
-
-                shader->Instance = glCreateProgram();
-                auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-                auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-                glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
-                glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
-                glCompileShader(vertexShader);
-                glCompileShader(fragmentShader);
-                glAttachShader(shader->Instance, vertexShader);
-                glAttachShader(shader->Instance, fragmentShader);
-                glLinkProgram(shader->Instance);
-
-                GLint bl = 1024;
-                char b[1024] = {};
-                glGetShaderInfoLog(vertexShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-                glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-
-                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+                shader = this->LoadShader(
+                    "RENDER_PATH_QUAD",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
             }
 
             glUseProgram(shader->Instance);
@@ -315,42 +288,11 @@ namespace realware
 
             if (shader == nullptr)
             {
-                shader = new sShader();
-
-                std::string appendPathTextVertexStr = "#version 430\n\n#define RENDER_PATH_TEXT\n\n";
-                std::string appendPathTextFragmentStr = "#version 430\n\n#define RENDER_PATH_TEXT\n\n";
-
-                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/main_vertex.shader", core::K_TRUE);
-                std::string vertexStr = appendPathTextVertexStr.append(std::string((const char*)vertexShaderFile.Data));
-                const char* vertex = vertexStr.c_str();
-                
-                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/main_fragment.shader", core::K_TRUE);
-                std::string fragmentStr = appendPathTextFragmentStr.append(std::string((const char*)fragmentShaderFile.Data));
-                const char* fragment = fragmentStr.c_str();
-
-                GLint vertexByteSize = vertexStr.length();
-                GLint fragmentByteSize = fragmentStr.length();
-
-                shader->Instance = glCreateProgram();
-                auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-                auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-                glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
-                glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
-                glCompileShader(vertexShader);
-                glCompileShader(fragmentShader);
-                glAttachShader(shader->Instance, vertexShader);
-                glAttachShader(shader->Instance, fragmentShader);
-                glLinkProgram(shader->Instance);
-
-                GLint bl = 1024;
-                char b[1024] = {};
-                glGetShaderInfoLog(vertexShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-                glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-
-                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+                shader = this->LoadShader(
+                    "RENDER_PATH_TEXT",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
             }
 
             glUseProgram(shader->Instance);
@@ -364,7 +306,7 @@ namespace realware
 
             if (shader == nullptr)
             {
-                shader = new sShader();
+                /*shader = new sShader();
 
                 core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/widget_vertex.shader", core::K_TRUE);
                 const char* vertex = (const char*)vertexShaderFile.Data;
@@ -394,10 +336,10 @@ namespace realware
                 std::cout << b << std::endl;
 
                 m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);*/
             }
 
-            glUseProgram(shader->Instance);
+            //glUseProgram(shader->Instance);
 
             return shader;
         }
@@ -408,37 +350,11 @@ namespace realware
 
             if (shader == nullptr)
             {
-                shader = new sShader();
-
-                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/composite_transparent_vertex.shader", core::K_TRUE);
-                const char* vertex = (const char*)vertexShaderFile.Data;
-
-                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/composite_transparent_fragment.shader", core::K_TRUE);
-                const char* fragment = (const char*)fragmentShaderFile.Data;
-
-                GLint vertexByteSize = strlen(vertex);
-                GLint fragmentByteSize = strlen(fragment);
-
-                shader->Instance = glCreateProgram();
-                auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-                auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-                glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
-                glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
-                glCompileShader(vertexShader);
-                glCompileShader(fragmentShader);
-                glAttachShader(shader->Instance, vertexShader);
-                glAttachShader(shader->Instance, fragmentShader);
-                glLinkProgram(shader->Instance);
-
-                GLint bl = 1024;
-                char b[1024] = {};
-                glGetShaderInfoLog(vertexShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-                glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-
-                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+                shader = this->LoadShader(
+                    "RENDER_PATH_TRANSPARENT_COMPOSITE",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
             }
 
             glUseProgram(shader->Instance);

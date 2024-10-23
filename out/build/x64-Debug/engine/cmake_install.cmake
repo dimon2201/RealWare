@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/USER100/CLionProjects/RealWare/engine
+# Install script for directory: C:/DDD/RealWare/engine
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Users/USER100/CLionProjects/RealWare/out/install/x64-Debug")
+  set(CMAKE_INSTALL_PREFIX "C:/DDD/RealWare/out/install/x64-Debug")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

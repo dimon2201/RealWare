@@ -17,6 +17,7 @@
 #include "../../engine/src/widget_manager.hpp"
 #include "../../engine/src/filesystem_manager.hpp"
 #include "../../engine/src/physics_manager.hpp"
+#include "../../engine/src/gameobject_manager.hpp"
 
 using namespace realware::core;
 using namespace realware::render;
@@ -62,7 +63,7 @@ public:
         triangleObject->SetVisible(K_TRUE);
         triangleObject->SetPosition(glm::vec3(0.0f));
 
-        sFont* font = this->GetFontManager()->NewFont(
+        /*sFont* font = this->GetFontManager()->NewFont(
             "data/fonts/BrahmsGotischCyr.ttf",
             64,
             1,
@@ -77,7 +78,7 @@ public:
         textObject->SetPosition(glm::vec3(0.5f, 0.5f, 0.0f));
         textObject->SetScale(glm::vec3(1.0f));
         textObject->SetMaterial(material);
-        textObject->SetText(text);
+        textObject->SetText(text);*/
     }
 
     virtual void Update() override final
