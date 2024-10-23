@@ -243,7 +243,12 @@ namespace realware
                 std::vector<cGameObject>& objects,
                 const std::string& cameraObjectID
             );
-            void DrawGeometryTransparent(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene);
+            void DrawGeometryTransparent(
+                core::cApplication* application,
+                sVertexBufferGeometry* geometry,
+                std::vector<cGameObject>& objects,
+                const std::string& cameraObjectID
+            );
             void DrawTexts(
                 core::cApplication* application,
                 std::vector<cGameObject>& objects

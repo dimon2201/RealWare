@@ -54,7 +54,7 @@ public:
         cMaterial* material2 = this->GetRenderManager()->CreateMaterial(
             "Material2",
             nullptr,
-            glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+            glm::vec4(1.0f, 0.0f, 0.0f, 0.5f),
             glm::vec4(1.0f)
         );
 
@@ -68,7 +68,7 @@ public:
 
         cGameObject* triangleObject2 = this->GetGameObjectManager()->CreateGameObject("TriangleObject2");
         triangleObject2->SetVisible(K_TRUE);
-        triangleObject2->SetOpaque(K_TRUE);
+        triangleObject2->SetOpaque(K_FALSE);
         triangleObject2->SetGeometry(m_geometryTriangle);
         triangleObject2->SetPosition(glm::vec3(0.0f, 0.0f, -3.0f));
         triangleObject2->SetScale(glm::vec3(1.0f));
@@ -114,6 +114,13 @@ public:
             this->GetGameObjectManager()->GetObjects(),
             "CameraObject"
         );
+        this->GetRenderManager()->DrawGeometryTransparent(
+            this,
+            m_geometryTriangle,
+            this->GetGameObjectManager()->GetObjects(),
+            "CameraObject"
+        );
+        this->GetRenderManager()->CompositeTransparent();
         this->GetRenderManager()->CompositeFinal();
 
         this->SwapBuffers();

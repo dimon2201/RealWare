@@ -407,29 +407,40 @@ namespace realware
             m_context->UnbindRenderPass(m_opaque);
         }
 
-        /*void mRender::DrawGeometryTransparent(core::cApplication* application, sVertexBufferGeometry* geometry, core::cScene* scene)
+        void mRender::DrawGeometryTransparent(
+            core::cApplication* application,
+            sVertexBufferGeometry* geometry,
+            std::vector<cGameObject>& objects,
+            const std::string& cameraObjectID
+        )
         {
-            core::sCCamera* cam = scene->Get<core::sCCamera>(m_camera);
+            cGameObject* camera = nullptr;
+            for (auto& it : objects)
+            {
+                if (it.GetID() == cameraObjectID)
+                {
+                    camera = &it;
+                    break;
+                }
+            }
+            if (camera == nullptr) { return; }
 
+            core::s32 instanceCount = 0;
             m_instancesByteSize = 0;
             m_materialsByteSize = 0;
             m_materialsMap->clear();
 
-            sInstanceList* list = new sInstanceList((sVertexBufferGeometry*)geometry, scene, 0);
-            scene->ForEach<core::sCGeometry>(
-                application,
-                [this, geometry, list]
-                        (core::cApplication* app, core::cScene* scene_, core::sCGeometry* geometry_)
+            for (auto& it : objects)
+            {
+                if (it.GetGeometry() == geometry)
                 {
-                    core::sCGeometryInfo* geometryInfo = scene_->Get<core::sCGeometryInfo>(geometry_->Owner);
-                    if (geometry_->Geometry == geometry &&
-                        geometryInfo->IsVisible == core::K_TRUE &&
-                        geometryInfo->IsOpaque == core::K_FALSE)
+                    core::boolean isVisible = it.GetVisible();
+                    core::boolean isOpaque = it.GetOpaque();
+                    if (isVisible == core::K_TRUE && isOpaque == core::K_FALSE)
                     {
-                        core::sCTransform* transform = list->Scene->Get<core::sCTransform>(geometry_->Owner);
-                        core::sCMaterial* material = list->Scene->Get<core::sCMaterial>(geometry_->Owner);
-                        core::sCAnimation* animation = list->Scene->Get<core::sCAnimation>(geometry_->Owner);
-                        transform->Transform();
+                        render::sTransform transform(&it);
+                        render::cMaterial* material = it.GetMaterial();
+                        transform.Transform();
 
                         core::s32 materialIndex = -1;
                         auto it = m_materialsMap->find(material);
@@ -437,29 +448,20 @@ namespace realware
                         {
                             materialIndex = m_materialsMap->size();
 
-                            sMaterialInstance m;
-                            m.BufferIndex = materialIndex;
-                            m.DiffuseColor = material->DiffuseColor;
-                            if (material->DiffuseTexture != nullptr)
+                            sMaterialInstance mi(materialIndex, material);
+                            if (material->GetDiffuseTexture() != nullptr)
                             {
-                                core::sArea* frame = material->DiffuseTexture;
-                                m.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
+                                core::sArea* frame = material->GetDiffuseTexture();
+                                mi.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else
                             {
-                                m.DiffuseTextureLayerInfo = -1.0f;
-                            }
-
-                            if (animation != nullptr)
-                            {
-                                core::sArea* frame = animation->Frames[animation->CurrentAnimationIndex]->at(animation->CurrentFrameIndex[animation->CurrentAnimationIndex]);
-                                m.SetDiffuseTexture(*frame);
-                                m.DiffuseColor.a = 1.0f - animation->Fade;
+                                mi.DiffuseTextureLayerInfo = -1.0f;
                             }
 
                             m_materialsMap->insert({ material, materialIndex });
 
-                            memcpy((void*)((core::usize)m_materials + (core::usize)m_materialsByteSize), &m, sizeof(sMaterialInstance));
+                            memcpy((void*)((core::usize)m_materials + (core::usize)m_materialsByteSize), &mi, sizeof(sMaterialInstance));
                             m_materialsByteSize += sizeof(sMaterialInstance);
                         }
                         else
@@ -467,35 +469,32 @@ namespace realware
                             materialIndex = it->second;
                         }
 
-                        sRenderInstance i;
-                        i.Use2D = transform->Use2D;
-                        i.MaterialIndex = materialIndex;
-                        i.World = transform->World;
+                        sRenderInstance ri(materialIndex, transform);
 
-                        memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &i, sizeof(sRenderInstance));
+                        memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &ri, sizeof(sRenderInstance));
                         m_instancesByteSize += sizeof(sRenderInstance);
 
-                        list->InstanceCount += 1;
+                        instanceCount += 1;
                     }
                 }
-            );
+            }
 
             m_context->WriteBuffer(m_instanceBuffer, 0, m_instancesByteSize, m_instances);
             m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
 
             m_context->BindRenderPass(m_transparent);
 
-            m_context->SetShaderUniform(m_transparent->Desc.Shader, "ViewProjection", cam->ViewProjection);
+            m_context->SetShaderUniform(m_transparent->Desc.Shader, "ViewProjection", camera->GetViewProjectionMatrix());
 
             m_context->Draw(
-                    list->Geometry->IndexCount,
-                    list->Geometry->VertexOffset / (core::usize)list->Geometry->Format,
-                    list->Geometry->IndexOffset,
-                    list->InstanceCount
+                geometry->IndexCount,
+                geometry->VertexOffset / (core::usize)geometry->Format,
+                geometry->IndexOffset,
+                instanceCount
             );
 
             m_context->UnbindRenderPass(m_transparent);
-        }*/
+        }
 
         void mRender::DrawTexts(
             core::cApplication* application,
