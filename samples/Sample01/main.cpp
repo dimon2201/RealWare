@@ -44,24 +44,37 @@ public:
             triangle->Indices
         );
 
-        cMaterial* material = this->GetRenderManager()->CreateMaterial(
+        cMaterial* material1 = this->GetRenderManager()->CreateMaterial(
             "Material1",
             nullptr,
             glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
             glm::vec4(1.0f)
         );
 
-        cGameObject* triangleObject = this->GetGameObjectManager()->CreateGameObject("TriangleObject");
-        triangleObject->SetVisible(K_TRUE);
-        triangleObject->SetOpaque(K_TRUE);
-        triangleObject->SetGeometry(m_geometryTriangle);
-        triangleObject->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
-        triangleObject->SetScale(glm::vec3(1.0f));
-        triangleObject->SetMaterial(material);
+        cMaterial* material2 = this->GetRenderManager()->CreateMaterial(
+            "Material2",
+            nullptr,
+            glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+            glm::vec4(1.0f)
+        );
+
+        cGameObject* triangleObject1 = this->GetGameObjectManager()->CreateGameObject("TriangleObject1");
+        triangleObject1->SetVisible(K_TRUE);
+        triangleObject1->SetOpaque(K_TRUE);
+        triangleObject1->SetGeometry(m_geometryTriangle);
+        triangleObject1->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
+        triangleObject1->SetScale(glm::vec3(1.0f));
+        triangleObject1->SetMaterial(material1);
+
+        cGameObject* triangleObject2 = this->GetGameObjectManager()->CreateGameObject("TriangleObject2");
+        triangleObject2->SetVisible(K_TRUE);
+        triangleObject2->SetOpaque(K_TRUE);
+        triangleObject2->SetGeometry(m_geometryTriangle);
+        triangleObject2->SetPosition(glm::vec3(0.0f, 0.0f, -3.0f));
+        triangleObject2->SetScale(glm::vec3(1.0f));
+        triangleObject2->SetMaterial(material2);
 
         cGameObject* cameraObject = this->GetGameObjectManager()->CreateGameObject("CameraObject");
-        triangleObject->SetVisible(K_TRUE);
-        triangleObject->SetPosition(glm::vec3(0.0f));
 
         /*sFont* font = this->GetFontManager()->NewFont(
             "data/fonts/BrahmsGotischCyr.ttf",
@@ -100,10 +113,6 @@ public:
             m_geometryTriangle,
             this->GetGameObjectManager()->GetObjects(),
             "CameraObject"
-        );
-        this->GetRenderManager()->DrawTexts(
-            this,
-            this->GetGameObjectManager()->GetObjects()
         );
         this->GetRenderManager()->CompositeFinal();
 
