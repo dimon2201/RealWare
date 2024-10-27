@@ -476,19 +476,21 @@ namespace realware
             return newTexture;
         }
 
-        void cOpenGLRenderContext::BindTexture(const sShader* shader, const char* name, const sTexture* texture)
+        void cOpenGLRenderContext::BindTexture(const sShader* shader, const char* name, const sTexture* texture, s32 slot)
         {
+            if (slot == -1)
+                slot = texture->Slot;
             if (texture->Type == sTexture::eType::TEXTURE_2D)
             {
-                glUniform1i(glGetUniformLocation(shader->Instance, name), texture->Slot);
-                glActiveTexture(GL_TEXTURE0 + texture->Slot);
+                glUniform1i(glGetUniformLocation(shader->Instance, name), slot);
+                glActiveTexture(GL_TEXTURE0 + slot);
                 glBindTexture(GL_TEXTURE_2D, texture->Instance);
                 glActiveTexture(GL_TEXTURE0);
             }
             else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
             {
-                glUniform1i(glGetUniformLocation(shader->Instance, name), texture->Slot);
-                glActiveTexture(GL_TEXTURE0 + texture->Slot);
+                glUniform1i(glGetUniformLocation(shader->Instance, name), slot);
+                glActiveTexture(GL_TEXTURE0 + slot);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
                 glActiveTexture(GL_TEXTURE0);
             }
@@ -738,7 +740,7 @@ namespace realware
             BindDepthMode(renderPass->Desc.DepthMode);
             BindBlendMode(renderPass->Desc.BlendMode);
             for (core::s32 i = 0; i < renderPass->Desc.InputTextures.size(); i++) {
-                BindTexture(renderPass->Desc.Shader, renderPass->Desc.InputTextureNames[i].c_str(), renderPass->Desc.InputTextures[i]);
+                BindTexture(renderPass->Desc.Shader, renderPass->Desc.InputTextureNames[i].c_str(), renderPass->Desc.InputTextures[i], i);
             }
         }
 

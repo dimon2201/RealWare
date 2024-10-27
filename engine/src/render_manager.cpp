@@ -74,11 +74,13 @@ namespace realware
 
             sTexture* color = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
             sTexture* accumulation = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA16F, nullptr);
+            sTexture* ui = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
             sTexture* revealage = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::R8F, nullptr);
             sTexture* depth = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::DEPTH_STENCIL, nullptr);
 
             sRenderTarget* opaqueRenderTarget = m_context->CreateRenderTarget({ color }, depth);
             sRenderTarget* transparentRenderTarget = m_context->CreateRenderTarget({ accumulation, revealage }, depth);
+            sRenderTarget* uiRenderTarget = m_context->CreateRenderTarget({ ui }, depth);
 
             {
                 sRenderPass::sDescriptor renderPassDesc;
@@ -139,13 +141,13 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.Shader = m_context->BindTextShader();
-                renderPassDesc.RenderTarget = opaqueRenderTarget;
+                renderPassDesc.RenderTarget = uiRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
+                renderPassDesc.DepthMode.UseDepthTest = core::K_FALSE;
+                renderPassDesc.DepthMode.UseDepthWrite = core::K_FALSE;
                 m_text = m_context->CreateRenderPass(renderPassDesc);
             }
             {
-                transparentRenderTarget->ColorAttachments[0]->Slot = 0;
-                transparentRenderTarget->ColorAttachments[1]->Slot = 1;
                 sRenderPass::sDescriptor renderPassDesc;
                 renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::NONE;
                 renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[0]);
@@ -167,6 +169,8 @@ namespace realware
                 renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::NONE;
                 renderPassDesc.InputTextures.emplace_back(opaqueRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
+                renderPassDesc.InputTextures.emplace_back(uiRenderTarget->ColorAttachments[0]);
+                renderPassDesc.InputTextureNames.emplace_back("UIColorTexture");
                 renderPassDesc.Shader = m_context->BindQuadShader();
                 renderPassDesc.RenderTarget = nullptr;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
@@ -528,15 +532,8 @@ namespace realware
                 glm::vec2 offset = glm::vec2(0.0f);
                 for (core::s32 i = 0; i < charCount; i++)
                 {
-                    if (text->GetText()[i] == '\n')
-                    {
-                        offset.y += (float)text->GetFont()->OffsetNewline;
-                    }
-                }
-                for (core::s32 i = 0; i < charCount; i++)
-                {
                     char glyphChar = text->GetText()[i];
-                    if (glyphChar == '\n') { glyphChar = ' '; }
+                    const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(glyphChar)->second;
 
                     if (text->GetText()[i] == '\t')
                     {
@@ -545,9 +542,17 @@ namespace realware
                     }
                     else if (text->GetText()[i] == '\n')
                     {
-                        //offset.x = 0.0f;
-                        //offset.y -= (float)text->GetFont()->OffsetNewline;
-                        //continue;
+                        s32 maxHeight = 0;
+                        s32 cnt = 1;
+                        while (text->GetText()[i + cnt] != '\n' && i + cnt < text->GetText().size()) {
+                            const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(text->GetText()[i + cnt])->second;
+                            if (maxHeight < glyph.Height)
+                                maxHeight = glyph.Height;
+                            cnt += 1;
+                        }
+                        offset.x = 0.0f;
+                        offset.y -= ((text->GetFont()->OffsetNewline / 64.0f) * scale.y) + (maxHeight * scale.y);
+                        continue;
                     }
                     else if (text->GetText()[i] == ' ')
                     {
@@ -556,7 +561,6 @@ namespace realware
                         continue;
                     }
 
-                    const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(glyphChar)->second;
                     sTextInstance t;
                     t.Info.x = position.x + offset.x;
                     t.Info.y = position.y + (offset.y - (float)((glyph.Height - glyph.Top) * scale.y));
@@ -585,7 +589,7 @@ namespace realware
                 m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
 
                 m_context->BindRenderPass(m_text);
-                m_context->BindTexture(m_text->Desc.Shader, "FontAtlas", text->GetFont()->Atlas);
+                m_context->BindTexture(m_text->Desc.Shader, "FontAtlas", text->GetFont()->Atlas, 0);
                 m_context->DrawQuads(actualCharCount);
                 m_context->UnbindRenderPass(m_text);
             }
@@ -1055,8 +1059,6 @@ namespace realware
             m_transparent->Desc.RenderTarget->DepthAttachment = m_opaque->Desc.RenderTarget->DepthAttachment;
             m_context->UpdateRenderTargetBuffers(m_opaque->Desc.RenderTarget);
             m_context->UpdateRenderTargetBuffers(m_transparent->Desc.RenderTarget);
-            m_transparent->Desc.RenderTarget->ColorAttachments[0]->Slot = 0;
-            m_transparent->Desc.RenderTarget->ColorAttachments[1]->Slot = 1;
 
             m_compositeTransparent->Desc.Viewport[2] = size.x;
             m_compositeTransparent->Desc.Viewport[3] = size.y;

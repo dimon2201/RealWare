@@ -150,7 +150,7 @@ namespace realware
             virtual void SetShaderUniform(const sShader* shader, const char* name, core::usize count, float* values) = 0;
             virtual sTexture* CreateTexture(core::s32 width, core::s32 height, core::s32 depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* data) = 0;
             virtual sTexture* ResizeTexture(sTexture* texture, const glm::vec2& size) = 0;
-            virtual void BindTexture(const sShader* shader, const char* name, const sTexture* texture) = 0;
+            virtual void BindTexture(const sShader* shader, const char* name, const sTexture* texture, s32 slot) = 0;
             virtual void UnbindTexture(const sTexture* texture) = 0;
             virtual void WriteTexture(sTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data) = 0;
             virtual void WriteTextureToFile(const sTexture* texture, const char* filename) = 0;
@@ -212,7 +212,7 @@ namespace realware
             virtual void SetShaderUniform(const sShader* shader, const char* name, core::usize count, float* values) override final;
             virtual sTexture* CreateTexture(core::s32 width, core::s32 height, core::s32 depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* data) override final;
             virtual sTexture* ResizeTexture(sTexture* texture, const glm::vec2& size) override final;
-            virtual void BindTexture(const sShader* shader, const char* name, const sTexture* texture) override final;
+            virtual void BindTexture(const sShader* shader, const char* name, const sTexture* texture, s32 slot) override final;
             virtual void UnbindTexture(const sTexture* texture) override final;
             virtual void WriteTexture(sTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data) override final;
             virtual void WriteTextureToFile(const sTexture* texture, const char* filename) override final;

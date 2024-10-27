@@ -75,23 +75,23 @@ public:
         triangleObject2->SetMaterial(material2);
 
         cGameObject* cameraObject = this->GetGameObjectManager()->CreateGameObject("CameraObject");
-
-        /*sFont* font = this->GetFontManager()->NewFont(
-            "data/fonts/BrahmsGotischCyr.ttf",
+        
+        sFont* font = this->GetFontManager()->NewFont(
+            "C:/DDD/RealWare/resources/fonts/brahms.ttf",
             64,
             1,
             1,
             1
         );
-        cText* text = new cText(font, "Hello World!");
+        cText* text = new cText(font, "New line\ntest\nanother newline");
 
         cGameObject* textObject = this->GetGameObjectManager()->CreateGameObject("TextObject");
         textObject->SetVisible(K_TRUE);
         textObject->SetOpaque(K_TRUE);
         textObject->SetPosition(glm::vec3(0.5f, 0.5f, 0.0f));
         textObject->SetScale(glm::vec3(1.0f));
-        textObject->SetMaterial(material);
-        textObject->SetText(text);*/
+        textObject->SetMaterial(material1);
+        textObject->SetText(text);
     }
 
     virtual void Update() override final
@@ -119,6 +119,10 @@ public:
             m_geometryTriangle,
             this->GetGameObjectManager()->GetObjects(),
             "CameraObject"
+        );
+        this->GetRenderManager()->DrawTexts(
+            this,
+            this->GetGameObjectManager()->GetObjects()
         );
         this->GetRenderManager()->CompositeTransparent();
         this->GetRenderManager()->CompositeFinal();

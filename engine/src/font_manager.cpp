@@ -36,7 +36,7 @@ namespace realware
                     font->GlyphCount = 0;
                     font->GlyphSize = glyphSize;
                     font->OffsetWhitespace = whitespaceOffset;
-                    font->OffsetNewline = newlineOffset;
+                    font->OffsetNewline = font->Font->ascender - font->Font->descender;
                     font->OffsetSpace = spaceOffset;
 
                     core::usize textureWidth = 0;
@@ -48,9 +48,7 @@ namespace realware
                     for (int c = 0; c < 256; c++)
                     {
                         FT_Int ci = FT_Get_Char_Index(font->Font, m_unicode[(char)c]);
-                        FT_UInt gi = FT_Load_Glyph(font->Font, (FT_UInt)ci, FT_LOAD_DEFAULT) == 0 ? ci : 0;
-
-                        if (FT_Load_Glyph(font->Font, gi, FT_LOAD_DEFAULT) == 0)
+                        if (FT_Load_Glyph(font->Font, (FT_UInt)ci, FT_LOAD_DEFAULT) == 0)
                         {
                             font->GlyphCount += 1;
 
@@ -88,10 +86,10 @@ namespace realware
 
                     textureHeight += maxGlyphHeight + 1;
 
-                    core::s32 bit = 0;
+                    core::s32 bit;
+                    bit = 0;
                     while ((1 << bit++) < textureWidth);
                     textureWidth = 1 << (bit - 1);
-
                     bit = 0;
                     while ((1 << bit++) < textureHeight);
                     textureHeight = 1 << (bit - 1);
