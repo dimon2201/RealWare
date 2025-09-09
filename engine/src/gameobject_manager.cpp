@@ -1,3 +1,4 @@
+#include "application.hpp"
 #include "gameobject_manager.hpp"
 #include "render_manager.hpp"
 
@@ -5,11 +6,10 @@ namespace realware
 {
     namespace core
     {
-        mGameObject::mGameObject(cApplication* app, usize maxObjectCount)
+        mGameObject::mGameObject(cApplication* app)
         {
             m_app = app;
-            m_maxGameObjectCount = maxObjectCount;
-            m_gameObjects.resize(m_maxGameObjectCount);
+            m_maxGameObjectCount = app->GetDesc()->MaxGameObjectCount;
         }
 
         cGameObject::cGameObject()
@@ -19,15 +19,28 @@ namespace realware
 
         cGameObject* mGameObject::CreateGameObject(const std::string& id)
         {
-            for (usize i = 0; i < m_maxGameObjectCount; i++)
+            const usize gameObjectCount = m_gameObjects.size();
+
+            for (usize i = 0; i < gameObjectCount; i++)
             {
                 if (m_gameObjects[i].m_isDeleted == K_TRUE)
                 {
                     m_gameObjects[i] = cGameObject();
                     m_gameObjects[i].m_isDeleted = K_FALSE;
                     m_gameObjects[i].m_id = id;
+
                     return &m_gameObjects[i];
                 }
+            }
+            
+            if (gameObjectCount < m_maxGameObjectCount)
+            {
+                cGameObject gameObject = cGameObject();
+                gameObject.m_id = id;
+                gameObject.m_isDeleted = K_FALSE;
+                m_gameObjects.push_back(gameObject);
+
+                return &m_gameObjects[gameObjectCount];
             }
 
             return nullptr;
@@ -38,9 +51,7 @@ namespace realware
             for (usize i = 0; i < m_maxGameObjectCount; i++)
             {
                 if (m_gameObjects[i].m_isDeleted == K_FALSE && m_gameObjects[i].GetID() == id)
-                {
                     return &m_gameObjects[i];
-                }
             }
             
             return nullptr;
@@ -49,8 +60,11 @@ namespace realware
         void mGameObject::DeleteGameObject(const std::string& id)
         {
             cGameObject* object = FindGameObject(id);
-            object->m_isDeleted = K_TRUE;
-            delete object->m_transform;
+            if (object != nullptr)
+            {
+                object->m_isDeleted = K_TRUE;
+                delete object->m_transform;
+            }
         }
     }
 }

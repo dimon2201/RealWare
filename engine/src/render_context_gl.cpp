@@ -1,8 +1,7 @@
 #include <iostream>
 #include <cstring>
-#include <GL/glew.h>
 #include <lodepng.h>
-
+#include <GL/glew.h>
 #include "render_context.hpp"
 #include "filesystem_manager.hpp"
 #include "types.hpp"
@@ -12,16 +11,36 @@ namespace realware
 {
     namespace render
     {
+        void APIENTRY GLDebugCallback(
+            GLenum source,
+            GLenum type,
+            GLuint id,
+            GLenum severity,
+            GLsizei length,
+            const GLchar* message,
+            const void* userParam
+        )
+        {
+            std::cout << message << std::endl;
+        }
+
         cOpenGLRenderContext::cOpenGLRenderContext(cApplication* app)
         {
             m_app = app;
-            glewInit();
+            if (glewInit() != GLEW_OK)
+            {
+                std::cout << "Error initializing GLEW!" << std::endl;
+                return;
+            }
             glEnable(GL_DEPTH_TEST);
             //glEnable(GL_CULL_FACE);
             glEnable(GL_BLEND);
             glDepthFunc(GL_LESS);
             //glCullFace(GL_BACK);
             glFrontFace(GL_CW);
+            glEnable(GL_DEBUG_OUTPUT);
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+            glDebugMessageCallback(GLDebugCallback, nullptr);
         }
 
         cOpenGLRenderContext::~cOpenGLRenderContext()
@@ -39,25 +58,25 @@ namespace realware
 
             if (buffer->Type == sBuffer::eType::VERTEX)
             {
-                glBindBuffer(GL_ARRAY_BUFFER, (GLuint)(core::u64)buffer->Instance);
+                glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->Instance);
                 glBufferData(GL_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
             }
             else if (buffer->Type == sBuffer::eType::INDEX)
             {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)(core::u64)buffer->Instance);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->Instance);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
             else if (buffer->Type == sBuffer::eType::UNIFORM)
             {
-                glBindBuffer(GL_UNIFORM_BUFFER, (GLuint)(core::u64)buffer->Instance);
+                glBindBuffer(GL_UNIFORM_BUFFER, (GLuint)buffer->Instance);
                 glBufferData(GL_UNIFORM_BUFFER, byteSize, data, GL_STATIC_DRAW);
                 glBindBuffer(GL_UNIFORM_BUFFER, 0);
             }
             else if (buffer->Type == sBuffer::eType::LARGE)
             {
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, (GLuint)(core::u64)buffer->Instance);
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, (GLuint)buffer->Instance);
                 glBufferData(GL_SHADER_STORAGE_BUFFER, byteSize, data, GL_STATIC_DRAW);
                 glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
             }
@@ -67,15 +86,22 @@ namespace realware
 
         void cOpenGLRenderContext::BindBuffer(const sBuffer* buffer)
         {
-            if (buffer->Type == sBuffer::eType::VERTEX) {
-                glBindBuffer(GL_ARRAY_BUFFER, (GLuint)(core::u64)buffer->Instance);
-            } else if (buffer->Type == sBuffer::eType::INDEX) {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint) (core::u64) buffer->Instance);
-            } else if (buffer->Type == sBuffer::eType::UNIFORM) {
-                glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, (GLuint)(core::u64)buffer->Instance);
-            } else if (buffer->Type == sBuffer::eType::LARGE) {
+            if (buffer->Type == sBuffer::eType::VERTEX)
+                glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->Instance);
+            else if (buffer->Type == sBuffer::eType::INDEX)
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->Instance);
+            else if (buffer->Type == sBuffer::eType::UNIFORM)
+                glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, (GLuint)buffer->Instance);
+            else if (buffer->Type == sBuffer::eType::LARGE)
                 glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, buffer->Instance);
-            }
+        }
+		
+		void cOpenGLRenderContext::BindBufferNotVAO(const sBuffer* buffer)
+        {
+            if (buffer->Type == sBuffer::eType::UNIFORM)
+                glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, (GLuint)buffer->Instance);
+            else if (buffer->Type == sBuffer::eType::LARGE)
+                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, buffer->Instance);
         }
 
         void cOpenGLRenderContext::UnbindBuffer(const sBuffer* buffer)
@@ -135,7 +161,7 @@ namespace realware
 
         void cOpenGLRenderContext::BindVertexArray(const sVertexArray* vertexArray)
         {
-            glBindVertexArray((GLuint)(core::u64)vertexArray->Instance);
+            glBindVertexArray((GLuint)vertexArray->Instance);
         }
 
         void cOpenGLRenderContext::BindDefaultVertexArray(const std::vector<sBuffer*>& buffersToBind)
@@ -169,7 +195,13 @@ namespace realware
 
         void cOpenGLRenderContext::BindShader(const sShader* shader)
         {
-            glUseProgram((GLuint)(core::u64)shader->Instance);
+            auto shaderID = (GLuint)shader->Instance;
+            glUseProgram(shaderID);
+        }
+
+        void cOpenGLRenderContext::UnbindShader()
+        {
+            glUseProgram(0);
         }
 
         sShader* cOpenGLRenderContext::LoadShader(
@@ -205,159 +237,35 @@ namespace realware
             glAttachShader(shader->Instance, vertexShader);
             glAttachShader(shader->Instance, fragmentShader);
             glLinkProgram(shader->Instance);
+			
+            GLint success;
+            glGetProgramiv((GLuint)shader->Instance, GL_LINK_STATUS, &success);
+            if (!success)
+                std::cout << "Error: Linking shader!" << std::endl;
+            if (!glIsProgram((GLuint)shader->Instance))
+                std::cout << "Error: Invalid shader!" << std::endl;
 
-            GLint bl = 0;
-            char b[1024] = {};
-            glGetShaderInfoLog(vertexShader, 1024, &bl, &b[0]);
-            if (bl > 0)
+            GLint logBufferByteSize = 0;
+            char logBuffer[1024] = {};
+            glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
+            if (logBufferByteSize > 0)
             {
                 std::cout << "Vertex shader error, header: " << header << ", path: " << vertexPath << std::endl;
-                std::cout << b << std::endl;
+                std::cout << logBuffer << std::endl;
             }
-            bl = 0;
-            glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
-            if (bl > 0)
+            logBufferByteSize = 0;
+            glGetShaderInfoLog(fragmentShader, 1024, &logBufferByteSize, &logBuffer[0]);
+            if (logBufferByteSize > 0)
             {
                 std::cout << "Fragment shader error, header: " << header << ", path: " << fragmentPath << std::endl;
-                std::cout << b << std::endl;
+                std::cout << logBuffer << std::endl;
             }
+			
+			glDeleteShader(vertexShader);
+            glDeleteShader(fragmentShader);
 
             m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
             m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
-
-            return shader;
-        }
-
-        sShader* cOpenGLRenderContext::BindOpaqueShader()
-        {
-            static sShader* shader = nullptr;
-
-            if (shader == nullptr)
-            {
-                shader = this->LoadShader(
-                    "RENDER_PATH_OPAQUE",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
-            }
-
-            glUseProgram(shader->Instance);
-
-            return shader;
-        }
-
-        sShader* cOpenGLRenderContext::BindTransparentShader()
-        {
-            static sShader* shader = nullptr;
-
-            if (shader == nullptr)
-            {
-                shader = this->LoadShader(
-                    "RENDER_PATH_TRANSPARENT",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
-            }
-
-            glUseProgram(shader->Instance);
-
-            return shader;
-        }
-
-        sShader* cOpenGLRenderContext::BindQuadShader()
-        {
-            static sShader* shader = nullptr;
-
-            if (shader == nullptr)
-            {
-                shader = this->LoadShader(
-                    "RENDER_PATH_QUAD",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
-            }
-
-            glUseProgram(shader->Instance);
-
-            return shader;
-        }
-
-        sShader* cOpenGLRenderContext::BindTextShader()
-        {
-            static sShader* shader = nullptr;
-
-            if (shader == nullptr)
-            {
-                shader = this->LoadShader(
-                    "RENDER_PATH_TEXT",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
-            }
-
-            glUseProgram(shader->Instance);
-
-            return shader;
-        }
-
-        sShader* cOpenGLRenderContext::BindWidgetShader()
-        {
-            static sShader* shader = nullptr;
-
-            if (shader == nullptr)
-            {
-                /*shader = new sShader();
-
-                core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/widget_vertex.shader", core::K_TRUE);
-                const char* vertex = (const char*)vertexShaderFile.Data;
-
-                core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile("data/shaders/widget_fragment.shader", core::K_TRUE);
-                const char* fragment = (const char*)fragmentShaderFile.Data;
-
-                GLint vertexByteSize = strlen(vertex);
-                GLint fragmentByteSize = strlen(fragment);
-
-                shader->Instance = glCreateProgram();
-                auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-                auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-                glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
-                glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
-                glCompileShader(vertexShader);
-                glCompileShader(fragmentShader);
-                glAttachShader(shader->Instance, vertexShader);
-                glAttachShader(shader->Instance, fragmentShader);
-                glLinkProgram(shader->Instance);
-
-                GLint bl = 1024;
-                char b[1024] = {};
-                glGetShaderInfoLog(vertexShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-                glGetShaderInfoLog(fragmentShader, 1024, &bl, &b[0]);
-                std::cout << b << std::endl;
-
-                m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-                m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);*/
-            }
-
-            //glUseProgram(shader->Instance);
-
-            return shader;
-        }
-
-        sShader* cOpenGLRenderContext::BindCompositeTransparentShader()
-        {
-            static sShader* shader = nullptr;
-
-            if (shader == nullptr)
-            {
-                shader = this->LoadShader(
-                    "RENDER_PATH_TRANSPARENT_COMPOSITE",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
-            }
-
-            glUseProgram(shader->Instance);
 
             return shader;
         }
@@ -372,7 +280,14 @@ namespace realware
             glUniform4fv(glGetUniformLocation(shader->Instance, name), count, &values[0]);
         }
 
-        sTexture* cOpenGLRenderContext::CreateTexture(core::s32 width, core::s32 height, core::s32 depth, const sTexture::eType &type, const sTexture::eFormat &format, const void *data)
+        sTexture* cOpenGLRenderContext::CreateTexture(
+            core::s32 width,
+            core::s32 height,
+            core::s32 depth,
+            const sTexture::eType& type,
+            const sTexture::eFormat& format,
+            const void* data
+        )
         {
             sTexture* texture = new sTexture();
             texture->Width = width;
@@ -449,10 +364,11 @@ namespace realware
             {
                 glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
                 glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatGL, texture->Width, texture->Height, texture->Depth, 0, channelsGL, formatComponentGL, data);
+                
                 if (texture->Format == sTexture::eFormat::RGBA8_MIPS)
                 {
                     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 }
                 else
                 {
@@ -606,7 +522,10 @@ namespace realware
             glDeleteTextures(1, (GLuint*)&texture->Instance);
         }
 
-        sRenderTarget* cOpenGLRenderContext::CreateRenderTarget(const std::vector<sTexture*>& colorAttachments, const sTexture* depthAttachment)
+        sRenderTarget* cOpenGLRenderContext::CreateRenderTarget(
+            const std::vector<sTexture*>& colorAttachments,
+            const sTexture* depthAttachment
+        )
         {
             sRenderTarget* renderTarget = new sRenderTarget();
             renderTarget->ColorAttachments = colorAttachments;
@@ -622,7 +541,11 @@ namespace realware
             }
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, renderTarget->DepthAttachment->Instance, 0);
             glDrawBuffers(renderTarget->ColorAttachments.size(), &buffs[0]);
+            GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			
+			if (status != GL_FRAMEBUFFER_COMPLETE)
+                std::cout << "Error: incomplete framebuffer!" << std::endl;
 
             return renderTarget;
         }
@@ -636,7 +559,6 @@ namespace realware
             {
                 DeleteTexture(attachment);
                 newColorAttachments.emplace_back(CreateTexture(size.x, size.y, attachment->Depth, attachment->Type, attachment->Format, nullptr));
-                //delete attachment;
             }
             renderTarget->ColorAttachments.clear();
             renderTarget->ColorAttachments = newColorAttachments;
@@ -684,7 +606,7 @@ namespace realware
 
         void cOpenGLRenderContext::BindRenderTarget(const sRenderTarget* renderTarget)
         {
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderTarget->Instance);
+            glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
         }
 
         void cOpenGLRenderContext::UnbindRenderTarget()
@@ -708,15 +630,13 @@ namespace realware
             BindVertexArray(renderPass->Desc.VertexArray);
             if (renderPass->Desc.InputVertexFormat == sVertexBufferGeometry::eFormat::NONE)
             {
-                for (auto buffer : renderPass->Desc.InputBuffers) {
+                for (auto buffer : renderPass->Desc.InputBuffers)
                     BindBuffer(buffer);
-                }
             }
             else if (renderPass->Desc.InputVertexFormat == sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3)
             {
-                for (auto buffer : renderPass->Desc.InputBuffers) {
+                for (auto buffer : renderPass->Desc.InputBuffers)
                     BindBuffer(buffer);
-                }
                 BindDefaultInputLayout();
             }
             UnbindVertexArray();
@@ -728,34 +648,28 @@ namespace realware
         {
             BindShader(renderPass->Desc.Shader);
             BindVertexArray(renderPass->Desc.VertexArray);
-            if (renderPass->Desc.RenderTarget != nullptr) {
+            if (renderPass->Desc.RenderTarget != nullptr)
                 BindRenderTarget(renderPass->Desc.RenderTarget);
-            } else {
+            else
                 UnbindRenderTarget();
-            }
             Viewport(renderPass->Desc.Viewport);
-            for (auto buffer : renderPass->Desc.InputBuffers) {
-                BindBuffer(buffer);
-            }
+            for (auto buffer : renderPass->Desc.InputBuffers)
+                BindBufferNotVAO(buffer);
             BindDepthMode(renderPass->Desc.DepthMode);
             BindBlendMode(renderPass->Desc.BlendMode);
-            for (core::s32 i = 0; i < renderPass->Desc.InputTextures.size(); i++) {
+            for (core::s32 i = 0; i < renderPass->Desc.InputTextures.size(); i++)
                 BindTexture(renderPass->Desc.Shader, renderPass->Desc.InputTextureNames[i].c_str(), renderPass->Desc.InputTextures[i], i);
-            }
         }
 
         void cOpenGLRenderContext::UnbindRenderPass(const sRenderPass* renderPass)
         {
             UnbindVertexArray();
-            if (renderPass->Desc.RenderTarget != nullptr) {
+            if (renderPass->Desc.RenderTarget != nullptr)
                 UnbindRenderTarget();
-            }
-            for (auto buffer : renderPass->Desc.InputBuffers) {
+            for (auto buffer : renderPass->Desc.InputBuffers)
                 UnbindBuffer(buffer);
-            }
-            for (auto texture : renderPass->Desc.InputTextures) {
+            for (auto texture : renderPass->Desc.InputTextures)
                 UnbindTexture(texture);
-            }
         }
 
         void cOpenGLRenderContext::DeleteRenderPass(sRenderPass* renderPass)
@@ -775,17 +689,15 @@ namespace realware
 
         void cOpenGLRenderContext::BindDepthMode(const sDepthMode &blendMode)
         {
-            if (blendMode.UseDepthTest == core::K_TRUE) {
+            if (blendMode.UseDepthTest == core::K_TRUE)
                 glEnable(GL_DEPTH_TEST);
-            } else {
+            else
                 glDisable(GL_DEPTH_TEST);
-            }
 
-            if (blendMode.UseDepthWrite == core::K_TRUE) {
+            if (blendMode.UseDepthWrite == core::K_TRUE)
                 glDepthMask(GL_TRUE);
-            } else {
+            else
                 glDepthMask(GL_FALSE);
-            }
         }
 
         void cOpenGLRenderContext::BindBlendMode(const sBlendMode& blendMode)
@@ -821,9 +733,10 @@ namespace realware
             glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
         }
 
-        void cOpenGLRenderContext::ClearColor(core::usize bufferIndex, const glm::vec4& color)
+        void cOpenGLRenderContext::ClearColor(const glm::vec4& color)
         {
-            glClearBufferfv(GL_COLOR, bufferIndex, &color.x);
+            glClearColor(color.x, color.y, color.z, color.w);
+            glClear(GL_COLOR_BUFFER_BIT);
         }
 
         void cOpenGLRenderContext::ClearDepth(float depth)
@@ -832,7 +745,18 @@ namespace realware
             glClear(GL_DEPTH_BUFFER_BIT);
         }
 
-        void cOpenGLRenderContext::Draw(core::usize indexCount, core::usize vertexOffset, core::usize indexOffset, core::usize instanceCount)
+        void cOpenGLRenderContext::ClearFramebufferColor(core::usize bufferIndex, const glm::vec4& color)
+        {
+            glClearBufferfv(GL_COLOR, bufferIndex, &color.x);
+        }
+
+        void cOpenGLRenderContext::ClearFramebufferDepth(float depth)
+        {
+            glClearDepth(depth);
+            glClear(GL_DEPTH_BUFFER_BIT);
+        }
+
+        void cOpenGLRenderContext::Draw(core::u32 indexCount, core::s32 vertexOffset, core::u32 indexOffset, core::u32 instanceCount)
         {
             glDrawElementsInstancedBaseVertex(
                 GL_TRIANGLES,

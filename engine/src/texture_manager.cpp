@@ -1,5 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../thirdparty/stb-master/stb_image.h"
+#include "application.hpp"
 #include "texture_manager.hpp"
 #include "ecs.hpp"
 #include "render_context.hpp"
@@ -8,14 +9,16 @@ namespace realware
 {
     namespace core
     {
-        mTexture::mTexture(cApplication* app, render::cRenderContext* context, s32 width, s32 height, s32 depth)
+        mTexture::mTexture(cApplication* app, render::cRenderContext* context)
         {
+            sApplicationDescriptor* desc = app->GetDesc();
+
             m_app = app;
             m_context = context;
             m_atlas = m_context->CreateTexture(
-                width,
-                height,
-                depth,
+                desc->TextureAtlasWidth,
+                desc->TextureAtlasHeight,
+                desc->TextureAtlasDepth,
                 render::sTexture::eType::TEXTURE_2D_ARRAY,
                 render::sTexture::eFormat::RGBA8_MIPS,
                 nullptr

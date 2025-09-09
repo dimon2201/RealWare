@@ -61,13 +61,13 @@ namespace realware
 
         struct sPrimitive
         {
-            render::sVertexBufferGeometry::eFormat Format;
-            render::sVertex* Vertices;
-            render::index* Indices;
-            core::usize VertexCount;
-            core::usize IndexCount;
-            core::usize VerticesByteSize;
-            core::usize IndicesByteSize;
+            render::sVertexBufferGeometry::eFormat Format = render::sVertexBufferGeometry::eFormat::NONE;
+            render::sVertex* Vertices = nullptr;
+            render::index* Indices = nullptr;
+            core::usize VertexCount = 0;
+            core::usize IndexCount = 0;
+            core::usize VerticesByteSize = 0;
+            core::usize IndicesByteSize = 0;
         };
 
         struct sModel : sPrimitive
@@ -207,19 +207,14 @@ namespace realware
 
         class mRender
         {
-
         public:
-            mRender(
-                cApplication* app,
-                const cRenderContext* context,
-                core::usize vertexBufferSize,
-                core::usize indexBufferSize,
-                core::usize instanceBufferSize,
-                core::usize materialBufferSize,
-                core::usize lightBufferSize,
-                core::usize maxMaterialCount,
-                const glm::vec2& windowSize
-            );
+            enum class ePrimitive
+            {
+                TRIANGLE = 1,
+                QUAD = 2
+            };
+
+            mRender(cApplication* app, const cRenderContext* context);
             ~mRender();
 
             cMaterial* CreateMaterial(
@@ -238,30 +233,23 @@ namespace realware
             void ClearRenderPasses(const glm::vec4& clearColor, const float clearDepth);
             void UpdateLights(core::cApplication* app);
             void DrawGeometryOpaque(
-                core::cApplication* application,
-                sVertexBufferGeometry* geometry,
+                const sVertexBufferGeometry* const geometry,
                 std::vector<cGameObject>& objects,
-                const std::string& cameraObjectID
+                const cGameObject* const cameraObject
             );
             void DrawGeometryTransparent(
-                core::cApplication* application,
-                sVertexBufferGeometry* geometry,
+                const sVertexBufferGeometry* const geometry,
                 std::vector<cGameObject>& objects,
-                const std::string& cameraObjectID
+                const cGameObject* const cameraObject
             );
             void DrawTexts(
                 core::cApplication* application,
                 std::vector<cGameObject>& objects
             );
-            void DrawCaptions(core::cApplication* app, core::cScene* scene);
-            void DrawButtons(core::cApplication* app, core::cScene* scene);
-            void DrawPopupMenus(core::cApplication* app, core::cScene* scene);
-            void DrawCheckboxes(core::cApplication* app, core::cScene* scene);
-            void DrawWidgets(core::cApplication* app, core::cScene* scene);
             void CompositeTransparent();
             void CompositeFinal();
-            sPrimitive* CreateTriangle();
-            sPrimitive* CreateQuad();
+            sPrimitive* CreatePrimitive(const ePrimitive& primitive);
+            void DestroyPrimitive(sPrimitive* primitiveObject);
             sModel* CreateModel(const std::string& filename);
             void FreePrimitive(sPrimitive* primitive);
             void ResizeWindow(const glm::vec2& size);
@@ -305,7 +293,6 @@ namespace realware
             sRenderPass* m_compositeFinal;
             usize m_materialCountCPU = 0;
             std::vector<cMaterial> m_materialsCPU;
-
         };
     }
 }

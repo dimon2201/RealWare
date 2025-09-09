@@ -1,4 +1,4 @@
-# Install script for directory: C:/DDD/RealWare/engine
+# Install script for directory: C:/DDD/RealWare_original/engine
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

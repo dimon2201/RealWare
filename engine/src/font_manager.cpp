@@ -11,19 +11,157 @@ namespace realware
         {
             m_app = app;
             m_context = context;
-            FillUnicodeTable();
 
-            if (FT_Init_FreeType(&m_lib)) {
+            //FillUnicodeTable();
+
+            if (FT_Init_FreeType(&m_lib))
+            {
                 std::cout << "Failed to initialize FreeType library!" << std::endl;
+                return;
             }
+
+            _initialized = K_TRUE;
         }
 
         mFont::~mFont()
         {
-            FT_Done_FreeType(m_lib);
+            if (_initialized)
+                FT_Done_FreeType(m_lib);
         }
 
-        sFont* mFont::NewFont(const char* filename, core::usize glyphSize, float whitespaceOffset, float newlineOffset, float spaceOffset)
+        core::s32 CalculateNewlineOffset(sFont* font)
+        {
+            return font->Font->size->metrics.height >> 6;
+        }
+
+        core::s32 CalculateSpaceOffset(sFont* font)
+        {
+            FT_UInt spaceIndex = FT_Get_Char_Index(font->Font, ' ');
+            if (FT_Load_Glyph(font->Font, spaceIndex, FT_LOAD_DEFAULT) == 0)
+                return font->Font->glyph->advance.x >> 6;
+            else
+                return 0;
+        }
+
+        void FillAlphabetAndFindAtlasSize(
+            sFont* font,
+            core::u16* unicode,
+            core::usize& xOffset,
+            core::usize& atlasWidth,
+            core::usize& atlasHeight
+        )
+        {
+            core::usize maxGlyphHeight = 0;
+            for (int c = 0; c < 256; c++)
+            {
+                if (c == '\n' || c == ' ' || c == '\t')
+                    continue;
+                FT_Int ci = FT_Get_Char_Index(font->Font, unicode[(unsigned char)c]);
+                if (FT_Load_Glyph(font->Font, (FT_UInt)ci, FT_LOAD_DEFAULT) == 0)
+                {
+                    font->GlyphCount += 1;
+
+                    FT_Render_Glyph(font->Font->glyph, FT_RENDER_MODE_NORMAL);
+
+                    sFont::sGlyph glyph = {};
+                    glyph.Character = (char)c;
+                    glyph.Width = font->Font->glyph->bitmap.width;
+                    glyph.Height = font->Font->glyph->bitmap.rows;
+                    glyph.Left = font->Font->glyph->bitmap_left;
+                    glyph.Top = font->Font->glyph->bitmap_top;
+                    glyph.AdvanceX = font->Font->glyph->advance.x >> 6;
+                    glyph.AdvanceY = font->Font->glyph->advance.y >> 6;
+                    glyph.BitmapData = malloc(glyph.Width * glyph.Height);
+                    if (font->Font->glyph->bitmap.buffer)
+                        memcpy(glyph.BitmapData, font->Font->glyph->bitmap.buffer, glyph.Width * glyph.Height);
+
+                    font->Alphabet.insert({ (unsigned char)c, glyph });
+
+                    xOffset += glyph.Width + 1;
+                    if (atlasWidth <= 512)
+                        atlasWidth += glyph.Width + 1;
+                    if (glyph.Height > maxGlyphHeight)
+                        maxGlyphHeight = glyph.Height;
+                    if (xOffset > 512)
+                    {
+                        atlasHeight += maxGlyphHeight + 1;
+                        xOffset = 0;
+                        maxGlyphHeight = 0;
+                    }
+                }
+            }
+            atlasHeight += maxGlyphHeight + 1;
+        }
+
+        void MakeAtlasSizePowerOf2(core::usize& atlasWidth, core::usize& atlasHeight)
+        {
+            core::s32 bit;
+            bit = 0;
+            while ((1 << bit++) < atlasWidth);
+            atlasWidth = 1 << (bit - 1);
+            bit = 0;
+            while ((1 << bit++) < atlasHeight);
+            atlasHeight = 1 << (bit - 1);
+        }
+
+        void FillAtlasWithGlyphs(
+            sFont* font,
+            core::usize& atlasWidth,
+            core::usize& atlasHeight,
+            cRenderContext* context
+        )
+        {
+            core::usize maxGlyphHeight = 0;
+
+            void* atlasPixels = malloc(atlasWidth * atlasHeight);
+            memset(atlasPixels, 0, atlasWidth * atlasHeight);
+
+            core::usize xOffset = 0;
+            core::usize yOffset = 0;
+            unsigned char* pixelsU8 = (unsigned char*)atlasPixels;
+            for (auto& glyph : font->Alphabet)
+            {
+                glyph.second.AtlasXOffset = xOffset;
+                glyph.second.AtlasYOffset = yOffset;
+
+                for (int y = 0; y < glyph.second.Height; y++)
+                {
+                    for (int x = 0; x < glyph.second.Width; x++)
+                    {
+                        int glyphPixelIndex = x + (y * glyph.second.Width);
+                        int pixelIndex = (xOffset + x) + ((yOffset + y) * atlasWidth);
+                        pixelsU8[pixelIndex] = ((char*)glyph.second.BitmapData)[glyphPixelIndex];
+                    }
+                }
+
+                xOffset += glyph.second.Width + 1;
+                if (glyph.second.Height > maxGlyphHeight)
+                    maxGlyphHeight = glyph.second.Height;
+
+                if (xOffset > 512)
+                {
+                    yOffset += maxGlyphHeight + 1;
+                    xOffset = 0;
+                    maxGlyphHeight = 0;
+                }
+            }
+
+            font->Atlas = context->CreateTexture(
+                (core::s32)atlasWidth,
+                (core::s32)atlasHeight,
+                0,
+                render::sTexture::eType::TEXTURE_2D,
+                render::sTexture::eFormat::R8,
+                atlasPixels
+            );
+
+            free(atlasPixels);
+        }
+
+        sFont* mFont::NewFont(
+            const char* filename,
+            core::usize glyphSize
+        )
         {
             sFont* font = new sFont();
 
@@ -35,111 +173,17 @@ namespace realware
                 {
                     font->GlyphCount = 0;
                     font->GlyphSize = glyphSize;
-                    font->OffsetWhitespace = whitespaceOffset;
-                    font->OffsetNewline = font->Font->ascender - font->Font->descender;
-                    font->OffsetSpace = spaceOffset;
+                    font->OffsetNewline = CalculateNewlineOffset(font);
+                    font->OffsetSpace = CalculateSpaceOffset(font);
+                    font->OffsetTab = font->OffsetSpace * 4;
 
-                    core::usize textureWidth = 0;
-                    core::usize textureHeight = 0;
+                    core::usize atlasWidth = 0;
+                    core::usize atlasHeight = 0;
                     core::usize xOffset = 0;
-                    core::usize maxGlyphHeight = 0;
-                    int lastIndex = 0;
 
-                    for (int c = 0; c < 256; c++)
-                    {
-                        FT_Int ci = FT_Get_Char_Index(font->Font, m_unicode[(char)c]);
-                        if (FT_Load_Glyph(font->Font, (FT_UInt)ci, FT_LOAD_DEFAULT) == 0)
-                        {
-                            font->GlyphCount += 1;
-
-                            FT_Render_Glyph(font->Font->glyph, FT_RENDER_MODE_NORMAL);
-
-                            sFont::sGlyph glyph = {};
-                            glyph.Character = (char)c;
-                            glyph.Width = font->Font->glyph->bitmap.width;
-                            glyph.Height = font->Font->glyph->bitmap.rows;
-                            glyph.Left = font->Font->glyph->bitmap_left;
-                            glyph.Top = font->Font->glyph->bitmap_top;
-                            glyph.AdvanceX = font->Font->glyph->advance.x;
-                            glyph.AdvanceY = font->Font->glyph->advance.y;
-                            glyph.BitmapData = malloc(glyph.Width * glyph.Height);
-
-                            memcpy(glyph.BitmapData, font->Font->glyph->bitmap.buffer, glyph.Width * glyph.Height);
-
-                            font->Alphabet.insert({ (char)c, glyph });
-
-                            xOffset += glyph.Width + 1;
-                            if (textureWidth <= 512) { textureWidth += glyph.Width + 1; }
-
-                            if (glyph.Height > maxGlyphHeight) {
-                                maxGlyphHeight = glyph.Height;
-                            }
-
-                            if (xOffset > 512)
-                            {
-                                textureHeight += maxGlyphHeight + 1;
-                                xOffset = 0;
-                                maxGlyphHeight = 0;
-                            }
-                        }
-                    }
-
-                    textureHeight += maxGlyphHeight + 1;
-
-                    core::s32 bit;
-                    bit = 0;
-                    while ((1 << bit++) < textureWidth);
-                    textureWidth = 1 << (bit - 1);
-                    bit = 0;
-                    while ((1 << bit++) < textureHeight);
-                    textureHeight = 1 << (bit - 1);
-
-                    void* atlasPixels = malloc(textureWidth * textureHeight);
-                    memset(atlasPixels, 0, textureWidth * textureHeight);
-
-                    // Fill atlas texture with glyphs
-                    xOffset = 0;
-                    core::usize yOffset = 0;
-                    unsigned char* pixelsU8 = (unsigned char*)atlasPixels;
-                    for (auto& glyph : font->Alphabet)
-                    {
-                        glyph.second.AtlasXOffset = xOffset;
-                        glyph.second.AtlasYOffset = yOffset;
-
-                        for (int y = 0; y < glyph.second.Height; y++)
-                        {
-                            for (int x = 0; x < glyph.second.Width; x++)
-                            {
-                                int glyphPixelIndex = x + (y * glyph.second.Width);
-                                int pixelIndex = (xOffset + x) + ((yOffset + y) * textureWidth);
-                                pixelsU8[pixelIndex] = ((char*)glyph.second.BitmapData)[glyphPixelIndex];
-                            }
-                        }
-
-                        xOffset += glyph.second.Width + 1;
-                        if (glyph.second.Height > maxGlyphHeight) {
-                            maxGlyphHeight = glyph.second.Height;
-                        }
-
-                        if (xOffset > 512)
-                        {
-                            yOffset += maxGlyphHeight + 1;
-                            xOffset = 0;
-                            maxGlyphHeight = 0;
-                        }
-                    }
-
-                    // Find max glyph height
-                    font->MaxGlyphHeight = 0;
-                    for (auto& glyph : font->Alphabet) {
-                        if (glyph.second.Height > font->MaxGlyphHeight) {
-                            font->MaxGlyphHeight = glyph.second.Height;
-                        }
-                    }
-
-                    font->Atlas = m_context->CreateTexture((core::s32)textureWidth, (core::s32)textureHeight, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::R8, atlasPixels);
-
-                    free(atlasPixels);
+                    FillAlphabetAndFindAtlasSize(font, &m_unicode[0], xOffset, atlasWidth, atlasHeight);
+                    MakeAtlasSizePowerOf2(atlasWidth, atlasHeight);
+                    FillAtlasWithGlyphs(font, atlasWidth, atlasHeight, m_context);
                 }
                 else
                 {
@@ -159,6 +203,8 @@ namespace realware
 
         void mFont::DeleteFont(sFont* font)
         {
+            for (auto glyph : font->Alphabet)
+                free(glyph.second.BitmapData);
             font->Alphabet.clear();
             m_context->DeleteTexture(font->Atlas);
             FT_Done_Face(font->Font);
@@ -211,7 +257,7 @@ namespace realware
 
                 if (text[i] == '\t')
                 {
-                    textWidth += font->OffsetWhitespace;
+                    textWidth += font->OffsetTab;
                 }
                 else if (text[i] == ' ')
                 {

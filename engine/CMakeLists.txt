@@ -4,9 +4,9 @@ project(RealWareEngine)
 
 set(CMAKE_CXX_STANDARD 11)
 
-file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
+file(GLOB_RECURSE SOURCE_FILES thirdparty/lodepng/lodepng.cpp src/*.cpp src/*.hpp)
 
-add_library(RealWareEngine thirdparty/lodepng/lodepng.cpp ${SOURCE_FILES})
+add_library(RealWareEngine ${SOURCE_FILES})
 
 #set_property(TARGET RealWareEngine PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDebug")
 
@@ -38,9 +38,9 @@ target_link_directories(
 
 target_link_libraries(
     RealWareEngine
+	glew32
     glfw3
-    opengl32
-    glew32
+	opengl32
     OpenAL32
     freetype
     assimp-vc143-mtd

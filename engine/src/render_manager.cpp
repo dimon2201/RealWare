@@ -1,4 +1,5 @@
 #include <GL/glew.h>
+#include <iostream>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
@@ -37,40 +38,33 @@ namespace realware
             );
         }
 
-        mRender::mRender(
-            cApplication* app,
-            const cRenderContext* context,
-            core::usize vertexBufferSize,
-            core::usize indexBufferSize,
-            core::usize instanceBufferSize,
-            core::usize materialBufferSize,
-            core::usize lightBufferSize,
-            core::usize maxMaterialCount,
-            const glm::vec2& windowSize
-        )
+        mRender::mRender(cApplication* app, const cRenderContext* context)
         {
+            sApplicationDescriptor* desc = app->GetDesc();
+            const glm::vec2 windowSize = app->GetWindowSize();
+
             m_app = app;
             m_context = (cOpenGLRenderContext*)context;
-            m_vertexBuffer = m_context->CreateBuffer(vertexBufferSize, sBuffer::eType::VERTEX, nullptr);
-            m_indexBuffer = m_context->CreateBuffer(indexBufferSize, sBuffer::eType::INDEX, nullptr);
-            m_instanceBuffer = m_context->CreateBuffer(instanceBufferSize, sBuffer::eType::LARGE, nullptr);
+            m_vertexBuffer = m_context->CreateBuffer(desc->VertexBufferSize, sBuffer::eType::VERTEX, nullptr);
+            m_indexBuffer = m_context->CreateBuffer(desc->IndexBufferSize, sBuffer::eType::INDEX, nullptr);
+            m_instanceBuffer = m_context->CreateBuffer(desc->InstanceBufferSize, sBuffer::eType::LARGE, nullptr);
             m_instanceBuffer->Slot = 0;
-            m_materialBuffer = m_context->CreateBuffer(materialBufferSize, sBuffer::eType::LARGE, nullptr);
+            m_materialBuffer = m_context->CreateBuffer(desc->MaterialBufferSize, sBuffer::eType::LARGE, nullptr);
             m_materialBuffer->Slot = 1;
-            m_lightBuffer = m_context->CreateBuffer(lightBufferSize, sBuffer::eType::LARGE, nullptr);
+            m_lightBuffer = m_context->CreateBuffer(desc->LightBufferSize, sBuffer::eType::LARGE, nullptr);
             m_lightBuffer->Slot = 2;
-            m_vertices = malloc(vertexBufferSize);
+            m_vertices = malloc(desc->VertexBufferSize);
             m_verticesByteSize = 0;
-            m_indices = malloc(indexBufferSize);
+            m_indices = malloc(desc->IndexBufferSize);
             m_indicesByteSize = 0;
-            m_instances = malloc(instanceBufferSize);
+            m_instances = malloc(desc->InstanceBufferSize);
             m_instancesByteSize = 0;
-            m_materials = malloc(materialBufferSize);
+            m_materials = malloc(desc->MaterialBufferSize);
             m_materialsByteSize = 0;
-            m_lights = malloc(lightBufferSize);
+            m_lights = malloc(desc->LightBufferSize);
             m_lightsByteSize = 0;
             m_materialsMap = new std::unordered_map<render::cMaterial*, core::s32>();
-            m_materialsCPU.resize(maxMaterialCount);
+            m_materialsCPU.resize(desc->MaxMaterialCount);
 
             sTexture* color = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
             sTexture* accumulation = m_context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA16F, nullptr);
@@ -80,7 +74,6 @@ namespace realware
 
             sRenderTarget* opaqueRenderTarget = m_context->CreateRenderTarget({ color }, depth);
             sRenderTarget* transparentRenderTarget = m_context->CreateRenderTarget({ accumulation, revealage }, depth);
-            sRenderTarget* uiRenderTarget = m_context->CreateRenderTarget({ ui }, depth);
 
             {
                 sRenderPass::sDescriptor renderPassDesc;
@@ -92,7 +85,11 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetLightBuffer());
                 renderPassDesc.InputTextures.emplace_back(m_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-                renderPassDesc.Shader = m_context->BindOpaqueShader();
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                    "RENDER_PATH_OPAQUE",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = core::K_TRUE;
@@ -111,7 +108,11 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.InputTextures.emplace_back(m_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-                renderPassDesc.Shader = m_context->BindTransparentShader();
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                    "RENDER_PATH_TRANSPARENT",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
                 renderPassDesc.RenderTarget = transparentRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = core::K_TRUE;
@@ -130,7 +131,7 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.InputTextures.emplace_back(m_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-                renderPassDesc.Shader = m_context->BindWidgetShader();
+                //renderPassDesc.Shader = m_context->BindWidgetShader();
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 m_widget = m_context->CreateRenderPass(renderPassDesc);
@@ -140,8 +141,12 @@ namespace realware
                 renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::NONE;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
-                renderPassDesc.Shader = m_context->BindTextShader();
-                renderPassDesc.RenderTarget = uiRenderTarget;
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                    "RENDER_PATH_TEXT",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
+                renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = core::K_FALSE;
                 renderPassDesc.DepthMode.UseDepthWrite = core::K_FALSE;
@@ -154,7 +159,11 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("AccumulationTexture");
                 renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[1]);
                 renderPassDesc.InputTextureNames.emplace_back("RevealageTexture");
-                renderPassDesc.Shader = m_context->BindCompositeTransparentShader();
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                    "RENDER_PATH_TRANSPARENT_COMPOSITE",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = core::K_FALSE;
@@ -169,9 +178,11 @@ namespace realware
                 renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::NONE;
                 renderPassDesc.InputTextures.emplace_back(opaqueRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
-                renderPassDesc.InputTextures.emplace_back(uiRenderTarget->ColorAttachments[0]);
-                renderPassDesc.InputTextureNames.emplace_back("UIColorTexture");
-                renderPassDesc.Shader = m_context->BindQuadShader();
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                    "RENDER_PATH_QUAD",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                );
                 renderPassDesc.RenderTarget = nullptr;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = core::K_FALSE;
@@ -233,18 +244,23 @@ namespace realware
 
             vertexArray = m_context->CreateVertexArray();
             m_context->BindVertexArray(vertexArray);
-            for (auto buffer : buffersToBind) {
+            for (auto buffer : buffersToBind)
                 m_context->BindBuffer(buffer);
-            }
             m_context->BindDefaultInputLayout();
             m_context->UnbindVertexArray();
 
             return vertexArray;
         }
 
-        sVertexBufferGeometry* mRender::AddGeometry(const sVertexBufferGeometry::eFormat& format, core::usize verticesByteSize, const void* vertices, core::usize indicesByteSize, const void* indices)
+        sVertexBufferGeometry* mRender::AddGeometry(
+            const sVertexBufferGeometry::eFormat& format,
+            core::usize verticesByteSize,
+            const void* vertices,
+            core::usize indicesByteSize,
+            const void* indices
+        )
         {
-            sVertexBufferGeometry* geometry = new sVertexBufferGeometry();
+            sVertexBufferGeometry* geometry = new sVertexBufferGeometry;
 
             memcpy((void*)((core::usize)m_vertices + (core::usize)m_verticesByteSize), vertices, verticesByteSize);
             memcpy((void*)((core::usize)m_indices + (core::usize)m_indicesByteSize), indices, indicesByteSize);
@@ -275,26 +291,25 @@ namespace realware
         void mRender::ClearRenderPass(sRenderPass* renderPass, core::boolean clearColor, core::usize bufferIndex, const glm::vec4& color, core::boolean clearDepth, float depth)
         {
             m_context->BindRenderPass(renderPass);
-            if (clearColor == core::K_TRUE) {
-                m_context->ClearColor(bufferIndex, color);
-            }
-            if (clearDepth == core::K_TRUE) {
-                m_context->ClearDepth(depth);
-            }
+            if (clearColor == core::K_TRUE)
+                m_context->ClearFramebufferColor(bufferIndex, color);
+            if (clearDepth == core::K_TRUE)
+                m_context->ClearFramebufferDepth(depth);
             m_context->UnbindRenderPass(renderPass);
         }
 
         void mRender::ClearRenderPasses(const glm::vec4& clearColor, const float clearDepth)
         {
             m_context->BindRenderPass(m_opaque);
-            m_context->ClearColor(0, clearColor);
-            m_context->ClearDepth(clearDepth);
-            m_context->UnbindRenderPass(m_opaque);
+            m_context->ClearFramebufferColor(0, clearColor);
+            m_context->ClearFramebufferDepth(clearDepth);
+			
+			m_context->BindRenderPass(m_text);
+			m_context->ClearFramebufferColor(0, clearColor);
 
             m_context->BindRenderPass(m_transparent);
-            m_context->ClearColor(0, glm::vec4(0.0f));
-            m_context->ClearColor(1, glm::vec4(1.0f));
-            m_context->UnbindRenderPass(m_transparent);
+            m_context->ClearFramebufferColor(0, glm::vec4(0.0f));
+            m_context->ClearFramebufferColor(1, glm::vec4(1.0f));
         }
 
         void mRender::UpdateLights(core::cApplication* application)
@@ -323,23 +338,11 @@ namespace realware
         }
 
         void mRender::DrawGeometryOpaque(
-            core::cApplication* application,
-            sVertexBufferGeometry* geometry,
+            const sVertexBufferGeometry* const geometry,
             std::vector<cGameObject>& objects,
-            const std::string& cameraObjectID
+            const cGameObject* const cameraObject
         )
         {
-            cGameObject* camera = nullptr;
-            for (auto& it : objects)
-            {
-                if (it.GetID() == cameraObjectID)
-                {
-                    camera = &it;
-                    break;
-                }
-            }
-            if (camera == nullptr) { return; }
-
             core::s32 instanceCount = 0;
             m_instancesByteSize = 0;
             m_materialsByteSize = 0;
@@ -349,9 +352,7 @@ namespace realware
             {
                 if (it.GetGeometry() == geometry)
                 {
-                    core::boolean isVisible = it.GetVisible();
-                    core::boolean isOpaque = it.GetOpaque();
-                    if (isVisible == core::K_TRUE && isOpaque == core::K_TRUE)
+                    if (it.GetVisible() == core::K_TRUE && it.GetOpaque() == core::K_TRUE)
                     {
                         render::sTransform transform(&it);
                         render::cMaterial* material = it.GetMaterial();
@@ -364,7 +365,7 @@ namespace realware
                             materialIndex = m_materialsMap->size();
 
                             sMaterialInstance mi(materialIndex, material);
-                            if (material->GetDiffuseTexture() != nullptr)
+                            if (material->GetDiffuseTexture())
                             {
                                 core::sArea* frame = material->GetDiffuseTexture();
                                 mi.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
@@ -399,7 +400,7 @@ namespace realware
 
             m_context->BindRenderPass(m_opaque);
 
-            m_context->SetShaderUniform(m_opaque->Desc.Shader, "ViewProjection", camera->GetViewProjectionMatrix());
+            m_context->SetShaderUniform(m_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
 
             m_context->Draw(
                 geometry->IndexCount,
@@ -412,23 +413,11 @@ namespace realware
         }
 
         void mRender::DrawGeometryTransparent(
-            core::cApplication* application,
-            sVertexBufferGeometry* geometry,
+            const sVertexBufferGeometry* const geometry,
             std::vector<cGameObject>& objects,
-            const std::string& cameraObjectID
+            const cGameObject* const cameraObject
         )
         {
-            cGameObject* camera = nullptr;
-            for (auto& it : objects)
-            {
-                if (it.GetID() == cameraObjectID)
-                {
-                    camera = &it;
-                    break;
-                }
-            }
-            if (camera == nullptr) { return; }
-
             core::s32 instanceCount = 0;
             m_instancesByteSize = 0;
             m_materialsByteSize = 0;
@@ -488,7 +477,7 @@ namespace realware
 
             m_context->BindRenderPass(m_transparent);
 
-            m_context->SetShaderUniform(m_transparent->Desc.Shader, "ViewProjection", camera->GetViewProjectionMatrix());
+            m_context->SetShaderUniform(m_transparent->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
 
             m_context->Draw(
                 geometry->IndexCount,
@@ -508,9 +497,7 @@ namespace realware
             for (auto& it : objects)
             {
                 if (it.GetText() == nullptr)
-                {
                     continue;
-                }
 
                 cText* text = it.GetText();
 
@@ -521,8 +508,8 @@ namespace realware
                 render::sTransform transform(&it);
 
                 glm::vec2 windowSize = m_app->GetWindowSize();
-                glm::vec2 position = glm::vec2((transform.Position.x * 2.0f) - 1.0f, (transform.Position.y * 2.0f) - 1.0f);
-                glm::vec2 scale = glm::vec2(
+                glm::vec2 textPosition = glm::vec2((transform.Position.x * 2.0f) - 1.0f, (transform.Position.y * 2.0f) - 1.0f);
+                glm::vec2 textScale = glm::vec2(
                     (1.0f / windowSize.x) * it.GetScale().x,
                     (1.0f / windowSize.y) * it.GetScale().y
                 );
@@ -533,46 +520,42 @@ namespace realware
                 for (core::s32 i = 0; i < charCount; i++)
                 {
                     char glyphChar = text->GetText()[i];
-                    const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(glyphChar)->second;
-
-                    if (text->GetText()[i] == '\t')
+                   
+                    if (glyphChar == '\t')
                     {
-                        //offset.x += (float)text->GetFont()->OffsetWhitespace;
-                        //continue;
+                        offset.x += text->GetFont()->OffsetTab * textScale.x;
+                        continue;
                     }
-                    else if (text->GetText()[i] == '\n')
+                    else if (glyphChar == '\n')
                     {
                         s32 maxHeight = 0;
                         s32 cnt = 1;
-                        while (text->GetText()[i + cnt] != '\n' && i + cnt < text->GetText().size()) {
-                            const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(text->GetText()[i + cnt])->second;
-                            if (maxHeight < glyph.Height)
-                                maxHeight = glyph.Height;
-                            cnt += 1;
-                        }
                         offset.x = 0.0f;
-                        offset.y -= ((text->GetFont()->OffsetNewline / 64.0f) * scale.y) + (maxHeight * scale.y);
+                        offset.y -= text->GetFont()->OffsetNewline * textScale.y;
                         continue;
                     }
-                    else if (text->GetText()[i] == ' ')
+                    else if (glyphChar == ' ')
                     {
-                        const font::sFont::sGlyph& glyph = text->GetFont()->Alphabet.find(' ')->second;
-                        offset.x += (glyph.AdvanceX / 64.0f) * scale.x;
+                        offset.x += text->GetFont()->OffsetSpace * textScale.x;
                         continue;
                     }
 
+                    auto alphabetEntry = text->GetFont()->Alphabet.find(glyphChar);
+                    if (alphabetEntry == text->GetFont()->Alphabet.end())
+                        continue;
+                    const font::sFont::sGlyph& glyph = alphabetEntry->second;
+
                     sTextInstance t;
-                    t.Info.x = position.x + offset.x;
-                    t.Info.y = position.y + (offset.y - (float)((glyph.Height - glyph.Top) * scale.y));
-                    t.Info.z = ((float)glyph.Width * scale.x);
-                    t.Info.w = ((float)glyph.Height * scale.y);
+                    t.Info.x = textPosition.x + offset.x;
+                    t.Info.y = textPosition.y + (offset.y - (float)((glyph.Height - glyph.Top) * textScale.y));
+                    t.Info.z = (float)glyph.Width * textScale.x;
+                    t.Info.w = (float)glyph.Height * textScale.y;
                     t.AtlasInfo.x = (float)glyph.AtlasXOffset / (float)text->GetFont()->Atlas->Width;
                     t.AtlasInfo.y = (float)glyph.AtlasYOffset / (float)text->GetFont()->Atlas->Height;
                     t.AtlasInfo.z = (float)glyph.Width / (float)text->GetFont()->Atlas->Width;
                     t.AtlasInfo.w = (float)glyph.Height / (float)text->GetFont()->Atlas->Height;
 
-                    offset.x += (glyph.AdvanceX / 64.0f) * scale.x;
-                    //offset.x += ((float)glyph.Width / windowSize.x) + (0.5f * (glyph.Left / windowSize.x));
+                    offset.x += glyph.AdvanceX * textScale.x;
 
                     memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &t, sizeof(sTextInstance));
                     m_instancesByteSize += sizeof(sTextInstance);
@@ -591,7 +574,7 @@ namespace realware
                 m_context->BindRenderPass(m_text);
                 m_context->BindTexture(m_text->Desc.Shader, "FontAtlas", text->GetFont()->Atlas, 0);
                 m_context->DrawQuads(actualCharCount);
-                m_context->UnbindRenderPass(m_text);
+                //m_context->UnbindRenderPass(m_text);
             }
         }
 
@@ -607,374 +590,77 @@ namespace realware
             m_context->BindRenderPass(m_compositeFinal);
             m_context->DrawQuad();
             m_context->UnbindRenderPass(m_compositeFinal);
+			
+            m_context->UnbindShader();
         }
 
-        /*void mRender::DrawCaptions(core::cApplication* app, core::cScene* scene)
+        sPrimitive* mRender::CreatePrimitive(const ePrimitive& primitive)
         {
-            m_context->BindRenderPass(m_text);
+            sPrimitive* primitiveObject = new sPrimitive;
 
-            scene->ForEach<core::sCCaption>(
-                app,
-                [this](core::cApplication* app_, core::cScene* scene_, core::sCCaption* widget_)
-                {
-                    m_instancesByteSize = 0;
-                    m_materialsByteSize = 0;
-                    m_materialsMap->clear();
+            if (primitive == ePrimitive::TRIANGLE)
+            {
+                primitiveObject->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
+                primitiveObject->Vertices = (render::sVertex*)malloc(sizeof(render::sVertex) * 3);
+                primitiveObject->Indices = (render::index*)malloc(sizeof(render::index) * 3);
+                primitiveObject->VertexCount = 3;
+                primitiveObject->IndexCount = 3;
+                primitiveObject->VerticesByteSize = sizeof(render::sVertex) * 3;
+                primitiveObject->IndicesByteSize = sizeof(render::index) * 3;
 
-                    if (widget_->IsVisible == core::K_FALSE) {
-                        return;
-                    }
+                primitiveObject->Vertices[0].Position[0] = -1.0f; primitiveObject->Vertices[0].Position[1] = -1.0f; primitiveObject->Vertices[0].Position[2] = 0.0f;
+                primitiveObject->Vertices[0].Texcoord[0] = 0.0f; primitiveObject->Vertices[0].Texcoord[1] = 0.0f;
+                primitiveObject->Vertices[0].Normal[0] = 0.0f; primitiveObject->Vertices[0].Normal[1] = 0.0f; primitiveObject->Vertices[0].Normal[2] = 1.0f;
+                primitiveObject->Vertices[1].Position[0] = 0.0f; primitiveObject->Vertices[1].Position[1] = 1.0f; primitiveObject->Vertices[1].Position[2] = 0.0f;
+                primitiveObject->Vertices[1].Texcoord[0] = 0.5f; primitiveObject->Vertices[1].Texcoord[1] = 1.0f;
+                primitiveObject->Vertices[1].Normal[0] = 0.0f; primitiveObject->Vertices[1].Normal[1] = 0.0f; primitiveObject->Vertices[1].Normal[2] = 1.0f;
+                primitiveObject->Vertices[2].Position[0] = 1.0f; primitiveObject->Vertices[2].Position[1] = -1.0f; primitiveObject->Vertices[2].Position[2] = 0.0f;
+                primitiveObject->Vertices[2].Texcoord[0] = 1.0f; primitiveObject->Vertices[2].Texcoord[1] = 0.0f;
+                primitiveObject->Vertices[2].Normal[0] = 0.0f; primitiveObject->Vertices[2].Normal[1] = 0.0f; primitiveObject->Vertices[2].Normal[2] = 1.0f;
+                primitiveObject->Indices[0] = 0;
+                primitiveObject->Indices[1] = 1;
+                primitiveObject->Indices[2] = 2;
+            }
+            else if (primitive == ePrimitive::QUAD)
+            {
+                primitiveObject->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
+                primitiveObject->Vertices = (render::sVertex*)malloc(sizeof(render::sVertex) * 4);
+                primitiveObject->Indices = (render::index*)malloc(sizeof(render::index) * 6);
+                primitiveObject->VertexCount = 4;
+                primitiveObject->IndexCount = 6;
+                primitiveObject->VerticesByteSize = sizeof(render::sVertex) * 4;
+                primitiveObject->IndicesByteSize = sizeof(render::index) * 6;
 
-                    glm::vec2 windowSize = m_app->GetWindowSize();
-                    glm::vec2 position = (widget_->Position * 2.0f) - 1.0f;
+                primitiveObject->Vertices[0].Position[0] = -1.0f; primitiveObject->Vertices[0].Position[1] = -1.0f; primitiveObject->Vertices[0].Position[2] = 0.0f;
+                primitiveObject->Vertices[0].Texcoord[0] = 0.0f; primitiveObject->Vertices[0].Texcoord[1] = 0.0f;
+                primitiveObject->Vertices[0].Normal[0] = 0.0f; primitiveObject->Vertices[0].Normal[1] = 0.0f; primitiveObject->Vertices[0].Normal[2] = 1.0f;
+                primitiveObject->Vertices[1].Position[0] = -1.0f; primitiveObject->Vertices[1].Position[1] = 1.0f; primitiveObject->Vertices[1].Position[2] = 0.0f;
+                primitiveObject->Vertices[1].Texcoord[0] = 0.0f; primitiveObject->Vertices[1].Texcoord[1] = 1.0f;
+                primitiveObject->Vertices[1].Normal[0] = 0.0f; primitiveObject->Vertices[1].Normal[1] = 0.0f; primitiveObject->Vertices[1].Normal[2] = 1.0f;
+                primitiveObject->Vertices[2].Position[0] = 1.0f; primitiveObject->Vertices[2].Position[1] = -1.0f; primitiveObject->Vertices[2].Position[2] = 0.0f;
+                primitiveObject->Vertices[2].Texcoord[0] = 1.0f; primitiveObject->Vertices[2].Texcoord[1] = 0.0f;
+                primitiveObject->Vertices[2].Normal[0] = 0.0f; primitiveObject->Vertices[2].Normal[1] = 0.0f; primitiveObject->Vertices[2].Normal[2] = 1.0f;
+                primitiveObject->Vertices[3].Position[0] = 1.0f; primitiveObject->Vertices[3].Position[1] = 1.0f; primitiveObject->Vertices[3].Position[2] = 0.0f;
+                primitiveObject->Vertices[3].Texcoord[0] = 1.0f; primitiveObject->Vertices[3].Texcoord[1] = 1.0f;
+                primitiveObject->Vertices[3].Normal[0] = 0.0f; primitiveObject->Vertices[3].Normal[1] = 0.0f; primitiveObject->Vertices[3].Normal[2] = 1.0f;
+                primitiveObject->Indices[0] = 0;
+                primitiveObject->Indices[1] = 1;
+                primitiveObject->Indices[2] = 2;
+                primitiveObject->Indices[3] = 1;
+                primitiveObject->Indices[4] = 3;
+                primitiveObject->Indices[5] = 2;
+            }
 
-                    core::usize charCount = strlen(widget_->Text);
-
-                    core::usize actualCharCount = 0;
-                    glm::vec2 offset = glm::vec2(0.0f);
-                    for (core::s32 i = 0; i < charCount; i++)
-                    {
-                        char glyphChar = widget_->Text[i];
-                        if (glyphChar == '\n') { glyphChar = ' '; }
-
-                        if (widget_->Text[i] == '\t')
-                        {
-                            offset.x += widget_->Scale * (float)widget_->Font->OffsetWhitespace;
-                            continue;
-                        }
-                        else if (widget_->Text[i] == '\n')
-                        {
-                            offset.x = 0.0f;
-                            offset.y -= widget_->Scale * (float)widget_->Font->OffsetNewline;
-                            continue;
-                        }
-                        else if (widget_->Text[i] == ' ')
-                        {
-                            offset.x += widget_->Scale * (float)widget_->Font->OffsetSpace;
-                            continue;
-                        }
-
-                        const font::sFont::sGlyph& glyph = widget_->Font->Alphabet.find(glyphChar)->second;
-
-                        sTextInstance t;
-                        t.Info.x = position.x + offset.x;
-                        t.Info.y = position.y + (offset.y - (widget_->Scale * (float)((glyph.Height - glyph.Top) / windowSize.y)));
-                        t.Info.z = widget_->Scale * ((float)glyph.Width / windowSize.x);
-                        t.Info.w = widget_->Scale * ((float)glyph.Height / windowSize.y);
-                        t.AtlasInfo.x = (float)glyph.AtlasXOffset / (float)widget_->Font->Atlas->Width;
-                        t.AtlasInfo.y = (float)glyph.AtlasYOffset / (float)widget_->Font->Atlas->Height;
-                        t.AtlasInfo.z = (float)glyph.Width / (float)widget_->Font->Atlas->Width;
-                        t.AtlasInfo.w = (float)glyph.Height / (float)widget_->Font->Atlas->Height;
-
-                        offset.x += widget_->Scale * (((float)glyph.Width / windowSize.x) + (0.5f * (glyph.Left / windowSize.x)));
-
-                        memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &t, sizeof(sTextInstance));
-                        m_instancesByteSize += sizeof(sTextInstance);
-
-                        actualCharCount += 1;
-                    }
-
-                    core::sCMaterial* material = scene_->Get<core::sCMaterial>(widget_->Owner);
-                    sMaterialInstance m;
-                    m.BufferIndex = 0;
-                    m.DiffuseColor = material->DiffuseColor;
-
-                    memcpy(m_materials, &m, sizeof(sMaterialInstance));
-                    m_materialsByteSize += sizeof(sMaterialInstance);
-
-                    m_context->WriteBuffer(m_instanceBuffer, 0, m_instancesByteSize, m_instances);
-                    m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
-
-                    m_context->BindTexture(m_text->Desc.Shader, "FontAtlas", widget_->Font->Atlas);
-                    m_context->DrawQuads(actualCharCount);
-                }
-            );
-
-            m_context->UnbindRenderPass(m_text);
-        }*/
-
-        /*void mRender::DrawButtons(core::cApplication* app, core::cScene* scene)
-        {
-            m_instancesByteSize = 0;
-            m_materialsByteSize = 0;
-            m_materialsMap->clear();
-
-            core::usize widgetCount = 0;
-            scene->ForEach<core::sCButton>(app, [this, scene, &widgetCount](core::cApplication* app_, core::cScene* scene_, core::sCButton* widget_)
-                {
-                    const core::sCAnimation* animation = scene->Get<core::sCAnimation>(widget_->Owner);
-
-                    if (widget_->IsVisible == core::K_TRUE && animation != nullptr)
-                    {
-                        core::sCTransform* transform = scene->Get<core::sCTransform>(widget_->Owner);
-                        const core::sCMaterial* material = scene->Get<core::sCMaterial>(widget_->Owner);
-                        glm::vec3 position = transform->Position;
-                        glm::vec3 scale = transform->Scale;
-                        position.x = (position.x * 2.0f) - 1.0f;
-                        position.y = (position.y * 2.0f) - 1.0f;
-
-                        core::s32 materialIndex = -1;
-                        auto it = m_materialsMap->find((core::sCMaterial*)material);
-                        if (it == m_materialsMap->end())
-                        {
-                            materialIndex = m_materialsMap->size();
-
-                            sMaterialInstance m;
-                            m.BufferIndex = materialIndex;
-                            m.DiffuseColor = material->DiffuseColor;
-                            if (material->DiffuseTexture != nullptr)
-                            {
-                                core::sArea* frame = material->DiffuseTexture;
-                                m.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
-                            }
-                            else if (animation != nullptr)
-                            {
-                                core::sArea* frame = animation->Frames[animation->CurrentAnimationIndex]->at(animation->CurrentFrameIndex[animation->CurrentAnimationIndex]);
-                                m.SetDiffuseTexture(*frame);
-                                m.DiffuseColor.a = 1.0f - animation->Fade;
-                            }
-
-                            m_materialsMap->insert({ (core::sCMaterial*)material, materialIndex });
-
-                            memcpy((void*)((core::usize)m_materials + (core::usize)m_materialsByteSize), &m, sizeof(sMaterialInstance));
-                            m_materialsByteSize += sizeof(sMaterialInstance);
-                        }
-                        else
-                        {
-                            materialIndex = it->second;
-                        }
-
-                        sRenderInstance i;
-                        i.Use2D = transform->Use2D;
-                        i.MaterialIndex = materialIndex;
-                        i.World = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), scale);
-
-                        memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &i, sizeof(sRenderInstance));
-                        m_instancesByteSize += sizeof(sRenderInstance);
-
-                        widgetCount += 1;
-                    }
-                }
-            );
-
-            m_context->WriteBuffer(m_instanceBuffer, 0, m_instancesByteSize, m_instances);
-            m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
-
-            m_context->BindRenderPass(m_widget);
-            m_context->DrawQuads(widgetCount);
-            m_context->UnbindRenderPass(m_widget);
-        }*/
-
-        /*void mRender::DrawPopupMenus(core::cApplication* app, core::cScene* scene)
-        {
-            m_instancesByteSize = 0;
-            m_materialsByteSize = 0;
-            m_materialsMap->clear();
-
-            core::usize widgetCount = 0;
-            scene->ForEach<core::sCPopupMenu>(app, [this, scene, &widgetCount](core::cApplication* app_, core::cScene* scene_, core::sCPopupMenu* widget_)
-                {
-                    core::sCAnimation* animation = scene->Get<core::sCAnimation>(widget_->Owner);
-
-                    if (widget_->IsVisible == core::K_TRUE && animation != nullptr)
-                    {
-                        core::sCTransform* transform = scene->Get<core::sCTransform>(widget_->Owner);
-                        const core::sCMaterial* material = scene->Get<core::sCMaterial>(widget_->Owner);
-                        glm::vec3 position = transform->Position;
-                        glm::vec3 scale = transform->Scale;
-                        position.x = (position.x * 2.0f) - 1.0f;
-                        position.y = (position.y * 2.0f) - 1.0f;
-
-                        core::s32 materialIndex = -1;
-                        auto it = m_materialsMap->find((core::sCMaterial*)material);
-                        if (it == m_materialsMap->end())
-                        {
-                            materialIndex = m_materialsMap->size();
-
-                            sMaterialInstance m;
-                            m.BufferIndex = materialIndex;
-                            m.DiffuseColor = material->DiffuseColor;
-                            if (material->DiffuseTexture != nullptr)
-                            {
-                                core::sArea* frame = material->DiffuseTexture;
-                                m.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
-                            }
-                            else if (animation != nullptr)
-                            {
-                                core::sArea* frame = animation->Frames[animation->CurrentAnimationIndex]->at(animation->CurrentFrameIndex[animation->CurrentAnimationIndex]);
-                                m.SetDiffuseTexture(*frame);
-                                m.DiffuseColor.a = 1.0f - animation->Fade;
-                            }
-
-                            m_materialsMap->insert({ (core::sCMaterial*)material, materialIndex });
-
-                            memcpy((void*)((core::usize)m_materials + (core::usize)m_materialsByteSize), &m, sizeof(sMaterialInstance));
-                            m_materialsByteSize += sizeof(sMaterialInstance);
-                        }
-                        else
-                        {
-                            materialIndex = it->second;
-                        }
-
-                        sRenderInstance i;
-                        i.Use2D = transform->Use2D;
-                        i.MaterialIndex = materialIndex;
-                        i.World = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), scale);
-
-                        memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &i, sizeof(sRenderInstance));
-                        m_instancesByteSize += sizeof(sRenderInstance);
-
-                        widgetCount += 1;
-                    }
-                }
-            );
-
-            m_context->WriteBuffer(m_instanceBuffer, 0, m_instancesByteSize, m_instances);
-            m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
-
-            m_context->BindRenderPass(m_widget);
-            m_context->DrawQuads(widgetCount);
-            m_context->UnbindRenderPass(m_widget);
-        }*/
-
-        /*void mRender::DrawCheckboxes(core::cApplication* app, core::cScene* scene)
-        {
-            m_instancesByteSize = 0;
-            m_materialsByteSize = 0;
-            m_materialsMap->clear();
-
-            core::usize widgetCount = 0;
-            scene->ForEach<core::sCCheckbox>(app, [this, scene, &widgetCount](core::cApplication* app_, core::cScene* scene_, core::sCCheckbox* widget_)
-               {
-                   const core::sCAnimation* animation = scene->Get<core::sCAnimation>(widget_->Owner);
-
-                   if (widget_->IsVisible == core::K_TRUE && animation != nullptr)
-                   {
-                       core::sCTransform* transform = scene->Get<core::sCTransform>(widget_->Owner);
-                       const core::sCMaterial* material = scene->Get<core::sCMaterial>(widget_->Owner);
-                       glm::vec3 position = transform->Position;
-                       glm::vec3 scale = transform->Scale;
-                       position.x = (position.x * 2.0f) - 1.0f;
-                       position.y = (position.y * 2.0f) - 1.0f;
-
-                       core::s32 materialIndex = -1;
-                       auto it = m_materialsMap->find((core::sCMaterial*)material);
-                       if (it == m_materialsMap->end())
-                       {
-                           materialIndex = m_materialsMap->size();
-
-                           sMaterialInstance m;
-                           m.BufferIndex = materialIndex;
-                           m.DiffuseColor = material->DiffuseColor;
-                           if (material->DiffuseTexture != nullptr)
-                           {
-                               core::sArea* frame = material->DiffuseTexture;
-                               m.SetDiffuseTexture(m_app->GetTextureManager()->CalculateNormalizedArea(*frame));
-                           }
-                           else if (animation != nullptr)
-                           {
-                               core::sArea* frame = animation->Frames[animation->CurrentAnimationIndex]->at(animation->CurrentFrameIndex[animation->CurrentAnimationIndex]);
-                               m.SetDiffuseTexture(*frame);
-                               m.DiffuseColor.a = 1.0f - animation->Fade;
-                           }
-
-                           m_materialsMap->insert({ (core::sCMaterial*)material, materialIndex });
-
-                           memcpy((void*)((core::usize)m_materials + (core::usize)m_materialsByteSize), &m, sizeof(sMaterialInstance));
-                           m_materialsByteSize += sizeof(sMaterialInstance);
-                       }
-                       else
-                       {
-                           materialIndex = it->second;
-                       }
-
-                       sRenderInstance i;
-                       i.Use2D = transform->Use2D;
-                       i.MaterialIndex = materialIndex;
-                       i.World = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), scale);
-
-                       memcpy((void*)((core::usize)m_instances + (core::usize)m_instancesByteSize), &i, sizeof(sRenderInstance));
-                       m_instancesByteSize += sizeof(sRenderInstance);
-
-                       widgetCount += 1;
-                   }
-               }
-            );
-
-            m_context->WriteBuffer(m_instanceBuffer, 0, m_instancesByteSize, m_instances);
-            m_context->WriteBuffer(m_materialBuffer, 0, m_materialsByteSize, m_materials);
-
-            m_context->BindRenderPass(m_widget);
-            m_context->DrawQuads(widgetCount);
-            m_context->UnbindRenderPass(m_widget);
-        }*/
-
-        /*void mRender::DrawWidgets(core::cApplication* app, core::cScene* scene)
-        {
-            DrawCaptions(app, scene);
-            DrawButtons(app, scene);
-            DrawPopupMenus(app, scene);
-            DrawCheckboxes(app, scene);
-        }*/
-
-        sPrimitive* mRender::CreateTriangle()
-        {
-            sPrimitive* primitive = new sPrimitive();
-            primitive->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
-            primitive->Vertices = (render::sVertex*)malloc(sizeof(render::sVertex) * 3);
-            primitive->Indices = (render::index*)malloc(sizeof(render::index) * 3);
-            primitive->VertexCount = 3;
-            primitive->IndexCount = 3;
-            primitive->VerticesByteSize = sizeof(render::sVertex) * 3;
-            primitive->IndicesByteSize = sizeof(render::index) * 3;
-
-            primitive->Vertices[0].Position[0] = -1.0f; primitive->Vertices[0].Position[1] = -1.0f; primitive->Vertices[0].Position[2] = 0.0f;
-            primitive->Vertices[0].Texcoord[0] = 0.0f; primitive->Vertices[0].Texcoord[1] = 0.0f;
-            primitive->Vertices[0].Normal[0] = 0.0f; primitive->Vertices[0].Normal[1] = 0.0f; primitive->Vertices[0].Normal[2] = 1.0f;
-            primitive->Vertices[1].Position[0] = 0.0f; primitive->Vertices[1].Position[1] = 1.0f; primitive->Vertices[1].Position[2] = 0.0f;
-            primitive->Vertices[1].Texcoord[0] = 0.5f; primitive->Vertices[1].Texcoord[1] = 1.0f;
-            primitive->Vertices[1].Normal[0] = 0.0f; primitive->Vertices[1].Normal[1] = 0.0f; primitive->Vertices[1].Normal[2] = 1.0f;
-            primitive->Vertices[2].Position[0] = 1.0f; primitive->Vertices[2].Position[1] = -1.0f; primitive->Vertices[2].Position[2] = 0.0f;
-            primitive->Vertices[2].Texcoord[0] = 1.0f; primitive->Vertices[2].Texcoord[1] = 0.0f;
-            primitive->Vertices[2].Normal[0] = 0.0f; primitive->Vertices[2].Normal[1] = 0.0f; primitive->Vertices[2].Normal[2] = 1.0f;
-            primitive->Indices[0] = 0;
-            primitive->Indices[1] = 1;
-            primitive->Indices[2] = 2;
-
-            return primitive;
+            return primitiveObject;
         }
 
-        sPrimitive* mRender::CreateQuad()
+        void mRender::DestroyPrimitive(sPrimitive* primitiveObject)
         {
-            sPrimitive* primitive = new sPrimitive();
-            primitive->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
-            primitive->Vertices = (render::sVertex*)malloc(sizeof(render::sVertex) * 4);
-            primitive->Indices = (render::index*)malloc(sizeof(render::index) * 6);
-            primitive->VertexCount = 4;
-            primitive->IndexCount = 6;
-            primitive->VerticesByteSize = sizeof(render::sVertex) * 4;
-            primitive->IndicesByteSize = sizeof(render::index) * 6;
-
-            primitive->Vertices[0].Position[0] = -1.0f; primitive->Vertices[0].Position[1] = -1.0f; primitive->Vertices[0].Position[2] = 0.0f;
-            primitive->Vertices[0].Texcoord[0] = 0.0f; primitive->Vertices[0].Texcoord[1] = 0.0f;
-            primitive->Vertices[0].Normal[0] = 0.0f; primitive->Vertices[0].Normal[1] = 0.0f; primitive->Vertices[0].Normal[2] = 1.0f;
-            primitive->Vertices[1].Position[0] = -1.0f; primitive->Vertices[1].Position[1] = 1.0f; primitive->Vertices[1].Position[2] = 0.0f;
-            primitive->Vertices[1].Texcoord[0] = 0.0f; primitive->Vertices[1].Texcoord[1] = 1.0f;
-            primitive->Vertices[1].Normal[0] = 0.0f; primitive->Vertices[1].Normal[1] = 0.0f; primitive->Vertices[1].Normal[2] = 1.0f;
-            primitive->Vertices[2].Position[0] = 1.0f; primitive->Vertices[2].Position[1] = -1.0f; primitive->Vertices[2].Position[2] = 0.0f;
-            primitive->Vertices[2].Texcoord[0] = 1.0f; primitive->Vertices[2].Texcoord[1] = 0.0f;
-            primitive->Vertices[2].Normal[0] = 0.0f; primitive->Vertices[2].Normal[1] = 0.0f; primitive->Vertices[2].Normal[2] = 1.0f;
-            primitive->Vertices[3].Position[0] = 1.0f; primitive->Vertices[3].Position[1] = 1.0f; primitive->Vertices[3].Position[2] = 0.0f;
-            primitive->Vertices[3].Texcoord[0] = 1.0f; primitive->Vertices[3].Texcoord[1] = 1.0f;
-            primitive->Vertices[3].Normal[0] = 0.0f; primitive->Vertices[3].Normal[1] = 0.0f; primitive->Vertices[3].Normal[2] = 1.0f;
-            primitive->Indices[0] = 0;
-            primitive->Indices[1] = 1;
-            primitive->Indices[2] = 2;
-            primitive->Indices[3] = 1;
-            primitive->Indices[4] = 3;
-            primitive->Indices[5] = 2;
-
-            return primitive;
+            if (primitiveObject->Vertices)
+                free(primitiveObject->Vertices);
+            if (primitiveObject->Indices)
+                free(primitiveObject->Indices);
+            delete primitiveObject;
         }
 
         sModel* mRender::CreateModel(const std::string& filename)
@@ -991,9 +677,7 @@ namespace realware
             );
 
             if (scene == nullptr)
-            {
                 return nullptr;
-            }
 
             // Load vertices
             core::usize totalVertexCount = 0;

@@ -1,4 +1,4 @@
-# Install script for directory: C:/DDD/RealWare/samples/Sample01
+# Install script for directory: C:/DDD/RealWare_original/samples/Sample01
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

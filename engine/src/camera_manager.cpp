@@ -2,9 +2,10 @@
 #include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
 #include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
 #include "camera_manager.hpp"
-#include "physics_manager.hpp"
+//#include "physics_manager.hpp"
 #include "render_context.hpp"
 #include "application.hpp"
+#include "gameobject_manager.hpp"
 
 namespace realware
 {
@@ -19,16 +20,19 @@ namespace realware
         {
         }
 
+        void mCamera::CreateCamera()
+        {
+            mGameObject* gameObjectManager = m_app->GetGameObjectManager();
+
+            m_camera = gameObjectManager->CreateGameObject("__Camera");
+        }
+
         void mCamera::Update(boolean updateMouseLook, boolean updateMovement)
         {
             if (m_euler.x > glm::radians(65.0f))
-            {
                 m_euler.x = glm::radians(65.0f);
-            }
             else if (m_euler.x < glm::radians(-65.0f))
-            {
                 m_euler.x = glm::radians(-65.0f);
-            }
 
             glm::quat quatX = glm::angleAxis(m_euler.x, glm::vec3(1.0f, 0.0f, 0.0f));
             glm::quat quatY = glm::angleAxis(m_euler.y, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -43,6 +47,7 @@ namespace realware
             {
                 double x = 0.0, y = 0.0;
                 glfwGetCursorPos((GLFWwindow*)m_app->GetWindow(), &x, &y);
+
                 static glm::vec2 cursorPosition = glm::vec2(0.0f);
                 static glm::vec2 prevCursorPosition = cursorPosition;
                 prevCursorPosition = cursorPosition;
@@ -51,7 +56,6 @@ namespace realware
                 AddEuler(mCamera::eEulerAngle::PITCH, mouseDelta.y * 0.01f);
                 AddEuler(mCamera::eEulerAngle::YAW, mouseDelta.x * 0.01f);
             }
-            
             if (updateMovement == K_TRUE)
             {
                 float forward = m_app->GetKey('W') * 0.1f;
@@ -72,6 +76,8 @@ namespace realware
                     m_isMoving = K_FALSE;
                 }
             }
+
+            m_camera->SetViewProjectionMatrix(m_viewProjection);
         }
 
         void mCamera::AddEuler(const mCamera::eEulerAngle& angle, float value)

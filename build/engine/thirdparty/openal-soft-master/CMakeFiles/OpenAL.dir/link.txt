@@ -1,3 +1,0 @@
-"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\OpenAL.dir/objects.a
-C:\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\mingw64\bin\ar.exe qc CMakeFiles\OpenAL.dir/objects.a @CMakeFiles\OpenAL.dir\objects1.rsp
-C:\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\mingw64\bin\c++.exe -O0 -O2 -g -D_DEBUG -shared -o OpenAL32.dll -Wl,--out-implib,libOpenAL32.dll.a -Wl,--major-image-version,1,--minor-image-version,23 -Wl,--whole-archive CMakeFiles\OpenAL.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\OpenAL.dir\linkLibs.rsp

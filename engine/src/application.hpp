@@ -53,85 +53,92 @@ namespace realware
             struct sWindowDescriptor
             {
                 const char* Title = "DefaultWindow";
-                s32 Width = 640;
-                s32 Height = 480;
+                u32 Width = 640;
+                u32 Height = 480;
                 boolean IsFullscreen = K_FALSE;
-
             };
 
             sWindowDescriptor WindowDesc;
-            s32 TextureAtlasWidth = 1920;
-            s32 TextureAtlasHeight = 1080;
-            s32 TextureAtlasDepth = 12;
-            s32 VertexBufferSize = 65536;
-            s32 IndexBufferSize = 65536;
-            s32 InstanceBufferSize = 65536;
-            s32 MaterialBufferSize = 65536;
-            s32 LightBufferSize = 65536;
+            u32 TextureAtlasWidth = 1920;
+            u32 TextureAtlasHeight = 1080;
+            u32 TextureAtlasDepth = 12;
+            u32 VertexBufferSize = 65536;
+            u32 IndexBufferSize = 65536;
+            u32 InstanceBufferSize = 65536;
+            u32 MaterialBufferSize = 65536;
+            u32 LightBufferSize = 65536;
+            u32 MaxMaterialCount = 256;
+            u32 MaxGameObjectCount = 4294967295;
         };
 
         class cApplication
         {
-
         public:
-            friend void WindowSizeCallback(GLFWwindow* window, int width, int height);
-
-            enum eButtonState
-            {
-                PRESSED = 0,
-                RELEASED = 1,
-                REPEAT = 2
-            };
-
-            explicit cApplication(const sApplicationDescriptor& desc);
+            explicit cApplication(const sApplicationDescriptor* const desc);
             ~cApplication();
 
-            virtual void Init() = 0;
+            virtual void Pre() = 0;
             virtual void Update() = 0;
-            virtual void Free() = 0;
+            virtual void Post() = 0;
 
-            void CreateAppWindow();
             void Run();
-            void PollEvents();
-            void SwapBuffers();
-            void FreeManagers();
-            glm::vec2 GetMonitorSize();
-            glm::vec2 GetCursorPosition();
+
+            inline boolean GetRunState() { return glfwWindowShouldClose((GLFWwindow*)_window); }
+
+            inline mCamera* GetCameraManager() { return _camera; }
+            inline mTexture* GetTextureManager() { return _texture; }
+            inline mRender* GetRenderManager() { return _render; }
+            inline mFont* GetFontManager() { return _font; }
+            inline mSound* GetSoundManager() { return _sound; }
+            inline mFileSystem* GetFileSystemManager() { return _fileSystem; }
+            inline mPhysics* GetPhysicsManager() { return _physics; }
+            inline mGameObject* GetGameObjectManager() { return _gameObject; }
+
+            inline void* GetWindow() { return _window; }
+            inline glm::vec2 GetWindowSize() { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
+            inline const char* GetWindowTitle() { return _desc.WindowDesc.Title; }
+            inline HWND GetWindowHWND() { return glfwGetWin32Window((GLFWwindow*)_window); }
             boolean GetKey(int key);
-            cApplication::eButtonState GetMouseKey(int key);
-            inline mCamera* GetCameraManager() { return m_cameraManager; }
-            inline mTexture* GetTextureManager() { return m_textureManager; }
-            inline mRender* GetRenderManager() { return m_renderManager; }
-            inline mFont* GetFontManager() { return m_fontManager; }
-            inline mSound* GetSoundManager() { return m_soundManager; }
-            inline mFileSystem* GetFileSystemManager() { return m_fileSystemManager; }
-            inline mPhysics* GetPhysicsManager() { return m_physicsManager; }
-            inline mGameObject* GetGameObjectManager() { return m_gameObjectManager; }
-            inline void* GetWindow() { return m_window; }
-            inline glm::vec2 GetWindowSize() { return glm::vec2(m_desc.WindowDesc.Width, m_desc.WindowDesc.Height); }
-            inline const char* GetWindowTitle() { return m_desc.WindowDesc.Title; }
-            inline HWND GetWindowHWND() { return glfwGetWin32Window((GLFWwindow*)m_window); }
-            inline boolean GetRunState() { return glfwWindowShouldClose((GLFWwindow*)m_window); }
-            inline void FocusWindow() { glfwFocusWindow((GLFWwindow*)m_window); }
-            inline void SetWindowPosition(const glm::vec2& position)
-            {
-                glfwSetWindowPos((GLFWwindow*)m_window, position.x, position.y);
-            }
+
+            sApplicationDescriptor* GetDesc() { return &_desc; }
+
+            friend void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+            friend void WindowFocusCallback(GLFWwindow* window, int focused);
+            friend void WindowSizeCallback(GLFWwindow* window, int width, int height);
+            friend void CursorCallback(GLFWwindow* window, double xpos, double ypos);
+            friend void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
+        private:
+            void CreateAppWindow();
+            void CreateContexts();
+            void CreateAppManagers();
+            void DestroyAppWindow();
+            void DestroyContexts();
+            void DestroyAppManagers();
+
+            glm::vec2 GetMonitorSize();
+
+            inline void SetKey(const int key, const boolean value) { _keys[key] = value; }
+            inline void SetWindowFocus(const boolean value) { _isFocused = value; }
+            inline boolean GetWindowFocus() { return _isFocused; }
+            inline void SetCursorPosition(const glm::vec2& cursorPosition) { _cursorPosition = cursorPosition; }
 
         protected:
-            sApplicationDescriptor m_desc;
-            void* m_window;
-            cRenderContext* m_renderContext;
-            cSoundContext* m_soundContext;
-            mCamera* m_cameraManager;
-            mTexture* m_textureManager;
-            mRender* m_renderManager;
-            mFont* m_fontManager;
-            mSound* m_soundManager;
-            mFileSystem* m_fileSystemManager;
-            mPhysics* m_physicsManager;
-            mGameObject* m_gameObjectManager;
-
+            sApplicationDescriptor _desc = {};
+            void* _window = nullptr;
+            cRenderContext* _renderContext = nullptr;
+            cSoundContext* _soundContext = nullptr;
+            mCamera* _camera = nullptr;
+            mRender* _render = nullptr;
+            mTexture* _texture = nullptr;
+            mFont* _font = nullptr;
+            mSound* _sound = nullptr;
+            mFileSystem* _fileSystem = nullptr;
+            mPhysics* _physics = nullptr;
+            mGameObject* _gameObject = nullptr;
+            s32 _keys[256] = {};
+            boolean _isFocused = K_FALSE;
+            glm::vec2 _cursorPosition = glm::vec2(0.0f);
         };
     }
 }

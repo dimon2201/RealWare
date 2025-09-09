@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "ecs.hpp"
 #include "render_manager.hpp"
 #include "types.hpp"
 
@@ -30,17 +29,19 @@ namespace realware
             mCamera(cApplication* app);
             ~mCamera();
 
+            void CreateCamera();
             void Update(boolean updateMouseLook, boolean updateMovement);
             void AddEuler(const eEulerAngle& angle, float value);
             void Move(float value);
             void Strafe(float value);
             void Lift(float value);
 
-            inline glm::mat4 GetViewProjectionMatrix() { return m_viewProjection; }
+            inline cGameObject* GetCamera() const { return m_camera; }
+            inline glm::mat4 GetViewProjectionMatrix() const { return m_viewProjection; }
 
         private:
             cApplication* m_app;
-            render::cRenderContext* m_context;
+            cGameObject* m_camera;
             render::sTransform m_transform;
             glm::vec3 m_euler = glm::vec3(0.0f);
             glm::vec3 m_direction = glm::vec3(0.0f);

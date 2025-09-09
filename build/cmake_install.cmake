@@ -1,4 +1,4 @@
-# Install script for directory: C:/DDD/RealWare
+# Install script for directory: C:/DDD/RealWare_original
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,12 +34,12 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/DDD/RealWare/build/engine/cmake_install.cmake")
+  include("C:/DDD/RealWare_original/build/engine/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/DDD/RealWare/build/samples/Sample01/cmake_install.cmake")
+  include("C:/DDD/RealWare_original/build/samples/Sample01/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/DDD/RealWare/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/DDD/RealWare_original/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

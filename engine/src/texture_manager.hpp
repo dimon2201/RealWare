@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "types.hpp"
 
@@ -34,7 +33,7 @@ namespace realware
         {
 
         public:
-            mTexture(cApplication* app, render::cRenderContext* context, s32 width, s32 height, s32 depth);
+            mTexture(cApplication* app, render::cRenderContext* context);
             ~mTexture();
 
             sArea* CreateTexture(const std::string& filename, const std::string& tag);

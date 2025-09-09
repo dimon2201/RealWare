@@ -31,7 +31,6 @@ namespace realware
 
         class cGameObject
         {
-
         public:
             friend class mGameObject;
 
@@ -50,7 +49,7 @@ namespace realware
             inline void SetMaterial(cMaterial* material) { m_material = material; }
             inline void SetText(font::cText* text) { m_text = text; }
             inline void SetLight(render::sLight* light) { m_light = light; }
-            inline std::string GetID() { return m_id; }
+            inline std::string GetID() const { return m_id; }
             inline boolean GetVisible() { return m_isVisible; }
             inline boolean GetOpaque() { return m_isOpaque; }
             inline sVertexBufferGeometry* GetGeometry() { return m_geometry; }
@@ -59,7 +58,7 @@ namespace realware
             inline glm::vec3 GetRotation() { return m_rotation; }
             inline glm::vec3 GetScale() { return m_scale; }
             inline glm::mat4 GetWorldMatrix() { return m_world; }
-            inline glm::mat4 GetViewProjectionMatrix() { return m_viewProjection; }
+            inline glm::mat4 GetViewProjectionMatrix() const { return m_viewProjection; }
             inline cMaterial* GetMaterial() { return m_material; }
             inline font::cText* GetText() { return m_text; }
             inline render::sLight* GetLight() { return m_light; }
@@ -80,14 +79,12 @@ namespace realware
             cMaterial* m_material = nullptr;
             cText* m_text = nullptr;
             sLight* m_light = nullptr;
-            
         };
 
         class mGameObject
         {
-
         public:
-            explicit mGameObject(cApplication* app, usize maxObjectCount);
+            explicit mGameObject(cApplication* app);
             ~mGameObject() {}
 
             cGameObject* CreateGameObject(const std::string& id);
@@ -101,7 +98,6 @@ namespace realware
             usize m_maxGameObjectCount = 0;
             usize m_gameObjectCount = 0;
             std::vector<cGameObject> m_gameObjects;
-
         };
     }
 }

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <GLFW/glfw3.h>
 #include "application.hpp"
 #include "camera_manager.hpp"
@@ -13,191 +14,179 @@ namespace realware
 {
     namespace core
     {
-        static cApplication* s_app = nullptr;
-
-        s32 g_keys[256] = {};
-        boolean g_isFocused = K_FALSE;
-        sApplicationDescriptor::sWindowDescriptor g_windowDesc;
-        glm::vec2 g_cursorPosition = glm::vec2(0.0f);
-
-        void ErrorCallback(int error_code, const char* description)
-        {
-            std::cout << error_code << " " << description << std::endl;
-        }
-
         void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
-            if (action == GLFW_PRESS) {
-                g_keys[key] = K_TRUE;
-            }
-            else if (action == GLFW_RELEASE) {
-                g_keys[key] = K_FALSE;
-            }
+            cApplication* app = (cApplication*)glfwGetWindowUserPointer(window);
+
+            if (action == GLFW_PRESS)
+                app->SetKey(key, K_TRUE);
+            else if (action == GLFW_RELEASE)
+                app->SetKey(key, K_FALSE);
         }
 
-        void FocusCallback(GLFWwindow* window, int focused)
+        void WindowFocusCallback(GLFWwindow* window, int focused)
         {
+            cApplication* app = (cApplication*)glfwGetWindowUserPointer(window);
+
             if (focused)
             {
-                if (g_isFocused == K_FALSE)
+                if (app->GetWindowFocus() == K_FALSE)
                 {
-                    g_isFocused = K_TRUE;
+                    app->SetWindowFocus(K_TRUE);
 
-                    glm::vec2 size = s_app->GetMonitorSize();
-                    g_windowDesc.Width = size.x;
-                    g_windowDesc.Height = size.y;
+                    //glm::vec2 size = app->GetMonitorSize();
+                    //g_windowDesc.Width = size.x;
+                    //g_windowDesc.Height = size.y;
                 }
             }
             else
             {
-                g_isFocused = K_FALSE;
+                app->SetWindowFocus(K_FALSE);
             }
+        }
+
+        void WindowSizeCallback(GLFWwindow* window, int width, int height)
+        {
+            cApplication* app = (cApplication*)glfwGetWindowUserPointer(window);
+
+            app->_desc.WindowDesc.Width = width;
+            app->_desc.WindowDesc.Height = height;
         }
 
         void CursorCallback(GLFWwindow* window, double xpos, double ypos)
         {
-            g_cursorPosition.x = xpos;
-            g_cursorPosition.y = ypos;
+            cApplication* app = (cApplication*)glfwGetWindowUserPointer(window);
+
+            app->SetCursorPosition(glm::vec2(xpos, ypos));
         }
 
         void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
         {
         }
 
-        void WindowSizeCallback(GLFWwindow* window, int width, int height)
+        cApplication::cApplication(const sApplicationDescriptor* const desc)
         {
-            s_app->m_desc.WindowDesc.Width = width;
-            s_app->m_desc.WindowDesc.Height = height;
-            s_app->GetRenderManager()->ResizeWindow(glm::vec2(width, height));
-        }
+            _desc = *desc;
 
-        cApplication::cApplication(const sApplicationDescriptor& desc)
-        {
-            s_app = this;
-            m_desc = desc;
             CreateAppWindow();
-            m_renderContext = new render::cOpenGLRenderContext(this);
-            m_soundContext = new sound::cOpenALSoundContext();
-            m_cameraManager = new mCamera(this);
-            m_textureManager = new mTexture(this, m_renderContext, desc.TextureAtlasWidth, desc.TextureAtlasHeight, desc.TextureAtlasDepth);
-            m_renderManager = new mRender(
-                this,
-                m_renderContext,
-                desc.VertexBufferSize,
-                desc.IndexBufferSize,
-                desc.InstanceBufferSize,
-                desc.MaterialBufferSize,
-                desc.LightBufferSize,
-                1024,
-                glm::vec2(desc.WindowDesc.Width, desc.WindowDesc.Height)
-            );
-            m_fontManager = new mFont(this, m_renderContext);
-            m_soundManager = new mSound(this, m_soundContext);
-            m_fileSystemManager = new mFileSystem(this);
-            m_physicsManager = new mPhysics(this);
-            m_gameObjectManager = new mGameObject(this, 1024);
+            CreateContexts();
+            CreateAppManagers();
         }
 
         cApplication::~cApplication()
         {
+            DestroyAppWindow();
+            DestroyContexts();
+            DestroyAppManagers();
+        }
+
+        void cApplication::Run()
+        {
+            Pre();
+
+            while (GetRunState() == K_FALSE)
+            {
+                Update();
+
+                glfwSwapBuffers((GLFWwindow*)_window);
+                glfwPollEvents();
+            }
+
+            Post();
+        }
+
+        boolean cApplication::GetKey(int key)
+        {
+            return _keys[key];
         }
 
         void cApplication::CreateAppWindow()
         {
             glfwInit();
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-            glfwSetErrorCallback(ErrorCallback);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            //glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+            //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-            if (m_desc.WindowDesc.IsFullscreen == K_FALSE)
+            if (_desc.WindowDesc.IsFullscreen == K_FALSE)
             {
-                m_window = (void*)glfwCreateWindow(m_desc.WindowDesc.Width, m_desc.WindowDesc.Height, m_desc.WindowDesc.Title, nullptr, nullptr);
+                _window = (void*)glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title, nullptr, nullptr);
             }
             else
             {
                 glfwWindowHint(GLFW_DECORATED, 0);
 
                 glm::vec2 monitorSize = GetMonitorSize();
-                m_desc.WindowDesc.Width = monitorSize.x;
-                m_desc.WindowDesc.Height = monitorSize.y;
-                m_window = glfwCreateWindow(m_desc.WindowDesc.Width, m_desc.WindowDesc.Height, m_desc.WindowDesc.Title, glfwGetPrimaryMonitor(), nullptr);
+                _desc.WindowDesc.Width = monitorSize.x;
+                _desc.WindowDesc.Height = monitorSize.y;
+                _window = glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title, glfwGetPrimaryMonitor(), nullptr);
             }
 
-            glfwMakeContextCurrent((GLFWwindow*)m_window);
-            glfwSwapInterval(1);
-            glfwSetKeyCallback((GLFWwindow*)m_window, &KeyCallback);
-            glfwSetWindowFocusCallback((GLFWwindow*)m_window, &FocusCallback);
-            glfwSetCursorPosCallback((GLFWwindow*)m_window, &CursorCallback);
-            glfwSetMouseButtonCallback((GLFWwindow*)m_window, &MouseButtonCallback);
-            glfwSetWindowSizeCallback((GLFWwindow*)m_window, &WindowSizeCallback);
-        }
+            glfwSetWindowUserPointer((GLFWwindow*)_window, this);
 
-        void cApplication::Run()
-        {
-            Init();
-
-            while (GetRunState() == K_FALSE)
+            if (!_window)
             {
-                m_renderContext->ClearColor(0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-                m_renderContext->ClearDepth(1.0f);
-
-                Update();
+                std::cout << "Error: incompatible GL version!" << std::endl;
+                return;
             }
 
-            Free();
+            glfwMakeContextCurrent((GLFWwindow*)_window);
+
+            glfwSwapInterval(1);
+
+            glfwSetKeyCallback((GLFWwindow*)_window, &KeyCallback);
+            glfwSetWindowFocusCallback((GLFWwindow*)_window, &WindowFocusCallback);
+            glfwSetWindowSizeCallback((GLFWwindow*)_window, &WindowSizeCallback);
+            glfwSetCursorPosCallback((GLFWwindow*)_window, &CursorCallback);
+            glfwSetMouseButtonCallback((GLFWwindow*)_window, &MouseButtonCallback);
         }
 
-        void cApplication::PollEvents()
+        void cApplication::CreateContexts()
         {
-            glfwPollEvents();
+            _renderContext = new cOpenGLRenderContext(this);
+            _soundContext = new cOpenALSoundContext();
         }
 
-        void cApplication::SwapBuffers()
+        void cApplication::CreateAppManagers()
         {
-            glfwSwapBuffers((GLFWwindow*)m_window);
+            _camera = new mCamera(this);
+            _texture = new mTexture(this, _renderContext);
+            _render = new mRender(this, _renderContext);
+            _font = new mFont(this, _renderContext);
+            _sound = new mSound(this, _soundContext);
+            _fileSystem = new mFileSystem(this);
+            _physics = new mPhysics(this);
+            _gameObject = new mGameObject(this);
         }
 
-        void cApplication::FreeManagers()
+        void cApplication::DestroyAppWindow()
         {
-            delete m_cameraManager;
-            delete m_textureManager;
-            delete m_renderManager;
-            delete m_fontManager;
-            delete m_soundManager;
-            delete m_fileSystemManager;
-            delete m_physicsManager;
+            glfwDestroyWindow((GLFWwindow*)_window);
+        }
+
+        void cApplication::DestroyContexts()
+        {
+            delete _soundContext;
+            delete _renderContext;
+        }
+
+        void cApplication::DestroyAppManagers()
+        {
+            delete _gameObject;
+            //delete _physics;
+            delete _fileSystem;
+            delete _sound;
+            delete _font;
+            delete _render;
+            delete _texture;
+            delete _camera;
         }
 
         glm::vec2 cApplication::GetMonitorSize()
         {
             return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
-        }
-
-        glm::vec2 cApplication::GetCursorPosition()
-        {
-            return glm::vec2(g_cursorPosition.x, g_cursorPosition.y);
-        }
-
-        cApplication::eButtonState cApplication::GetMouseKey(int key)
-        {
-            int state = glfwGetMouseButton((GLFWwindow*)m_window, key);
-
-            if (state == GLFW_PRESS)
-            {
-                return eButtonState::PRESSED;
-            }
-            else if (state == GLFW_RELEASE)
-            {
-                return eButtonState::RELEASED;
-            }
-
-            return eButtonState::RELEASED;
-        }
-
-        boolean cApplication::GetKey(int key)
-        {
-            return g_keys[key];
         }
     }
 }

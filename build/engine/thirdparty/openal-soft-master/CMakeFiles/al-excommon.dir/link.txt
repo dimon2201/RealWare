@@ -1,2 +1,0 @@
-C:\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\mingw64\bin\ar.exe qc libal-excommon.a "CMakeFiles/al-excommon.dir/examples/common/alhelpers.c.obj"
-C:\x86_64-13.1.0-release-posix-seh-ucrt-rt_v11-rev1\mingw64\bin\ranlib.exe libal-excommon.a

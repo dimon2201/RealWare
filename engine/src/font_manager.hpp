@@ -29,24 +29,23 @@ namespace realware
             struct sGlyph
             {
                 char Character;
-                core::s32 Width;
-                core::s32 Height;
-                core::s32 Left;
-                core::s32 Top;
+                s32 Width;
+                s32 Height;
+                s32 Left;
+                s32 Top;
                 float AdvanceX;
                 float AdvanceY;
-                core::s32 AtlasXOffset;
-                core::s32 AtlasYOffset;
+                s32 AtlasXOffset;
+                s32 AtlasYOffset;
                 void* BitmapData;
             };
 
             FT_Face Font;
-            core::usize GlyphCount;
-            core::usize GlyphSize;
-            core::usize MaxGlyphHeight;
-            float OffsetWhitespace;
+            usize GlyphCount;
+            usize GlyphSize;
             float OffsetNewline;
             float OffsetSpace;
+            float OffsetTab;
             std::unordered_map<char, sGlyph> Alphabet;
             render::sTexture* Atlas;
         };
@@ -78,21 +77,22 @@ namespace realware
             mFont(cApplication* app, render::cRenderContext* context);
             ~mFont();
 
-            sFont* NewFont(const char* filename, core::usize glyphSize, float whitespaceOffset, float newlineOffset, float spaceOffset);
+            sFont* NewFont(const char* filename, usize glyphSize);
             void DeleteFont(sFont* font);
             const char* CyrillicStringInit(const char* str);
             void CyrillicStringFree(const char* str);
 
             float GetTextWidth(const sFont* font, const char* text);
             float GetTextHeight(const sFont* font, const char* text);
-            core::usize GetCharacterCount(const char* text);
-            core::usize GetNewlineCount(const char* text);
+            usize GetCharacterCount(const char* text);
+            usize GetNewlineCount(const char* text);
 
         private:
             void FillUnicodeTable();
 
             cApplication* m_app;
-            core::u16 m_unicode[256] = {};
+            boolean _initialized = K_FALSE;
+            u16 m_unicode[256] = {};
             render::cRenderContext* m_context = nullptr;
             FT_Library m_lib;
 
