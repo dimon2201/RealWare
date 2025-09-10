@@ -122,6 +122,9 @@ namespace realware
             inline boolean GetWindowFocus() { return _isFocused; }
             inline void SetCursorPosition(const glm::vec2& cursorPosition) { _cursorPosition = cursorPosition; }
 
+            static constexpr usize MAX_KEY_COUNT = 256;
+            static constexpr usize KEY_BUFFER_MASK = 0xFF;
+
         protected:
             sApplicationDescriptor _desc = {};
             void* _window = nullptr;
@@ -135,7 +138,7 @@ namespace realware
             fs::mFileSystem* _fileSystem = nullptr;
             physics::mPhysics* _physics = nullptr;
             mGameObject* _gameObject = nullptr;
-            s32 _keys[256] = {};
+            s32 _keys[MAX_KEY_COUNT] = {};
             boolean _isFocused = K_FALSE;
             glm::vec2 _cursorPosition = glm::vec2(0.0f);
         };

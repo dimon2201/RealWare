@@ -23,6 +23,7 @@ namespace realware
         void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
             cApplication* app = (cApplication*)glfwGetWindowUserPointer(window);
+            key &= app->KEY_BUFFER_MASK;
 
             if (action == GLFW_PRESS)
                 app->SetKey(key, K_TRUE);
