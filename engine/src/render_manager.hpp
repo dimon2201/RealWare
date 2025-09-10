@@ -3,7 +3,6 @@
 #include <vector>
 #include <unordered_map>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "ecs.hpp"
 #include "texture_manager.hpp"
 #include "types.hpp"
 
@@ -11,19 +10,9 @@ namespace realware
 {
     namespace core
     {
-        struct sRenderComponent;
         class cApplication;
-        class cUserInput;
-        class cTextureAtlas;
         class cGameObject;
     }
-
-    namespace font
-    {
-        struct sFont;
-    }
-
-    using namespace core;
 
     namespace render
     {
@@ -37,9 +26,9 @@ namespace realware
 
         struct sVertex
         {
-            glm::vec3 Position;
-            glm::vec2 Texcoord;
-            glm::vec3 Normal;
+            glm::vec3 Position = glm::vec3(0.0f);
+            glm::vec2 Texcoord = glm::vec2(0.0f);
+            glm::vec3 Normal = glm::vec3(0.0f);
         };
 
         struct sVertexBufferGeometry
@@ -61,9 +50,9 @@ namespace realware
 
         struct sPrimitive
         {
-            render::sVertexBufferGeometry::eFormat Format = render::sVertexBufferGeometry::eFormat::NONE;
-            render::sVertex* Vertices = nullptr;
-            render::index* Indices = nullptr;
+            sVertexBufferGeometry::eFormat Format = render::sVertexBufferGeometry::eFormat::NONE;
+            sVertex* Vertices = nullptr;
+            index* Indices = nullptr;
             core::usize VertexCount = 0;
             core::usize IndexCount = 0;
             core::usize VerticesByteSize = 0;
@@ -76,29 +65,22 @@ namespace realware
 
         struct sLight
         {
-            glm::vec3 Color;
-            glm::vec3 Direction;
-            f32 Scale;
-            f32 AttenuationConstant;
-            f32 AttenuationLinear;
-            f32 AttenuationQuadratic;
+            glm::vec3 Color = glm::vec3(0.0f);
+            glm::vec3 Direction = glm::vec3(0.0f);
+            core::f32 Scale = 0.0f;
+            core::f32 AttenuationConstant = 0.0f;
+            core::f32 AttenuationLinear = 0.0f;
+            core::f32 AttenuationQuadratic = 0.0f;
         };
 
         struct sTransform
         {
             sTransform() = default;
-            sTransform(cGameObject* gameObject);
+            sTransform(const core::cGameObject* const gameObject);
 
-            void Transform()
-            {
-                glm::quat quatX = glm::angleAxis(Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-                glm::quat quatY = glm::angleAxis(Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-                glm::quat quatZ = glm::angleAxis(Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            void Transform();
 
-                World = glm::translate(glm::mat4(1.0f), Position) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), Scale);
-            }
-
-            boolean Use2D = K_FALSE;
+            core::boolean Use2D = core::K_FALSE;
             glm::vec3 Position = glm::vec3(0.0f);
             glm::vec3 Rotation = glm::vec3(0.0f);
             glm::vec3 Scale = glm::vec3(1.0f);
@@ -107,102 +89,64 @@ namespace realware
 
         struct cMaterial
         {
-
         public:
             cMaterial() = default;
-            cMaterial(
-                const std::string& id,
-                sArea* diffuseTexture,
-                const glm::vec4& diffuseColor,
-                const glm::vec4& highlightColor
-            )
-            {
-                m_id = id;
-                m_diffuseTexture = diffuseTexture;
-                m_diffuseColor = diffuseColor;
-                m_highlightColor = highlightColor;
-            }
+            explicit cMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
+                : _id(id), _diffuseTexture((sTextureAtlasTexture*)diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor) {}
             ~cMaterial() = default;
 
-            std::string& GetID() { return m_id; }
-            sArea* GetDiffuseTexture() { return m_diffuseTexture; }
-            glm::vec4 GetDiffuseColor() { return m_diffuseColor; }
-            glm::vec4 GetHighlightColor() { return m_highlightColor; }
+            const std::string& GetID() const { return _id; }
+            sTextureAtlasTexture* GetDiffuseTexture() const { return _diffuseTexture; }
+            glm::vec4 GetDiffuseColor() const { return _diffuseColor; }
+            glm::vec4 GetHighlightColor() const { return _highlightColor; }
 
         private:
-            std::string m_id = "";
-            sArea* m_diffuseTexture = nullptr;
-            glm::vec4 m_diffuseColor = glm::vec4(1.0f);
-            glm::vec4 m_highlightColor = glm::vec4(1.0f);
-
+            std::string _id = "";
+            sTextureAtlasTexture* _diffuseTexture = nullptr;
+            glm::vec4 _diffuseColor = glm::vec4(1.0f);
+            glm::vec4 _highlightColor = glm::vec4(1.0f);
         };
 
         struct sRenderInstance
         {
-            sRenderInstance(core::s32 materialIndex, sTransform& transform)
-            {
-                Use2D = transform.Use2D;
-                MaterialIndex = materialIndex;
-                World = transform.World;
-            }
+            sRenderInstance(core::s32 materialIndex, const sTransform& transform);
 
-            float Use2D;
-            core::s32 MaterialIndex;
-            unsigned _pad[2];
-            glm::mat4 World;
+            core::f32 Use2D = 0.0f;
+            core::s32 MaterialIndex = -1;
+            unsigned _pad[2] = {};
+            glm::mat4 World = {};
         };
 
         struct sTextInstance
         {
-            glm::vec4 Info;
-            glm::vec4 AtlasInfo;
+            glm::vec4 Info = glm::vec4(0.0f);
+            glm::vec4 AtlasInfo = glm::vec4(0.0f);
         };
 
         struct sMaterialInstance
         {
-            sMaterialInstance(core::s32 materialIndex, cMaterial* material)
-            {
-                BufferIndex = materialIndex;
-                DiffuseColor = material->GetDiffuseColor();
-                HighlightColor = material->GetHighlightColor();
-            }
+            sMaterialInstance(core::s32 materialIndex, const cMaterial* const material);
 
-            void SetDiffuseTexture(const core::sArea& area)
-            {
-                DiffuseTextureLayerInfo = area.Offset.z;
-                DiffuseTextureInfo = glm::vec4(area.Offset.x, area.Offset.y, area.Size.x, area.Size.y);
-            }
+            void SetDiffuseTexture(const sTextureAtlasTexture& area);
 
             core::s32 BufferIndex = -1;
-            float DiffuseTextureLayerInfo;
-            float MetallicTextureLayerInfo;
-            float RoughnessTextureLayerInfo;
-            float UserData[4];
-            glm::vec4 DiffuseTextureInfo;
-            glm::vec4 DiffuseColor;
-            glm::vec4 HighlightColor;
+            core::f32 DiffuseTextureLayerInfo = 0.0f;
+            core::f32 MetallicTextureLayerInfo = 0.0f;
+            core::f32 RoughnessTextureLayerInfo = 0.0f;
+            core::f32 UserData[4] = {};
+            glm::vec4 DiffuseTextureInfo = glm::vec4(0.0f);
+            glm::vec4 DiffuseColor = glm::vec4(0.0f);
+            glm::vec4 HighlightColor = glm::vec4(0.0f);
         };
 
         struct sLightInstance
         {
-            sLightInstance(cGameObject* object);
+            sLightInstance(const core::cGameObject* const object);
 
-            glm::vec4 Position;
-            glm::vec4 Color;
-            glm::vec4 DirectionAndScale;
-            glm::vec4 Attenuation;
-        };
-
-        struct sInstanceList
-        {
-            sInstanceList(sVertexBufferGeometry* geometry, core::cScene* scene, core::usize instanceCount)
-                : Geometry(geometry), Scene(scene), InstanceCount(instanceCount)
-            {
-            }
-
-            sVertexBufferGeometry* Geometry;
-            core::cScene* Scene;
-            core::usize InstanceCount;
+            glm::vec4 Position = glm::vec4(0.0f);
+            glm::vec4 Color = glm::vec4(0.0f);
+            glm::vec4 DirectionAndScale = glm::vec4(0.0f);
+            glm::vec4 Attenuation = glm::vec4(0.0f);
         };
 
         class mRender
@@ -214,85 +158,72 @@ namespace realware
                 QUAD = 2
             };
 
-            mRender(cApplication* app, const cRenderContext* context);
+            explicit mRender(const core::cApplication* const app, const cRenderContext* const context);
             ~mRender();
 
-            cMaterial* CreateMaterial(
-                const std::string& id,
-                sArea* diffuseTexture,
-                const glm::vec4& diffuseColor,
-                const glm::vec4& highlightColor
-            );
-            void DeleteMaterial(const std::string& id);
+            cMaterial* AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
             sVertexArray* CreateDefaultVertexArray();
-            sVertexBufferGeometry* AddGeometry(const sVertexBufferGeometry::eFormat& format, core::usize verticesByteSize, const void* vertices, core::usize indicesByteSize, const void* indices);
-            inline void DeleteGeometry(sVertexBufferGeometry* geometry) { delete geometry; }
+            sVertexBufferGeometry* CreateGeometry(const sVertexBufferGeometry::eFormat& format, const core::usize verticesByteSize, const void* const vertices, const core::usize indicesByteSize, const void* const indices);
+            
+            void DeleteMaterial(const std::string& id);
+            inline void DestroyGeometry(sVertexBufferGeometry* geometry) { delete geometry; }
             void ClearGeometryBuffer();
-            inline void DeleteInstanceList(sInstanceList* list) { delete list; }
-            void ClearRenderPass(sRenderPass* renderPass, core::boolean clearColor, core::usize bufferIndex, const glm::vec4& color, core::boolean clearDepth, float depth);
-            void ClearRenderPasses(const glm::vec4& clearColor, const float clearDepth);
-            void UpdateLights(core::cApplication* app);
-            void DrawGeometryOpaque(
-                const sVertexBufferGeometry* const geometry,
-                std::vector<cGameObject>& objects,
-                const cGameObject* const cameraObject
-            );
-            void DrawGeometryTransparent(
-                const sVertexBufferGeometry* const geometry,
-                std::vector<cGameObject>& objects,
-                const cGameObject* const cameraObject
-            );
-            void DrawTexts(
-                core::cApplication* application,
-                std::vector<cGameObject>& objects
-            );
+
+            void ClearRenderPass(const sRenderPass* const renderPass, const core::boolean clearColor, const core::usize bufferIndex, const glm::vec4& color, const core::boolean clearDepth, const core::f32 depth);
+            void ClearRenderPasses(const glm::vec4& clearColor, const core::f32 clearDepth);
+            
+            void UpdateLights();
+
+            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, std::vector<core::cGameObject>& objects, const core::cGameObject* const cameraObject);
+            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, std::vector<core::cGameObject>& objects, const core::cGameObject* const cameraObject);
+            void DrawTexts(std::vector<core::cGameObject>& objects);
+            
             void CompositeTransparent();
             void CompositeFinal();
+            
             sPrimitive* CreatePrimitive(const ePrimitive& primitive);
-            void DestroyPrimitive(sPrimitive* primitiveObject);
             sModel* CreateModel(const std::string& filename);
-            void FreePrimitive(sPrimitive* primitive);
+            void DestroyPrimitive(sPrimitive* primitiveObject);
+            
             void ResizeWindow(const glm::vec2& size);
-
-            sBuffer* GetVertexBuffer() { return m_vertexBuffer; }
-            sBuffer* GetIndexBuffer() { return m_indexBuffer; }
-            sBuffer* GetInstanceBuffer() { return m_instanceBuffer; }
-            sBuffer* GetMaterialBuffer() { return m_materialBuffer; }
-            sBuffer* GetLightBuffer() { return m_lightBuffer; }
-            inline sRenderPass* GetOpaqueRenderPass() { return m_opaque; }
-            inline sRenderPass* GetTransparentRenderPass() { return m_transparent; }
-            inline sRenderPass* GetWidgetRenderPass() { return m_widget; }
-            inline sRenderPass* GetTextRenderPass() { return m_text; }
-            inline sRenderPass* GetCompositeTransparentRenderPass() { return m_compositeTransparent; }
-            inline sRenderPass* GetCompositeFinalRenderPass() { return m_compositeFinal; }
+            
+            sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
+            sBuffer* GetIndexBuffer() const { return _indexBuffer; }
+            sBuffer* GetInstanceBuffer() const { return _instanceBuffer; }
+            sBuffer* GetMaterialBuffer() const { return _materialBuffer; }
+            sBuffer* GetLightBuffer() const { return _lightBuffer; }
+            inline sRenderPass* GetOpaqueRenderPass() const { return _opaque; }
+            inline sRenderPass* GetTransparentRenderPass() const { return _transparent; }
+            inline sRenderPass* GetTextRenderPass() const { return _text; }
+            inline sRenderPass* GetCompositeTransparentRenderPass() const { return _compositeTransparent; }
+            inline sRenderPass* GetCompositeFinalRenderPass() const { return _compositeFinal; }
 
         private:
-            cApplication* m_app;
-            cRenderContext* m_context;
-            sBuffer* m_vertexBuffer;
-            sBuffer* m_indexBuffer;
-            sBuffer* m_instanceBuffer;
-            sBuffer* m_materialBuffer;
-            sBuffer* m_lightBuffer;
-            void* m_vertices;
-            core::usize m_verticesByteSize;
-            void* m_indices;
-            core::usize m_indicesByteSize;
-            void* m_instances;
-            core::usize m_instancesByteSize;
-            void* m_materials;
-            core::usize m_materialsByteSize;
-            void* m_lights;
-            core::usize m_lightsByteSize;
-            std::unordered_map<render::cMaterial*, core::s32>* m_materialsMap;
-            sRenderPass* m_opaque;
-            sRenderPass* m_transparent;
-            sRenderPass* m_widget;
-            sRenderPass* m_text;
-            sRenderPass* m_compositeTransparent;
-            sRenderPass* m_compositeFinal;
-            usize m_materialCountCPU = 0;
-            std::vector<cMaterial> m_materialsCPU;
+            core::cApplication* _app = nullptr;
+            cRenderContext* _context = nullptr;
+            sBuffer* _vertexBuffer = nullptr;
+            sBuffer* _indexBuffer = nullptr;
+            sBuffer* _instanceBuffer = nullptr;
+            sBuffer* _materialBuffer = nullptr;
+            sBuffer* _lightBuffer = nullptr;
+            void* _vertices = nullptr;
+            core::usize _verticesByteSize = 0;
+            void* _indices = nullptr;
+            core::usize _indicesByteSize = 0;
+            void* _instances = nullptr;
+            core::usize _instancesByteSize = 0;
+            void* _materials = nullptr;
+            core::usize _materialsByteSize = 0;
+            void* _lights = nullptr;
+            core::usize _lightsByteSize = 0;
+            std::unordered_map<render::cMaterial*, core::s32>* _materialsMap = {};
+            sRenderPass* _opaque = nullptr;
+            sRenderPass* _transparent = nullptr;
+            sRenderPass* _text = nullptr;
+            sRenderPass* _compositeTransparent = nullptr;
+            sRenderPass* _compositeFinal = nullptr;
+            core::usize _materialCountCPU = 0;
+            std::vector<cMaterial> _materialsCPU = {};
         };
     }
 }

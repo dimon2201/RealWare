@@ -28,35 +28,29 @@ namespace realware
 
         }
 
-        mPhysics::mPhysics(cApplication* app)
+        mPhysics::mPhysics(const cApplication* const app) :
+            _app((cApplication*)app),
+            _allocator(new cAllocator()),
+            _error(new cError()),
+            _cpuDispatcher(new cCPUDispatcher()),
+            _simulationEvent(new cSimulationEvent()),
+            _foundation(PxCreateFoundation(PX_PHYSICS_VERSION, *_allocator, *_error))
         {
-            m_app = app;
-            m_allocator = new cAllocator();
-            m_error = new cError();
-            m_cpuDispatcher = new cCPUDispatcher();
-            m_simulationEvent = new cSimulationEvent();
-
-            m_foundation = PxCreateFoundation(
-                PX_PHYSICS_VERSION,
-                *m_allocator,
-                *m_error
-            );
-
-            if (m_foundation == nullptr)
+            if (_foundation == nullptr)
             {
                 MessageBox(0, "Failed to initialize PhysXFoundation!", "Error", MB_ICONERROR);
                 return;
             }
 
-            m_physics = PxCreatePhysics(
+            _physics = PxCreatePhysics(
                 PX_PHYSICS_VERSION,
-                *m_foundation,
+                *_foundation,
                 PxTolerancesScale(),
                 false,
                 nullptr
             );
 
-            if (m_physics == nullptr)
+            if (_physics == nullptr)
             {
                 MessageBox(0, "Failed to initialize PhysXPhysics!", "Error", MB_ICONERROR);
                 return;
@@ -65,17 +59,17 @@ namespace realware
 
         mPhysics::~mPhysics()
         {
-            m_physics->release();
-            m_foundation->release();
+            _physics->release();
+            _foundation->release();
         }
 
-        void mPhysics::Update()
+        /*void mPhysics::Update()
         {
             // Actors
-            for (auto& pair : m_actors)
+            for (auto& pair : _actors)
             {
-                core::sCTransform* transformComponent = pair.Scene->Get<core::sCTransform>(pair.Entity);
-                core::sCPhysicsActor* actorComponent = pair.Scene->Get<core::sCPhysicsActor>(pair.Entity);
+                sCTransform* transformComponent = pair.Scene->Get<sCTransform>(pair.Entity);
+                sCPhysicsActor* actorComponent = pair.Scene->Get<sCPhysicsActor>(pair.Entity);
 
                 PxTransform actorTransform = ((PxRigidDynamic*)actorComponent->Actor)->getGlobalPose();
                 glm::vec3 actorEuler = glm::eulerAngles(
@@ -88,20 +82,20 @@ namespace realware
                 );
 
                 {
-                    std::lock_guard<std::mutex> lock(m_mutex);
+                    std::lock_guard<std::mutex> lock(_mutex);
                     transformComponent->Position = glm::vec3(actorTransform.p.y, actorTransform.p.x, actorTransform.p.z);
                     transformComponent->Rotation = glm::vec3(actorEuler.y, actorEuler.x, actorEuler.z);
                 }
             }
 
             // Controllers
-            for (auto& pair : m_controllers)
+            for (auto& pair : _controllers)
             {
-                core::sCTransform* transformComponent = pair.Scene->Get<core::sCTransform>(pair.Entity);
-                core::sCPhysicsCharacterController* controllerComponent =
-                    pair.Scene->Get<core::sCPhysicsCharacterController>(pair.Entity);
+                sCTransform* transformComponent = pair.Scene->Get<sCTransform>(pair.Entity);
+                sCPhysicsCharacterController* controllerComponent =
+                    pair.Scene->Get<sCPhysicsCharacterController>(pair.Entity);
 
-                if (controllerComponent->IsGravityEnabled == core::K_TRUE) {
+                if (controllerComponent->IsGravityEnabled == K_TRUE) {
                     SetCharacterControllerMovement(
                         pair, glm::vec3(0.0f, -controllerComponent->GravitySpeed, 0.0f)
                     );
@@ -110,7 +104,7 @@ namespace realware
                 PxExtendedVec3 position = controllerComponent->Controller->getPosition();
                 
                 {
-                    std::lock_guard<std::mutex> lock(m_mutex);
+                    std::lock_guard<std::mutex> lock(_mutex);
                     transformComponent->Position = glm::vec3(
                         position.y, position.x, position.z
                     );
@@ -118,47 +112,47 @@ namespace realware
             }
 
             // Scenes
-            for (auto& pair : m_scenes)
+            for (auto& pair : _scenes)
             {
-                core::sCPhysicsScene* component = pair.Scene->Get<core::sCPhysicsScene>(pair.Entity);
+                sCPhysicsScene* component = pair.Scene->Get<sCPhysicsScene>(pair.Entity);
                 component->Scene->simulate(1.0f / 60.0f);
                 component->Scene->fetchResults(true);
             }
         }
 
-        core::sCPhysicsScene* mPhysics::AddScene(const core::sEntityScenePair& scene)
+        sCPhysicsScene* mPhysics::AddScene(const sEntityScenePair& scene)
         {
-            PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
+            PxSceneDesc sceneDesc(_physics->getTolerancesScale());
             sceneDesc.gravity = PxVec3(-9.81f, 0.0f, 0.0f);
-            sceneDesc.cpuDispatcher = m_cpuDispatcher;
-            sceneDesc.simulationEventCallback = m_simulationEvent;
+            sceneDesc.cpuDispatcher = _cpuDispatcher;
+            sceneDesc.simulationEventCallback = _simulationEvent;
             sceneDesc.filterShader = FilterShader;
 
-            core::sCPhysicsScene* component = scene.Scene->Add<core::sCPhysicsScene>(scene.Entity);
-            component->Scene = m_physics->createScene(sceneDesc);
+            sCPhysicsScene* component = scene.Scene->Add<sCPhysicsScene>(scene.Entity);
+            component->Scene = _physics->createScene(sceneDesc);
             component->ControllerManager = PxCreateControllerManager(*component->Scene);
 
-            m_scenes.push_back(scene);
+            _scenes.push_back(scene);
 
             return component;
         }
 
-        core::sCPhysicsActor* mPhysics::AddActor(
-            const core::sEntityScenePair& scene,
-            const core::sEntityScenePair& actor,
-            mPhysics::eActorDescriptor actorDesc,
-            mPhysics::eShapeDescriptor shapeDesc,
+        sCPhysicsActor* mPhysics::AddActor(
+            const sEntityScenePair& scene,
+            const sEntityScenePair& actor,
+            const mPhysics::eActorDescriptor& actorDesc,
+            const mPhysics::eShapeDescriptor& shapeDesc,
             const glm::vec4& extents,
-            render::sVertexBufferGeometry* geometry
+            const sVertexBufferGeometry* const geometry
         )
         {
-            core::sCTransform* transformComponent = actor.Scene->Get<core::sCTransform>(actor.Entity);
+            sCTransform* transformComponent = actor.Scene->Get<sCTransform>(actor.Entity);
 
             glm::vec3& entityPosition = transformComponent->Position;
             glm::vec3 position = glm::vec3(entityPosition.y, entityPosition.x, entityPosition.z);
 
             // Creating material
-            PxMaterial* physicsMaterial = m_physics->createMaterial(0.05f, 0.05f, 0.05f);
+            PxMaterial* physicsMaterial = _physics->createMaterial(0.05f, 0.05f, 0.05f);
 
             // Creation of actor
             PxActor* physicsActor = nullptr;
@@ -167,11 +161,11 @@ namespace realware
             {
 
             case mPhysics::eActorDescriptor::STATIC:
-                physicsActor = m_physics->createRigidStatic(PxTransform(position.x, position.y, position.z));
+                physicsActor = _physics->createRigidStatic(PxTransform(position.x, position.y, position.z));
                 break;
 
             case mPhysics::eActorDescriptor::DYNAMIC:
-                physicsActor = m_physics->createRigidDynamic(PxTransform(position.x, position.y, position.z));
+                physicsActor = _physics->createRigidDynamic(PxTransform(position.x, position.y, position.z));
                 ((PxRigidDynamic*)physicsActor)->setAngularDamping(0.75f);
                 ((PxRigidDynamic*)physicsActor)->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
                 break;
@@ -180,7 +174,7 @@ namespace realware
 
             if (physicsActor == nullptr) { return nullptr; }
 
-            core::sCPhysicsScene* sceneComponent = scene.Scene->Get<core::sCPhysicsScene>(scene.Entity);
+            sCPhysicsScene* sceneComponent = scene.Scene->Get<sCPhysicsScene>(scene.Entity);
             sceneComponent->Scene->addActor(*physicsActor);
 
             // Shape creation
@@ -190,7 +184,7 @@ namespace realware
             {
                 case mPhysics::eShapeDescriptor::SPHERE:
                 {
-                    physicsShape = m_physics->createShape(
+                    physicsShape = _physics->createShape(
                         PxSphereGeometry(extents.x),
                         *physicsMaterial
                     );
@@ -199,7 +193,7 @@ namespace realware
 
                 case mPhysics::eShapeDescriptor::CAPSULE:
                 {
-                    physicsShape = m_physics->createShape(
+                    physicsShape = _physics->createShape(
                         PxCapsuleGeometry(extents.x, extents.y),
                         *physicsMaterial
                     );
@@ -208,7 +202,7 @@ namespace realware
 
                 case mPhysics::eShapeDescriptor::BOX:
                 {
-                    physicsShape = m_physics->createShape(
+                    physicsShape = _physics->createShape(
                         PxBoxGeometry(extents.x, extents.y, extents.z),
                         *physicsMaterial
                     );
@@ -217,7 +211,7 @@ namespace realware
 
                 case mPhysics::eShapeDescriptor::PLANE:
                 {
-                    physicsShape = m_physics->createShape(
+                    physicsShape = _physics->createShape(
                         PxPlaneGeometry(),
                         *physicsMaterial
                     );
@@ -234,7 +228,7 @@ namespace realware
                     }
 
                     PxVec3* verticesPX = new PxVec3[geometry->VertexCount];
-                    for (core::s32 i = 0; i < geometry->VertexCount; i++) {
+                    for (usize i = 0; i < geometry->VertexCount; i++) {
                         verticesPX[i] = PxVec3(
                             ((render::sVertex*)geometry->VertexPtr)[i].Position.y,
                             ((render::sVertex*)geometry->VertexPtr)[i].Position.x,
@@ -263,11 +257,11 @@ namespace realware
                     }
 
                     PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
-                    PxTriangleMesh* triangleMesh = m_physics->createTriangleMesh(readBuffer);
+                    PxTriangleMesh* triangleMesh = _physics->createTriangleMesh(readBuffer);
                     
                     ((PxRigidDynamic*)physicsActor)->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
                     
-                    physicsShape = m_physics->createShape(
+                    physicsShape = _physics->createShape(
                         PxTriangleMeshGeometry(
                             triangleMesh,
                             PxMeshScale(PxVec3(1.0f, 1.0f, 1.0f))
@@ -305,27 +299,27 @@ namespace realware
 
             }
             
-            core::sCPhysicsActor* component = actor.Scene->Add<core::sCPhysicsActor>(actor.Entity);
+            sCPhysicsActor* component = actor.Scene->Add<sCPhysicsActor>(actor.Entity);
             component->Actor = physicsActor;
             component->Material = physicsMaterial;
 
-            m_actors.push_back(actor);
+            _actors.push_back(actor);
 
             return component;
         }
 
-        core::sCPhysicsCharacterController* mPhysics::AddCharacterController(
-            const core::sEntityScenePair& scene,
-            const core::sEntityScenePair& controller,
-            mPhysics::eShapeDescriptor shapeDesc,
+        sCPhysicsCharacterController* mPhysics::AddCharacterController(
+            const sEntityScenePair& scene,
+            const sEntityScenePair& controller,
+            const mPhysics::eShapeDescriptor& shapeDesc,
             const glm::vec4& extents
         )
         {
-            core::sCPhysicsScene* sceneComponent = scene.Scene->Get<core::sCPhysicsScene>(scene.Entity);
-            core::sCTransform* transformComponent = controller.Scene->Get<core::sCTransform>(controller.Entity);
+            sCPhysicsScene* sceneComponent = scene.Scene->Get<sCPhysicsScene>(scene.Entity);
+            sCTransform* transformComponent = controller.Scene->Get<sCTransform>(controller.Entity);
             PxControllerManager* controllerManager = sceneComponent->ControllerManager;
             
-            PxMaterial* physicsMaterial = m_physics->createMaterial(0.05f, 0.05f, 0.05f);
+            PxMaterial* physicsMaterial = _physics->createMaterial(0.05f, 0.05f, 0.05f);
 
             PxController* physicsController = nullptr;
             switch (shapeDesc)
@@ -366,32 +360,29 @@ namespace realware
                 }
             }
 
-            core::sCPhysicsCharacterController* controllerComponent =
-                controller.Scene->Add<core::sCPhysicsCharacterController>(controller.Entity);
+            sCPhysicsCharacterController* controllerComponent =
+                controller.Scene->Add<sCPhysicsCharacterController>(controller.Entity);
             controllerComponent->Controller = physicsController;
             controllerComponent->Material = physicsMaterial;
 
-            m_controllers.push_back(controller);
+            _controllers.push_back(controller);
             
             return controllerComponent;
         }
 
-        void mPhysics::SetForce(const core::sEntityScenePair& actor, const glm::vec3& force)
+        void mPhysics::SetForce(const sEntityScenePair& actor, const glm::vec3& force)
         {
-            core::sCPhysicsActor* component = actor.Scene->Get<core::sCPhysicsActor>(actor.Entity);
+            sCPhysicsActor* component = actor.Scene->Get<sCPhysicsActor>(actor.Entity);
             ((PxRigidDynamic*)component->Actor)->setForceAndTorque(
                 PxVec3(force.y, force.x, force.z),
                 PxVec3(0.0f, 0.0f, 0.0f)
             );
         }
 
-        void mPhysics::SetCharacterControllerMovement(
-            const core::sEntityScenePair& controller,
-            const glm::vec3& direction
-        )
+        void mPhysics::SetCharacterControllerMovement(const sEntityScenePair& controller, const glm::vec3& direction)
         {
-            core::sCPhysicsCharacterController* controllerComponent =
-                controller.Scene->Get<core::sCPhysicsCharacterController>(controller.Entity);
+            sCPhysicsCharacterController* controllerComponent =
+                controller.Scene->Get<sCPhysicsCharacterController>(controller.Entity);
 
             PxControllerFilters filters = PxControllerFilters();
             controllerComponent->Controller->move(
@@ -400,6 +391,6 @@ namespace realware
                 1.0f,
                 filters
             );
-        }
+        }*/
     }
 }

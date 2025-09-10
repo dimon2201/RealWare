@@ -6,7 +6,6 @@
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "ecs.hpp"
 
 namespace physx
 {
@@ -33,6 +32,7 @@ namespace realware
     }
 
     using namespace core;
+    using namespace render;
 
     namespace physics
     {
@@ -79,12 +79,10 @@ namespace realware
 			virtual void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) override final {}
 			virtual void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override final {}
 			virtual void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override final {}
-
         };
 
         class mPhysics
         {
-
         public:
             enum class eActorDescriptor
             {
@@ -101,44 +99,41 @@ namespace realware
                 TRIANGLE_MESH = 4
             };
 
-            mPhysics(cApplication* app);
+            explicit mPhysics(const cApplication* const app);
             ~mPhysics();
 
             void Update();
-            core::sCPhysicsScene* AddScene(const core::sEntityScenePair& scene);
-            core::sCPhysicsActor* AddActor(
-                const core::sEntityScenePair& scene,
-                const core::sEntityScenePair& actor,
-                mPhysics::eActorDescriptor actorDesc,
-                mPhysics::eShapeDescriptor shapeDesc,
+            /*sCPhysicsScene* AddScene(const sEntityScenePair& scene);
+            sCPhysicsActor* AddActor(
+                const sEntityScenePair& scene,
+                const sEntityScenePair& actor,
+                const mPhysics::eActorDescriptor& actorDesc,
+                const mPhysics::eShapeDescriptor& shapeDesc,
                 const glm::vec4& extents,
-                render::sVertexBufferGeometry* geometry
+                const sVertexBufferGeometry* const geometry
             );
-            core::sCPhysicsCharacterController* AddCharacterController(
-                const core::sEntityScenePair& scene,
-                const core::sEntityScenePair& controller,
-                mPhysics::eShapeDescriptor shapeDesc,
+            sCPhysicsCharacterController* AddCharacterController(
+                const sEntityScenePair& scene,
+                const sEntityScenePair& controller,
+                const mPhysics::eShapeDescriptor& shapeDesc,
                 const glm::vec4& extents
             );
             
             void SetForce(const core::sEntityScenePair& actor, const glm::vec3& force);
-            void SetCharacterControllerMovement(
-                const core::sEntityScenePair& controller,
-                const glm::vec3& direction
-            );
+            void SetCharacterControllerMovement(const core::sEntityScenePair& controller, const glm::vec3& direction);*/
 
         private:
-            cApplication* m_app = nullptr;
-            cAllocator* m_allocator = nullptr;
-            cError* m_error = nullptr;
-            cCPUDispatcher* m_cpuDispatcher = nullptr;
-            cSimulationEvent* m_simulationEvent = nullptr;
-            physx::PxFoundation* m_foundation = nullptr;
-            physx::PxPhysics* m_physics = nullptr;
-            std::vector<core::sEntityScenePair> m_scenes = {};
-            std::vector<core::sEntityScenePair> m_actors = {};
-            std::vector<core::sEntityScenePair> m_controllers = {};
-            std::mutex m_mutex;
+            cApplication* _app = nullptr;
+            cAllocator* _allocator = nullptr;
+            cError* _error = nullptr;
+            cCPUDispatcher* _cpuDispatcher = nullptr;
+            cSimulationEvent* _simulationEvent = nullptr;
+            physx::PxFoundation* _foundation = nullptr;
+            physx::PxPhysics* _physics = nullptr;
+            //std::vector<core::sEntityScenePair> _scenes = {};
+            //std::vector<core::sEntityScenePair> _actors = {};
+            //std::vector<core::sEntityScenePair> _controllers = {};
+            std::mutex _mutex;
         };
     }
 }

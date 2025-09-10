@@ -4,7 +4,6 @@
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "sound_context.hpp"
-#include "ecs.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -14,27 +13,23 @@ namespace realware
         class cApplication;
     }
 
-    using namespace core;
-
     namespace sound
     {
         class mSound
         {
-
         public:
-            mSound(cApplication* app, const cSoundContext* context);
-            ~mSound();
+            mSound(const core::cApplication* const app, const cSoundContext* const context);
+            ~mSound() = default;
 
-            sSound* LoadSound(const char* filename, const sSound::eFormat& format, const std::string& tag);
-            void RemoveSound(const std::string& tag);
-            void PlaySound(core::entity object, core::cScene* scene);
-            void StopSound(core::entity object, core::cScene* scene);
+            sSound* Load(const std::string& filename, const sSound::eFormat& format, const std::string& tag);
+            void Remove(const std::string& tag);
+            //void Play(core::entity object, core::cScene* scene);
+            //void Stop(core::entity object, core::cScene* scene);
 
         private:
-            cApplication* m_app = nullptr;
-            cSoundContext* m_context = nullptr;
-            std::vector<sSound*> m_sounds;
-
+            core::cApplication* _app = nullptr;
+            cSoundContext* _context = nullptr;
+            std::vector<sSound*> _sounds = {};
         };
     }
 }

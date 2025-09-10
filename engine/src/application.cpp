@@ -12,6 +12,12 @@
 
 namespace realware
 {
+    using namespace render;
+    using namespace sound;
+    using namespace font;
+    using namespace physics;
+    using namespace fs;
+
     namespace core
     {
         void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -31,13 +37,7 @@ namespace realware
             if (focused)
             {
                 if (app->GetWindowFocus() == K_FALSE)
-                {
                     app->SetWindowFocus(K_TRUE);
-
-                    //glm::vec2 size = app->GetMonitorSize();
-                    //g_windowDesc.Width = size.x;
-                    //g_windowDesc.Height = size.y;
-                }
             }
             else
             {
@@ -51,6 +51,8 @@ namespace realware
 
             app->_desc.WindowDesc.Width = width;
             app->_desc.WindowDesc.Height = height;
+            
+            app->_render->ResizeWindow(glm::vec2(width, height));
         }
 
         void CursorCallback(GLFWwindow* window, double xpos, double ypos)
@@ -64,10 +66,8 @@ namespace realware
         {
         }
 
-        cApplication::cApplication(const sApplicationDescriptor* const desc)
+        cApplication::cApplication(const sApplicationDescriptor* const desc) : _desc(*desc)
         {
-            _desc = *desc;
-
             CreateAppWindow();
             CreateContexts();
             CreateAppManagers();
@@ -75,9 +75,9 @@ namespace realware
 
         cApplication::~cApplication()
         {
-            DestroyAppWindow();
-            DestroyContexts();
             DestroyAppManagers();
+            DestroyContexts();
+            DestroyAppWindow();
         }
 
         void cApplication::Run()
@@ -95,11 +95,6 @@ namespace realware
             Post();
         }
 
-        boolean cApplication::GetKey(int key)
-        {
-            return _keys[key];
-        }
-
         void cApplication::CreateAppWindow()
         {
             glfwInit();
@@ -107,8 +102,6 @@ namespace realware
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            //glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-            //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
             if (_desc.WindowDesc.IsFullscreen == K_FALSE)
             {
@@ -175,18 +168,13 @@ namespace realware
         void cApplication::DestroyAppManagers()
         {
             delete _gameObject;
-            //delete _physics;
+            delete _physics;
             delete _fileSystem;
             delete _sound;
             delete _font;
             delete _render;
             delete _texture;
             delete _camera;
-        }
-
-        glm::vec2 cApplication::GetMonitorSize()
-        {
-            return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
         }
     }
 }

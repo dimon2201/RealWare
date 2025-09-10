@@ -7,28 +7,29 @@ namespace realware
     namespace core
     {
         class cApplication;
+    }
 
+    namespace fs
+    {
         struct sFile
         {
-            sFile(u8* data, usize byteSize) : Data(data), ByteSize(byteSize) {}
+            sFile(core::u8* data, core::usize byteSize) : Data(data), ByteSize(byteSize) {}
 
-            u8* Data = nullptr;
-            usize ByteSize = 0;
+            core::u8* Data = nullptr;
+            core::usize ByteSize = 0;
         };
 
         class mFileSystem
         {
-
         public:
-            mFileSystem(cApplication* app);
-            ~mFileSystem();
+            explicit mFileSystem(const core::cApplication* const app) : _app((core::cApplication*)app) {};
+            ~mFileSystem() = default;
 
+            sFile LoadFile(const std::string& filepath, const core::boolean isString);
             void UnloadFile(const sFile& buffer);
-            sFile LoadFile(const char* filepath, boolean isString);
 
         private:
-            cApplication* m_app;
-
+            core::cApplication* _app = nullptr;
         };
     }
 }

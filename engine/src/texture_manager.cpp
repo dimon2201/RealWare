@@ -2,45 +2,45 @@
 #include "../../thirdparty/stb-master/stb_image.h"
 #include "application.hpp"
 #include "texture_manager.hpp"
-#include "ecs.hpp"
 #include "render_context.hpp"
 
 namespace realware
 {
-    namespace core
-    {
-        mTexture::mTexture(cApplication* app, render::cRenderContext* context)
-        {
-            sApplicationDescriptor* desc = app->GetDesc();
+    using namespace core;
 
-            m_app = app;
-            m_context = context;
-            m_atlas = m_context->CreateTexture(
+    namespace render
+    {
+        mTexture::mTexture(const cApplication* const app, const cRenderContext* const context)
+        {
+            _app = (cApplication*)app;
+
+            sApplicationDescriptor* desc = _app->GetDesc();
+
+            _context = (cRenderContext*)context;
+            _atlas = _context->CreateTexture(
                 desc->TextureAtlasWidth,
                 desc->TextureAtlasHeight,
                 desc->TextureAtlasDepth,
-                render::sTexture::eType::TEXTURE_2D_ARRAY,
-                render::sTexture::eFormat::RGBA8_MIPS,
+                sTexture::eType::TEXTURE_2D_ARRAY,
+                sTexture::eFormat::RGBA8_MIPS,
                 nullptr
             );
-            m_atlas->Slot = 0;
+            _atlas->Slot = 0;
         }
 
         mTexture::~mTexture()
         {
-            m_context->DeleteTexture(m_atlas);
-            delete m_atlas;
+            _context->DestroyTexture(_atlas);
         }
 
-        sArea* mTexture::CreateTexture(const std::string& filename, const std::string& tag)
+        sTextureAtlasTexture* mTexture::AddTexture(const std::string& filename, const std::string& tag)
         {
             int width = 0, height = 0, channels = 0;
             unsigned char* data = nullptr;
             data = stbi_load(filename.data(), &width, &height, &channels, 4);
 
-            if (data == nullptr || channels < 3) {
+            if (data == nullptr || channels < 3)
                 return nullptr;
-            }
 
             if (channels == 3)
             {
@@ -59,15 +59,15 @@ namespace realware
                 data = dataTemp;
             }
 
-            for (int layer = 0; layer < m_atlas->Depth; layer++)
+            for (int layer = 0; layer < _atlas->Depth; layer++)
             {
-                for (int y = 0; y < m_atlas->Height; y++)
+                for (int y = 0; y < _atlas->Height; y++)
                 {
-                    for (int x = 0; x < m_atlas->Width; x++)
+                    for (int x = 0; x < _atlas->Width; x++)
                     {
                         bool isIntersecting = false;
 
-                        for (auto& area : m_textures)
+                        for (auto& area : _textures)
                         {
                             if (area->IsNormalized == core::K_FALSE)
                             {
@@ -77,7 +77,7 @@ namespace realware
                                 if ((area->Offset.z == layer &&
                                     area->Offset.x <= textureRect.z && area->Offset.x + area->Size.x >= textureRect.x &&
                                     area->Offset.y <= textureRect.w && area->Offset.y + area->Size.y >= textureRect.y) ||
-                                    (x + width > m_atlas->Width || y + height > m_atlas->Height))
+                                    (x + width > _atlas->Width || y + height > _atlas->Height))
                                 {
                                     isIntersecting = true;
                                     break;
@@ -86,8 +86,8 @@ namespace realware
                             else if (area->IsNormalized == core::K_TRUE)
                             {
                                 const glm::vec4 textureRectNorm = glm::vec4(
-                                    (float)x / (float)m_atlas->Width, (float)y / (float)m_atlas->Height,
-                                    ((float)x + (float)width) / (float)m_atlas->Width, ((float)y + (float)height) / (float)m_atlas->Height
+                                    (float)x / (float)_atlas->Width, (float)y / (float)_atlas->Height,
+                                    ((float)x + (float)width) / (float)_atlas->Width, ((float)y + (float)height) / (float)_atlas->Height
                                 );
                                 if ((area->Offset.z == layer &&
                                     area->Offset.x <= textureRectNorm.z && area->Offset.x + area->Size.x >= textureRectNorm.x &&
@@ -102,16 +102,16 @@ namespace realware
 
                         if (!isIntersecting)
                         {
-                            sArea* area = new sArea();
+                            sTextureAtlasTexture* area = new sTextureAtlasTexture();
                             area->Tag = tag;
                             area->Offset = glm::vec3(x, y, layer);
                             area->Size = glm::vec2(width, height);
 
-                            m_textures.push_back(area);
+                            _textures.push_back(area);
 
-                            m_context->WriteTexture(m_atlas, area->Offset, area->Size, data);
-                            if (m_atlas->Format == render::sTexture::eFormat::RGBA8_MIPS)
-                                m_context->GenerateTextureMips(m_atlas);
+                            _context->WriteTexture(_atlas, area->Offset, area->Size, data);
+                            if (_atlas->Format == render::sTexture::eFormat::RGBA8_MIPS)
+                                _context->GenerateTextureMips(_atlas);
 
                             free(data);
 
@@ -126,12 +126,24 @@ namespace realware
             return nullptr;
         }
 
-        void mTexture::LoadAnimation(const std::vector<const char*>& filenames, const std::string& tag, std::vector<sArea*>& frames)
+        void mTexture::DeleteTexture(const std::string& tag)
         {
-            core::s32 i = 0;
+            for (auto it = _textures.begin(); it != _textures.end(); it++)
+            {
+                if ((*it)->Tag == tag)
+                {
+                    _textures.erase(it);
+                    return;
+                }
+            }
+        }
+
+        /*void mTexture::LoadAnimation(const std::vector<const std::string&>& filenames, const std::string& tag, std::vector<sArea*>& frames)
+        {
+            usize i = 0;
             for (auto filename : filenames)
             {
-                sArea* area = CreateTexture(filename, tag);
+                sTextureAtlasTexture* area = AddTexture(filename, tag);
                 if (area != nullptr)
                 {
                     *area = CalculateNormalizedArea(*area);
@@ -141,19 +153,7 @@ namespace realware
                 }
             }
 
-            m_animations.emplace_back(frames);
-        }
-
-        void mTexture::RemoveTexture(const std::string& tag)
-        {
-            for (auto it = m_textures.begin(); it != m_textures.end(); it++)
-            {
-                if ((*it)->Tag == tag)
-                {
-                    m_textures.erase(it);
-                    return;
-                }
-            }
+            _animations.emplace_back(frames);
         }
 
         void mTexture::PlayAnimation(entity object, cScene* scene, float speed)
@@ -179,11 +179,11 @@ namespace realware
 
         void mTexture::RemoveAnimation(const std::string& tag)
         {
-            for (auto it = m_textures.begin(); it != m_textures.end();)
+            for (auto it = _textures.begin(); it != _textures.end();)
             {
                 if ((*it)->Tag == tag)
                 {
-                    m_textures.erase(it);
+                    _textures.erase(it);
                 }
                 else
                 {
@@ -191,67 +191,70 @@ namespace realware
                 }
             }
 
-            for (auto it = m_animations.begin(); it != m_animations.end(); it++)
+            for (auto it = _animations.begin(); it != _animations.end(); it++)
             {
                 if ((*it)[0]->Tag == tag)
                 {
-                    m_animations.erase(it);
+                    _animations.erase(it);
                     return;
                 }
             }
-        }
+        }*/
 
-        sArea* mTexture::GetTexture(const std::string& tag)
+        sTextureAtlasTexture* mTexture::GetTexture(const std::string& tag)
         {
-            for (auto& area : m_textures) {
-                if (area->Tag == tag) {
+            for (auto& area : _textures) {
+                if (area->Tag == tag)
                     return area;
-                }
             }
 
             return nullptr;
         }
 
-        std::vector<sArea*>* mTexture::GetAnimation(const std::string& tag)
+        std::vector<sTextureAtlasTexture*>* mTexture::GetAnimation(const std::string& tag)
         {
-            for (auto& animation : m_animations) {
+            for (auto& animation : _animations) {
                 for (auto& area : animation) {
-                    if (area->Tag == tag) {
+                    if (area->Tag == tag)
                         return &animation;
-                    }
                 }
             }
 
             return nullptr;
         }
 
-        s32 mTexture::GetWidth()
+        sTextureAtlasTexture mTexture::CalculateNormalizedArea(const sTextureAtlasTexture& area)
         {
-            return m_atlas->Width;
-        }
-
-        s32 mTexture::GetHeight()
-        {
-            return m_atlas->Height;
-        }
-
-        s32 mTexture::GetDepth()
-        {
-            return m_atlas->Depth;
-        }
-
-        sArea mTexture::CalculateNormalizedArea(const sArea& area)
-        {
-            sArea a;
+            sTextureAtlasTexture a;
             a.Tag = area.Tag;
             a.IsNormalized = K_TRUE;
-            a.Offset.x = area.Offset.x / m_atlas->Width;
-            a.Offset.y = area.Offset.y / m_atlas->Height;
+            a.Offset.x = area.Offset.x / _atlas->Width;
+            a.Offset.y = area.Offset.y / _atlas->Height;
             a.Offset.z = area.Offset.z;
-            a.Size.x = area.Size.x / m_atlas->Width;
-            a.Size.y = area.Size.y / m_atlas->Height;
+            a.Size.x = area.Size.x / _atlas->Width;
+            a.Size.y = area.Size.y / _atlas->Height;
 
             return a;
+        }
+
+        sTexture* mTexture::GetAtlas()
+        {
+            return _atlas;
+        }
+
+        usize mTexture::GetWidth() const
+        {
+            return _atlas->Width;
+        }
+
+        usize mTexture::GetHeight() const
+        {
+            return _atlas->Height;
+        }
+
+        usize mTexture::GetDepth() const
+        {
+            return _atlas->Depth;
         }
     }
 }

@@ -11,57 +11,47 @@ namespace realware
 {
     namespace core
     {
-        mCamera::mCamera(cApplication* app)
-        {
-            m_app = app;
-        }
-
-        mCamera::~mCamera()
-        {
-        }
-
         void mCamera::CreateCamera()
         {
-            mGameObject* gameObjectManager = m_app->GetGameObjectManager();
+            mGameObject* gameObjectManager = _app->GetGameObjectManager();
 
-            m_camera = gameObjectManager->CreateGameObject("__Camera");
+            _camera = gameObjectManager->CreateGameObject("__Camera");
         }
 
-        void mCamera::Update(boolean updateMouseLook, boolean updateMovement)
+        void mCamera::Update(const boolean updateMouseLook, const boolean updateMovement)
         {
-            if (m_euler.x > glm::radians(65.0f))
-                m_euler.x = glm::radians(65.0f);
-            else if (m_euler.x < glm::radians(-65.0f))
-                m_euler.x = glm::radians(-65.0f);
+            if (_euler.x > glm::radians(65.0f))
+                _euler.x = glm::radians(65.0f);
+            else if (_euler.x < glm::radians(-65.0f))
+                _euler.x = glm::radians(-65.0f);
 
-            glm::quat quatX = glm::angleAxis(m_euler.x, glm::vec3(1.0f, 0.0f, 0.0f));
-            glm::quat quatY = glm::angleAxis(m_euler.y, glm::vec3(0.0f, 1.0f, 0.0f));
-            glm::quat quatZ = glm::angleAxis(m_euler.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            m_direction = quatZ * quatY * quatX * glm::vec3(0.0f, 0.0f, -1.0f);
+            const glm::quat quatX = glm::angleAxis(_euler.x, glm::vec3(1.0f, 0.0f, 0.0f));
+            const glm::quat quatY = glm::angleAxis(_euler.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            const glm::quat quatZ = glm::angleAxis(_euler.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            _direction = quatZ * quatY * quatX * glm::vec3(0.0f, 0.0f, -1.0f);
 
-            m_view = glm::lookAtRH(m_transform.Position, m_transform.Position + m_direction, glm::vec3(0.0f, 1.0f, 0.0f));
-            m_projection = glm::perspective(glm::radians(m_fov), (float)m_app->GetWindowSize().x / (float)m_app->GetWindowSize().y, m_zNear, m_zFar);
-            m_viewProjection = m_projection * m_view;
+            _view = glm::lookAtRH(m_transform.Position, m_transform.Position + _direction, glm::vec3(0.0f, 1.0f, 0.0f));
+            _projection = glm::perspective(glm::radians(_fov), (float)_app->GetWindowSize().x / (float)_app->GetWindowSize().y, _zNear, _zFar);
+            _viewProjection = _projection * _view;
 
             if (updateMouseLook == K_TRUE)
             {
                 double x = 0.0, y = 0.0;
-                glfwGetCursorPos((GLFWwindow*)m_app->GetWindow(), &x, &y);
+                glfwGetCursorPos((GLFWwindow*)_app->GetWindow(), &x, &y);
 
-                static glm::vec2 cursorPosition = glm::vec2(0.0f);
-                static glm::vec2 prevCursorPosition = cursorPosition;
-                prevCursorPosition = cursorPosition;
-                cursorPosition = glm::vec2(x, y);
-                glm::vec2 mouseDelta = prevCursorPosition - cursorPosition;
+                _prevCursorPosition = _cursorPosition;
+                _cursorPosition = glm::vec2(x, y);
+
+                glm::vec2 mouseDelta = _prevCursorPosition - _cursorPosition;
                 AddEuler(mCamera::eEulerAngle::PITCH, mouseDelta.y * 0.01f);
                 AddEuler(mCamera::eEulerAngle::YAW, mouseDelta.x * 0.01f);
             }
             if (updateMovement == K_TRUE)
             {
-                float forward = m_app->GetKey('W') * 0.1f;
-                float backward = m_app->GetKey('S') * 0.1f;
-                float left = m_app->GetKey('A') * 0.1f;
-                float right = m_app->GetKey('D') * 0.1f;
+                float forward = _app->GetKey('W') * _moveSpeed;
+                float backward = _app->GetKey('S') * _moveSpeed;
+                float left = _app->GetKey('A') * _moveSpeed;
+                float right = _app->GetKey('D') * _moveSpeed;
                 if (forward > 0.0f || backward > 0.0f || left > 0.0f || right > 0.0f)
                 {
                     Move(forward);
@@ -69,25 +59,25 @@ namespace realware
                     Strafe(-left);
                     Strafe(right);
 
-                    m_isMoving = K_TRUE;
+                    _isMoving = K_TRUE;
                 }
                 else
                 {
-                    m_isMoving = K_FALSE;
+                    _isMoving = K_FALSE;
                 }
             }
 
-            m_camera->SetViewProjectionMatrix(m_viewProjection);
+            _camera->SetViewProjectionMatrix(_viewProjection);
         }
 
-        void mCamera::AddEuler(const mCamera::eEulerAngle& angle, float value)
+        void mCamera::AddEuler(const mCamera::eEulerAngle& angle, const f32 value)
         {
-            m_euler[(int)angle] += value;
+            _euler[(int)angle] += value;
         }
 
-        void mCamera::Move(float value)
+        void mCamera::Move(const f32 value)
         {
-            m_transform.Position += m_direction * value;
+            m_transform.Position += _direction * value;
 
             /*sCPhysicsCharacterController* controller =
                 scene->Get<sCPhysicsCharacterController>(camera->Owner);
@@ -100,9 +90,9 @@ namespace realware
             }*/
         }
 
-        void mCamera::Strafe(float value)
+        void mCamera::Strafe(const f32 value)
         {
-            glm::vec3 right = glm::cross(m_direction, glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::vec3 right = glm::cross(_direction, glm::vec3(0.0f, 1.0f, 0.0f));
             m_transform.Position += right * value;
 
             /*sCPhysicsCharacterController* controller =
@@ -116,7 +106,7 @@ namespace realware
             }*/
         }
 
-        void mCamera::Lift(float value)
+        void mCamera::Lift(const f32 value)
         {
             m_transform.Position.y += value;
 

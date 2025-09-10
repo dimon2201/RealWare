@@ -20,81 +20,70 @@ namespace realware
         struct sTexture;
     }
 
-    using namespace core;
-
     namespace font
     {
         struct sFont
         {
             struct sGlyph
             {
-                char Character;
-                s32 Width;
-                s32 Height;
-                s32 Left;
-                s32 Top;
-                float AdvanceX;
-                float AdvanceY;
-                s32 AtlasXOffset;
-                s32 AtlasYOffset;
+                core::u8 Character;
+                core::s32 Width;
+                core::s32 Height;
+                core::s32 Left;
+                core::s32 Top;
+                core::f32 AdvanceX;
+                core::f32 AdvanceY;
+                core::s32 AtlasXOffset;
+                core::s32 AtlasYOffset;
                 void* BitmapData;
             };
 
-            FT_Face Font;
-            usize GlyphCount;
-            usize GlyphSize;
-            float OffsetNewline;
-            float OffsetSpace;
-            float OffsetTab;
-            std::unordered_map<char, sGlyph> Alphabet;
-            render::sTexture* Atlas;
+            FT_Face Font = {};
+            core::usize GlyphCount = 0;
+            core::usize GlyphSize = 0;
+            core::usize OffsetNewline = 0;
+            core::usize OffsetSpace = 0;
+            core::usize OffsetTab = 0;
+            std::unordered_map<core::u8, sGlyph> Alphabet = {};
+            render::sTexture* Atlas = nullptr;
         };
 
         class cText
         {
-
         public:
-            cText(sFont* font, const std::string& text)
-            {
-                m_font = font;
-                m_text = text;
-            }
+            explicit cText(const sFont* const font, const std::string& text) : m_font((sFont*)font), m_text(text) {}
             ~cText() = default;
 
-            inline sFont* GetFont() { return m_font; }
-            inline std::string GetText() { return m_text; }
+            inline sFont* GetFont() const { return m_font; }
+            inline std::string GetText() const { return m_text; }
 
         private:
             sFont* m_font = nullptr;
             std::string m_text = "";
-
         };
 
         class mFont
         {
-
         public:
-            mFont(cApplication* app, render::cRenderContext* context);
+            mFont(const core::cApplication* const app, const render::cRenderContext* const context);
             ~mFont();
 
-            sFont* NewFont(const char* filename, usize glyphSize);
-            void DeleteFont(sFont* font);
-            const char* CyrillicStringInit(const char* str);
-            void CyrillicStringFree(const char* str);
+            sFont* CreateFontTTF(const std::string& filename, const core::usize glyphSize);
+            void DestroyFontTTF(sFont* const font);
+            
+            core::f32 GetTextWidth(const sFont* const font, const std::string& text);
+            core::f32 GetTextHeight(const sFont* const font, const std::string& text);
+            core::usize GetCharacterCount(const std::string& text);
+            core::usize GetNewlineCount(const std::string& text);
 
-            float GetTextWidth(const sFont* font, const char* text);
-            float GetTextHeight(const sFont* font, const char* text);
-            usize GetCharacterCount(const char* text);
-            usize GetNewlineCount(const char* text);
+            static constexpr core::usize MAX_ATLAS_WIDTH = 2048;
 
         private:
-            void FillUnicodeTable();
-
-            cApplication* m_app;
-            boolean _initialized = K_FALSE;
-            u16 m_unicode[256] = {};
-            render::cRenderContext* m_context = nullptr;
-            FT_Library m_lib;
+            core::cApplication* _app = nullptr;
+            core::boolean _initialized = core::K_FALSE;
+            core::u16 _unicode[256] = {};
+            render::cRenderContext* _context = nullptr;
+            FT_Library _lib = {};
 
         };
     }

@@ -5,16 +5,14 @@
 
 namespace realware
 {
+    using namespace core;
+    using namespace render;
+
     namespace font
     {
-        mFont::mFont(cApplication* app, render::cRenderContext* context)
+        mFont::mFont(const cApplication* const app, const cRenderContext* const context) : _app((cApplication*)app), _context((cRenderContext*)context)
         {
-            m_app = app;
-            m_context = context;
-
-            //FillUnicodeTable();
-
-            if (FT_Init_FreeType(&m_lib))
+            if (FT_Init_FreeType(&_lib))
             {
                 std::cout << "Failed to initialize FreeType library!" << std::endl;
                 return;
@@ -26,37 +24,33 @@ namespace realware
         mFont::~mFont()
         {
             if (_initialized)
-                FT_Done_FreeType(m_lib);
+                FT_Done_FreeType(_lib);
         }
 
-        core::s32 CalculateNewlineOffset(sFont* font)
+        usize CalculateNewlineOffset(const sFont* const  font)
         {
             return font->Font->size->metrics.height >> 6;
         }
 
-        core::s32 CalculateSpaceOffset(sFont* font)
+        usize CalculateSpaceOffset(const sFont* const font)
         {
-            FT_UInt spaceIndex = FT_Get_Char_Index(font->Font, ' ');
+            const FT_UInt spaceIndex = FT_Get_Char_Index(font->Font, ' ');
             if (FT_Load_Glyph(font->Font, spaceIndex, FT_LOAD_DEFAULT) == 0)
                 return font->Font->glyph->advance.x >> 6;
             else
                 return 0;
         }
 
-        void FillAlphabetAndFindAtlasSize(
-            sFont* font,
-            core::u16* unicode,
-            core::usize& xOffset,
-            core::usize& atlasWidth,
-            core::usize& atlasHeight
-        )
+        void FillAlphabetAndFindAtlasSize(sFont* const font, usize& xOffset, usize& atlasWidth, usize& atlasHeight)
         {
-            core::usize maxGlyphHeight = 0;
+            usize maxGlyphHeight = 0;
+
             for (int c = 0; c < 256; c++)
             {
                 if (c == '\n' || c == ' ' || c == '\t')
                     continue;
-                FT_Int ci = FT_Get_Char_Index(font->Font, unicode[(unsigned char)c]);
+
+                const FT_Int ci = FT_Get_Char_Index(font->Font, c);
                 if (FT_Load_Glyph(font->Font, (FT_UInt)ci, FT_LOAD_DEFAULT) == 0)
                 {
                     font->GlyphCount += 1;
@@ -64,7 +58,7 @@ namespace realware
                     FT_Render_Glyph(font->Font->glyph, FT_RENDER_MODE_NORMAL);
 
                     sFont::sGlyph glyph = {};
-                    glyph.Character = (char)c;
+                    glyph.Character = (u8)c;
                     glyph.Width = font->Font->glyph->bitmap.width;
                     glyph.Height = font->Font->glyph->bitmap.rows;
                     glyph.Left = font->Font->glyph->bitmap_left;
@@ -72,17 +66,21 @@ namespace realware
                     glyph.AdvanceX = font->Font->glyph->advance.x >> 6;
                     glyph.AdvanceY = font->Font->glyph->advance.y >> 6;
                     glyph.BitmapData = malloc(glyph.Width * glyph.Height);
+
                     if (font->Font->glyph->bitmap.buffer)
                         memcpy(glyph.BitmapData, font->Font->glyph->bitmap.buffer, glyph.Width * glyph.Height);
 
-                    font->Alphabet.insert({ (unsigned char)c, glyph });
+                    font->Alphabet.insert({ (u8)c, glyph });
 
                     xOffset += glyph.Width + 1;
-                    if (atlasWidth <= 512)
+
+                    if (atlasWidth < mFont::MAX_ATLAS_WIDTH - (glyph.Width + 1))
                         atlasWidth += glyph.Width + 1;
+
                     if (glyph.Height > maxGlyphHeight)
                         maxGlyphHeight = glyph.Height;
-                    if (xOffset > 512)
+
+                    if (xOffset >= mFont::MAX_ATLAS_WIDTH)
                     {
                         atlasHeight += maxGlyphHeight + 1;
                         xOffset = 0;
@@ -90,47 +88,60 @@ namespace realware
                     }
                 }
             }
-            atlasHeight += maxGlyphHeight + 1;
+
+            if (atlasHeight < maxGlyphHeight + 1)
+                atlasHeight += maxGlyphHeight + 1;
         }
 
-        void MakeAtlasSizePowerOf2(core::usize& atlasWidth, core::usize& atlasHeight)
+        usize NextPowerOfTwo(const usize n)
         {
-            core::s32 bit;
-            bit = 0;
-            while ((1 << bit++) < atlasWidth);
-            atlasWidth = 1 << (bit - 1);
-            bit = 0;
-            while ((1 << bit++) < atlasHeight);
-            atlasHeight = 1 << (bit - 1);
+            if (n <= 0)
+                return 1;
+
+            usize power = 1;
+            while (power < n)
+            {
+                if (power >= 0x80000000)
+                    return 1;
+
+                power <<= 1;
+            }
+
+            return power;
         }
 
-        void FillAtlasWithGlyphs(
-            sFont* font,
-            core::usize& atlasWidth,
-            core::usize& atlasHeight,
-            cRenderContext* context
-        )
+        void MakeAtlasSizePowerOf2(usize& atlasWidth, usize& atlasHeight)
         {
-            core::usize maxGlyphHeight = 0;
+            atlasWidth = NextPowerOfTwo(atlasWidth);
+            atlasHeight = NextPowerOfTwo(atlasHeight);
+        }
 
-            void* atlasPixels = malloc(atlasWidth * atlasHeight);
+        void FillAtlasWithGlyphs(sFont* const font, usize& atlasWidth, usize& atlasHeight, cRenderContext* const context)
+        {
+            usize maxGlyphHeight = 0;
+
+            void* const atlasPixels = malloc(atlasWidth * atlasHeight);
             memset(atlasPixels, 0, atlasWidth * atlasHeight);
 
-            core::usize xOffset = 0;
-            core::usize yOffset = 0;
-            unsigned char* pixelsU8 = (unsigned char*)atlasPixels;
+            usize xOffset = 0;
+            usize yOffset = 0;
+            u8* const pixelsU8 = (u8* const)atlasPixels;
+
             for (auto& glyph : font->Alphabet)
             {
                 glyph.second.AtlasXOffset = xOffset;
                 glyph.second.AtlasYOffset = yOffset;
 
-                for (int y = 0; y < glyph.second.Height; y++)
+                for (usize y = 0; y < glyph.second.Height; y++)
                 {
-                    for (int x = 0; x < glyph.second.Width; x++)
+                    for (usize x = 0; x < glyph.second.Width; x++)
                     {
-                        int glyphPixelIndex = x + (y * glyph.second.Width);
-                        int pixelIndex = (xOffset + x) + ((yOffset + y) * atlasWidth);
-                        pixelsU8[pixelIndex] = ((char*)glyph.second.BitmapData)[glyphPixelIndex];
+                        const usize glyphPixelIndex = x + (y * glyph.second.Width);
+                        const usize pixelIndex = (xOffset + x) + ((yOffset + y) * atlasWidth);
+                        
+                        if (glyphPixelIndex < glyph.second.Width * glyph.second.Height &&
+                            pixelIndex < atlasWidth * atlasHeight)
+                            pixelsU8[pixelIndex] = ((u8*)glyph.second.BitmapData)[glyphPixelIndex];
                     }
                 }
 
@@ -138,7 +149,7 @@ namespace realware
                 if (glyph.second.Height > maxGlyphHeight)
                     maxGlyphHeight = glyph.second.Height;
 
-                if (xOffset > 512)
+                if (xOffset >= mFont::MAX_ATLAS_WIDTH)
                 {
                     yOffset += maxGlyphHeight + 1;
                     xOffset = 0;
@@ -158,14 +169,11 @@ namespace realware
             free(atlasPixels);
         }
 
-        sFont* mFont::NewFont(
-            const char* filename,
-            core::usize glyphSize
-        )
+        sFont* mFont::CreateFontTTF(const std::string& filename, const usize glyphSize)
         {
-            sFont* font = new sFont();
+            sFont* const font = new sFont();
 
-            if (FT_New_Face(m_lib, filename, 0, &font->Font) == 0)
+            if (FT_New_Face(_lib, filename.c_str(), 0, &font->Font) == 0)
             {
                 FT_Select_Charmap(font->Font, FT_ENCODING_UNICODE);
 
@@ -177,83 +185,57 @@ namespace realware
                     font->OffsetSpace = CalculateSpaceOffset(font);
                     font->OffsetTab = font->OffsetSpace * 4;
 
-                    core::usize atlasWidth = 0;
-                    core::usize atlasHeight = 0;
-                    core::usize xOffset = 0;
+                    usize atlasWidth = 0;
+                    usize atlasHeight = 0;
+                    usize xOffset = 0;
 
-                    FillAlphabetAndFindAtlasSize(font, &m_unicode[0], xOffset, atlasWidth, atlasHeight);
+                    FillAlphabetAndFindAtlasSize(font, xOffset, atlasWidth, atlasHeight);
                     MakeAtlasSizePowerOf2(atlasWidth, atlasHeight);
-                    FillAtlasWithGlyphs(font, atlasWidth, atlasHeight, m_context);
+                    FillAtlasWithGlyphs(font, atlasWidth, atlasHeight, _context);
                 }
                 else
                 {
                     delete font;
-                    font = nullptr;
+                    
+                    return nullptr;
                 }
             }
             else
             {
                 std::cout << "Error creating FreeType font face!" << std::endl;
                 delete font;
-                font = nullptr;
+                
+                return nullptr;
             }
 
             return font;
         }
 
-        void mFont::DeleteFont(sFont* font)
+        void mFont::DestroyFontTTF(sFont* const font)
         {
             for (auto glyph : font->Alphabet)
                 free(glyph.second.BitmapData);
+
             font->Alphabet.clear();
-            m_context->DeleteTexture(font->Atlas);
+
+            _context->DestroyTexture(font->Atlas);
+
             FT_Done_Face(font->Font);
+
             delete font->Atlas;
             delete font;
         }
 
-        const char* mFont::CyrillicStringInit(const char* str)
+        f32 mFont::GetTextWidth(const sFont* const font, const std::string& text)
         {
-            core::u8* strBytes = (core::u8*)str;
-            core::usize strByteSize = strlen(str);
-            core::usize strCyrByteSize = strByteSize;
-            char* strCyr = (char*)malloc(strCyrByteSize);
-            memset((void*)strCyr, 0, strCyrByteSize);
+            f32 textWidth = 0.0f;
+            f32 maxTextWidth = 0.0f;
+            const usize textByteSize = strlen(text.c_str());
+            const glm::vec2 windowSize = _app->GetWindowSize();
 
-            for (core::s32 i = 0, j = 0; i < strByteSize;)
+            for (usize i = 0; i < textByteSize; i++)
             {
-                if (strBytes[i] == 208 || strBytes[i] == 209)
-                {
-                    i++;
-                }
-                else
-                {
-                    strCyr[j] = str[i];
-                    i += 1;
-                    j += 1;
-                }
-            }
-
-            return (const char*)&strCyr[0];
-        }
-
-        void mFont::CyrillicStringFree(const char* str)
-        {
-            if (str != nullptr) {
-                free((void*)str);
-            }
-        }
-
-        float mFont::GetTextWidth(const sFont* font, const char* text)
-        {
-            float textWidth = 0.0f;
-            float maxTextWidth = 0.0f;
-            core::usize textByteSize = strlen(text);
-            const glm::vec2 windowSize = m_app->GetWindowSize();
-
-            for (core::s32 i = 0; i < textByteSize; i++)
-            {
-                const font::sFont::sGlyph& glyph = font->Alphabet.find(text[i])->second;
+                const sFont::sGlyph& glyph = font->Alphabet.find(text[i])->second;
 
                 if (text[i] == '\t')
                 {
@@ -265,14 +247,13 @@ namespace realware
                 }
                 else if (text[i] == '\n')
                 {
-                    if (maxTextWidth < textWidth) {
+                    if (maxTextWidth < textWidth)
                         maxTextWidth = textWidth;
-                    }
                     textWidth = 0.0f;
                 }
                 else
                 {
-                    textWidth += ((float)glyph.Width / windowSize.x);
+                    textWidth += ((f32)glyph.Width / windowSize.x);
                 }
             }
 
@@ -285,16 +266,16 @@ namespace realware
             return maxTextWidth;
         }
 
-        float mFont::GetTextHeight(const sFont* font, const char* text)
+        f32 mFont::GetTextHeight(const sFont* font, const std::string& text)
         {
-            float textHeight = 0.0f;
-            float maxHeight = 0.0f;
-            core::usize textByteSize = strlen(text);
-            const glm::vec2 windowSize = m_app->GetWindowSize();
+            f32 textHeight = 0.0f;
+            f32 maxHeight = 0.0f;
+            const usize textByteSize = strlen(text.c_str());
+            const glm::vec2 windowSize = _app->GetWindowSize();
 
-            for (core::s32 i = 0; i < textByteSize; i++)
+            for (s32 i = 0; i < textByteSize; i++)
             {
-                const font::sFont::sGlyph& glyph = font->Alphabet.find(text[i])->second;
+                const sFont::sGlyph& glyph = font->Alphabet.find(text[i])->second;
 
                 if (text[i] == '\n')
                 {
@@ -302,7 +283,7 @@ namespace realware
                 }
                 else
                 {
-                    float glyphHeight = ((float)glyph.Height / windowSize.y);
+                    f32 glyphHeight = ((f32)glyph.Height / windowSize.y);
                     if (glyphHeight > maxHeight) {
                         maxHeight = glyphHeight;
                     }
@@ -318,62 +299,22 @@ namespace realware
             return textHeight;
         }
 
-        core::usize mFont::GetCharacterCount(const char* text)
+        usize mFont::GetCharacterCount(const std::string& text)
         {
-            return strlen(text);
+            return strlen(text.c_str());
         }
 
-        core::usize mFont::GetNewlineCount(const char* text)
+        usize mFont::GetNewlineCount(const std::string& text)
         {
-            core::usize newlineCount = 0;
-            core::usize charCount = strlen(text);
-            for (core::usize i = 0; i < charCount; i++)
+            usize newlineCount = 0;
+            const usize charCount = strlen(text.c_str());
+            for (usize i = 0; i < charCount; i++)
             {
-                if (text[i] == '\n') {
-                    newlineCount += 1;
-                }
+                if (text[i] == '\n')
+                    newlineCount++;
             }
 
             return newlineCount;
-        }
-
-        void mFont::FillUnicodeTable()
-        {
-            m_unicode[' '] = 20;
-            m_unicode['+'] = 43; m_unicode[','] = 44; m_unicode['.'] = 46;
-            m_unicode['0'] = 48; m_unicode['1'] = 49; m_unicode['2'] = 50; m_unicode['3'] = 51;
-            m_unicode['4'] = 52; m_unicode['5'] = 53; m_unicode['6'] = 54; m_unicode['7'] = 55;
-            m_unicode['8'] = 56; m_unicode['9'] = 57;
-            m_unicode['A'] = 65; m_unicode['B'] = 66; m_unicode['C'] = 67; m_unicode['D'] = 68;
-            m_unicode['E'] = 69; m_unicode['F'] = 70; m_unicode['G'] = 71; m_unicode['H'] = 72;
-            m_unicode['I'] = 73; m_unicode['J'] = 74; m_unicode['K'] = 75; m_unicode['L'] = 76;
-            m_unicode['M'] = 77; m_unicode['N'] = 78; m_unicode['O'] = 79; m_unicode['P'] = 80;
-            m_unicode['Q'] = 81; m_unicode['R'] = 82; m_unicode['S'] = 83; m_unicode['T'] = 84;
-            m_unicode['U'] = 85; m_unicode['V'] = 86; m_unicode['W'] = 87; m_unicode['X'] = 88;
-            m_unicode['Y'] = 89; m_unicode['Z'] = 90; m_unicode['a'] = 97; m_unicode['b'] = 98;
-            m_unicode['c'] = 99; m_unicode['d'] = 100; m_unicode['e'] = 101; m_unicode['f'] = 102;
-            m_unicode['g'] = 103; m_unicode['h'] = 104; m_unicode['i'] = 105; m_unicode['j'] = 106;
-            m_unicode['k'] = 107; m_unicode['l'] = 108; m_unicode['m'] = 109; m_unicode['n'] = 110;
-            m_unicode['o'] = 111; m_unicode['p'] = 112; m_unicode['q'] = 113; m_unicode['r'] = 114;
-            m_unicode['s'] = 115; m_unicode['t'] = 116; m_unicode['u'] = 117; m_unicode['v'] = 118;
-            m_unicode['w'] = 119; m_unicode['x'] = 120; m_unicode['y'] = 121; m_unicode['z'] = 122;
-            m_unicode["Ё"[1]] = 1025; m_unicode["А"[1]] = 1040; m_unicode["Б"[1]] = 1041; m_unicode["В"[1]] = 1042;
-            m_unicode["Г"[1]] = 1043; m_unicode["Д"[1]] = 1044; m_unicode["Е"[1]] = 1045; m_unicode["Ж"[1]] = 1046;
-            m_unicode["З"[1]] = 1047; m_unicode["И"[1]] = 1048; m_unicode["Й"[1]] = 1049; m_unicode["К"[1]] = 1050;
-            m_unicode["Л"[1]] = 1051; m_unicode["М"[1]] = 1052; m_unicode["Н"[1]] = 1053; m_unicode["О"[1]] = 1054;
-            m_unicode["П"[1]] = 1055; m_unicode["Р"[1]] = 1056; m_unicode["С"[1]] = 1057; m_unicode["Т"[1]] = 1058;
-            m_unicode["У"[1]] = 1059; m_unicode["Ф"[1]] = 1060; m_unicode["Х"[1]] = 1061; m_unicode["Ц"[1]] = 1062;
-            m_unicode["Ч"[1]] = 1063; m_unicode["Ш"[1]] = 1064; m_unicode["Щ"[1]] = 1065; m_unicode["Ъ"[1]] = 1066;
-            m_unicode["Ы"[1]] = 1067; m_unicode["Ь"[1]] = 1068; m_unicode["Э"[1]] = 1069; m_unicode["Ю"[1]] = 1070;
-            m_unicode["Я"[1]] = 1071; m_unicode["а"[1]] = 1072; m_unicode["б"[1]] = 1073; m_unicode["в"[1]] = 1074;
-            m_unicode["г"[1]] = 1075; m_unicode["д"[1]] = 1076; m_unicode["е"[1]] = 1077; m_unicode["ж"[1]] = 1078;
-            m_unicode["з"[1]] = 1079; m_unicode["и"[1]] = 1080; m_unicode["й"[1]] = 1081; m_unicode["к"[1]] = 1082;
-            m_unicode["л"[1]] = 1083; m_unicode["м"[1]] = 1084; m_unicode["н"[1]] = 1085; m_unicode["о"[1]] = 1086;
-            m_unicode["п"[1]] = 1087; m_unicode["р"[1]] = 1088; m_unicode["с"[1]] = 1089; m_unicode["т"[1]] = 1090;
-            m_unicode["у"[1]] = 1091; m_unicode["ф"[1]] = 1092; m_unicode["х"[1]] = 1093; m_unicode["ц"[1]] = 1094;
-            m_unicode["ч"[1]] = 1095; m_unicode["ш"[1]] = 1096; m_unicode["щ"[1]] = 1097; m_unicode["ъ"[1]] = 1098;
-            m_unicode["ы"[1]] = 1099; m_unicode["ь"[1]] = 1100; m_unicode["э"[1]] = 1101; m_unicode["ю"[1]] = 1102;
-            m_unicode["я"[1]] = 1103;
         }
     }
 }

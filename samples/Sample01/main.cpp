@@ -31,8 +31,8 @@ public:
     MyApp(const sApplicationDescriptor* const desc) : cApplication(desc) {}
     ~MyApp()
     {
+        _render->DestroyGeometry(_triangleGeometry);
         _render->DestroyPrimitive(_trianglePrimitive);
-        delete _triangleGeometry;
     }
 
     virtual void Pre() override final
@@ -42,7 +42,7 @@ public:
 
         // Triangle geometry
         _trianglePrimitive = _render->CreatePrimitive(mRender::ePrimitive::TRIANGLE);
-        _triangleGeometry = _render->AddGeometry(
+        _triangleGeometry = _render->CreateGeometry(
             _trianglePrimitive->Format,
             _trianglePrimitive->VerticesByteSize,
             _trianglePrimitive->Vertices,
@@ -51,13 +51,13 @@ public:
         );
 
         // Materials
-        cMaterial* material1 = _render->CreateMaterial(
+        cMaterial* material1 = _render->AddMaterial(
             "Material1",
             nullptr,
             glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
             glm::vec4(1.0f)
         );
-        cMaterial* material2 = _render->CreateMaterial(
+        cMaterial* material2 = _render->AddMaterial(
             "Material2",
             nullptr,
             glm::vec4(1.0f, 0.0f, 0.0f, 0.5f),
@@ -65,7 +65,7 @@ public:
         );
         
         // Font
-        sFont* font = _font->NewFont(
+        sFont* font = _font->CreateFontTTF(
             "C:/DDD/RealWare/resources/fonts/brahms.ttf",
             64
         );
@@ -81,6 +81,7 @@ public:
         triangleObject1->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
         triangleObject1->SetScale(glm::vec3(1.0f));
         triangleObject1->SetMaterial(material1);
+
         cGameObject* triangleObject2 = _gameObject->CreateGameObject("TriangleObject2");
         triangleObject2->SetVisible(K_TRUE);
         triangleObject2->SetOpaque(K_FALSE);
@@ -88,6 +89,7 @@ public:
         triangleObject2->SetPosition(glm::vec3(0.0f, 0.0f, -3.0f));
         triangleObject2->SetScale(glm::vec3(1.0f));
         triangleObject2->SetMaterial(material2);
+
         cGameObject* textObject = _gameObject->CreateGameObject("TextObject");
         textObject->SetVisible(K_TRUE);
         textObject->SetOpaque(K_TRUE);
@@ -121,10 +123,7 @@ public:
             cameraObject
         );
         _render->CompositeTransparent();
-        //this->GetRenderManager()->DrawTexts(
-        //    this,
-        //    this->GetGameObjectManager()->GetObjects()
-        //);
+        _render->DrawTexts(_gameObject->GetObjects());
         _render->CompositeFinal();
 
         clock_t t = clock();

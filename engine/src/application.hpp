@@ -14,6 +14,7 @@ namespace realware
         class cRenderContext;
         class cRenderer;
         class mRender;
+		class mTexture;
     }
 
     namespace sound
@@ -33,17 +34,15 @@ namespace realware
         class mPhysics;
     }
 
-    using namespace render;
-    using namespace sound;
-    using namespace font;
-    using namespace physics;
+    namespace fs
+    {
+        class mFileSystem;
+    }
 
     namespace core
     {
         class mUserInput;
         class mCamera;
-        class mTexture;
-        class mFileSystem;
         class mGameObject;
 
         void WindowSizeCallback(GLFWwindow* window, int width, int height);
@@ -83,22 +82,22 @@ namespace realware
 
             void Run();
 
-            inline boolean GetRunState() { return glfwWindowShouldClose((GLFWwindow*)_window); }
+            inline boolean GetRunState() const { return glfwWindowShouldClose((GLFWwindow*)_window); }
 
-            inline mCamera* GetCameraManager() { return _camera; }
-            inline mTexture* GetTextureManager() { return _texture; }
-            inline mRender* GetRenderManager() { return _render; }
-            inline mFont* GetFontManager() { return _font; }
-            inline mSound* GetSoundManager() { return _sound; }
-            inline mFileSystem* GetFileSystemManager() { return _fileSystem; }
-            inline mPhysics* GetPhysicsManager() { return _physics; }
-            inline mGameObject* GetGameObjectManager() { return _gameObject; }
+            inline mCamera* GetCameraManager() const { return _camera; }
+            inline render::mTexture* GetTextureManager() const { return _texture; }
+            inline render::mRender* GetRenderManager() const { return _render; }
+            inline font::mFont* GetFontManager() const { return _font; }
+            inline sound::mSound* GetSoundManager() const { return _sound; }
+            inline fs::mFileSystem* GetFileSystemManager() const { return _fileSystem; }
+            inline physics::mPhysics* GetPhysicsManager() const { return _physics; }
+            inline core::mGameObject* GetGameObjectManager() const { return _gameObject; }
 
-            inline void* GetWindow() { return _window; }
-            inline glm::vec2 GetWindowSize() { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
-            inline const char* GetWindowTitle() { return _desc.WindowDesc.Title; }
-            inline HWND GetWindowHWND() { return glfwGetWin32Window((GLFWwindow*)_window); }
-            boolean GetKey(int key);
+            inline void* GetWindow() const { return _window; }
+            inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
+            inline const char* GetWindowTitle() const { return _desc.WindowDesc.Title; }
+            inline HWND GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
+            inline boolean GetKey(int key) const { return _keys[key]; }
 
             sApplicationDescriptor* GetDesc() { return &_desc; }
 
@@ -116,7 +115,7 @@ namespace realware
             void DestroyContexts();
             void DestroyAppManagers();
 
-            glm::vec2 GetMonitorSize();
+            inline glm::vec2 cApplication::GetMonitorSize() const { return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)); }
 
             inline void SetKey(const int key, const boolean value) { _keys[key] = value; }
             inline void SetWindowFocus(const boolean value) { _isFocused = value; }
@@ -126,15 +125,15 @@ namespace realware
         protected:
             sApplicationDescriptor _desc = {};
             void* _window = nullptr;
-            cRenderContext* _renderContext = nullptr;
-            cSoundContext* _soundContext = nullptr;
+            render::cRenderContext* _renderContext = nullptr;
+            sound::cSoundContext* _soundContext = nullptr;
             mCamera* _camera = nullptr;
-            mRender* _render = nullptr;
-            mTexture* _texture = nullptr;
-            mFont* _font = nullptr;
-            mSound* _sound = nullptr;
-            mFileSystem* _fileSystem = nullptr;
-            mPhysics* _physics = nullptr;
+            render::mRender* _render = nullptr;
+            render::mTexture* _texture = nullptr;
+            font::mFont* _font = nullptr;
+            sound::mSound* _sound = nullptr;
+            fs::mFileSystem* _fileSystem = nullptr;
+            physics::mPhysics* _physics = nullptr;
             mGameObject* _gameObject = nullptr;
             s32 _keys[256] = {};
             boolean _isFocused = K_FALSE;

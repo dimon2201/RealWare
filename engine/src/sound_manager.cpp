@@ -1,56 +1,49 @@
 #include "sound_manager.hpp"
 #include "sound_context.hpp"
-#include "ecs.hpp"
 
 namespace realware
 {
+    using namespace core;
+
     namespace sound
     {
-        mSound::mSound(cApplication* app, const cSoundContext* context)
-        {
-            m_app = app;
-            m_context = (cSoundContext*)context;
-        }
+        mSound::mSound(const core::cApplication* const app, const cSoundContext* const context) : _app((cApplication*)app), _context((cSoundContext*)context) {}
 
-        mSound::~mSound()
+        sSound* mSound::Load(const std::string& filename, const sSound::eFormat& format, const std::string& tag)
         {
-        }
-
-        sSound* mSound::LoadSound(const char* filename, const sSound::eFormat& format, const std::string& tag)
-        {
-            sSound* sound = m_context->CreateSound(filename, format);
+            sSound* sound = _context->Create(filename, format);
             sound->Tag = tag;
 
-            m_sounds.emplace_back(sound);
+            _sounds.emplace_back(sound);
 
             return sound;
         }
 
-        void mSound::RemoveSound(const std::string& tag)
+        void mSound::Remove(const std::string& tag)
         {
-            for (auto it = m_sounds.begin(); it != m_sounds.end(); it++)
+            for (auto it = _sounds.begin(); it != _sounds.end(); it++)
             {
                 if ((*it)->Tag == tag)
                 {
-                    m_context->FreeSound(*it);
-                    m_sounds.erase(it);
+                    _context->Destroy(*it);
+                    _sounds.erase(it);
                     break;
                 }
             }
         }
 
-        void mSound::PlaySound(core::entity object, core::cScene* scene)
+        /*void mSound::Play(entity object, cScene* scene)
         {
             core::sCSound* sound = scene->Get<core::sCSound>(object);
             core::sCTransform* transform = scene->Get<core::sCTransform>(object);
-            m_context->SetSoundPosition(sound->Sound, transform->Position);
-            m_context->PlaySound(sound->Sound);
+            _context->SetPosition(sound->Sound, transform->Position);
+            _context->Play(sound->Sound);
         }
 
-        void mSound::StopSound(core::entity object, core::cScene* scene)
+        void mSound::Stop(core::entity object, core::cScene* scene)
         {
             core::sCSound* sound = scene->Get<core::sCSound>(object);
-            m_context->StopSound(sound->Sound);
-        }
+            _context->Stop(sound->Sound);
+        }*/
     }
 }

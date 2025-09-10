@@ -4,43 +4,40 @@
 
 namespace realware
 {
+    using namespace render;
+    using namespace font;
+
     namespace core
     {
-        mGameObject::mGameObject(cApplication* app)
-        {
-            m_app = app;
-            m_maxGameObjectCount = app->GetDesc()->MaxGameObjectCount;
-        }
-
         cGameObject::cGameObject()
         {
-            m_transform = new sTransform();
+            _transform = new sTransform();
         }
 
         cGameObject* mGameObject::CreateGameObject(const std::string& id)
         {
-            const usize gameObjectCount = m_gameObjects.size();
+            const usize gameObjectCount = _gameObjects.size();
 
             for (usize i = 0; i < gameObjectCount; i++)
             {
-                if (m_gameObjects[i].m_isDeleted == K_TRUE)
+                if (_gameObjects[i]._isDeleted == K_TRUE)
                 {
-                    m_gameObjects[i] = cGameObject();
-                    m_gameObjects[i].m_isDeleted = K_FALSE;
-                    m_gameObjects[i].m_id = id;
+                    _gameObjects[i] = cGameObject();
+                    _gameObjects[i]._isDeleted = K_FALSE;
+                    _gameObjects[i]._id = id;
 
-                    return &m_gameObjects[i];
+                    return &_gameObjects[i];
                 }
             }
             
-            if (gameObjectCount < m_maxGameObjectCount)
+            if (gameObjectCount < _maxGameObjectCount)
             {
                 cGameObject gameObject = cGameObject();
-                gameObject.m_id = id;
-                gameObject.m_isDeleted = K_FALSE;
-                m_gameObjects.push_back(gameObject);
+                gameObject._id = id;
+                gameObject._isDeleted = K_FALSE;
+                _gameObjects.push_back(gameObject);
 
-                return &m_gameObjects[gameObjectCount];
+                return &_gameObjects[gameObjectCount];
             }
 
             return nullptr;
@@ -48,10 +45,10 @@ namespace realware
 
         cGameObject* mGameObject::FindGameObject(const std::string& id)
         {
-            for (usize i = 0; i < m_maxGameObjectCount; i++)
+            for (usize i = 0; i < _maxGameObjectCount; i++)
             {
-                if (m_gameObjects[i].m_isDeleted == K_FALSE && m_gameObjects[i].GetID() == id)
-                    return &m_gameObjects[i];
+                if (_gameObjects[i]._isDeleted == K_FALSE && _gameObjects[i].GetID() == id)
+                    return &_gameObjects[i];
             }
             
             return nullptr;
@@ -62,8 +59,8 @@ namespace realware
             cGameObject* object = FindGameObject(id);
             if (object != nullptr)
             {
-                object->m_isDeleted = K_TRUE;
-                delete object->m_transform;
+                object->_isDeleted = K_TRUE;
+                delete object->_transform;
             }
         }
     }

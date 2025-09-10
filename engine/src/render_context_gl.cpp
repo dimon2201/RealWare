@@ -9,6 +9,8 @@
 
 namespace realware
 {
+    using namespace core;
+
     namespace render
     {
         void APIENTRY GLDebugCallback(
@@ -24,14 +26,14 @@ namespace realware
             std::cout << message << std::endl;
         }
 
-        cOpenGLRenderContext::cOpenGLRenderContext(cApplication* app)
+        cOpenGLRenderContext::cOpenGLRenderContext(const cApplication* const app) : _app((cApplication*)app)
         {
-            m_app = app;
             if (glewInit() != GLEW_OK)
             {
                 std::cout << "Error initializing GLEW!" << std::endl;
                 return;
             }
+
             glEnable(GL_DEPTH_TEST);
             //glEnable(GL_CULL_FACE);
             glEnable(GL_BLEND);
@@ -47,9 +49,9 @@ namespace realware
         {
         }
 
-        sBuffer* cOpenGLRenderContext::CreateBuffer(core::usize byteSize, const sBuffer::eType& type, const void* data)
+        sBuffer* cOpenGLRenderContext::CreateBuffer(const usize byteSize, const sBuffer::eType& type, const void* const data)
         {
-            sBuffer* buffer = new sBuffer();
+            sBuffer* const buffer = new sBuffer();
             buffer->ByteSize = byteSize;
             buffer->Type = type;
             buffer->Slot = 0;
@@ -84,7 +86,7 @@ namespace realware
             return buffer;
         }
 
-        void cOpenGLRenderContext::BindBuffer(const sBuffer* buffer)
+        void cOpenGLRenderContext::BindBuffer(const sBuffer* const buffer)
         {
             if (buffer->Type == sBuffer::eType::VERTEX)
                 glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->Instance);
@@ -96,7 +98,7 @@ namespace realware
                 glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, buffer->Instance);
         }
 		
-		void cOpenGLRenderContext::BindBufferNotVAO(const sBuffer* buffer)
+		void cOpenGLRenderContext::BindBufferNotVAO(const sBuffer* const buffer)
         {
             if (buffer->Type == sBuffer::eType::UNIFORM)
                 glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, (GLuint)buffer->Instance);
@@ -104,7 +106,7 @@ namespace realware
                 glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, buffer->Instance);
         }
 
-        void cOpenGLRenderContext::UnbindBuffer(const sBuffer* buffer)
+        void cOpenGLRenderContext::UnbindBuffer(const sBuffer* const buffer)
         {
             if (buffer->Type == sBuffer::eType::VERTEX) {
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -117,7 +119,7 @@ namespace realware
             }
         }
 
-        void cOpenGLRenderContext::WriteBuffer(sBuffer* buffer, core::usize offset, core::usize byteSize, const void* data)
+        void cOpenGLRenderContext::WriteBuffer(const sBuffer* const buffer, const usize offset, const usize byteSize, const void* const data)
         {
             if (buffer->Type == sBuffer::eType::VERTEX)
             {
@@ -145,9 +147,21 @@ namespace realware
             }
         }
 
-        void cOpenGLRenderContext::DeleteBuffer(sBuffer* buffer)
+        void cOpenGLRenderContext::DestroyBuffer(sBuffer* buffer)
         {
+            if (buffer->Type == sBuffer::eType::VERTEX)
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            else if (buffer->Type == sBuffer::eType::INDEX)
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            else if (buffer->Type == sBuffer::eType::UNIFORM)
+                glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            else if (buffer->Type == sBuffer::eType::LARGE)
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
             glDeleteBuffers(1, (GLuint*)&buffer->Instance);
+
+            if (buffer != nullptr)
+                delete buffer;
         }
 
         sVertexArray* cOpenGLRenderContext::CreateVertexArray()
@@ -159,7 +173,7 @@ namespace realware
             return vertexArray;
         }
 
-        void cOpenGLRenderContext::BindVertexArray(const sVertexArray* vertexArray)
+        void cOpenGLRenderContext::BindVertexArray(const sVertexArray* const vertexArray)
         {
             glBindVertexArray((GLuint)vertexArray->Instance);
         }
@@ -173,9 +187,8 @@ namespace realware
                 vertexArray = CreateVertexArray();
 
                 BindVertexArray(vertexArray);
-                for (auto buffer : buffersToBind) {
+                for (auto buffer : buffersToBind)
                     BindBuffer(buffer);
-                }
                 BindDefaultInputLayout();
                 UnbindVertexArray();
             }
@@ -188,12 +201,15 @@ namespace realware
             glBindVertexArray(0);
         }
 
-        void cOpenGLRenderContext::DeleteVertexArray(sVertexArray* vertexArray)
+        void cOpenGLRenderContext::DestroyVertexArray(sVertexArray* vertexArray)
         {
             glDeleteVertexArrays(1, (GLuint*)&vertexArray->Instance);
+
+            if (vertexArray != nullptr)
+                delete vertexArray;
         }
 
-        void cOpenGLRenderContext::BindShader(const sShader* shader)
+        void cOpenGLRenderContext::BindShader(const sShader* const shader)
         {
             auto shaderID = (GLuint)shader->Instance;
             glUseProgram(shaderID);
@@ -206,8 +222,8 @@ namespace realware
 
         sShader* cOpenGLRenderContext::LoadShader(
             const std::string& header,
-            const char* vertexPath,
-            const char* fragmentPath
+            const std::string& vertexPath,
+            const std::string& fragmentPath
         )
         {
             sShader* shader = new sShader();
@@ -216,11 +232,11 @@ namespace realware
             std::string appendPathOpaqueVertexStr = appendStr;
             std::string appendPathOpaqueFragmentStr = appendStr;
 
-            core::sFile vertexShaderFile = m_app->GetFileSystemManager()->LoadFile(vertexPath, core::K_TRUE);
+            fs::sFile vertexShaderFile = _app->GetFileSystemManager()->LoadFile(vertexPath, core::K_TRUE);
             std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile.Data));
             const char* vertex = vertexStr.c_str();
 
-            core::sFile fragmentShaderFile = m_app->GetFileSystemManager()->LoadFile(fragmentPath, core::K_TRUE);
+            fs::sFile fragmentShaderFile = _app->GetFileSystemManager()->LoadFile(fragmentPath, core::K_TRUE);
             std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile.Data));
             const char* fragment = fragmentStr.c_str();
 
@@ -264,30 +280,23 @@ namespace realware
 			glDeleteShader(vertexShader);
             glDeleteShader(fragmentShader);
 
-            m_app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-            m_app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+            _app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
+            _app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
 
             return shader;
         }
 
-        void cOpenGLRenderContext::SetShaderUniform(const sShader* shader, const char* name, const glm::mat4& matrix)
+        void cOpenGLRenderContext::SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix)
         {
-            glUniformMatrix4fv(glGetUniformLocation(shader->Instance, name), 1, GL_FALSE, &matrix[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader->Instance, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
         }
 
-        void cOpenGLRenderContext::SetShaderUniform(const sShader* shader, const char* name, core::usize count, float* values)
+        void cOpenGLRenderContext::SetShaderUniform(const sShader* const shader, const std::string& name, const usize count, const f32* const values)
         {
-            glUniform4fv(glGetUniformLocation(shader->Instance, name), count, &values[0]);
+            glUniform4fv(glGetUniformLocation(shader->Instance, name.c_str()), count, &values[0]);
         }
 
-        sTexture* cOpenGLRenderContext::CreateTexture(
-            core::s32 width,
-            core::s32 height,
-            core::s32 depth,
-            const sTexture::eType& type,
-            const sTexture::eFormat& format,
-            const void* data
-        )
+        sTexture* cOpenGLRenderContext::CreateTexture(const usize width, const usize height, const usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data)
         {
             sTexture* texture = new sTexture();
             texture->Width = width;
@@ -385,41 +394,41 @@ namespace realware
 
         sTexture* cOpenGLRenderContext::ResizeTexture(sTexture* texture, const glm::vec2& size)
         {
-            DeleteTexture(texture);
-            sTexture* newTexture = CreateTexture(size.x, size.y, texture->Depth, texture->Type, texture->Format, nullptr);
-            delete texture;
+            sTexture textureCopy = *texture;
+            DestroyTexture(texture);
 
+            sTexture* newTexture = CreateTexture(size.x, size.y, textureCopy.Depth, textureCopy.Type, textureCopy.Format, nullptr);
+            
             return newTexture;
         }
 
-        void cOpenGLRenderContext::BindTexture(const sShader* shader, const char* name, const sTexture* texture, s32 slot)
+        void cOpenGLRenderContext::BindTexture(const sShader* const shader, const std::string& name, const sTexture* const texture, s32 slot)
         {
             if (slot == -1)
                 slot = texture->Slot;
             if (texture->Type == sTexture::eType::TEXTURE_2D)
             {
-                glUniform1i(glGetUniformLocation(shader->Instance, name), slot);
+                glUniform1i(glGetUniformLocation(shader->Instance, name.c_str()), slot);
                 glActiveTexture(GL_TEXTURE0 + slot);
                 glBindTexture(GL_TEXTURE_2D, texture->Instance);
                 glActiveTexture(GL_TEXTURE0);
             }
             else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
             {
-                glUniform1i(glGetUniformLocation(shader->Instance, name), slot);
+                glUniform1i(glGetUniformLocation(shader->Instance, name.c_str()), slot);
                 glActiveTexture(GL_TEXTURE0 + slot);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
                 glActiveTexture(GL_TEXTURE0);
             }
         }
 
-        void cOpenGLRenderContext::UnbindTexture(const sTexture *texture)
+        void cOpenGLRenderContext::UnbindTexture(const sTexture* const texture)
         {
-            if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY) {
+            if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
                 glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-            }
         }
 
-        void cOpenGLRenderContext::WriteTexture(realware::render::sTexture* texture, const glm::vec3 &offset, const glm::vec2 &size, const void *data)
+        void cOpenGLRenderContext::WriteTexture(sTexture* const texture, const glm::vec3& offset, const glm::vec2& size, const void* const data)
         {
             GLenum formatComponentGL = GL_UNSIGNED_BYTE;
             GLenum channelsGL = GL_RGBA;
@@ -471,11 +480,10 @@ namespace realware
             }
         }
 
-        void cOpenGLRenderContext::WriteTextureToFile(const sTexture* texture, const char* filename)
+        void cOpenGLRenderContext::WriteTextureToFile(const sTexture* const texture, const std::string& filename)
         {
-            if (texture->Format != sTexture::eFormat::RGBA8) {
+            if (texture->Format != sTexture::eFormat::RGBA8)
                 return;
-            }
 
             GLenum channelsGL = GL_RGBA;
             GLenum formatComponentGL = GL_UNSIGNED_BYTE;
@@ -495,13 +503,13 @@ namespace realware
                 glGetTexImage(GL_TEXTURE_2D, 0, channelsGL, formatComponentGL, pixels);
                 glBindTexture(GL_TEXTURE_2D, 0);
 
-                lodepng_encode32_file(filename, (const unsigned char*)pixels, texture->Width, texture->Height);
+                lodepng_encode32_file(filename.c_str(), (const unsigned char*)pixels, texture->Width, texture->Height);
 
                 free(pixels);
             }
         }
 
-        void cOpenGLRenderContext::GenerateTextureMips(sTexture* texture)
+        void cOpenGLRenderContext::GenerateTextureMips(sTexture* const texture)
         {
             if (texture->Type == sTexture::eType::TEXTURE_2D)
             {
@@ -517,15 +525,20 @@ namespace realware
             }
         }
 
-        void cOpenGLRenderContext::DeleteTexture(sTexture* texture)
+        void cOpenGLRenderContext::DestroyTexture(sTexture* texture)
         {
+            if (texture->Type == sTexture::eType::TEXTURE_2D)
+                glBindTexture(GL_TEXTURE_2D, 0);
+            else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
+                glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
             glDeleteTextures(1, (GLuint*)&texture->Instance);
+
+            if (texture != nullptr)
+                delete texture;
         }
 
-        sRenderTarget* cOpenGLRenderContext::CreateRenderTarget(
-            const std::vector<sTexture*>& colorAttachments,
-            const sTexture* depthAttachment
-        )
+        sRenderTarget* cOpenGLRenderContext::CreateRenderTarget(const std::vector<sTexture*>& colorAttachments, const sTexture* const depthAttachment)
         {
             sRenderTarget* renderTarget = new sRenderTarget();
             renderTarget->ColorAttachments = colorAttachments;
@@ -534,7 +547,7 @@ namespace realware
             GLenum buffs[16] = {};
             glGenFramebuffers(1, (GLuint*)&renderTarget->Instance);
             glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
-            for (core::s32 i = 0; i < renderTarget->ColorAttachments.size(); i++)
+            for (usize i = 0; i < renderTarget->ColorAttachments.size(); i++)
             {
                 buffs[i] = GL_COLOR_ATTACHMENT0 + i;
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->ColorAttachments[i]->Instance, 0);
@@ -550,15 +563,14 @@ namespace realware
             return renderTarget;
         }
 
-        void cOpenGLRenderContext::ResizeRenderTargetColors(sRenderTarget* renderTarget, const glm::vec2& size)
+        void cOpenGLRenderContext::ResizeRenderTargetColors(sRenderTarget* const renderTarget, const glm::vec2& size)
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
             std::vector<sTexture*> newColorAttachments;
             for (auto attachment : renderTarget->ColorAttachments)
             {
-                DeleteTexture(attachment);
-                newColorAttachments.emplace_back(CreateTexture(size.x, size.y, attachment->Depth, attachment->Type, attachment->Format, nullptr));
+                sTexture attachmentCopy = *attachment;
+                DestroyTexture(attachment);
+                newColorAttachments.emplace_back(CreateTexture(size.x, size.y, attachmentCopy.Depth, attachmentCopy.Type, attachmentCopy.Format, nullptr));
             }
             renderTarget->ColorAttachments.clear();
             renderTarget->ColorAttachments = newColorAttachments;
@@ -574,13 +586,12 @@ namespace realware
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        void cOpenGLRenderContext::ResizeRenderTargetDepth(sRenderTarget* renderTarget, const glm::vec2& size)
+        void cOpenGLRenderContext::ResizeRenderTargetDepth(sRenderTarget* const renderTarget, const glm::vec2& size)
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            sTexture attachmentCopy = *renderTarget->DepthAttachment;
+            DestroyTexture(renderTarget->DepthAttachment);
 
-            DeleteTexture(renderTarget->DepthAttachment);
-            sTexture* newDepthAttachment = CreateTexture(size.x, size.y, renderTarget->DepthAttachment->Depth, renderTarget->DepthAttachment->Type, renderTarget->DepthAttachment->Format, nullptr);
-            delete renderTarget->DepthAttachment;
+            sTexture* newDepthAttachment = CreateTexture(size.x, size.y, attachmentCopy.Depth, attachmentCopy.Type, attachmentCopy.Format, nullptr);
             renderTarget->DepthAttachment = newDepthAttachment;
 
             GLenum buffs[16] = {};
@@ -589,7 +600,7 @@ namespace realware
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        void cOpenGLRenderContext::UpdateRenderTargetBuffers(sRenderTarget* renderTarget)
+        void cOpenGLRenderContext::UpdateRenderTargetBuffers(const sRenderTarget* const renderTarget)
         {
             GLenum buffs[16] = {};
             glGenFramebuffers(1, (GLuint*)&renderTarget->Instance);
@@ -604,7 +615,7 @@ namespace realware
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        void cOpenGLRenderContext::BindRenderTarget(const sRenderTarget* renderTarget)
+        void cOpenGLRenderContext::BindRenderTarget(const sRenderTarget* const renderTarget)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
         }
@@ -614,9 +625,13 @@ namespace realware
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        void cOpenGLRenderContext::DeleteRenderTarget(sRenderTarget* renderTarget)
+        void cOpenGLRenderContext::DestroyRenderTarget(sRenderTarget* renderTarget)
         {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glDeleteFramebuffers(1, (GLuint*)&renderTarget->Instance);
+
+            if (renderTarget != nullptr)
+                delete renderTarget;
         }
 
         sRenderPass* cOpenGLRenderContext::CreateRenderPass(const sRenderPass::sDescriptor& descriptor)
@@ -637,14 +652,16 @@ namespace realware
             {
                 for (auto buffer : renderPass->Desc.InputBuffers)
                     BindBuffer(buffer);
+
                 BindDefaultInputLayout();
             }
+
             UnbindVertexArray();
 
             return renderPass;
         }
 
-        void cOpenGLRenderContext::BindRenderPass(const sRenderPass* renderPass)
+        void cOpenGLRenderContext::BindRenderPass(const sRenderPass* const renderPass)
         {
             BindShader(renderPass->Desc.Shader);
             BindVertexArray(renderPass->Desc.VertexArray);
@@ -657,11 +674,11 @@ namespace realware
                 BindBufferNotVAO(buffer);
             BindDepthMode(renderPass->Desc.DepthMode);
             BindBlendMode(renderPass->Desc.BlendMode);
-            for (core::s32 i = 0; i < renderPass->Desc.InputTextures.size(); i++)
+            for (usize i = 0; i < renderPass->Desc.InputTextures.size(); i++)
                 BindTexture(renderPass->Desc.Shader, renderPass->Desc.InputTextureNames[i].c_str(), renderPass->Desc.InputTextures[i], i);
         }
 
-        void cOpenGLRenderContext::UnbindRenderPass(const sRenderPass* renderPass)
+        void cOpenGLRenderContext::UnbindRenderPass(const sRenderPass* const renderPass)
         {
             UnbindVertexArray();
             if (renderPass->Desc.RenderTarget != nullptr)
@@ -672,9 +689,13 @@ namespace realware
                 UnbindTexture(texture);
         }
 
-        void cOpenGLRenderContext::DeleteRenderPass(sRenderPass* renderPass)
+        void cOpenGLRenderContext::DestroyRenderPass(sRenderPass* renderPass)
         {
-            DeleteVertexArray(renderPass->Desc.VertexArray);
+            glBindVertexArray(0);
+            DestroyVertexArray(renderPass->Desc.VertexArray);
+
+            if (renderPass != nullptr)
+                delete renderPass;
         }
 
         void cOpenGLRenderContext::BindDefaultInputLayout()
@@ -685,19 +706,6 @@ namespace realware
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, (void*)0);
             glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 32, (void*)12);
             glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 32, (void*)20);
-        }
-
-        void cOpenGLRenderContext::BindDepthMode(const sDepthMode &blendMode)
-        {
-            if (blendMode.UseDepthTest == core::K_TRUE)
-                glEnable(GL_DEPTH_TEST);
-            else
-                glDisable(GL_DEPTH_TEST);
-
-            if (blendMode.UseDepthWrite == core::K_TRUE)
-                glDepthMask(GL_TRUE);
-            else
-                glDepthMask(GL_FALSE);
         }
 
         void cOpenGLRenderContext::BindBlendMode(const sBlendMode& blendMode)
@@ -728,6 +736,20 @@ namespace realware
                 glBlendFunci(i, srcFactor, dstFactor);
             }
         }
+
+        void cOpenGLRenderContext::BindDepthMode(const sDepthMode& blendMode)
+        {
+            if (blendMode.UseDepthTest == core::K_TRUE)
+                glEnable(GL_DEPTH_TEST);
+            else
+                glDisable(GL_DEPTH_TEST);
+
+            if (blendMode.UseDepthWrite == core::K_TRUE)
+                glDepthMask(GL_TRUE);
+            else
+                glDepthMask(GL_FALSE);
+        }
+
         void cOpenGLRenderContext::Viewport(const glm::vec4& viewport)
         {
             glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
@@ -739,24 +761,24 @@ namespace realware
             glClear(GL_COLOR_BUFFER_BIT);
         }
 
-        void cOpenGLRenderContext::ClearDepth(float depth)
+        void cOpenGLRenderContext::ClearDepth(const f32 depth)
         {
             glClearDepth(depth);
             glClear(GL_DEPTH_BUFFER_BIT);
         }
 
-        void cOpenGLRenderContext::ClearFramebufferColor(core::usize bufferIndex, const glm::vec4& color)
+        void cOpenGLRenderContext::ClearFramebufferColor(const usize bufferIndex, const glm::vec4& color)
         {
             glClearBufferfv(GL_COLOR, bufferIndex, &color.x);
         }
 
-        void cOpenGLRenderContext::ClearFramebufferDepth(float depth)
+        void cOpenGLRenderContext::ClearFramebufferDepth(const f32 depth)
         {
             glClearDepth(depth);
             glClear(GL_DEPTH_BUFFER_BIT);
         }
 
-        void cOpenGLRenderContext::Draw(core::u32 indexCount, core::s32 vertexOffset, core::u32 indexOffset, core::u32 instanceCount)
+        void cOpenGLRenderContext::Draw(usize indexCount, usize vertexOffset, usize indexOffset, usize instanceCount)
         {
             glDrawElementsInstancedBaseVertex(
                 GL_TRIANGLES,
@@ -773,7 +795,7 @@ namespace realware
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         }
 
-        void cOpenGLRenderContext::DrawQuads(core::usize count)
+        void cOpenGLRenderContext::DrawQuads(usize count)
         {
             glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, count);
         }

@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
+#include "application.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -20,84 +21,78 @@ namespace realware
         class cText;
     }
 
-    using namespace render;
-    using namespace font;
-
     namespace core
     {
-        class cApplication;
-        class mGameObject;
-        struct sArea;
-
         class cGameObject
         {
         public:
-            friend class mGameObject;
-
             explicit cGameObject();
             ~cGameObject() = default;
+            
+            inline std::string GetID() const { return _id; }
+            inline boolean GetVisible() const { return _isVisible; }
+            inline boolean GetOpaque() const { return _isOpaque; }
+            inline render::sVertexBufferGeometry* GetGeometry() const { return _geometry; }
+            inline boolean GetIs2D() const { return _is2D; }
+            inline glm::vec3 GetPosition() const { return _position; }
+            inline glm::vec3 GetRotation() const { return _rotation; }
+            inline glm::vec3 GetScale() const { return _scale; }
+            inline glm::mat4 GetWorldMatrix() const { return _world; }
+            inline glm::mat4 GetViewProjectionMatrix() const { return _viewProjection; }
+            inline render::cMaterial* GetMaterial() const { return _material; }
+            inline font::cText* GetText() const { return _text; }
+            inline render::sLight* GetLight() const { return _light; }
 
-            inline void SetVisible(boolean isVisible) { m_isVisible = isVisible; }
-            inline void SetOpaque(boolean isOpaque) { m_isOpaque = isOpaque; }
-            inline void SetGeometry(sVertexBufferGeometry* geometry) { m_geometry = geometry; }
-            inline void SetIs2D(boolean is2D) { m_is2D = is2D; }
-            inline void SetPosition(const glm::vec3& position) { m_position = position; }
-            inline void SetRotation(const glm::vec3& rotation) { m_rotation = rotation; }
-            inline void SetScale(const glm::vec3& scale) { m_scale = scale; }
-            inline void SetWorldMatrix(const glm::mat4& world) { m_world = world; }
-            inline void SetViewProjectionMatrix(const glm::mat4& viewProjection) { m_viewProjection = viewProjection; }
-            inline void SetMaterial(cMaterial* material) { m_material = material; }
-            inline void SetText(font::cText* text) { m_text = text; }
-            inline void SetLight(render::sLight* light) { m_light = light; }
-            inline std::string GetID() const { return m_id; }
-            inline boolean GetVisible() { return m_isVisible; }
-            inline boolean GetOpaque() { return m_isOpaque; }
-            inline sVertexBufferGeometry* GetGeometry() { return m_geometry; }
-            inline boolean GetIs2D() { return m_is2D; }
-            inline glm::vec3 GetPosition() { return m_position; }
-            inline glm::vec3 GetRotation() { return m_rotation; }
-            inline glm::vec3 GetScale() { return m_scale; }
-            inline glm::mat4 GetWorldMatrix() { return m_world; }
-            inline glm::mat4 GetViewProjectionMatrix() const { return m_viewProjection; }
-            inline cMaterial* GetMaterial() { return m_material; }
-            inline font::cText* GetText() { return m_text; }
-            inline render::sLight* GetLight() { return m_light; }
+            inline void SetVisible(const boolean isVisible) { _isVisible = isVisible; }
+            inline void SetOpaque(const boolean isOpaque) { _isOpaque = isOpaque; }
+            inline void SetGeometry(const render::sVertexBufferGeometry* const geometry) { _geometry = (render::sVertexBufferGeometry*)geometry; }
+            inline void SetIs2D(const boolean is2D) { _is2D = is2D; }
+            inline void SetPosition(const glm::vec3& position) { _position = position; }
+            inline void SetRotation(const glm::vec3& rotation) { _rotation = rotation; }
+            inline void SetScale(const glm::vec3& scale) { _scale = scale; }
+            inline void SetWorldMatrix(const glm::mat4& world) { _world = world; }
+            inline void SetViewProjectionMatrix(const glm::mat4& viewProjection) { _viewProjection = viewProjection; }
+            inline void SetMaterial(const render::cMaterial* const material) { _material = (render::cMaterial*)material; }
+            inline void SetText(const font::cText* const text) { _text = (font::cText*)text; }
+            inline void SetLight(const render::sLight* const light) { _light = (render::sLight*)light; }
+
+            friend class mGameObject;
 
         private:
-            boolean m_isDeleted = K_TRUE;
-            std::string m_id = "";
-            boolean m_isVisible = K_TRUE;
-            boolean m_isOpaque = K_TRUE;
-            sVertexBufferGeometry* m_geometry = nullptr;
-            boolean m_is2D = K_FALSE;
-            glm::vec3 m_position = glm::vec3(0.0f);
-            glm::vec3 m_rotation = glm::vec3(0.0f);
-            glm::vec3 m_scale = glm::vec3(1.0f);
-            glm::mat4 m_world = glm::mat4(1.0f);
-            glm::mat4 m_viewProjection = glm::mat4(1.0f);
-            sTransform* m_transform = nullptr;
-            cMaterial* m_material = nullptr;
-            cText* m_text = nullptr;
-            sLight* m_light = nullptr;
+            boolean _isDeleted = K_TRUE;
+            std::string _id = "";
+            boolean _isVisible = K_TRUE;
+            boolean _isOpaque = K_TRUE;
+            render::sVertexBufferGeometry* _geometry = nullptr;
+            boolean _is2D = K_FALSE;
+            glm::vec3 _position = glm::vec3(0.0f);
+            glm::vec3 _rotation = glm::vec3(0.0f);
+            glm::vec3 _scale = glm::vec3(1.0f);
+            glm::mat4 _world = glm::mat4(1.0f);
+            glm::mat4 _viewProjection = glm::mat4(1.0f);
+            render::sTransform* _transform = nullptr;
+            render::cMaterial* _material = nullptr;
+            font::cText* _text = nullptr;
+            render::sLight* _light = nullptr;
         };
 
         class mGameObject
         {
         public:
-            explicit mGameObject(cApplication* app);
-            ~mGameObject() {}
+            explicit mGameObject(const cApplication* const app) : _app((cApplication*)app), _maxGameObjectCount(((cApplication*)app)->GetDesc()->MaxGameObjectCount) {}
+            ~mGameObject() = default;
 
             cGameObject* CreateGameObject(const std::string& id);
             cGameObject* FindGameObject(const std::string& id);
             void DeleteGameObject(const std::string& id);
 
-            inline std::vector<cGameObject>& GetObjects() { return m_gameObjects; }
+            inline std::vector<cGameObject>& GetObjects() { return _gameObjects; }
 
         private:
-            cApplication* m_app;
-            usize m_maxGameObjectCount = 0;
-            usize m_gameObjectCount = 0;
-            std::vector<cGameObject> m_gameObjects;
+            cApplication* _app = nullptr;
+            usize _maxGameObjectCount = 0;
+            usize _gameObjectCount = 0;
+            std::vector<cGameObject> _gameObjects = {};
         };
     }
 }

@@ -6,10 +6,9 @@
 #include <vector>
 #include <typeinfo>
 #include <functional>
-
+#include "../../thirdparty/glm/glm/glm.hpp"
 #include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
 #include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
-#include "../../thirdparty/glm/glm/glm.hpp"
 #include "layer.hpp"
 #include "types.hpp"
 
@@ -28,6 +27,7 @@ namespace realware
     {
         struct sVertexBufferGeometry;
         struct sMaterial;
+        struct sTextureAtlasTexture;
     }
 
     namespace font
@@ -42,7 +42,6 @@ namespace realware
 
     namespace core
     {
-        struct sArea;
         class cApplication;
         class cUserInput;
         class cScene;
@@ -96,13 +95,13 @@ namespace realware
 
         struct sCMaterial : public sComponent
         {
-            void Init(sArea* diffuseTexture, const glm::vec4& diffuseColor)
+            void Init(render::sTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor)
             {
                 DiffuseTexture = diffuseTexture;
                 DiffuseColor = diffuseColor;
             }
 
-            sArea* DiffuseTexture = nullptr;
+            render::sTextureAtlasTexture* DiffuseTexture = nullptr;
             glm::vec4 DiffuseColor = glm::vec4(1.0f);
             glm::vec4 HighlightColor = glm::vec4(1.0f);
         };
@@ -194,7 +193,7 @@ namespace realware
             }
 
             core::s32 CurrentAnimationIndex = 0;
-            std::vector<sArea*>* Frames[16] = {};
+            std::vector<render::sTextureAtlasTexture*>* Frames[16] = {};
             core::s32 CurrentFrameIndex[16] = {};
             float Tick;
             float MaxTick;
