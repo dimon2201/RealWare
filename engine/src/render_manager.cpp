@@ -741,5 +741,16 @@ namespace realware
             _compositeFinal->Desc.InputTextures[0] = _opaque->Desc.RenderTarget->ColorAttachments[0];
             _compositeFinal->Desc.InputTextureNames[0] = "ColorTexture";
         }
+
+        cMaterial* mRender::GetMaterial(const std::string& id)
+        {
+            for (usize i = 0; i < _materialCountCPU; i++)
+            {
+                if (_materialsCPU[i].GetID() == id)
+                    return &_materialsCPU[i];
+            }
+
+            return nullptr;
+        }
     }
 }

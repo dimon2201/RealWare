@@ -187,6 +187,7 @@ namespace realware
             
             void ResizeWindow(const glm::vec2& size);
             
+            cMaterial* GetMaterial(const std::string& id);
             sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
             sBuffer* GetIndexBuffer() const { return _indexBuffer; }
             sBuffer* GetInstanceBuffer() const { return _instanceBuffer; }
