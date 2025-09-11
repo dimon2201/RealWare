@@ -23,11 +23,11 @@ namespace realware
 #if defined(__ILP32__) || defined(__arm__) || defined(_M_ARM) || defined(__i386__) || defined(_M_IX86) || defined(_X86_)
         // 32-bit architecture
         constexpr int REALWARE_CPU_ARCHITECTURE = 32;
-        using word = dword;
+        using cpuword = dword;
 #elif defined(__amd64__) || defined(_M_AMD64) || defined(_M_X64) || defined(__aarch64__) || defined(__ia64__) || defined(_M_IA64)
         // 64-bit architecture
         constexpr int REALWARE_CPU_ARCHITECTURE = 64;
-        using word = qword;
+        using cpuword = qword;
 #endif
 
         constexpr boolean K_TRUE = 1;

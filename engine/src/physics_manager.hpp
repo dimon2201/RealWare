@@ -6,6 +6,7 @@
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 #include "../../thirdparty/glm/glm/glm.hpp"
+#include "gameobject_features.hpp"
 
 namespace physx
 {
@@ -81,28 +82,79 @@ namespace realware
 			virtual void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override final {}
         };
 
-        class mPhysics
+        class cSimulationScene
         {
         public:
-            enum class eActorDescriptor
+            cSimulationScene() = default;
+            explicit cSimulationScene(const std::string& id, const physx::PxScene* const scene) : _id(id), _scene((physx::PxScene*)scene) {}
+            ~cSimulationScene() = default;
+
+            inline const std::string& GetID() const { return _id; }
+            inline physx::PxScene* GetScene() const { return _scene; }
+
+        private:
+            std::string _id = "";
+            physx::PxScene* _scene = nullptr;
+        };
+
+        class cSubstance
+        {
+        public:
+            cSubstance() = default;
+            explicit cSubstance(const std::string& id, const physx::PxMaterial* const substance) : _id(id), _substance((physx::PxMaterial*)substance) {}
+            ~cSubstance() = default;
+
+            inline const std::string& GetID() const { return _id; }
+            inline physx::PxMaterial* GetSubstance() const { return _substance; }
+
+        private:
+            std::string _id = "";
+            physx::PxMaterial* _substance = nullptr;
+        };
+
+        class cActor
+        {
+        public:
+            enum class Type
             {
                 STATIC = 0,
                 DYNAMIC = 1
             };
 
-            enum class eShapeDescriptor
+            enum class Shape
             {
-                SPHERE = 0,
-                CAPSULE = 1,
-                BOX = 2,
-                PLANE = 3,
-                TRIANGLE_MESH = 4
+                BOX = 0
             };
 
+            cActor() = default;
+            explicit cActor(const std::string& id, const physx::PxActor* const actor) : _id(id), _actor((physx::PxActor*)actor) {}
+            ~cActor() = default;
+
+            inline const std::string& GetID() const { return _id; }
+            inline physx::PxActor* GetActor() const { return _actor; }
+
+        private:
+            std::string _id = "";
+            physx::PxActor* _actor = nullptr;
+        };
+
+        class mPhysics
+        {
+        public:
             explicit mPhysics(const cApplication* const app);
             ~mPhysics();
 
-            void Update();
+            cSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
+            cSubstance* AddSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
+            cActor* AddActor(const std::string& id, const core::GameObjectFeatures& staticOrDynamic, const core::GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const sTransform* const transform);
+            void DeleteScene(const std::string& id);
+            void DeleteSubstance(const std::string& id);
+            void DeleteActor(const std::string& id);
+            
+            void Simulate();
+
+            cSimulationScene* GetScene(const std::string&);
+
             /*sCPhysicsScene* AddScene(const sEntityScenePair& scene);
             sCPhysicsActor* AddActor(
                 const sEntityScenePair& scene,
@@ -134,6 +186,12 @@ namespace realware
             //std::vector<core::sEntityScenePair> _actors = {};
             //std::vector<core::sEntityScenePair> _controllers = {};
             std::mutex _mutex;
+            usize _sceneCount = 0;
+            usize _substanceCount = 0;
+            usize _actorCount = 0;
+            std::vector<cSimulationScene> _scenes = {};
+            std::vector<cSubstance> _substances = {};
+            std::vector<cActor> _actors = {};
         };
     }
 }

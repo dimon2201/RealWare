@@ -33,10 +33,12 @@ namespace realware
             _context->DestroyTexture(_atlas);
         }
 
-        sTextureAtlasTexture* mTexture::AddTexture(const std::string& filename, const std::string& tag)
+        sTextureAtlasTexture* mTexture::AddTexture(const std::string& id, const std::string& filename)
         {
-            int width = 0, height = 0, channels = 0;
-            unsigned char* data = nullptr;
+            s32 width = 0;
+            s32 height = 0;
+            s32 channels = 0;
+            u8* data = nullptr;
             data = stbi_load(filename.data(), &width, &height, &channels, 4);
 
             if (data == nullptr || channels < 3)
@@ -44,9 +46,9 @@ namespace realware
 
             if (channels == 3)
             {
-                unsigned char* dataTemp = (unsigned char*)malloc(width * height * 4);
+                u8* const dataTemp = (u8* const)malloc(width * height * 4);
 
-                for (s32 i = 0; i < width * height; i++)
+                for (usize i = 0; i < width * height; i++)
                 {
                     dataTemp[(i * 4)] = data[(i * 3)];
                     dataTemp[(i * 4) + 1] = data[(i * 3) + 1];
@@ -59,17 +61,17 @@ namespace realware
                 data = dataTemp;
             }
 
-            for (int layer = 0; layer < _atlas->Depth; layer++)
+            for (usize layer = 0; layer < _atlas->Depth; layer++)
             {
-                for (int y = 0; y < _atlas->Height; y++)
+                for (usize y = 0; y < _atlas->Height; y++)
                 {
-                    for (int x = 0; x < _atlas->Width; x++)
+                    for (usize x = 0; x < _atlas->Width; x++)
                     {
-                        bool isIntersecting = false;
+                        boolean isIntersecting = K_FALSE;
 
                         for (auto& area : _textures)
                         {
-                            if (area->IsNormalized == core::K_FALSE)
+                            if (area->IsNormalized == K_FALSE)
                             {
                                 const glm::vec4 textureRect = glm::vec4(
                                     x, y, x + width, y + height
@@ -79,15 +81,15 @@ namespace realware
                                     area->Offset.y <= textureRect.w && area->Offset.y + area->Size.y >= textureRect.y) ||
                                     (x + width > _atlas->Width || y + height > _atlas->Height))
                                 {
-                                    isIntersecting = true;
+                                    isIntersecting = K_FALSE;
                                     break;
                                 }
                             }
                             else if (area->IsNormalized == core::K_TRUE)
                             {
                                 const glm::vec4 textureRectNorm = glm::vec4(
-                                    (float)x / (float)_atlas->Width, (float)y / (float)_atlas->Height,
-                                    ((float)x + (float)width) / (float)_atlas->Width, ((float)y + (float)height) / (float)_atlas->Height
+                                    (f32)x / (f32)_atlas->Width, (f32)y / (f32)_atlas->Height,
+                                    ((f32)x + (f32)width) / (f32)_atlas->Width, ((f32)y + (f32)height) / (f32)_atlas->Height
                                 );
                                 if ((area->Offset.z == layer &&
                                     area->Offset.x <= textureRectNorm.z && area->Offset.x + area->Size.x >= textureRectNorm.x &&
@@ -102,8 +104,8 @@ namespace realware
 
                         if (!isIntersecting)
                         {
-                            sTextureAtlasTexture* area = new sTextureAtlasTexture();
-                            area->Tag = tag;
+                            sTextureAtlasTexture* const area = new sTextureAtlasTexture();
+                            area->ID = id;
                             area->Offset = glm::vec3(x, y, layer);
                             area->Size = glm::vec2(width, height);
 
@@ -126,11 +128,11 @@ namespace realware
             return nullptr;
         }
 
-        void mTexture::DeleteTexture(const std::string& tag)
+        void mTexture::DeleteTexture(const std::string& id)
         {
             for (auto it = _textures.begin(); it != _textures.end(); it++)
             {
-                if ((*it)->Tag == tag)
+                if ((*it)->ID == id)
                 {
                     _textures.erase(it);
                     return;
@@ -201,21 +203,21 @@ namespace realware
             }
         }*/
 
-        sTextureAtlasTexture* mTexture::GetTexture(const std::string& tag)
+        sTextureAtlasTexture* mTexture::GetTexture(const std::string& id)
         {
             for (auto& area : _textures) {
-                if (area->Tag == tag)
+                if (area->ID == id)
                     return area;
             }
 
             return nullptr;
         }
 
-        std::vector<sTextureAtlasTexture*>* mTexture::GetAnimation(const std::string& tag)
+        std::vector<sTextureAtlasTexture*>* mTexture::GetAnimation(const std::string& id)
         {
             for (auto& animation : _animations) {
                 for (auto& area : animation) {
-                    if (area->Tag == tag)
+                    if (area->ID == id)
                         return &animation;
                 }
             }
@@ -226,7 +228,7 @@ namespace realware
         sTextureAtlasTexture mTexture::CalculateNormalizedArea(const sTextureAtlasTexture& area)
         {
             sTextureAtlasTexture a;
-            a.Tag = area.Tag;
+            a.ID = area.ID;
             a.IsNormalized = K_TRUE;
             a.Offset.x = area.Offset.x / _atlas->Width;
             a.Offset.y = area.Offset.y / _atlas->Height;

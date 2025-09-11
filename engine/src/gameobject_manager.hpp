@@ -4,6 +4,7 @@
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "application.hpp"
+#include "gameobject_features.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -21,6 +22,14 @@ namespace realware
         class cText;
     }
 
+    namespace physics
+    {
+        class cSimulationScene;
+        class cSubstance;
+        class cActor;
+        class mPhysics;
+    }
+
     namespace core
     {
         class cGameObject
@@ -29,6 +38,7 @@ namespace realware
             explicit cGameObject();
             ~cGameObject() = default;
             
+            inline cApplication* GetApplication() { return _app; }
             inline std::string GetID() const { return _id; }
             inline boolean GetVisible() const { return _isVisible; }
             inline boolean GetOpaque() const { return _isOpaque; }
@@ -55,10 +65,12 @@ namespace realware
             inline void SetMaterial(const render::cMaterial* const material) { _material = (render::cMaterial*)material; }
             inline void SetText(const font::cText* const text) { _text = (font::cText*)text; }
             inline void SetLight(const render::sLight* const light) { _light = (render::sLight*)light; }
+            inline void SetPhysics(const GameObjectFeatures& staticOrDynamic, const GameObjectFeatures& shapeType, const physics::cSimulationScene* const scene, const physics::cSubstance* const substance, const f32 mass);
 
             friend class mGameObject;
 
         private:
+            cApplication* _app = nullptr;
             boolean _isDeleted = K_TRUE;
             std::string _id = "";
             boolean _isVisible = K_TRUE;
@@ -74,6 +86,7 @@ namespace realware
             render::cMaterial* _material = nullptr;
             font::cText* _text = nullptr;
             render::sLight* _light = nullptr;
+            physics::cActor* _actor = nullptr;
         };
 
         class mGameObject
@@ -82,7 +95,7 @@ namespace realware
             explicit mGameObject(const cApplication* const app) : _app((cApplication*)app), _maxGameObjectCount(((cApplication*)app)->GetDesc()->MaxGameObjectCount) {}
             ~mGameObject() = default;
 
-            cGameObject* CreateGameObject(const std::string& id);
+            cGameObject* AddGameObject(const std::string& id);
             cGameObject* FindGameObject(const std::string& id);
             void DeleteGameObject(const std::string& id);
 

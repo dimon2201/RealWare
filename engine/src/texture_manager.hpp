@@ -20,7 +20,7 @@ namespace realware
 
         struct sTextureAtlasTexture
         {
-            std::string Tag = "";
+            std::string ID = "";
             core::boolean IsNormalized = core::K_FALSE;
             glm::vec3 Offset = glm::vec3(0.0f);
             glm::vec2 Size = glm::vec2(0.0f);
@@ -32,8 +32,8 @@ namespace realware
             explicit mTexture(const core::cApplication* const app, const cRenderContext* const context);
             ~mTexture();
 
-            sTextureAtlasTexture* AddTexture(const std::string& filename, const std::string& tag);
-            void DeleteTexture(const std::string& tag);
+            sTextureAtlasTexture* AddTexture(const std::string& id, const std::string& filename);
+            void DeleteTexture(const std::string& id);
             //void LoadAnimation(const std::vector<const std::string&>& filenames, const std::string& tag, std::vector<sTextureAtlasTexture*>& frames);
             //void PlayAnimation(entity object, cScene* scene, float speed);
             //void IncrementAnimationFrame(entity object, cScene* scene);
@@ -41,8 +41,8 @@ namespace realware
 
             sTextureAtlasTexture CalculateNormalizedArea(const sTextureAtlasTexture& area);
 
-            sTextureAtlasTexture* GetTexture(const std::string& tag);
-            std::vector<sTextureAtlasTexture*>* GetAnimation(const std::string& tag);
+            sTextureAtlasTexture* GetTexture(const std::string& id);
+            std::vector<sTextureAtlasTexture*>* GetAnimation(const std::string& id);
             sTexture* GetAtlas();
             inline core::usize GetWidth() const;
             inline core::usize GetHeight() const;

@@ -50,16 +50,26 @@ public:
             _trianglePrimitive->Indices
         );
 
+        // Textures
+        sTextureAtlasTexture* texture1 = _texture->AddTexture(
+            "Texture1",
+            "C:/DDD/RealWare/resources/texture1.png"
+        );
+        sTextureAtlasTexture* texture2 = _texture->AddTexture(
+            "Texture2",
+            "C:/DDD/RealWare/resources/texture2.png"
+        );
+
         // Materials
         cMaterial* material1 = _render->AddMaterial(
             "Material1",
-            nullptr,
+            texture1,
             glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
             glm::vec4(1.0f)
         );
         cMaterial* material2 = _render->AddMaterial(
             "Material2",
-            nullptr,
+            texture2,
             glm::vec4(1.0f, 0.0f, 0.0f, 0.5f),
             glm::vec4(1.0f)
         );
@@ -73,8 +83,12 @@ public:
         // Text
         cText* text = new cText(font, "New line\ntest\nanother newline\there");
 
+        // Physics
+        cSimulationScene* pxScene = _physics->AddScene("PXScene1");
+        cSubstance* pxSubstance = _physics->AddSubstance("PXSubstance1");
+
         // Game objects
-        cGameObject* triangleObject1 = _gameObject->CreateGameObject("TriangleObject1");
+        cGameObject* triangleObject1 = _gameObject->AddGameObject("TriangleObject1");
         triangleObject1->SetVisible(K_TRUE);
         triangleObject1->SetOpaque(K_TRUE);
         triangleObject1->SetGeometry(_triangleGeometry);
@@ -82,7 +96,7 @@ public:
         triangleObject1->SetScale(glm::vec3(1.0f));
         triangleObject1->SetMaterial(material1);
 
-        cGameObject* triangleObject2 = _gameObject->CreateGameObject("TriangleObject2");
+        cGameObject* triangleObject2 = _gameObject->AddGameObject("TriangleObject2");
         triangleObject2->SetVisible(K_TRUE);
         triangleObject2->SetOpaque(K_FALSE);
         triangleObject2->SetGeometry(_triangleGeometry);
@@ -90,7 +104,7 @@ public:
         triangleObject2->SetScale(glm::vec3(1.0f));
         triangleObject2->SetMaterial(material2);
 
-        cGameObject* textObject = _gameObject->CreateGameObject("TextObject");
+        cGameObject* textObject = _gameObject->AddGameObject("TextObject");
         textObject->SetVisible(K_TRUE);
         textObject->SetOpaque(K_TRUE);
         textObject->SetPosition(glm::vec3(0.5f, 0.5f, 0.0f));
@@ -107,9 +121,7 @@ public:
         _renderContext->ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         _renderContext->ClearDepth(1.0f);
 
-        _camera->Update(K_TRUE, K_TRUE);
-
-        // Draw
+        // Rendering
         cGameObject* cameraObject = _camera->GetCamera();
         _render->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
         _render->DrawGeometryOpaque(
@@ -125,6 +137,12 @@ public:
         _render->CompositeTransparent();
         _render->DrawTexts(_gameObject->GetObjects());
         _render->CompositeFinal();
+
+        // Camera
+        _camera->Update(K_TRUE, K_TRUE);
+
+        // Physics
+        _physics->Simulate();
 
         clock_t t = clock();
 

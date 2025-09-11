@@ -58,9 +58,10 @@ namespace realware
             };
 
             sWindowDescriptor WindowDesc;
+            u32 GlobalDataByteSize = 1024;
             u32 TextureAtlasWidth = 1920;
             u32 TextureAtlasHeight = 1080;
-            u32 TextureAtlasDepth = 12;
+            u32 TextureAtlasDepth = 16;
             u32 VertexBufferSize = 65536;
             u32 IndexBufferSize = 65536;
             u32 InstanceBufferSize = 65536;
@@ -68,6 +69,9 @@ namespace realware
             u32 LightBufferSize = 65536;
             u32 MaxMaterialCount = 256;
             u32 MaxGameObjectCount = 4294967295;
+            u32 MaxPhysicsSceneCount = 4;
+            u32 MaxPhysicsSubstanceCount = 256;
+            u32 MaxPhysicsActorCount = 65536;
         };
 
         class cApplication

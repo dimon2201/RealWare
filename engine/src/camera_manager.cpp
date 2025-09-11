@@ -14,8 +14,13 @@ namespace realware
         void mCamera::CreateCamera()
         {
             mGameObject* gameObjectManager = _app->GetGameObjectManager();
+            _camera = gameObjectManager->AddGameObject(K_CAMERA_ID);
+        }
 
-            _camera = gameObjectManager->CreateGameObject("__Camera");
+        void mCamera::DestroyCamera()
+        {
+            mGameObject* gameObjectManager = _app->GetGameObjectManager();
+            gameObjectManager->DeleteGameObject(K_CAMERA_ID);
         }
 
         void mCamera::Update(const boolean updateMouseLook, const boolean updateMovement)

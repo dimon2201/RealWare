@@ -22,6 +22,7 @@ namespace realware
             ~mCamera() = default;
 
             void CreateCamera();
+            void DestroyCamera();
             void Update(const boolean updateMouseLook, const boolean updateMovement);
             void AddEuler(const eEulerAngle& angle, const f32 value);
             void Move(const f32 value);
@@ -35,6 +36,8 @@ namespace realware
             inline void SetMoveSpeed(const f32 value) { _moveSpeed = value; }
 
         private:
+            static constexpr const char* K_CAMERA_ID = "__Camera";
+
             cApplication* _app = nullptr;
             cGameObject* _camera = nullptr;
             render::sTransform m_transform = {};

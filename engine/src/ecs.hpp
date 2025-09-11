@@ -127,7 +127,7 @@ namespace realware
             eType Type;
             boolean IsHovered = core::K_FALSE;
             boolean IsVisible = core::K_TRUE;
-            word StateBits = 0;
+            cpuword StateBits = 0;
             std::function<void(cApplication*, cScene*, sCWidget*)> OnUpdate;
             std::function<void(cApplication*, cScene*, sCWidget*)> OnHover;
             std::function<void(cApplication*, cScene*, sCWidget*)> OnClick;

@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <cooking/PxCooking.h>
+#include "application.hpp"
 #include "render_manager.hpp"
 #include "physics_manager.hpp"
 
@@ -7,6 +8,8 @@ using namespace physx;
 
 namespace realware
 {
+    using namespace core;
+
     namespace physics
     {
         PxFilterFlags FilterShader(
@@ -34,33 +37,168 @@ namespace realware
             _error(new cError()),
             _cpuDispatcher(new cCPUDispatcher()),
             _simulationEvent(new cSimulationEvent()),
-            _foundation(PxCreateFoundation(PX_PHYSICS_VERSION, *_allocator, *_error))
+            _sceneCount(0),
+            _substanceCount(0)
         {
+            _foundation = PxCreateFoundation(PX_PHYSICS_VERSION, *_allocator, *_error);
             if (_foundation == nullptr)
             {
                 MessageBox(0, "Failed to initialize PhysXFoundation!", "Error", MB_ICONERROR);
                 return;
             }
 
-            _physics = PxCreatePhysics(
-                PX_PHYSICS_VERSION,
-                *_foundation,
-                PxTolerancesScale(),
-                false,
-                nullptr
-            );
-
+            _physics = PxCreatePhysics(PX_PHYSICS_VERSION, *_foundation, PxTolerancesScale(), false, nullptr);
             if (_physics == nullptr)
             {
                 MessageBox(0, "Failed to initialize PhysXPhysics!", "Error", MB_ICONERROR);
                 return;
             }
+
+            auto desc = _app->GetDesc();
+            _scenes.resize(desc->MaxPhysicsSceneCount);
+            _substances.resize(desc->MaxPhysicsSubstanceCount);
+            _actors.resize(desc->MaxPhysicsActorCount);
         }
 
         mPhysics::~mPhysics()
         {
             _physics->release();
             _foundation->release();
+            delete _simulationEvent;
+            delete _cpuDispatcher;
+            delete _error;
+            delete _allocator;
+        }
+
+        cSimulationScene* mPhysics::AddScene(const std::string& id, const glm::vec3& gravity)
+        {
+            PxSceneDesc sceneDesc(_physics->getTolerancesScale());
+            sceneDesc.gravity = PxVec3(gravity.x, gravity.y, gravity.z);
+            sceneDesc.cpuDispatcher = _cpuDispatcher;
+            sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+
+            PxScene* scene = _physics->createScene(sceneDesc);
+
+            _scenes[_sceneCount] = cSimulationScene(id, scene);
+            _sceneCount += 1;
+
+            return &_scenes[_sceneCount - 1];
+        }
+
+        cSubstance* mPhysics::AddSubstance(const std::string& id, const glm::vec3& params)
+        {
+            PxMaterial* material = _physics->createMaterial(params.x, params.y, params.z); // (staticFriction, dynamicFriction, restitution)
+
+            _substances[_substanceCount] = cSubstance(id, material);
+            _substanceCount += 1;
+
+            return &_substances[_substanceCount - 1];
+        }
+
+        cActor* mPhysics::AddActor(const std::string& id, const GameObjectFeatures& staticOrDynamic, const GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const sTransform* const transform)
+        {
+            glm::vec3 position = transform->Position;
+            glm::vec3 scale = transform->Scale;
+
+            PxTransform pose(PxVec3(position.y, position.x, position.z));
+            
+            PxShape* shape = nullptr;
+            if (shapeType == GameObjectFeatures::PHYSICS_SHAPE_BOX)
+                _physics->createShape(PxBoxGeometry(scale.y, scale.x, scale.z), *substance->GetSubstance());
+
+            PxActor* actor = nullptr;
+            if (staticOrDynamic == GameObjectFeatures::PHYSICS_ACTOR_STATIC)
+            {
+                actor = _physics->createRigidStatic(pose);
+                ((PxRigidStatic*)actor)->attachShape(*shape);
+                scene->GetScene()->addActor(*actor);
+            }
+            else if (staticOrDynamic == GameObjectFeatures::PHYSICS_ACTOR_DYNAMIC)
+            {
+                actor = _physics->createRigidDynamic(pose);
+                ((PxRigidDynamic*)actor)->attachShape(*shape);
+                PxRigidBodyExt::updateMassAndInertia(*((PxRigidBody*)actor), mass);
+            }
+
+            if (shape != nullptr)
+                shape->release();
+
+            if (actor != nullptr)
+                scene->GetScene()->addActor(*actor);
+
+            _actors[_actorCount] = cActor(id, actor);
+            _actorCount += 1;
+
+            return &_actors[_actorCount - 1];
+        }
+
+        void mPhysics::DeleteScene(const std::string& id)
+        {
+            for (usize i = 0; i < _sceneCount; i++)
+            {
+                if (_scenes[i].GetID() == id)
+                {
+                    _scenes[i].GetScene()->release();
+
+                    if (_sceneCount > 1)
+                        _scenes[i] = _scenes[_sceneCount - 1];
+
+                    return;
+                }
+            }
+        }
+
+        void mPhysics::DeleteSubstance(const std::string& id)
+        {
+            for (usize i = 0; i < _substanceCount; i++)
+            {
+                if (_substances[i].GetID() == id)
+                {
+                    _substances[i].GetSubstance()->release();
+
+                    if (_substanceCount > 1)
+                        _substances[i] = _substances[_substanceCount - 1];
+
+                    return;
+                }
+            }
+        }
+
+        void mPhysics::DeleteActor(const std::string& id)
+        {
+            for (usize i = 0; i < _actorCount; i++)
+            {
+                if (_actors[i].GetID() == id)
+                {
+                    _actors[i].GetActor()->release();
+
+                    if (_actorCount > 1)
+                        _actors[i] = _actors[_actorCount - 1];
+
+                    return;
+                }
+            }
+        }
+
+        void mPhysics::Simulate()
+        {
+            for (usize i = 0; i < _sceneCount; i++)
+            {
+                auto scene = _scenes[i].GetScene();
+                scene->simulate(1.0f / 60.0f);
+                scene->fetchResults(true);
+            }
+        }
+
+        cSimulationScene* mPhysics::GetScene(const std::string& id)
+        {
+            for (usize i = 0; i < _sceneCount; i++)
+            {
+                if (_scenes[i].GetID() == id)
+                    return &_scenes[i];
+            }
+
+            return nullptr;
         }
 
         /*void mPhysics::Update()
