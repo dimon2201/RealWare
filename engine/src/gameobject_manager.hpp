@@ -9,6 +9,11 @@
 
 namespace realware
 {
+    namespace app
+    {
+        class cApplication;
+    }
+
     namespace render
     {
         struct sVertexBufferGeometry;
@@ -39,7 +44,7 @@ namespace realware
             explicit cGameObject();
             ~cGameObject() = default;
             
-            inline cApplication* GetApplication() { return _app; }
+            inline app::cApplication* GetApplication() { return _app; }
             inline std::string GetID() const { return _id; }
             inline types::boolean GetVisible() const { return _isVisible; }
             inline types::boolean GetOpaque() const { return _isOpaque; }
@@ -75,7 +80,7 @@ namespace realware
             friend class mGameObject;
 
         private:
-            cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
             types::boolean _isDeleted = types::K_TRUE;
             std::string _id = "";
             types::boolean _isVisible = types::K_TRUE;
@@ -95,7 +100,7 @@ namespace realware
         class mGameObject
         {
         public:
-            explicit mGameObject(const cApplication* const app) : _app((cApplication*)app), _maxGameObjectCount(((cApplication*)app)->GetDesc()->MaxGameObjectCount) {}
+            explicit mGameObject(const app::cApplication* const app) : _app((app::cApplication*)app), _maxGameObjectCount(((app::cApplication*)app)->GetDesc()->MaxGameObjectCount) {}
             ~mGameObject() = default;
 
             cGameObject* AddGameObject(const std::string& id);
@@ -105,7 +110,7 @@ namespace realware
             inline std::vector<cGameObject>& GetObjects() { return _gameObjects; }
 
         private:
-            cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
             types::usize _maxGameObjectCount = 0;
             types::usize _gameObjectCount = 0;
             std::vector<cGameObject> _gameObjects = {};

@@ -3,11 +3,11 @@
 
 namespace realware
 {
-    using namespace core;
+    using namespace app;
 
     namespace sound
     {
-        mSound::mSound(const core::cApplication* const app, const cSoundContext* const context) : _app((cApplication*)app), _context((cSoundContext*)context) {}
+        mSound::mSound(const cApplication* const app, const cSoundContext* const context) : _app((cApplication*)app), _context((cSoundContext*)context) {}
 
         sSound* mSound::Load(const std::string& filename, const sSound::eFormat& format, const std::string& tag)
         {

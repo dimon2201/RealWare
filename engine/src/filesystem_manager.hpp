@@ -4,7 +4,7 @@
 
 namespace realware
 {
-    namespace core
+    namespace app
     {
         class cApplication;
     }
@@ -22,14 +22,14 @@ namespace realware
         class mFileSystem
         {
         public:
-            explicit mFileSystem(const core::cApplication* const app) : _app((core::cApplication*)app) {};
+            explicit mFileSystem(const app::cApplication* const app) : _app((app::cApplication*)app) {};
             ~mFileSystem() = default;
 
             sFile LoadFile(const std::string& filepath, const types::boolean isString);
             void UnloadFile(const sFile& buffer);
 
         private:
-            core::cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
         };
     }
 }

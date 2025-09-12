@@ -22,7 +22,7 @@ namespace physx
 
 namespace realware
 {
-    namespace core
+    namespace app
     {
         class cApplication;
     }
@@ -160,7 +160,7 @@ namespace realware
         class mPhysics
         {
         public:
-            explicit mPhysics(const cApplication* const app);
+            explicit mPhysics(const app::cApplication* const app);
             ~mPhysics();
 
             cSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
@@ -200,7 +200,7 @@ namespace realware
             void SetCharacterControllerMovement(const core::sEntityScenePair& controller, const glm::vec3& direction);*/
 
         private:
-            cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
             cAllocator* _allocator = nullptr;
             cError* _error = nullptr;
             cCPUDispatcher* _cpuDispatcher = nullptr;

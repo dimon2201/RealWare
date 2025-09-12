@@ -10,6 +10,12 @@
 
 namespace realware
 {
+    namespace core
+    {
+        class mCamera;
+        class mGameObject;
+    }
+
     namespace render
     {
         class cRenderContext;
@@ -40,12 +46,8 @@ namespace realware
         class mFileSystem;
     }
 
-    namespace core
+    namespace app
     {
-        class mUserInput;
-        class mCamera;
-        class mGameObject;
-
         void WindowSizeCallback(GLFWwindow* window, int width, int height);
 
         struct sApplicationDescriptor
@@ -90,7 +92,7 @@ namespace realware
 
             inline types::boolean GetRunState() const { return glfwWindowShouldClose((GLFWwindow*)_window); }
 
-            inline mCamera* GetCameraManager() const { return _camera; }
+            inline core::mCamera* GetCameraManager() const { return _camera; }
             inline render::mTexture* GetTextureManager() const { return _texture; }
             inline render::mRender* GetRenderManager() const { return _render; }
             inline font::mFont* GetFontManager() const { return _font; }
@@ -138,14 +140,14 @@ namespace realware
             void* _window = nullptr;
             render::cRenderContext* _renderContext = nullptr;
             sound::cSoundContext* _soundContext = nullptr;
-            mCamera* _camera = nullptr;
+            core::mCamera* _camera = nullptr;
             render::mRender* _render = nullptr;
             render::mTexture* _texture = nullptr;
             font::mFont* _font = nullptr;
             sound::mSound* _sound = nullptr;
             fs::mFileSystem* _fileSystem = nullptr;
             physics::mPhysics* _physics = nullptr;
-            mGameObject* _gameObject = nullptr;
+            core::mGameObject* _gameObject = nullptr;
             types::s32 _keys[MAX_KEY_COUNT] = {};
             types::f32 _deltaTime = 0.0;
             std::chrono::steady_clock::time_point _timepointLast;

@@ -9,6 +9,7 @@
 
 namespace realware
 {
+    using namespace app;
     using namespace core;
     using namespace types;
 

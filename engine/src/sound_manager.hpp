@@ -8,7 +8,7 @@
 
 namespace realware
 {
-    namespace core
+    namespace app
     {
         class cApplication;
     }
@@ -18,7 +18,7 @@ namespace realware
         class mSound
         {
         public:
-            mSound(const core::cApplication* const app, const cSoundContext* const context);
+            mSound(const app::cApplication* const app, const cSoundContext* const context);
             ~mSound() = default;
 
             sSound* Load(const std::string& filename, const sSound::eFormat& format, const std::string& tag);
@@ -27,7 +27,7 @@ namespace realware
             //void Stop(core::entity object, core::cScene* scene);
 
         private:
-            core::cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
             cSoundContext* _context = nullptr;
             std::vector<sSound*> _sounds = {};
         };

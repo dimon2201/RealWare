@@ -6,6 +6,11 @@
 
 namespace realware
 {
+    namespace app
+    {
+        class cApp;
+    }
+
     namespace core
     {
         class mCamera
@@ -18,7 +23,7 @@ namespace realware
                 ROLL = 2
             };
 
-            explicit mCamera(const cApplication* const app) : _app((cApplication*)app) {}
+            explicit mCamera(const app::cApplication* const app) : _app((app::cApplication*)app) {}
             ~mCamera() = default;
 
             void CreateCamera();
@@ -40,7 +45,7 @@ namespace realware
         private:
             static constexpr const char* K_CAMERA_ID = "__Camera";
 
-            cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
             cGameObject* _cameraGameObject = nullptr;
             glm::vec3 _euler = glm::vec3(0.0f);
             glm::vec3 _direction = glm::vec3(0.0f);

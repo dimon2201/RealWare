@@ -5,7 +5,7 @@
 
 namespace realware
 {
-    using namespace core;
+    using namespace app;
     using namespace render;
     using namespace types;
 

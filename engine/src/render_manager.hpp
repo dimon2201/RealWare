@@ -8,9 +8,13 @@
 
 namespace realware
 {
-    namespace core
+    namespace app
     {
         class cApplication;
+    }
+
+    namespace core
+    {
         class cGameObject;
     }
 
@@ -158,7 +162,7 @@ namespace realware
                 QUAD = 2
             };
 
-            explicit mRender(const core::cApplication* const app, const cRenderContext* const context);
+            explicit mRender(const app::cApplication* const app, const cRenderContext* const context);
             ~mRender();
 
             cMaterial* AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
@@ -200,7 +204,7 @@ namespace realware
             inline sRenderPass* GetCompositeFinalRenderPass() const { return _compositeFinal; }
 
         private:
-            core::cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
             cRenderContext* _context = nullptr;
             sBuffer* _vertexBuffer = nullptr;
             sBuffer* _indexBuffer = nullptr;

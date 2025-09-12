@@ -8,10 +8,9 @@
 
 namespace realware
 {
-    namespace core
+    namespace app
     {
         class cApplication;
-        class cUserInput;
     }
 
     namespace render
@@ -65,7 +64,7 @@ namespace realware
         class mFont
         {
         public:
-            mFont(const core::cApplication* const app, const render::cRenderContext* const context);
+            mFont(const app::cApplication* const app, const render::cRenderContext* const context);
             ~mFont();
 
             sFont* CreateFontTTF(const std::string& filename, const types::usize glyphSize);
@@ -79,7 +78,7 @@ namespace realware
             static constexpr types::usize MAX_ATLAS_WIDTH = 2048;
 
         private:
-            core::cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
             types::boolean _initialized = types::K_FALSE;
             types::u16 _unicode[256] = {};
             render::cRenderContext* _context = nullptr;

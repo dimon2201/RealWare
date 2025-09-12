@@ -12,6 +12,7 @@
 
 namespace realware
 {
+    using namespace core;
     using namespace render;
     using namespace sound;
     using namespace font;
@@ -19,7 +20,7 @@ namespace realware
     using namespace fs;
     using namespace types;
 
-    namespace core
+    namespace app
     {
         void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {

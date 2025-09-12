@@ -7,9 +7,13 @@
 
 namespace realware
 {
-    namespace core
+    namespace app
     {
         class cApplication;
+    }
+
+    namespace core
+    {
         class cScene;
     }
 
@@ -29,7 +33,7 @@ namespace realware
         class mTexture
         {
         public:
-            explicit mTexture(const core::cApplication* const app, const cRenderContext* const context);
+            explicit mTexture(const app::cApplication* const app, const cRenderContext* const context);
             ~mTexture();
 
             sTextureAtlasTexture* AddTexture(const std::string& id, const std::string& filename);
@@ -49,12 +53,11 @@ namespace realware
             inline types::usize GetDepth() const;
 
         protected:
-            core::cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
             cRenderContext* _context = nullptr;
             sTexture* _atlas = nullptr;
             std::vector<sTextureAtlasTexture*> _textures = {};
             std::vector<std::vector<sTextureAtlasTexture*>> _animations = {};
-
         };
     }
 }

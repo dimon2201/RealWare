@@ -9,6 +9,7 @@
 
 namespace realware
 {
+    using namespace app;
     using namespace physics;
     using namespace types;
 

@@ -8,7 +8,7 @@
 
 namespace realware
 {
-    namespace core
+    namespace app
     {
         class cApplication;
     }
@@ -179,7 +179,7 @@ namespace realware
         {
 
         public:
-            cOpenGLRenderContext(const core::cApplication* const app);
+            cOpenGLRenderContext(const app::cApplication* const app);
             virtual ~cOpenGLRenderContext() override final;
 
             virtual sBuffer* CreateBuffer(const types::usize byteSize, const sBuffer::eType& type, const void* const data) override final;
@@ -230,7 +230,7 @@ namespace realware
             virtual void DrawQuads(types::usize count) override final;
 
         private:
-            core::cApplication* _app = nullptr;
+            app::cApplication* _app = nullptr;
 
         };
     }

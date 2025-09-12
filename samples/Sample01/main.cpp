@@ -19,6 +19,7 @@
 #include "../../engine/src/gameobject_manager.hpp"
 
 using namespace realware::core;
+using namespace realware::app;
 using namespace realware::render;
 using namespace realware::font;
 using namespace realware::sound;

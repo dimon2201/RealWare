@@ -5,6 +5,7 @@
 
 namespace realware
 {
+    using namespace app;
     using namespace render;
     using namespace font;
     using namespace physics;
