@@ -4,6 +4,7 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <windows.h>
+#include <chrono>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "types.hpp"
 
@@ -72,6 +73,7 @@ namespace realware
             u32 MaxPhysicsSceneCount = 4;
             u32 MaxPhysicsSubstanceCount = 256;
             u32 MaxPhysicsActorCount = 65536;
+            u32 MaxPhysicsControllerCount = 4;
         };
 
         class cApplication
@@ -102,6 +104,8 @@ namespace realware
             inline const char* GetWindowTitle() const { return _desc.WindowDesc.Title; }
             inline HWND GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
             inline boolean GetKey(int key) const { return _keys[key]; }
+
+            f32 GetDeltaTime() const { return _deltaTime; };
 
             sApplicationDescriptor* GetDesc() { return &_desc; }
 
@@ -143,6 +147,8 @@ namespace realware
             physics::mPhysics* _physics = nullptr;
             mGameObject* _gameObject = nullptr;
             s32 _keys[MAX_KEY_COUNT] = {};
+            f32 _deltaTime = 0.0;
+            std::chrono::steady_clock::time_point _timepointLast;
             boolean _isFocused = K_FALSE;
             glm::vec2 _cursorPosition = glm::vec2(0.0f);
         };

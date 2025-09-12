@@ -37,9 +37,6 @@ public:
 
     virtual void Pre() override final
     {
-        // Create camera
-        _camera->CreateCamera();
-
         // Triangle geometry
         _trianglePrimitive = _render->CreatePrimitive(mRender::ePrimitive::TRIANGLE);
         _triangleGeometry = _render->CreateGeometry(
@@ -95,6 +92,13 @@ public:
         triangleObject1->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
         triangleObject1->SetScale(glm::vec3(1.0f));
         triangleObject1->SetMaterial(material1);
+        triangleObject1->SetPhysicsActor(
+            GameObjectFeatures::PHYSICS_ACTOR_STATIC,
+            GameObjectFeatures::PHYSICS_SHAPE_PLANE,
+            pxScene,
+            pxSubstance,
+            0.0f
+        );
 
         cGameObject* triangleObject2 = _gameObject->AddGameObject("TriangleObject2");
         triangleObject2->SetVisible(K_TRUE);
@@ -111,18 +115,35 @@ public:
         textObject->SetScale(glm::vec3(1.0f));
         textObject->SetMaterial(material1);
         textObject->SetText(text);
+
+        // Create camera
+        _camera->CreateCamera();
+        _camera->SetMoveSpeed(5.0f);
+        _cameraGameObject = _camera->GetCameraGameObject();
+        _cameraGameObject->SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+        _cameraGameObject->SetPhysicsController(
+            0.0f,
+            0.51f,
+            0.5f,
+            glm::vec3(0.0f, 1.0f, 0.0f),
+            pxScene,
+            pxSubstance
+        );
     }
 
     virtual void Update() override final
     {
-        static float deltaTime = 0.0f;
-        static float lastTime = clock();
+        // Physics
+        _physics->Simulate();
 
+        // Camera
+        _camera->Update(K_TRUE, K_TRUE);
+
+        // Rendering
         _renderContext->ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         _renderContext->ClearDepth(1.0f);
 
-        // Rendering
-        cGameObject* cameraObject = _camera->GetCamera();
+        cGameObject* cameraObject = _cameraGameObject;
         _render->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
         _render->DrawGeometryOpaque(
             _triangleGeometry,
@@ -137,17 +158,6 @@ public:
         _render->CompositeTransparent();
         _render->DrawTexts(_gameObject->GetObjects());
         _render->CompositeFinal();
-
-        // Camera
-        _camera->Update(K_TRUE, K_TRUE);
-
-        // Physics
-        _physics->Simulate();
-
-        clock_t t = clock();
-
-        deltaTime = t - lastTime;
-        lastTime += deltaTime;
     }
 
     virtual void Post() override final
@@ -158,6 +168,7 @@ private:
     cScene* m_scene = nullptr;
     sPrimitive* _trianglePrimitive = nullptr;
     sVertexBufferGeometry* _triangleGeometry = nullptr;
+    cGameObject* _cameraGameObject = nullptr;
 };
 
 int main()

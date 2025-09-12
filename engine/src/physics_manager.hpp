@@ -86,15 +86,17 @@ namespace realware
         {
         public:
             cSimulationScene() = default;
-            explicit cSimulationScene(const std::string& id, const physx::PxScene* const scene) : _id(id), _scene((physx::PxScene*)scene) {}
+            explicit cSimulationScene(const std::string& id, const physx::PxScene* const scene, const physx::PxControllerManager* const controllerManager) : _id(id), _scene((physx::PxScene*)scene), _controllerManager((physx::PxControllerManager*)controllerManager) {}
             ~cSimulationScene() = default;
 
             inline const std::string& GetID() const { return _id; }
             inline physx::PxScene* GetScene() const { return _scene; }
+            inline physx::PxControllerManager* GetControllerManager() const { return _controllerManager; }
 
         private:
             std::string _id = "";
             physx::PxScene* _scene = nullptr;
+            physx::PxControllerManager* _controllerManager = nullptr;
         };
 
         class cSubstance
@@ -110,6 +112,23 @@ namespace realware
         private:
             std::string _id = "";
             physx::PxMaterial* _substance = nullptr;
+        };
+
+        class cController
+        {
+        public:
+            cController() = default;
+            explicit cController(const std::string& id, const physx::PxController* const controller, const f32 eyeHeight) : _id(id), _controller((physx::PxController*)controller), _eyeHeight(eyeHeight) {}
+            ~cController() = default;
+
+            inline const std::string& GetID() const { return _id; }
+            inline physx::PxController* GetController() const { return _controller; }
+            inline f32 GetEyeHeight() const { return _eyeHeight; }
+
+        private:
+            std::string _id = "";
+            physx::PxController* _controller = nullptr;
+            f32 _eyeHeight = 0.0f;
         };
 
         class cActor
@@ -147,13 +166,19 @@ namespace realware
             cSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
             cSubstance* AddSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
             cActor* AddActor(const std::string& id, const core::GameObjectFeatures& staticOrDynamic, const core::GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const sTransform* const transform);
+            cController* AddController(const std::string& id, const f32 eyeHeight, const f32 height, const f32 radius, const sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance);
             void DeleteScene(const std::string& id);
             void DeleteSubstance(const std::string& id);
             void DeleteActor(const std::string& id);
-            
+            void DeleteController(const std::string& id);
+
+            void MoveController(const cController* const controller, const glm::vec3& position, const f32 minStep = 0.001f);
+            glm::vec3 GetControllerPosition(const cController* const controller);
+
             void Simulate();
 
             cSimulationScene* GetScene(const std::string&);
+            cController* GetController(const std::string&);
 
             /*sCPhysicsScene* AddScene(const sEntityScenePair& scene);
             sCPhysicsActor* AddActor(
@@ -182,16 +207,15 @@ namespace realware
             cSimulationEvent* _simulationEvent = nullptr;
             physx::PxFoundation* _foundation = nullptr;
             physx::PxPhysics* _physics = nullptr;
-            //std::vector<core::sEntityScenePair> _scenes = {};
-            //std::vector<core::sEntityScenePair> _actors = {};
-            //std::vector<core::sEntityScenePair> _controllers = {};
             std::mutex _mutex;
             usize _sceneCount = 0;
             usize _substanceCount = 0;
             usize _actorCount = 0;
+            usize _controllerCount = 0;
             std::vector<cSimulationScene> _scenes = {};
             std::vector<cSubstance> _substances = {};
             std::vector<cActor> _actors = {};
+            std::vector<cController> _controllers = {};
         };
     }
 }

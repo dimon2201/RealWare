@@ -85,8 +85,15 @@ namespace realware
         {
             Pre();
 
+            _timepointLast = std::chrono::high_resolution_clock::now();
+
             while (GetRunState() == K_FALSE)
             {
+                auto currentTime = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<f32> elapsed = currentTime - _timepointLast;
+                _deltaTime = elapsed.count();
+                _timepointLast = currentTime;
+
                 Update();
 
                 glfwSwapBuffers((GLFWwindow*)_window);

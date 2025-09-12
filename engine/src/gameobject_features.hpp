@@ -8,7 +8,8 @@ namespace realware
         {
             PHYSICS_ACTOR_STATIC = 0,
             PHYSICS_ACTOR_DYNAMIC = 1,
-            PHYSICS_SHAPE_BOX = 2
+            PHYSICS_SHAPE_PLANE = 2,
+            PHYSICS_SHAPE_BOX = 3
         };
     }
 }

@@ -2,19 +2,21 @@
 #include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
 #include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
 #include "camera_manager.hpp"
-//#include "physics_manager.hpp"
+#include "physics_manager.hpp"
 #include "render_context.hpp"
 #include "application.hpp"
 #include "gameobject_manager.hpp"
 
 namespace realware
 {
+    using namespace physics;
+
     namespace core
     {
         void mCamera::CreateCamera()
         {
             mGameObject* gameObjectManager = _app->GetGameObjectManager();
-            _camera = gameObjectManager->AddGameObject(K_CAMERA_ID);
+            _cameraGameObject = gameObjectManager->AddGameObject(K_CAMERA_ID);
         }
 
         void mCamera::DestroyCamera()
@@ -25,6 +27,8 @@ namespace realware
 
         void mCamera::Update(const boolean updateMouseLook, const boolean updateMovement)
         {
+            const f32 deltaTime = _app->GetDeltaTime();
+
             if (_euler.x > glm::radians(65.0f))
                 _euler.x = glm::radians(65.0f);
             else if (_euler.x < glm::radians(-65.0f))
@@ -35,7 +39,8 @@ namespace realware
             const glm::quat quatZ = glm::angleAxis(_euler.z, glm::vec3(0.0f, 0.0f, 1.0f));
             _direction = quatZ * quatY * quatX * glm::vec3(0.0f, 0.0f, -1.0f);
 
-            _view = glm::lookAtRH(m_transform.Position, m_transform.Position + _direction, glm::vec3(0.0f, 1.0f, 0.0f));
+            sTransform* const transform = _cameraGameObject->GetTransform();
+            _view = glm::lookAtRH(transform->Position, transform->Position + _direction, glm::vec3(0.0f, 1.0f, 0.0f));
             _projection = glm::perspective(glm::radians(_fov), (float)_app->GetWindowSize().x / (float)_app->GetWindowSize().y, _zNear, _zFar);
             _viewProjection = _projection * _view;
 
@@ -48,15 +53,15 @@ namespace realware
                 _cursorPosition = glm::vec2(x, y);
 
                 glm::vec2 mouseDelta = _prevCursorPosition - _cursorPosition;
-                AddEuler(mCamera::eEulerAngle::PITCH, mouseDelta.y * 0.01f);
-                AddEuler(mCamera::eEulerAngle::YAW, mouseDelta.x * 0.01f);
+                AddEuler(mCamera::eEulerAngle::PITCH, mouseDelta.y * _mouseSensitivity * deltaTime);
+                AddEuler(mCamera::eEulerAngle::YAW, mouseDelta.x * _mouseSensitivity * deltaTime);
             }
             if (updateMovement == K_TRUE)
             {
-                float forward = _app->GetKey('W') * _moveSpeed;
-                float backward = _app->GetKey('S') * _moveSpeed;
-                float left = _app->GetKey('A') * _moveSpeed;
-                float right = _app->GetKey('D') * _moveSpeed;
+                f32 forward = _app->GetKey('W') * _moveSpeed * deltaTime;
+                f32 backward = _app->GetKey('S') * _moveSpeed * deltaTime;
+                f32 left = _app->GetKey('A') * _moveSpeed * deltaTime;
+                f32 right = _app->GetKey('D') * _moveSpeed * deltaTime;
                 if (forward > 0.0f || backward > 0.0f || left > 0.0f || right > 0.0f)
                 {
                     Move(forward);
@@ -72,7 +77,7 @@ namespace realware
                 }
             }
 
-            _camera->SetViewProjectionMatrix(_viewProjection);
+            _cameraGameObject->SetViewProjectionMatrix(_viewProjection);
         }
 
         void mCamera::AddEuler(const mCamera::eEulerAngle& angle, const f32 value)
@@ -82,48 +87,54 @@ namespace realware
 
         void mCamera::Move(const f32 value)
         {
-            m_transform.Position += _direction * value;
+            mPhysics* const physics = _app->GetPhysicsManager();
+            cController* const controller = _cameraGameObject->GetPhysicsController();
+            sTransform* const transform = _cameraGameObject->GetTransform();
+            const glm::vec3 position = transform->Position;
+            const glm::vec3 newPosition = transform->Position + _direction * value;
+            
+            physics->MoveController(
+                controller,
+                newPosition - position
+            );
+            const glm::vec3 cameraPosition = physics->GetControllerPosition(controller);
 
-            /*sCPhysicsCharacterController* controller =
-                scene->Get<sCPhysicsCharacterController>(camera->Owner);
-            if (controller != nullptr)
-            {
-                m_app->GetPhysicsManager()->SetCharacterControllerMovement(
-                    { camera->Owner, scene },
-                    camera->Direction * value
-                );
-            }*/
+            _cameraGameObject->SetPosition(cameraPosition);
         }
 
         void mCamera::Strafe(const f32 value)
         {
-            glm::vec3 right = glm::cross(_direction, glm::vec3(0.0f, 1.0f, 0.0f));
-            m_transform.Position += right * value;
+            mPhysics* const physics = _app->GetPhysicsManager();
+            cController* const controller = _cameraGameObject->GetPhysicsController();
+            sTransform* const transform = _cameraGameObject->GetTransform();
+            const glm::vec3 right = glm::cross(_direction, glm::vec3(0.0f, 1.0f, 0.0f));
+            const glm::vec3 position = transform->Position;
+            const glm::vec3 newPosition = transform->Position + right * value;
 
-            /*sCPhysicsCharacterController* controller =
-                scene->Get<sCPhysicsCharacterController>(camera->Owner);
-            if (controller != nullptr)
-            {
-                m_app->GetPhysicsManager()->SetCharacterControllerMovement(
-                    { camera->Owner, scene },
-                    right * value
-                );
-            }*/
+            physics->MoveController(
+                controller,
+                newPosition - position
+            );
+            const glm::vec3 cameraPosition = physics->GetControllerPosition(controller);
+
+            _cameraGameObject->SetPosition(cameraPosition);
         }
 
         void mCamera::Lift(const f32 value)
         {
-            m_transform.Position.y += value;
+            mPhysics* const physics = _app->GetPhysicsManager();
+            cController* const controller = _cameraGameObject->GetPhysicsController();
+            sTransform* const transform = _cameraGameObject->GetTransform();
+            const glm::vec3 position = transform->Position;
+            const glm::vec3 newPosition = transform->Position + glm::vec3(0.0f, 1.0f, 0.0f) * value;
 
-            /*sCPhysicsCharacterController* controller =
-                scene->Get<sCPhysicsCharacterController>(camera->Owner);
-            if (controller != nullptr)
-            {
-                m_app->GetPhysicsManager()->SetCharacterControllerMovement(
-                    { camera->Owner, scene },
-                    glm::vec3(0.0f, value, 0.0f)
-                );
-            }*/
+            physics->MoveController(
+                controller,
+                newPosition - position
+            );
+            const glm::vec3 cameraPosition = physics->GetControllerPosition(controller);
+
+            _cameraGameObject->SetPosition(cameraPosition);
         }
     }
 }

@@ -58,6 +58,7 @@ namespace realware
             _scenes.resize(desc->MaxPhysicsSceneCount);
             _substances.resize(desc->MaxPhysicsSubstanceCount);
             _actors.resize(desc->MaxPhysicsActorCount);
+            _controllers.resize(desc->MaxPhysicsControllerCount);
         }
 
         mPhysics::~mPhysics()
@@ -79,7 +80,9 @@ namespace realware
 
             PxScene* scene = _physics->createScene(sceneDesc);
 
-            _scenes[_sceneCount] = cSimulationScene(id, scene);
+            PxControllerManager* controllerManager = PxCreateControllerManager(*scene);
+
+            _scenes[_sceneCount] = cSimulationScene(id, scene, controllerManager);
             _sceneCount += 1;
 
             return &_scenes[_sceneCount - 1];
@@ -95,6 +98,28 @@ namespace realware
             return &_substances[_substanceCount - 1];
         }
 
+        cController* mPhysics::AddController(const std::string& id, const f32 eyeHeight, const f32 height, const f32 radius, const sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance)
+        {
+            glm::vec3 position = transform->Position;
+
+            PxCapsuleControllerDesc desc;
+            desc.height = height;
+            desc.radius = radius;
+            desc.position = PxExtendedVec3(position.y, position.x, position.z);
+            desc.stepOffset = 0.5f;       // максимальный шаг при коллизии
+            desc.slopeLimit = cosf(PxPi / 4.0f); // ограничение наклона поверхности
+            desc.contactOffset = 0.01f;   // минимальное расстояние до коллизий
+            desc.upDirection = PxVec3(up.y, up.x, up.z); // направление вверх
+            desc.material = substance->GetSubstance();
+
+            PxController* controller = scene->GetControllerManager()->createController(desc);
+
+            _controllers[_controllerCount] = cController(id, controller, eyeHeight);
+            _controllerCount += 1;
+
+            return &_controllers[_controllerCount - 1];
+        }
+
         cActor* mPhysics::AddActor(const std::string& id, const GameObjectFeatures& staticOrDynamic, const GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const sTransform* const transform)
         {
             glm::vec3 position = transform->Position;
@@ -103,15 +128,16 @@ namespace realware
             PxTransform pose(PxVec3(position.y, position.x, position.z));
             
             PxShape* shape = nullptr;
-            if (shapeType == GameObjectFeatures::PHYSICS_SHAPE_BOX)
-                _physics->createShape(PxBoxGeometry(scale.y, scale.x, scale.z), *substance->GetSubstance());
+            if (shapeType == GameObjectFeatures::PHYSICS_SHAPE_PLANE)
+                shape = _physics->createShape(PxPlaneGeometry(), *substance->GetSubstance());
+            else if (shapeType == GameObjectFeatures::PHYSICS_SHAPE_BOX)
+                shape = _physics->createShape(PxBoxGeometry(scale.y, scale.x, scale.z), *substance->GetSubstance());
 
             PxActor* actor = nullptr;
             if (staticOrDynamic == GameObjectFeatures::PHYSICS_ACTOR_STATIC)
             {
                 actor = _physics->createRigidStatic(pose);
                 ((PxRigidStatic*)actor)->attachShape(*shape);
-                scene->GetScene()->addActor(*actor);
             }
             else if (staticOrDynamic == GameObjectFeatures::PHYSICS_ACTOR_DYNAMIC)
             {
@@ -139,6 +165,7 @@ namespace realware
                 if (_scenes[i].GetID() == id)
                 {
                     _scenes[i].GetScene()->release();
+                    _scenes[i].GetControllerManager()->release();
 
                     if (_sceneCount > 1)
                         _scenes[i] = _scenes[_sceneCount - 1];
@@ -180,6 +207,44 @@ namespace realware
             }
         }
 
+        void mPhysics::DeleteController(const std::string& id)
+        {
+            for (usize i = 0; i < _controllerCount; i++)
+            {
+                if (_controllers[i].GetID() == id)
+                {
+                    _controllers[i].GetController()->release();
+
+                    if (_controllerCount > 1)
+                        _controllers[i] = _controllers[_controllerCount - 1];
+
+                    return;
+                }
+            }
+        }
+
+        void mPhysics::MoveController(const cController* const controller, const glm::vec3& position, const f32 minStep)
+        {
+            PxController* pxController = controller->GetController();
+            f32 deltaTime = _app->GetDeltaTime();
+
+            PxControllerFilters filters;
+            PxU32 collisionFlags = pxController->move(
+                PxVec3(position.y, position.x, position.z),
+                minStep,
+                deltaTime,
+                filters
+            );
+        }
+
+        glm::vec3 mPhysics::GetControllerPosition(const cController* const controller)
+        {
+            PxController* pxController = controller->GetController();
+            PxExtendedVec3 position = pxController->getPosition();
+
+            return glm::vec3(position.y, position.x + controller->GetEyeHeight(), position.z);
+        }
+
         void mPhysics::Simulate()
         {
             for (usize i = 0; i < _sceneCount; i++)
@@ -196,6 +261,17 @@ namespace realware
             {
                 if (_scenes[i].GetID() == id)
                     return &_scenes[i];
+            }
+
+            return nullptr;
+        }
+
+        cController* mPhysics::GetController(const std::string& id)
+        {
+            for (usize i = 0; i < _controllerCount; i++)
+            {
+                if (_controllers[i].GetID() == id)
+                    return &_controllers[i];
             }
 
             return nullptr;

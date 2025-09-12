@@ -29,18 +29,19 @@ namespace realware
             void Strafe(const f32 value);
             void Lift(const f32 value);
 
-            inline cGameObject* GetCamera() const { return _camera; }
+            inline cGameObject* GetCameraGameObject() const { return _cameraGameObject; }
             inline glm::mat4 GetViewProjectionMatrix() const { return _viewProjection; }
+            inline float GetMouseSensitivity() const { return _mouseSensitivity; }
             inline float GetMoveSpeed() const { return _moveSpeed; }
 
+            inline void SetMouseSensitivity(const f32 value) { _mouseSensitivity = value; }
             inline void SetMoveSpeed(const f32 value) { _moveSpeed = value; }
 
         private:
             static constexpr const char* K_CAMERA_ID = "__Camera";
 
             cApplication* _app = nullptr;
-            cGameObject* _camera = nullptr;
-            render::sTransform m_transform = {};
+            cGameObject* _cameraGameObject = nullptr;
             glm::vec3 _euler = glm::vec3(0.0f);
             glm::vec3 _direction = glm::vec3(0.0f);
             glm::mat4 _view = glm::mat4(1.0f);
@@ -49,7 +50,8 @@ namespace realware
             f32 _fov = 60.0f;
             f32 _zNear = 0.01f;
             f32 _zFar = 100.0f;
-            f32 _moveSpeed = 0.1f;
+            f32 _mouseSensitivity = 1.0f;
+            f32 _moveSpeed = 1.0f;
             boolean _isMoving = K_FALSE;
             glm::vec2 _cursorPosition = glm::vec2(0.0f);
             glm::vec2 _prevCursorPosition = _cursorPosition;
