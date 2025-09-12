@@ -118,17 +118,17 @@ namespace realware
         {
         public:
             cController() = default;
-            explicit cController(const std::string& id, const physx::PxController* const controller, const f32 eyeHeight) : _id(id), _controller((physx::PxController*)controller), _eyeHeight(eyeHeight) {}
+            explicit cController(const std::string& id, const physx::PxController* const controller, const types::f32 eyeHeight) : _id(id), _controller((physx::PxController*)controller), _eyeHeight(eyeHeight) {}
             ~cController() = default;
 
             inline const std::string& GetID() const { return _id; }
             inline physx::PxController* GetController() const { return _controller; }
-            inline f32 GetEyeHeight() const { return _eyeHeight; }
+            inline types::f32 GetEyeHeight() const { return _eyeHeight; }
 
         private:
             std::string _id = "";
             physx::PxController* _controller = nullptr;
-            f32 _eyeHeight = 0.0f;
+            types::f32 _eyeHeight = 0.0f;
         };
 
         class cActor
@@ -165,14 +165,14 @@ namespace realware
 
             cSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
             cSubstance* AddSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
-            cActor* AddActor(const std::string& id, const core::GameObjectFeatures& staticOrDynamic, const core::GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const sTransform* const transform);
-            cController* AddController(const std::string& id, const f32 eyeHeight, const f32 height, const f32 radius, const sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance);
+            cActor* AddActor(const std::string& id, const core::GameObjectFeatures& staticOrDynamic, const core::GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const types::f32 mass, const sTransform* const transform);
+            cController* AddController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance);
             void DeleteScene(const std::string& id);
             void DeleteSubstance(const std::string& id);
             void DeleteActor(const std::string& id);
             void DeleteController(const std::string& id);
 
-            void MoveController(const cController* const controller, const glm::vec3& position, const f32 minStep = 0.001f);
+            void MoveController(const cController* const controller, const glm::vec3& position, const types::f32 minStep = 0.001f);
             glm::vec3 GetControllerPosition(const cController* const controller);
 
             void Simulate();
@@ -208,10 +208,10 @@ namespace realware
             physx::PxFoundation* _foundation = nullptr;
             physx::PxPhysics* _physics = nullptr;
             std::mutex _mutex;
-            usize _sceneCount = 0;
-            usize _substanceCount = 0;
-            usize _actorCount = 0;
-            usize _controllerCount = 0;
+            types::usize _sceneCount = 0;
+            types::usize _substanceCount = 0;
+            types::usize _actorCount = 0;
+            types::usize _controllerCount = 0;
             std::vector<cSimulationScene> _scenes = {};
             std::vector<cSubstance> _substances = {};
             std::vector<cActor> _actors = {};

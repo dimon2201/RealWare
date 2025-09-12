@@ -10,6 +10,7 @@
 namespace realware
 {
     using namespace core;
+    using namespace types;
 
     namespace render
     {
@@ -232,11 +233,11 @@ namespace realware
             std::string appendPathOpaqueVertexStr = appendStr;
             std::string appendPathOpaqueFragmentStr = appendStr;
 
-            fs::sFile vertexShaderFile = _app->GetFileSystemManager()->LoadFile(vertexPath, core::K_TRUE);
+            fs::sFile vertexShaderFile = _app->GetFileSystemManager()->LoadFile(vertexPath, K_TRUE);
             std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile.Data));
             const char* vertex = vertexStr.c_str();
 
-            fs::sFile fragmentShaderFile = _app->GetFileSystemManager()->LoadFile(fragmentPath, core::K_TRUE);
+            fs::sFile fragmentShaderFile = _app->GetFileSystemManager()->LoadFile(fragmentPath, K_TRUE);
             std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile.Data));
             const char* fragment = fragmentStr.c_str();
 
@@ -487,7 +488,7 @@ namespace realware
 
             GLenum channelsGL = GL_RGBA;
             GLenum formatComponentGL = GL_UNSIGNED_BYTE;
-            core::usize formatByteCount = 4;
+            usize formatByteCount = 4;
             if (texture->Format == sTexture::eFormat::RGBA8)
             {
                 channelsGL = GL_RGBA;
@@ -577,7 +578,7 @@ namespace realware
 
             GLenum buffs[16] = {};
             glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
-            for (core::s32 i = 0; i < renderTarget->ColorAttachments.size(); i++)
+            for (usize i = 0; i < renderTarget->ColorAttachments.size(); i++)
             {
                 buffs[i] = GL_COLOR_ATTACHMENT0 + i;
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->ColorAttachments[i]->Instance, 0);
@@ -605,7 +606,7 @@ namespace realware
             GLenum buffs[16] = {};
             glGenFramebuffers(1, (GLuint*)&renderTarget->Instance);
             glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
-            for (core::s32 i = 0; i < renderTarget->ColorAttachments.size(); i++)
+            for (usize i = 0; i < renderTarget->ColorAttachments.size(); i++)
             {
                 buffs[i] = GL_COLOR_ATTACHMENT0 + i;
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->ColorAttachments[i]->Instance, 0);
@@ -710,7 +711,7 @@ namespace realware
 
         void cOpenGLRenderContext::BindBlendMode(const sBlendMode& blendMode)
         {
-            for (core::s32 i = 0; i < blendMode.FactorCount; i++)
+            for (usize i = 0; i < blendMode.FactorCount; i++)
             {
                 GLuint srcFactor = GL_ZERO;
                 GLuint dstFactor = GL_ZERO;
@@ -739,12 +740,12 @@ namespace realware
 
         void cOpenGLRenderContext::BindDepthMode(const sDepthMode& blendMode)
         {
-            if (blendMode.UseDepthTest == core::K_TRUE)
+            if (blendMode.UseDepthTest == K_TRUE)
                 glEnable(GL_DEPTH_TEST);
             else
                 glDisable(GL_DEPTH_TEST);
 
-            if (blendMode.UseDepthWrite == core::K_TRUE)
+            if (blendMode.UseDepthWrite == K_TRUE)
                 glDepthMask(GL_TRUE);
             else
                 glDepthMask(GL_FALSE);

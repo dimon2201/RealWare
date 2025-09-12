@@ -17,8 +17,8 @@ namespace realware
     {
         struct sGPUResource
         {
-            core::u32 Instance = 0;
-            core::u32 ViewInstance = 0;
+            types::u32 Instance = 0;
+            types::u32 ViewInstance = 0;
         };
 
         struct sBuffer : public sGPUResource
@@ -33,8 +33,8 @@ namespace realware
             };
 
             eType Type = eType::NONE;
-            core::usize ByteSize = 0;
-            core::s32 Slot = -1;
+            types::usize ByteSize = 0;
+            types::s32 Slot = -1;
         };
 
         struct sVertexArray : public sGPUResource
@@ -66,12 +66,12 @@ namespace realware
                 RGBA8_MIPS = 7
             };
 
-            core::usize Width = 0;
-            core::usize Height = 0;
-            core::usize Depth = 0;
+            types::usize Width = 0;
+            types::usize Height = 0;
+            types::usize Depth = 0;
             eType Type = eType::NONE;
             eFormat Format = eFormat::NONE;
-            core::s32 Slot = -1;
+            types::s32 Slot = -1;
         };
 
         struct sRenderTarget : public sGPUResource
@@ -82,8 +82,8 @@ namespace realware
 
         struct sDepthMode
         {
-            core::boolean UseDepthTest = core::K_TRUE;
-            core::boolean UseDepthWrite = core::K_TRUE;
+            types::boolean UseDepthTest = types::K_TRUE;
+            types::boolean UseDepthWrite = types::K_TRUE;
         };
 
         struct sBlendMode
@@ -98,7 +98,7 @@ namespace realware
                 INV_SRC_ALPHA = 5
             };
 
-            core::usize FactorCount = 0;
+            types::usize FactorCount = 0;
             eFactor SrcFactors[8] = { eFactor::ZERO };
             eFactor DstFactors[8] = { eFactor::ZERO };
         };
@@ -128,11 +128,11 @@ namespace realware
             cRenderContext() = default;
             virtual ~cRenderContext() = default;
 
-            virtual sBuffer* CreateBuffer(const core::usize byteSize, const sBuffer::eType& type, const void* const data) = 0;
+            virtual sBuffer* CreateBuffer(const types::usize byteSize, const sBuffer::eType& type, const void* const data) = 0;
             virtual void BindBuffer(const sBuffer* const buffer) = 0;
 			virtual void BindBufferNotVAO(const sBuffer* const buffer) = 0;
             virtual void UnbindBuffer(const sBuffer* const buffer) = 0;
-            virtual void WriteBuffer(const sBuffer* const buffer, const core::usize offset, const core::usize byteSize, const void* const data) = 0;
+            virtual void WriteBuffer(const sBuffer* const buffer, const types::usize offset, const types::usize byteSize, const void* const data) = 0;
             virtual void DestroyBuffer(sBuffer* buffer) = 0;
             virtual sVertexArray* CreateVertexArray() = 0;
             virtual void BindVertexArray(const sVertexArray* const vertexArray) = 0;
@@ -142,10 +142,10 @@ namespace realware
             virtual void BindShader(const sShader* const shader) = 0;
             virtual void UnbindShader() = 0;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix) = 0;
-            virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const core::usize count, const core::f32* const values) = 0;
-            virtual sTexture* CreateTexture(const core::usize width, const core::usize height, const core::usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data) = 0;
+            virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const types::usize count, const types::f32* const values) = 0;
+            virtual sTexture* CreateTexture(const types::usize width, const types::usize height, const types::usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data) = 0;
             virtual sTexture* ResizeTexture(sTexture* const texture, const glm::vec2& size) = 0;
-            virtual void BindTexture(const sShader* const shader, const std::string& name, const sTexture* const texture, const core::s32 slot) = 0;
+            virtual void BindTexture(const sShader* const shader, const std::string& name, const sTexture* const texture, const types::s32 slot) = 0;
             virtual void UnbindTexture(const sTexture* const texture) = 0;
             virtual void WriteTexture(sTexture* const texture, const glm::vec3& offset, const glm::vec2& size, const void* const data) = 0;
             virtual void WriteTextureToFile(const sTexture* const texture, const std::string& filename) = 0;
@@ -167,12 +167,12 @@ namespace realware
             virtual void BindBlendMode(const sBlendMode& blendMode) = 0;
             virtual void Viewport(const glm::vec4& viewport) = 0;
             virtual void ClearColor(const glm::vec4& color) = 0;
-            virtual void ClearDepth(const core::f32 depth) = 0;
-            virtual void ClearFramebufferColor(const core::usize bufferIndex, const glm::vec4& color) = 0;
-            virtual void ClearFramebufferDepth(const core::f32 depth) = 0;
-            virtual void Draw(core::usize indexCount, core::usize vertexOffset, core::usize indexOffset, core::usize instanceCount) = 0;
+            virtual void ClearDepth(const types::f32 depth) = 0;
+            virtual void ClearFramebufferColor(const types::usize bufferIndex, const glm::vec4& color) = 0;
+            virtual void ClearFramebufferDepth(const types::f32 depth) = 0;
+            virtual void Draw(types::usize indexCount, types::usize vertexOffset, types::usize indexOffset, types::usize instanceCount) = 0;
             virtual void DrawQuad() = 0;
-            virtual void DrawQuads(core::usize count) = 0;
+            virtual void DrawQuads(types::usize count) = 0;
         };
 
         class cOpenGLRenderContext : public cRenderContext
@@ -182,11 +182,11 @@ namespace realware
             cOpenGLRenderContext(const core::cApplication* const app);
             virtual ~cOpenGLRenderContext() override final;
 
-            virtual sBuffer* CreateBuffer(const core::usize byteSize, const sBuffer::eType& type, const void* const data) override final;
+            virtual sBuffer* CreateBuffer(const types::usize byteSize, const sBuffer::eType& type, const void* const data) override final;
             virtual void BindBuffer(const sBuffer* const buffer) override final;
             virtual void BindBufferNotVAO(const sBuffer* const buffer) override final;
             virtual void UnbindBuffer(const sBuffer* const buffer) override final;
-            virtual void WriteBuffer(const sBuffer* const buffer, const core::usize offset, const core::usize byteSize, const void* const data) override final;
+            virtual void WriteBuffer(const sBuffer* const buffer, const types::usize offset, const types::usize byteSize, const void* const data) override final;
             virtual void DestroyBuffer(sBuffer* buffer) override final;
             virtual sVertexArray* CreateVertexArray() override final;
             virtual void BindVertexArray(const sVertexArray* const vertexArray) override final;
@@ -197,10 +197,10 @@ namespace realware
             virtual void UnbindShader() override final;
             sShader* cOpenGLRenderContext::LoadShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath);
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix) override final;
-            virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const core::usize count, const core::f32* const values) override final;
-            virtual sTexture* CreateTexture(const core::usize width, const core::usize height, const core::usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data) override final;
+            virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const types::usize count, const types::f32* const values) override final;
+            virtual sTexture* CreateTexture(const types::usize width, const types::usize height, const types::usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data) override final;
             virtual sTexture* ResizeTexture(sTexture* const texture, const glm::vec2& size) override final;
-            virtual void BindTexture(const sShader* const shader, const std::string& name, const sTexture* const texture, const core::s32 slot) override final;
+            virtual void BindTexture(const sShader* const shader, const std::string& name, const sTexture* const texture, const types::s32 slot) override final;
             virtual void UnbindTexture(const sTexture* const texture) override final;
             virtual void WriteTexture(sTexture* const texture, const glm::vec3& offset, const glm::vec2& size, const void* const data) override final;
             virtual void WriteTextureToFile(const sTexture* const texture, const std::string& filename) override final;
@@ -222,12 +222,12 @@ namespace realware
             virtual void BindBlendMode(const sBlendMode& blendMode) override final;
             virtual void Viewport(const glm::vec4& viewport) override final;
             virtual void ClearColor(const glm::vec4& color) override final;
-            virtual void ClearDepth(const core::f32 depth) override final;
-            virtual void ClearFramebufferColor(const core::usize bufferIndex, const glm::vec4& color) override final;
-            virtual void ClearFramebufferDepth(const core::f32 depth) override final;
-            virtual void Draw(core::usize indexCount, core::usize vertexOffset, core::usize indexOffset, core::usize instanceCount) override final;
+            virtual void ClearDepth(const types::f32 depth) override final;
+            virtual void ClearFramebufferColor(const types::usize bufferIndex, const glm::vec4& color) override final;
+            virtual void ClearFramebufferDepth(const types::f32 depth) override final;
+            virtual void Draw(types::usize indexCount, types::usize vertexOffset, types::usize indexOffset, types::usize instanceCount) override final;
             virtual void DrawQuad() override final;
-            virtual void DrawQuads(core::usize count) override final;
+            virtual void DrawQuads(types::usize count) override final;
 
         private:
             core::cApplication* _app = nullptr;

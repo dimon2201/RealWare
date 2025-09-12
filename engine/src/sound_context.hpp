@@ -12,22 +12,22 @@ namespace realware
     {
         struct sWAVFile
         {
-            core::u8 Type[5];
-            core::u8 Format[5];
-            core::u8 Subchunk1ID[5];
-            core::u8 Subchunk2ID[5];
-            core::u32 ChunkSize;
-            core::u32 Subchunk1Size;
-            core::u32 SampleRate;
-            core::u32 ByteRate;
-            core::u32 Subchunk2Size;
-            core::u16 AudioFormat;
-            core::u16 NumChannels;
-            core::u16 BlockAlign;
-            core::u16 BitsPerSample;
-            core::u32 NumSamples;
-            core::u32 DataByteSize;
-            core::u16* Data;
+            types::u8 Type[5];
+            types::u8 Format[5];
+            types::u8 Subchunk1ID[5];
+            types::u8 Subchunk2ID[5];
+            types::u32 ChunkSize;
+            types::u32 Subchunk1Size;
+            types::u32 SampleRate;
+            types::u32 ByteRate;
+            types::u32 Subchunk2Size;
+            types::u16 AudioFormat;
+            types::u16 NumChannels;
+            types::u16 BlockAlign;
+            types::u16 BitsPerSample;
+            types::u32 NumSamples;
+            types::u32 DataByteSize;
+            types::u16* Data;
         };
 
         struct sSound
@@ -41,8 +41,8 @@ namespace realware
             std::string Tag = "";
             eFormat Format = eFormat::NONE;
             void* File = nullptr;
-            core::u32 Source;
-            core::u32 Buffer;
+            types::u32 Source;
+            types::u32 Buffer;
         };
 
         class cSoundContext

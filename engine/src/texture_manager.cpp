@@ -7,6 +7,7 @@
 namespace realware
 {
     using namespace core;
+    using namespace types;
 
     namespace render
     {
@@ -67,7 +68,7 @@ namespace realware
                 {
                     for (usize x = 0; x < _atlas->Width; x++)
                     {
-                        boolean isIntersecting = K_FALSE;
+                        types::boolean isIntersecting = K_FALSE;
 
                         for (auto& area : _textures)
                         {
@@ -85,7 +86,7 @@ namespace realware
                                     break;
                                 }
                             }
-                            else if (area->IsNormalized == core::K_TRUE)
+                            else if (area->IsNormalized == K_TRUE)
                             {
                                 const glm::vec4 textureRectNorm = glm::vec4(
                                     (f32)x / (f32)_atlas->Width, (f32)y / (f32)_atlas->Height,

@@ -17,6 +17,7 @@ namespace realware
 {
     using namespace core;
     using namespace font;
+    using namespace types;
 
     namespace render
     {
@@ -94,7 +95,7 @@ namespace realware
             _materialsByteSize = 0;
             _lights = malloc(desc->LightBufferSize);
             _lightsByteSize = 0;
-            _materialsMap = new std::unordered_map<render::cMaterial*, core::s32>();
+            _materialsMap = new std::unordered_map<render::cMaterial*, s32>();
             _materialsCPU.resize(desc->MaxMaterialCount);
 
             sTexture* color = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
@@ -123,8 +124,8 @@ namespace realware
                 );
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-                renderPassDesc.DepthMode.UseDepthTest = core::K_TRUE;
-                renderPassDesc.DepthMode.UseDepthWrite = core::K_TRUE;
+                renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
+                renderPassDesc.DepthMode.UseDepthWrite = K_TRUE;
                 renderPassDesc.BlendMode.FactorCount = 1;
                 renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::ONE;
                 renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::ZERO;
@@ -146,8 +147,8 @@ namespace realware
                 );
                 renderPassDesc.RenderTarget = transparentRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-                renderPassDesc.DepthMode.UseDepthTest = core::K_TRUE;
-                renderPassDesc.DepthMode.UseDepthWrite = core::K_FALSE;
+                renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
+                renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
                 renderPassDesc.BlendMode.FactorCount = 2;
                 renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::ONE;
                 renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::ONE;
@@ -167,8 +168,8 @@ namespace realware
                 );
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-                renderPassDesc.DepthMode.UseDepthTest = core::K_FALSE;
-                renderPassDesc.DepthMode.UseDepthWrite = core::K_FALSE;
+                renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
+                renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
                 _text = _context->CreateRenderPass(renderPassDesc);
             }
             {
@@ -185,8 +186,8 @@ namespace realware
                 );
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-                renderPassDesc.DepthMode.UseDepthTest = core::K_FALSE;
-                renderPassDesc.DepthMode.UseDepthWrite = core::K_FALSE;
+                renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
+                renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
                 renderPassDesc.BlendMode.FactorCount = 1;
                 renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::SRC_ALPHA;
                 renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::INV_SRC_ALPHA;
@@ -204,8 +205,8 @@ namespace realware
                 );
                 renderPassDesc.RenderTarget = nullptr;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-                renderPassDesc.DepthMode.UseDepthTest = core::K_FALSE;
-                renderPassDesc.DepthMode.UseDepthWrite = core::K_FALSE;
+                renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
+                renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
                 renderPassDesc.BlendMode.FactorCount = 1;
                 renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::ONE;
                 renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::ZERO;
@@ -251,14 +252,14 @@ namespace realware
         {
             sVertexBufferGeometry* geometry = new sVertexBufferGeometry;
 
-            memcpy((void*)((core::usize)_vertices + (core::usize)_verticesByteSize), vertices, verticesByteSize);
-            memcpy((void*)((core::usize)_indices + (core::usize)_indicesByteSize), indices, indicesByteSize);
+            memcpy((void*)((usize)_vertices + (usize)_verticesByteSize), vertices, verticesByteSize);
+            memcpy((void*)((usize)_indices + (usize)_indicesByteSize), indices, indicesByteSize);
 
             _context->WriteBuffer(_vertexBuffer, _verticesByteSize, verticesByteSize, vertices);
             _context->WriteBuffer(_indexBuffer, _indicesByteSize, indicesByteSize, indices);
 
-            geometry->VertexCount = verticesByteSize / (core::usize)format;
-            geometry->IndexCount = indicesByteSize / sizeof(core::u32);
+            geometry->VertexCount = verticesByteSize / (usize)format;
+            geometry->IndexCount = indicesByteSize / sizeof(u32);
             geometry->VertexPtr = _vertices;
             geometry->IndexPtr = _indices;
             geometry->VertexOffset = _verticesByteSize;
@@ -291,7 +292,7 @@ namespace realware
             _indicesByteSize = 0;
         }
 
-        void mRender::ClearRenderPass(const sRenderPass* const renderPass, const boolean clearColor, const usize bufferIndex, const glm::vec4& color, const boolean clearDepth, const f32 depth)
+        void mRender::ClearRenderPass(const sRenderPass* const renderPass, const types::boolean clearColor, const usize bufferIndex, const glm::vec4& color, const types::boolean clearDepth, const f32 depth)
         {
             _context->BindRenderPass(renderPass);
             if (clearColor == K_TRUE)
@@ -335,7 +336,7 @@ namespace realware
                 }
             }
 
-            memcpy((void*)(core::usize)_lights, &lightCount, sizeof(glm::uvec4));
+            memcpy((void*)(usize)_lights, &lightCount, sizeof(glm::uvec4));
 
             _context->WriteBuffer(_lightBuffer, 0, _lightsByteSize, _lights);
         }
@@ -403,7 +404,7 @@ namespace realware
 
             _context->Draw(
                 geometry->IndexCount,
-                geometry->VertexOffset / (core::usize)geometry->Format,
+                geometry->VertexOffset / (usize)geometry->Format,
                 geometry->IndexOffset,
                 instanceCount
             );
@@ -422,9 +423,9 @@ namespace realware
             {
                 if (it.GetGeometry() == geometry)
                 {
-                    boolean isVisible = it.GetVisible();
-                    boolean isOpaque = it.GetOpaque();
-                    if (isVisible == core::K_TRUE && isOpaque == core::K_FALSE)
+                    types::boolean isVisible = it.GetVisible();
+                    types::boolean isOpaque = it.GetOpaque();
+                    if (isVisible == K_TRUE && isOpaque == K_FALSE)
                     {
                         sTransform transform(&it);
                         cMaterial* material = it.GetMaterial();
@@ -663,10 +664,10 @@ namespace realware
                 return nullptr;
 
             // Load vertices
-            core::usize totalVertexCount = 0;
+            usize totalVertexCount = 0;
             model->Vertices = (render::sVertex*)malloc(scene->mMeshes[0]->mNumVertices * sizeof(render::sVertex));
             memset(model->Vertices, 0, scene->mMeshes[0]->mNumVertices * sizeof(render::sVertex));
-            for (core::s32 i = 0; i < scene->mMeshes[0]->mNumVertices; i++)
+            for (usize i = 0; i < scene->mMeshes[0]->mNumVertices; i++)
             {
                 aiVector3D pos = scene->mMeshes[0]->mVertices[i];
                 aiVector3D uv = scene->mMeshes[0]->mTextureCoords[0][i];
@@ -680,13 +681,13 @@ namespace realware
             }
 
             // Load indices
-            core::usize totalIndexCount = 0;
+            usize totalIndexCount = 0;
             model->Indices = (render::index*)malloc(scene->mMeshes[0]->mNumFaces * 3 * sizeof(render::index));
             memset(model->Indices, 0, scene->mMeshes[0]->mNumFaces * 3 * sizeof(render::index));
-            for (core::s32 i = 0; i < scene->mMeshes[0]->mNumFaces; i++)
+            for (usize i = 0; i < scene->mMeshes[0]->mNumFaces; i++)
             {
                 aiFace face = scene->mMeshes[0]->mFaces[i];
-                for (core::s32 j = 0; j < face.mNumIndices; j++)
+                for (usize j = 0; j < face.mNumIndices; j++)
                 {
                     model->Indices[totalIndexCount] = face.mIndices[j];
 

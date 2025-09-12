@@ -7,6 +7,7 @@ namespace realware
 {
     using namespace core;
     using namespace render;
+    using namespace types;
 
     namespace font
     {
@@ -158,8 +159,8 @@ namespace realware
             }
 
             font->Atlas = context->CreateTexture(
-                (core::s32)atlasWidth,
-                (core::s32)atlasHeight,
+                atlasWidth,
+                atlasHeight,
                 0,
                 render::sTexture::eType::TEXTURE_2D,
                 render::sTexture::eFormat::R8,

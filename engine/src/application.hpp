@@ -53,27 +53,27 @@ namespace realware
             struct sWindowDescriptor
             {
                 const char* Title = "DefaultWindow";
-                u32 Width = 640;
-                u32 Height = 480;
-                boolean IsFullscreen = K_FALSE;
+                types::u32 Width = 640;
+                types::u32 Height = 480;
+                boolean IsFullscreen = types::K_FALSE;
             };
 
             sWindowDescriptor WindowDesc;
-            u32 GlobalDataByteSize = 1024;
-            u32 TextureAtlasWidth = 1920;
-            u32 TextureAtlasHeight = 1080;
-            u32 TextureAtlasDepth = 16;
-            u32 VertexBufferSize = 65536;
-            u32 IndexBufferSize = 65536;
-            u32 InstanceBufferSize = 65536;
-            u32 MaterialBufferSize = 65536;
-            u32 LightBufferSize = 65536;
-            u32 MaxMaterialCount = 256;
-            u32 MaxGameObjectCount = 4294967295;
-            u32 MaxPhysicsSceneCount = 4;
-            u32 MaxPhysicsSubstanceCount = 256;
-            u32 MaxPhysicsActorCount = 65536;
-            u32 MaxPhysicsControllerCount = 4;
+            types::u32 GlobalDataByteSize = 1024;
+            types::u32 TextureAtlasWidth = 1920;
+            types::u32 TextureAtlasHeight = 1080;
+            types::u32 TextureAtlasDepth = 16;
+            types::u32 VertexBufferSize = 65536;
+            types::u32 IndexBufferSize = 65536;
+            types::u32 InstanceBufferSize = 65536;
+            types::u32 MaterialBufferSize = 65536;
+            types::u32 LightBufferSize = 65536;
+            types::u32 MaxMaterialCount = 256;
+            types::u32 MaxGameObjectCount = 4294967295;
+            types::u32 MaxPhysicsSceneCount = 4;
+            types::u32 MaxPhysicsSubstanceCount = 256;
+            types::u32 MaxPhysicsActorCount = 65536;
+            types::u32 MaxPhysicsControllerCount = 4;
         };
 
         class cApplication
@@ -105,7 +105,7 @@ namespace realware
             inline HWND GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
             inline boolean GetKey(int key) const { return _keys[key]; }
 
-            f32 GetDeltaTime() const { return _deltaTime; };
+            types::f32 GetDeltaTime() const { return _deltaTime; };
 
             sApplicationDescriptor* GetDesc() { return &_desc; }
 
@@ -130,8 +130,8 @@ namespace realware
             inline boolean GetWindowFocus() { return _isFocused; }
             inline void SetCursorPosition(const glm::vec2& cursorPosition) { _cursorPosition = cursorPosition; }
 
-            static constexpr usize MAX_KEY_COUNT = 256;
-            static constexpr usize KEY_BUFFER_MASK = 0xFF;
+            static constexpr types::usize MAX_KEY_COUNT = 256;
+            static constexpr types::usize KEY_BUFFER_MASK = 0xFF;
 
         protected:
             sApplicationDescriptor _desc = {};
@@ -146,10 +146,10 @@ namespace realware
             fs::mFileSystem* _fileSystem = nullptr;
             physics::mPhysics* _physics = nullptr;
             mGameObject* _gameObject = nullptr;
-            s32 _keys[MAX_KEY_COUNT] = {};
-            f32 _deltaTime = 0.0;
+            types::s32 _keys[MAX_KEY_COUNT] = {};
+            types::f32 _deltaTime = 0.0;
             std::chrono::steady_clock::time_point _timepointLast;
-            boolean _isFocused = K_FALSE;
+            boolean _isFocused = types::K_FALSE;
             glm::vec2 _cursorPosition = glm::vec2(0.0f);
         };
     }

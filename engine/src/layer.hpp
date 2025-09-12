@@ -19,12 +19,12 @@ namespace realware
             virtual void Free(cScene* scene) = 0;
             virtual void Update(cScene* scene) = 0;
 
-            void Toggle(boolean isEnabled) { m_IsEnabled = ~m_IsEnabled; }
+            void Toggle(types::boolean isEnabled) { m_IsEnabled = ~m_IsEnabled; }
 
-            boolean GetState() { return m_IsEnabled; }
+            types::boolean GetState() { return m_IsEnabled; }
 
         private:
-            boolean m_IsEnabled = K_TRUE;
+            types::boolean m_IsEnabled = types::K_TRUE;
 
         };
     }

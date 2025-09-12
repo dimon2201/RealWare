@@ -7,7 +7,6 @@
 #include "../../engine/thirdparty/glm/glm/glm.hpp"
 #include "../../engine/thirdparty/glm/glm/gtc/matrix_transform.hpp"
 #include "../../engine/src/application.hpp"
-#include "../../engine/src/ecs.hpp"
 #include "../../engine/src/camera_manager.hpp"
 #include "../../engine/src/texture_manager.hpp"
 #include "../../engine/src/render_manager.hpp"
@@ -24,6 +23,7 @@ using namespace realware::render;
 using namespace realware::font;
 using namespace realware::sound;
 using namespace realware::physics;
+using namespace types;
 
 class MyApp : public cApplication
 {

@@ -7,6 +7,7 @@
 namespace realware
 {
     using namespace core;
+    using namespace types;
 
     namespace fs
     {

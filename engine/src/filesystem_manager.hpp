@@ -13,10 +13,10 @@ namespace realware
     {
         struct sFile
         {
-            sFile(core::u8* data, core::usize byteSize) : Data(data), ByteSize(byteSize) {}
+            sFile(types::u8* data, types::usize byteSize) : Data(data), ByteSize(byteSize) {}
 
-            core::u8* Data = nullptr;
-            core::usize ByteSize = 0;
+            types::u8* Data = nullptr;
+            types::usize ByteSize = 0;
         };
 
         class mFileSystem
@@ -25,7 +25,7 @@ namespace realware
             explicit mFileSystem(const core::cApplication* const app) : _app((core::cApplication*)app) {};
             ~mFileSystem() = default;
 
-            sFile LoadFile(const std::string& filepath, const core::boolean isString);
+            sFile LoadFile(const std::string& filepath, const types::boolean isString);
             void UnloadFile(const sFile& buffer);
 
         private:

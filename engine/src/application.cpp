@@ -17,6 +17,7 @@ namespace realware
     using namespace font;
     using namespace physics;
     using namespace fs;
+    using namespace types;
 
     namespace core
     {

@@ -10,6 +10,7 @@
 namespace realware
 {
     using namespace physics;
+    using namespace types;
 
     namespace core
     {
@@ -25,7 +26,7 @@ namespace realware
             gameObjectManager->DeleteGameObject(K_CAMERA_ID);
         }
 
-        void mCamera::Update(const boolean updateMouseLook, const boolean updateMovement)
+        void mCamera::Update(const types::boolean updateMouseLook, const types::boolean updateMovement)
         {
             const f32 deltaTime = _app->GetDeltaTime();
 

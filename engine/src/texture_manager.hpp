@@ -21,7 +21,7 @@ namespace realware
         struct sTextureAtlasTexture
         {
             std::string ID = "";
-            core::boolean IsNormalized = core::K_FALSE;
+            types::boolean IsNormalized = types::K_FALSE;
             glm::vec3 Offset = glm::vec3(0.0f);
             glm::vec2 Size = glm::vec2(0.0f);
         };
@@ -44,9 +44,9 @@ namespace realware
             sTextureAtlasTexture* GetTexture(const std::string& id);
             std::vector<sTextureAtlasTexture*>* GetAnimation(const std::string& id);
             sTexture* GetAtlas();
-            inline core::usize GetWidth() const;
-            inline core::usize GetHeight() const;
-            inline core::usize GetDepth() const;
+            inline types::usize GetWidth() const;
+            inline types::usize GetHeight() const;
+            inline types::usize GetDepth() const;
 
         protected:
             core::cApplication* _app = nullptr;

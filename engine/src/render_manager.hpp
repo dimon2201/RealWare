@@ -22,7 +22,7 @@ namespace realware
         struct sRenderPass;
         class cRenderContext;
 
-        using index = core::u32;
+        using index = types::u32;
 
         struct sVertex
         {
@@ -39,12 +39,12 @@ namespace realware
                 POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3 = 32
             };
 
-            core::usize VertexCount = 0;
-            core::usize IndexCount = 0;
+            types::usize VertexCount = 0;
+            types::usize IndexCount = 0;
             void* VertexPtr = nullptr;
             void* IndexPtr = nullptr;
-            core::usize VertexOffset = 0;
-            core::usize IndexOffset = 0;
+            types::usize VertexOffset = 0;
+            types::usize IndexOffset = 0;
             eFormat Format = eFormat::NONE;
         };
 
@@ -53,10 +53,10 @@ namespace realware
             sVertexBufferGeometry::eFormat Format = render::sVertexBufferGeometry::eFormat::NONE;
             sVertex* Vertices = nullptr;
             index* Indices = nullptr;
-            core::usize VertexCount = 0;
-            core::usize IndexCount = 0;
-            core::usize VerticesByteSize = 0;
-            core::usize IndicesByteSize = 0;
+            types::usize VertexCount = 0;
+            types::usize IndexCount = 0;
+            types::usize VerticesByteSize = 0;
+            types::usize IndicesByteSize = 0;
         };
 
         struct sModel : sPrimitive
@@ -67,10 +67,10 @@ namespace realware
         {
             glm::vec3 Color = glm::vec3(0.0f);
             glm::vec3 Direction = glm::vec3(0.0f);
-            core::f32 Scale = 0.0f;
-            core::f32 AttenuationConstant = 0.0f;
-            core::f32 AttenuationLinear = 0.0f;
-            core::f32 AttenuationQuadratic = 0.0f;
+            types::f32 Scale = 0.0f;
+            types::f32 AttenuationConstant = 0.0f;
+            types::f32 AttenuationLinear = 0.0f;
+            types::f32 AttenuationQuadratic = 0.0f;
         };
 
         struct sTransform
@@ -80,7 +80,7 @@ namespace realware
 
             void Transform();
 
-            core::boolean Use2D = core::K_FALSE;
+            types::boolean Use2D = types::K_FALSE;
             glm::vec3 Position = glm::vec3(0.0f);
             glm::vec3 Rotation = glm::vec3(0.0f);
             glm::vec3 Scale = glm::vec3(1.0f);
@@ -109,10 +109,10 @@ namespace realware
 
         struct sRenderInstance
         {
-            sRenderInstance(core::s32 materialIndex, const sTransform& transform);
+            sRenderInstance(types::s32 materialIndex, const sTransform& transform);
 
-            core::f32 Use2D = 0.0f;
-            core::s32 MaterialIndex = -1;
+            types::f32 Use2D = 0.0f;
+            types::s32 MaterialIndex = -1;
             unsigned _pad[2] = {};
             glm::mat4 World = {};
         };
@@ -125,15 +125,15 @@ namespace realware
 
         struct sMaterialInstance
         {
-            sMaterialInstance(core::s32 materialIndex, const cMaterial* const material);
+            sMaterialInstance(types::s32 materialIndex, const cMaterial* const material);
 
             void SetDiffuseTexture(const sTextureAtlasTexture& area);
 
-            core::s32 BufferIndex = -1;
-            core::f32 DiffuseTextureLayerInfo = 0.0f;
-            core::f32 MetallicTextureLayerInfo = 0.0f;
-            core::f32 RoughnessTextureLayerInfo = 0.0f;
-            core::f32 UserData[4] = {};
+            types::s32 BufferIndex = -1;
+            types::f32 DiffuseTextureLayerInfo = 0.0f;
+            types::f32 MetallicTextureLayerInfo = 0.0f;
+            types::f32 RoughnessTextureLayerInfo = 0.0f;
+            types::f32 UserData[4] = {};
             glm::vec4 DiffuseTextureInfo = glm::vec4(0.0f);
             glm::vec4 DiffuseColor = glm::vec4(0.0f);
             glm::vec4 HighlightColor = glm::vec4(0.0f);
@@ -163,14 +163,14 @@ namespace realware
 
             cMaterial* AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
             sVertexArray* CreateDefaultVertexArray();
-            sVertexBufferGeometry* CreateGeometry(const sVertexBufferGeometry::eFormat& format, const core::usize verticesByteSize, const void* const vertices, const core::usize indicesByteSize, const void* const indices);
+            sVertexBufferGeometry* CreateGeometry(const sVertexBufferGeometry::eFormat& format, const types::usize verticesByteSize, const void* const vertices, const types::usize indicesByteSize, const void* const indices);
             
             void DeleteMaterial(const std::string& id);
             inline void DestroyGeometry(sVertexBufferGeometry* geometry) { delete geometry; }
             void ClearGeometryBuffer();
 
-            void ClearRenderPass(const sRenderPass* const renderPass, const core::boolean clearColor, const core::usize bufferIndex, const glm::vec4& color, const core::boolean clearDepth, const core::f32 depth);
-            void ClearRenderPasses(const glm::vec4& clearColor, const core::f32 clearDepth);
+            void ClearRenderPass(const sRenderPass* const renderPass, const types::boolean clearColor, const types::usize bufferIndex, const glm::vec4& color, const types::boolean clearDepth, const types::f32 depth);
+            void ClearRenderPasses(const glm::vec4& clearColor, const types::f32 clearDepth);
             
             void UpdateLights();
 
@@ -208,22 +208,22 @@ namespace realware
             sBuffer* _materialBuffer = nullptr;
             sBuffer* _lightBuffer = nullptr;
             void* _vertices = nullptr;
-            core::usize _verticesByteSize = 0;
+            types::usize _verticesByteSize = 0;
             void* _indices = nullptr;
-            core::usize _indicesByteSize = 0;
+            types::usize _indicesByteSize = 0;
             void* _instances = nullptr;
-            core::usize _instancesByteSize = 0;
+            types::usize _instancesByteSize = 0;
             void* _materials = nullptr;
-            core::usize _materialsByteSize = 0;
+            types::usize _materialsByteSize = 0;
             void* _lights = nullptr;
-            core::usize _lightsByteSize = 0;
-            std::unordered_map<render::cMaterial*, core::s32>* _materialsMap = {};
+            types::usize _lightsByteSize = 0;
+            std::unordered_map<render::cMaterial*, types::s32>* _materialsMap = {};
             sRenderPass* _opaque = nullptr;
             sRenderPass* _transparent = nullptr;
             sRenderPass* _text = nullptr;
             sRenderPass* _compositeTransparent = nullptr;
             sRenderPass* _compositeFinal = nullptr;
-            core::usize _materialCountCPU = 0;
+            types::usize _materialCountCPU = 0;
             std::vector<cMaterial> _materialsCPU = {};
         };
     }

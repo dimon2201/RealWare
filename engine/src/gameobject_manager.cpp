@@ -8,6 +8,7 @@ namespace realware
     using namespace render;
     using namespace font;
     using namespace physics;
+    using namespace types;
 
     namespace core
     {
