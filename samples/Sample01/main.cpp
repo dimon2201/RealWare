@@ -72,14 +72,9 @@ public:
             glm::vec4(1.0f)
         );
         
-        // Font
-        sFont* font = _font->CreateFontTTF(
-            "C:/DDD/RealWare/resources/fonts/brahms.ttf",
-            64
-        );
-
         // Text
-        cText* text = new cText(font, "New line\ntest\nanother newline\there");
+        sFont* font = _font->CreateFontTTF("C:/DDD/RealWare/resources/fonts/brahms.ttf", 64);
+        cText* text = _font->CreateText(font, "New line\ntest\nanother newline\there");
 
         // Physics
         cSimulationScene* pxScene = _physics->AddScene("PXScene1");

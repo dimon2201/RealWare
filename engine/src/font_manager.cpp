@@ -212,7 +212,14 @@ namespace realware
             return font;
         }
 
-        void mFont::DestroyFontTTF(sFont* const font)
+        cText* mFont::CreateText(const sFont* const font, const std::string& text)
+        {
+            cText* const textObject = new cText(font, text);
+
+            return textObject;
+        }
+
+        void mFont::DestroyFontTTF(sFont* font)
         {
             for (auto glyph : font->Alphabet)
                 free(glyph.second.BitmapData);
@@ -225,6 +232,11 @@ namespace realware
 
             delete font->Atlas;
             delete font;
+        }
+
+        void mFont::DestroyText(cText* text)
+        {
+            delete text;
         }
 
         f32 mFont::GetTextWidth(const sFont* const font, const std::string& text)

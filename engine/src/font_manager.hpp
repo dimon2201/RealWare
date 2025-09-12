@@ -50,15 +50,15 @@ namespace realware
         class cText
         {
         public:
-            explicit cText(const sFont* const font, const std::string& text) : m_font((sFont*)font), m_text(text) {}
+            explicit cText(const sFont* const font, const std::string& text) : _font((sFont*)font), _text(text) {}
             ~cText() = default;
 
-            inline sFont* GetFont() const { return m_font; }
-            inline std::string GetText() const { return m_text; }
+            inline sFont* GetFont() const { return _font; }
+            inline std::string GetText() const { return _text; }
 
         private:
-            sFont* m_font = nullptr;
-            std::string m_text = "";
+            sFont* _font = nullptr;
+            std::string _text = "";
         };
 
         class mFont
@@ -68,7 +68,9 @@ namespace realware
             ~mFont();
 
             sFont* CreateFontTTF(const std::string& filename, const types::usize glyphSize);
-            void DestroyFontTTF(sFont* const font);
+            cText* CreateText(const sFont* const font, const std::string& text);
+            void DestroyFontTTF(sFont* font);
+            void DestroyText(cText* text);
             
             types::f32 GetTextWidth(const sFont* const font, const std::string& text);
             types::f32 GetTextHeight(const sFont* const font, const std::string& text);
