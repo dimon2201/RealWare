@@ -1,3 +1,3 @@
 # RealWare
  
-C++ game engine
+C++11 game engine
