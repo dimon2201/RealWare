@@ -3,6 +3,7 @@
 #include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
 #include "camera_manager.hpp"
 #include "physics_manager.hpp"
+#include "render_manager.hpp"
 #include "render_context.hpp"
 #include "application.hpp"
 #include "gameobject_manager.hpp"

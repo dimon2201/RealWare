@@ -110,7 +110,7 @@ namespace realware
 
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
+                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetVertexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
@@ -134,7 +134,7 @@ namespace realware
             }
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
+                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetVertexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
@@ -159,7 +159,7 @@ namespace realware
             }
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::NONE;
+                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
@@ -175,7 +175,7 @@ namespace realware
             }
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::NONE;
+                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("AccumulationTexture");
                 renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[1]);
@@ -196,7 +196,7 @@ namespace realware
             }
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = sVertexBufferGeometry::eFormat::NONE;
+                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputTextures.emplace_back(opaqueRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(

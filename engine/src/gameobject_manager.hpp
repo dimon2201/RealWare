@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "application.hpp"
 #include "gameobject_features.hpp"
 #include "types.hpp"
 
@@ -100,7 +99,7 @@ namespace realware
         class mGameObject
         {
         public:
-            explicit mGameObject(const app::cApplication* const app) : _app((app::cApplication*)app), _maxGameObjectCount(((app::cApplication*)app)->GetDesc()->MaxGameObjectCount) {}
+            explicit mGameObject(const app::cApplication* const app);
             ~mGameObject() = default;
 
             cGameObject* AddGameObject(const std::string& id);

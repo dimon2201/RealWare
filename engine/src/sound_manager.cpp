@@ -9,7 +9,7 @@ namespace realware
     {
         mSound::mSound(const cApplication* const app, const cSoundContext* const context) : _app((cApplication*)app), _context((cSoundContext*)context) {}
 
-        sSound* mSound::Load(const std::string& filename, const sSound::eFormat& format, const std::string& tag)
+        sSound* mSound::Load(const std::string& filename, const game::GameObjectFeatures& format, const std::string& tag)
         {
             sSound* sound = _context->Create(filename, format);
             sound->Tag = tag;

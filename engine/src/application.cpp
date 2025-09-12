@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include "application.hpp"
 #include "camera_manager.hpp"
+#include "render_manager.hpp"
 #include "render_context.hpp"
 #include "sound_context.hpp"
 #include "font_manager.hpp"
@@ -9,6 +10,7 @@
 #include "filesystem_manager.hpp"
 #include "physics_manager.hpp"
 #include "gameobject_manager.hpp"
+#include "texture_manager.hpp"
 
 namespace realware
 {

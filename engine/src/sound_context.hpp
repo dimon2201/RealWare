@@ -4,6 +4,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include "../../thirdparty/glm/glm/glm.hpp"
+#include "gameobject_features.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -32,14 +33,8 @@ namespace realware
 
         struct sSound
         {
-            enum class eFormat
-            {
-                NONE = 0,
-                WAV = 1
-            };
-
             std::string Tag = "";
-            eFormat Format = eFormat::NONE;
+            game::GameObjectFeatures Format = game::GameObjectFeatures::SOUND_FORMAT_WAV;
             void* File = nullptr;
             types::u32 Source;
             types::u32 Buffer;
@@ -51,7 +46,7 @@ namespace realware
             cSoundContext() = default;
             virtual ~cSoundContext() = default;
 
-            virtual sSound* Create(const std::string& filename, const sSound::eFormat& format) = 0;
+            virtual sSound* Create(const std::string& filename, const game::GameObjectFeatures& format) = 0;
             virtual void Destroy(const sSound* const sound) = 0;
             virtual void Play(const sSound* const sound) = 0;
             virtual void Stop(const sSound* const sound) = 0;
@@ -69,7 +64,7 @@ namespace realware
             cOpenALSoundContext();
             virtual ~cOpenALSoundContext() override final;
 
-            virtual sSound* Create(const std::string& filename, const sSound::eFormat& format) override final;
+            virtual sSound* Create(const std::string& filename, const game::GameObjectFeatures& format) override final;
             virtual void Destroy(const sSound* const sound) override final;
             virtual void Play(const sSound* const sound) override final;
             virtual void Stop(const sSound* const sound) override final;

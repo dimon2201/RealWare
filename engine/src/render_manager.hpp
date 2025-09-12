@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <unordered_map>
+#include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "texture_manager.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -16,6 +16,11 @@ namespace realware
     namespace game
     {
         class cGameObject;
+    }
+
+    namespace render
+    {
+        struct sTextureAtlasTexture;
     }
 
     namespace render
@@ -95,18 +100,18 @@ namespace realware
         {
         public:
             cMaterial() = default;
-            explicit cMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
-                : _id(id), _diffuseTexture((sTextureAtlasTexture*)diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor) {}
+            explicit cMaterial(const std::string& id, const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
+                : _id(id), _diffuseTexture((render::sTextureAtlasTexture*)diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor) {}
             ~cMaterial() = default;
 
             const std::string& GetID() const { return _id; }
-            sTextureAtlasTexture* GetDiffuseTexture() const { return _diffuseTexture; }
+            render::sTextureAtlasTexture* GetDiffuseTexture() const { return _diffuseTexture; }
             glm::vec4 GetDiffuseColor() const { return _diffuseColor; }
             glm::vec4 GetHighlightColor() const { return _highlightColor; }
 
         private:
             std::string _id = "";
-            sTextureAtlasTexture* _diffuseTexture = nullptr;
+            render::sTextureAtlasTexture* _diffuseTexture = nullptr;
             glm::vec4 _diffuseColor = glm::vec4(1.0f);
             glm::vec4 _highlightColor = glm::vec4(1.0f);
         };
@@ -131,7 +136,7 @@ namespace realware
         {
             sMaterialInstance(types::s32 materialIndex, const cMaterial* const material);
 
-            void SetDiffuseTexture(const sTextureAtlasTexture& area);
+            void SetDiffuseTexture(const render::sTextureAtlasTexture& area);
 
             types::s32 BufferIndex = -1;
             types::f32 DiffuseTextureLayerInfo = 0.0f;
@@ -165,7 +170,7 @@ namespace realware
             explicit mRender(const app::cApplication* const app, const cRenderContext* const context);
             ~mRender();
 
-            cMaterial* AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
+            cMaterial* AddMaterial(const std::string& id, const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
             sVertexArray* CreateDefaultVertexArray();
             sVertexBufferGeometry* CreateGeometry(const sVertexBufferGeometry::eFormat& format, const types::usize verticesByteSize, const void* const vertices, const types::usize indicesByteSize, const void* const indices);
             

@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "sound_context.hpp"
+#include "gameobject_features.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -15,13 +15,16 @@ namespace realware
 
     namespace sound
     {
+        struct sSound;
+        class cSoundContext;
+
         class mSound
         {
         public:
             mSound(const app::cApplication* const app, const cSoundContext* const context);
             ~mSound() = default;
 
-            sSound* Load(const std::string& filename, const sSound::eFormat& format, const std::string& tag);
+            sSound* Load(const std::string& filename, const game::GameObjectFeatures& format, const std::string& tag);
             void Remove(const std::string& tag);
             //void Play(core::entity object, core::cScene* scene);
             //void Stop(core::entity object, core::cScene* scene);

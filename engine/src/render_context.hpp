@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "render_manager.hpp"
+#include "gameobject_features.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -108,7 +108,7 @@ namespace realware
             struct sDescriptor
             {
                 sVertexArray* VertexArray = nullptr;
-                render::sVertexBufferGeometry::eFormat InputVertexFormat = render::sVertexBufferGeometry::eFormat::NONE;
+                game::GameObjectFeatures InputVertexFormat = game::GameObjectFeatures::VERTEX_BUFFER_FORMAT_NONE;
                 std::vector<sBuffer*> InputBuffers = {};
                 std::vector<sTexture*> InputTextures = {};
                 std::vector<std::string> InputTextureNames = {};

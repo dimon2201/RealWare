@@ -78,6 +78,11 @@ namespace realware
             );
         }
 
+        mGameObject::mGameObject(const cApplication* const app) :
+            _app((cApplication*)app), _maxGameObjectCount(((cApplication*)app)->GetDesc()->MaxGameObjectCount)
+        {
+        }
+
         cGameObject* mGameObject::AddGameObject(const std::string& id)
         {
             const usize gameObjectCount = _gameObjects.size();

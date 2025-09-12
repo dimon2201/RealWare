@@ -6,6 +6,7 @@
 #include "filesystem_manager.hpp"
 #include "types.hpp"
 #include "application.hpp"
+#include "render_manager.hpp"
 
 namespace realware
 {
@@ -645,12 +646,12 @@ namespace realware
 
             renderPass->Desc.VertexArray = CreateVertexArray();
             BindVertexArray(renderPass->Desc.VertexArray);
-            if (renderPass->Desc.InputVertexFormat == sVertexBufferGeometry::eFormat::NONE)
+            if (renderPass->Desc.InputVertexFormat == GameObjectFeatures::VERTEX_BUFFER_FORMAT_NONE)
             {
                 for (auto buffer : renderPass->Desc.InputBuffers)
                     BindBuffer(buffer);
             }
-            else if (renderPass->Desc.InputVertexFormat == sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3)
+            else if (renderPass->Desc.InputVertexFormat == GameObjectFeatures::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
             {
                 for (auto buffer : renderPass->Desc.InputBuffers)
                     BindBuffer(buffer);

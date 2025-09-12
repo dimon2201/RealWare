@@ -1,18 +1,19 @@
 #pragma once
 
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "render_manager.hpp"
 #include "types.hpp"
 
 namespace realware
 {
     namespace app
     {
-        class cApp;
+        class cApplication;
     }
 
     namespace game
     {
+        class cGameObject;
+
         class mCamera
         {
         public:

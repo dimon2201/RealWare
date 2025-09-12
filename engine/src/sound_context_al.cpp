@@ -6,6 +6,8 @@
 
 namespace realware
 {
+    using namespace game;
+
     namespace sound
     {
         sWAVFile* LoadWAVFile(const std::string& filename)
@@ -89,11 +91,11 @@ namespace realware
             alcCloseDevice(m_device);
         }
 
-        sSound* cOpenALSoundContext::Create(const std::string& filename, const sSound::eFormat& format)
+        sSound* cOpenALSoundContext::Create(const std::string& filename, const GameObjectFeatures& format)
         {
             sSound* sound = nullptr;
 
-            if (format == sSound::eFormat::WAV)
+            if (format == GameObjectFeatures::SOUND_FORMAT_WAV)
             {
                 sound = new sSound();
 
@@ -143,7 +145,7 @@ namespace realware
         void cOpenALSoundContext::Destroy(const sSound* const sound)
         {
             if (sound->File != nullptr) {
-                if (sound->Format == sSound::eFormat::WAV)
+                if (sound->Format == GameObjectFeatures::SOUND_FORMAT_WAV)
                     FreeWAVFile((sWAVFile*)sound->File);
             }
 
