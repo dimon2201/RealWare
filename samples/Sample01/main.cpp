@@ -94,8 +94,8 @@ public:
         triangleObject1->SetScale(glm::vec3(1.0f));
         triangleObject1->SetMaterial(material1);
         triangleObject1->SetPhysicsActor(
-            GameObjectFeatures::PHYSICS_ACTOR_STATIC,
-            GameObjectFeatures::PHYSICS_SHAPE_PLANE,
+            Category::PHYSICS_ACTOR_STATIC,
+            Category::PHYSICS_SHAPE_PLANE,
             pxScene,
             pxSubstance,
             0.0f

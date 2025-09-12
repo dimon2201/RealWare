@@ -122,7 +122,7 @@ namespace realware
             return &_controllers[_controllerCount - 1];
         }
 
-        cActor* mPhysics::AddActor(const std::string& id, const GameObjectFeatures& staticOrDynamic, const GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const render::sTransform* const transform)
+        cActor* mPhysics::AddActor(const std::string& id, const Category& staticOrDynamic, const Category& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const render::sTransform* const transform)
         {
             glm::vec3 position = transform->Position;
             glm::vec3 scale = transform->Scale;
@@ -130,18 +130,18 @@ namespace realware
             PxTransform pose(PxVec3(position.y, position.x, position.z));
             
             PxShape* shape = nullptr;
-            if (shapeType == GameObjectFeatures::PHYSICS_SHAPE_PLANE)
+            if (shapeType == Category::PHYSICS_SHAPE_PLANE)
                 shape = _physics->createShape(PxPlaneGeometry(), *substance->GetSubstance());
-            else if (shapeType == GameObjectFeatures::PHYSICS_SHAPE_BOX)
+            else if (shapeType == Category::PHYSICS_SHAPE_BOX)
                 shape = _physics->createShape(PxBoxGeometry(scale.y, scale.x, scale.z), *substance->GetSubstance());
 
             PxActor* actor = nullptr;
-            if (staticOrDynamic == GameObjectFeatures::PHYSICS_ACTOR_STATIC)
+            if (staticOrDynamic == Category::PHYSICS_ACTOR_STATIC)
             {
                 actor = _physics->createRigidStatic(pose);
                 ((PxRigidStatic*)actor)->attachShape(*shape);
             }
-            else if (staticOrDynamic == GameObjectFeatures::PHYSICS_ACTOR_DYNAMIC)
+            else if (staticOrDynamic == Category::PHYSICS_ACTOR_DYNAMIC)
             {
                 actor = _physics->createRigidDynamic(pose);
                 ((PxRigidDynamic*)actor)->attachShape(*shape);

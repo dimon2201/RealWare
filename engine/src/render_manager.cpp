@@ -110,7 +110,7 @@ namespace realware
 
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+                renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetVertexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
@@ -120,8 +120,8 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
                     "RENDER_PATH_OPAQUE",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
@@ -134,7 +134,7 @@ namespace realware
             }
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+                renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetVertexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
@@ -143,8 +143,8 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
                     "RENDER_PATH_TRANSPARENT",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
                 renderPassDesc.RenderTarget = transparentRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
@@ -159,13 +159,13 @@ namespace realware
             }
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_NONE;
+                renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
                     "RENDER_PATH_TEXT",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
@@ -175,15 +175,15 @@ namespace realware
             }
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_NONE;
+                renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("AccumulationTexture");
                 renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[1]);
                 renderPassDesc.InputTextureNames.emplace_back("RevealageTexture");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
                     "RENDER_PATH_TRANSPARENT_COMPOSITE",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
                 renderPassDesc.RenderTarget = opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
@@ -196,13 +196,13 @@ namespace realware
             }
             {
                 sRenderPass::sDescriptor renderPassDesc;
-                renderPassDesc.InputVertexFormat = GameObjectFeatures::VERTEX_BUFFER_FORMAT_NONE;
+                renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputTextures.emplace_back(opaqueRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
                     "RENDER_PATH_QUAD",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build/samples/Sample01/Debug/data/shaders/main_fragment.shader"
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
+                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
                 renderPassDesc.RenderTarget = nullptr;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);

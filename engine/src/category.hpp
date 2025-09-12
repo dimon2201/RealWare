@@ -4,7 +4,7 @@ namespace realware
 {
     namespace game
     {
-        enum class GameObjectFeatures
+        enum class Category
         {
             PHYSICS_ACTOR_STATIC = 0,
             PHYSICS_ACTOR_DYNAMIC = 1,

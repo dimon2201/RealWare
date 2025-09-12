@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "gameobject_features.hpp"
+#include "category.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -73,7 +73,7 @@ namespace realware
             inline void SetMaterial(const render::cMaterial* const material) { _material = (render::cMaterial*)material; }
             inline void SetText(const font::cText* const text) { _text = (font::cText*)text; }
             inline void SetLight(const render::sLight* const light) { _light = (render::sLight*)light; }
-            void SetPhysicsActor(const GameObjectFeatures& staticOrDynamic, const GameObjectFeatures& shapeType, const physics::cSimulationScene* const scene, const physics::cSubstance* const substance, const types::f32 mass);
+            void SetPhysicsActor(const Category& staticOrDynamic, const Category& shapeType, const physics::cSimulationScene* const scene, const physics::cSubstance* const substance, const types::f32 mass);
             void SetPhysicsController(const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const glm::vec3& up, const physics::cSimulationScene* const scene, const physics::cSubstance* const substance);
 
             friend class mGameObject;

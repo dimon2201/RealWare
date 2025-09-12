@@ -6,7 +6,7 @@
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "gameobject_features.hpp"
+#include "category.hpp"
 
 namespace physx
 {
@@ -163,7 +163,7 @@ namespace realware
 
             cSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
             cSubstance* AddSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
-            cActor* AddActor(const std::string& id, const game::GameObjectFeatures& staticOrDynamic, const game::GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const types::f32 mass, const render::sTransform* const transform);
+            cActor* AddActor(const std::string& id, const game::Category& staticOrDynamic, const game::Category& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const types::f32 mass, const render::sTransform* const transform);
             cController* AddController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const render::sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance);
             void DeleteScene(const std::string& id);
             void DeleteSubstance(const std::string& id);
