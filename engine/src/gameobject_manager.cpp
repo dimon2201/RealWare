@@ -11,7 +11,7 @@ namespace realware
     using namespace physics;
     using namespace types;
 
-    namespace core
+    namespace game
     {
         cGameObject::cGameObject()
         {

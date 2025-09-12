@@ -9,7 +9,7 @@ using namespace physx;
 namespace realware
 {
     using namespace app;
-    using namespace core;
+    using namespace game;
     using namespace types;
 
     namespace physics
@@ -100,7 +100,7 @@ namespace realware
             return &_substances[_substanceCount - 1];
         }
 
-        cController* mPhysics::AddController(const std::string& id, const f32 eyeHeight, const f32 height, const f32 radius, const sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance)
+        cController* mPhysics::AddController(const std::string& id, const f32 eyeHeight, const f32 height, const f32 radius, const render::sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance)
         {
             glm::vec3 position = transform->Position;
 
@@ -122,7 +122,7 @@ namespace realware
             return &_controllers[_controllerCount - 1];
         }
 
-        cActor* mPhysics::AddActor(const std::string& id, const GameObjectFeatures& staticOrDynamic, const GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const sTransform* const transform)
+        cActor* mPhysics::AddActor(const std::string& id, const GameObjectFeatures& staticOrDynamic, const GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const render::sTransform* const transform)
         {
             glm::vec3 position = transform->Position;
             glm::vec3 scale = transform->Scale;

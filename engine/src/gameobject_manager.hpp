@@ -36,7 +36,7 @@ namespace realware
         class mPhysics;
     }
 
-    namespace core
+    namespace game
     {
         class cGameObject
         {

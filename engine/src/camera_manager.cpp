@@ -10,10 +10,11 @@
 namespace realware
 {
     using namespace app;
+    using namespace render;
     using namespace physics;
     using namespace types;
 
-    namespace core
+    namespace game
     {
         void mCamera::CreateCamera()
         {

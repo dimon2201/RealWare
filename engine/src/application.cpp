@@ -12,7 +12,7 @@
 
 namespace realware
 {
-    using namespace core;
+    using namespace game;
     using namespace render;
     using namespace sound;
     using namespace font;

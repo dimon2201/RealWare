@@ -10,7 +10,7 @@
 
 namespace realware
 {
-    namespace core
+    namespace game
     {
         class mCamera;
         class mGameObject;
@@ -92,14 +92,14 @@ namespace realware
 
             inline types::boolean GetRunState() const { return glfwWindowShouldClose((GLFWwindow*)_window); }
 
-            inline core::mCamera* GetCameraManager() const { return _camera; }
+            inline game::mCamera* GetCameraManager() const { return _camera; }
             inline render::mTexture* GetTextureManager() const { return _texture; }
             inline render::mRender* GetRenderManager() const { return _render; }
             inline font::mFont* GetFontManager() const { return _font; }
             inline sound::mSound* GetSoundManager() const { return _sound; }
             inline fs::mFileSystem* GetFileSystemManager() const { return _fileSystem; }
             inline physics::mPhysics* GetPhysicsManager() const { return _physics; }
-            inline core::mGameObject* GetGameObjectManager() const { return _gameObject; }
+            inline game::mGameObject* GetGameObjectManager() const { return _gameObject; }
 
             inline void* GetWindow() const { return _window; }
             inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
@@ -140,14 +140,14 @@ namespace realware
             void* _window = nullptr;
             render::cRenderContext* _renderContext = nullptr;
             sound::cSoundContext* _soundContext = nullptr;
-            core::mCamera* _camera = nullptr;
+            game::mCamera* _camera = nullptr;
             render::mRender* _render = nullptr;
             render::mTexture* _texture = nullptr;
             font::mFont* _font = nullptr;
             sound::mSound* _sound = nullptr;
             fs::mFileSystem* _fileSystem = nullptr;
             physics::mPhysics* _physics = nullptr;
-            core::mGameObject* _gameObject = nullptr;
+            game::mGameObject* _gameObject = nullptr;
             types::s32 _keys[MAX_KEY_COUNT] = {};
             types::f32 _deltaTime = 0.0;
             std::chrono::steady_clock::time_point _timepointLast;

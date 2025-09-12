@@ -13,7 +13,7 @@ namespace realware
         class cApplication;
     }
 
-    namespace core
+    namespace game
     {
         class cGameObject;
     }
@@ -80,7 +80,7 @@ namespace realware
         struct sTransform
         {
             sTransform() = default;
-            sTransform(const core::cGameObject* const gameObject);
+            sTransform(const game::cGameObject* const gameObject);
 
             void Transform();
 
@@ -145,7 +145,7 @@ namespace realware
 
         struct sLightInstance
         {
-            sLightInstance(const core::cGameObject* const object);
+            sLightInstance(const game::cGameObject* const object);
 
             glm::vec4 Position = glm::vec4(0.0f);
             glm::vec4 Color = glm::vec4(0.0f);
@@ -178,9 +178,9 @@ namespace realware
             
             void UpdateLights();
 
-            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, std::vector<core::cGameObject>& objects, const core::cGameObject* const cameraObject);
-            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, std::vector<core::cGameObject>& objects, const core::cGameObject* const cameraObject);
-            void DrawTexts(std::vector<core::cGameObject>& objects);
+            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject);
+            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject);
+            void DrawTexts(std::vector<game::cGameObject>& objects);
             
             void CompositeTransparent();
             void CompositeFinal();

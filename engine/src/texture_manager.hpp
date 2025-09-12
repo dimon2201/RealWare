@@ -12,11 +12,6 @@ namespace realware
         class cApplication;
     }
 
-    namespace core
-    {
-        class cScene;
-    }
-
     namespace render
     {
         class cRenderContext;

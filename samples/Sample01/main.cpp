@@ -18,8 +18,8 @@
 #include "../../engine/src/physics_manager.hpp"
 #include "../../engine/src/gameobject_manager.hpp"
 
-using namespace realware::core;
 using namespace realware::app;
+using namespace realware::game;
 using namespace realware::render;
 using namespace realware::font;
 using namespace realware::sound;
@@ -166,7 +166,6 @@ public:
     }
 
 private:
-    cScene* m_scene = nullptr;
     sPrimitive* _trianglePrimitive = nullptr;
     sVertexBufferGeometry* _triangleGeometry = nullptr;
     cGameObject* _cameraGameObject = nullptr;

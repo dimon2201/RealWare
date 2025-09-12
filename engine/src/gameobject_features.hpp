@@ -2,7 +2,7 @@
 
 namespace realware
 {
-    namespace core
+    namespace game
     {
         enum class GameObjectFeatures
         {

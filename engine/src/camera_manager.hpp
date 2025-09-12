@@ -11,7 +11,7 @@ namespace realware
         class cApp;
     }
 
-    namespace core
+    namespace game
     {
         class mCamera
         {

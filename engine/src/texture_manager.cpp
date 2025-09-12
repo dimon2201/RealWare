@@ -7,7 +7,7 @@
 namespace realware
 {
     using namespace app;
-    using namespace core;
+    using namespace game;
     using namespace types;
 
     namespace render

@@ -83,7 +83,6 @@ namespace realware
             types::u16 _unicode[256] = {};
             render::cRenderContext* _context = nullptr;
             FT_Library _lib = {};
-
         };
     }
 }

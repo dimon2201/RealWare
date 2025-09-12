@@ -30,10 +30,8 @@ namespace realware
     namespace render
     {
         struct sVertexBufferGeometry;
+        struct sTransform;
     }
-
-    using namespace core;
-    using namespace render;
 
     namespace physics
     {
@@ -165,8 +163,8 @@ namespace realware
 
             cSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
             cSubstance* AddSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
-            cActor* AddActor(const std::string& id, const core::GameObjectFeatures& staticOrDynamic, const core::GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const types::f32 mass, const sTransform* const transform);
-            cController* AddController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance);
+            cActor* AddActor(const std::string& id, const game::GameObjectFeatures& staticOrDynamic, const game::GameObjectFeatures& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const types::f32 mass, const render::sTransform* const transform);
+            cController* AddController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const render::sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance);
             void DeleteScene(const std::string& id);
             void DeleteSubstance(const std::string& id);
             void DeleteActor(const std::string& id);
