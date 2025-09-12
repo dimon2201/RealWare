@@ -55,7 +55,7 @@ namespace realware
                 const char* Title = "DefaultWindow";
                 types::u32 Width = 640;
                 types::u32 Height = 480;
-                boolean IsFullscreen = types::K_FALSE;
+                types::boolean IsFullscreen = types::K_FALSE;
             };
 
             sWindowDescriptor WindowDesc;
@@ -88,7 +88,7 @@ namespace realware
 
             void Run();
 
-            inline boolean GetRunState() const { return glfwWindowShouldClose((GLFWwindow*)_window); }
+            inline types::boolean GetRunState() const { return glfwWindowShouldClose((GLFWwindow*)_window); }
 
             inline mCamera* GetCameraManager() const { return _camera; }
             inline render::mTexture* GetTextureManager() const { return _texture; }
@@ -103,7 +103,7 @@ namespace realware
             inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
             inline const char* GetWindowTitle() const { return _desc.WindowDesc.Title; }
             inline HWND GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
-            inline boolean GetKey(int key) const { return _keys[key]; }
+            inline types::boolean GetKey(int key) const { return _keys[key]; }
 
             types::f32 GetDeltaTime() const { return _deltaTime; };
 
@@ -125,9 +125,9 @@ namespace realware
 
             inline glm::vec2 cApplication::GetMonitorSize() const { return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)); }
 
-            inline void SetKey(const int key, const boolean value) { _keys[key] = value; }
-            inline void SetWindowFocus(const boolean value) { _isFocused = value; }
-            inline boolean GetWindowFocus() { return _isFocused; }
+            inline void SetKey(const int key, const types::boolean value) { _keys[key] = value; }
+            inline void SetWindowFocus(const types::boolean value) { _isFocused = value; }
+            inline types::boolean GetWindowFocus() { return _isFocused; }
             inline void SetCursorPosition(const glm::vec2& cursorPosition) { _cursorPosition = cursorPosition; }
 
             static constexpr types::usize MAX_KEY_COUNT = 256;
@@ -149,7 +149,7 @@ namespace realware
             types::s32 _keys[MAX_KEY_COUNT] = {};
             types::f32 _deltaTime = 0.0;
             std::chrono::steady_clock::time_point _timepointLast;
-            boolean _isFocused = types::K_FALSE;
+            types::boolean _isFocused = types::K_FALSE;
             glm::vec2 _cursorPosition = glm::vec2(0.0f);
         };
     }
