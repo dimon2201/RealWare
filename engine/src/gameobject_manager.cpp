@@ -50,9 +50,9 @@ namespace realware
 
         void cGameObject::SetPhysicsActor(const Category& staticOrDynamic, const Category& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass)
         {
-            mPhysics* physics = _app->GetPhysicsManager();
+            mPhysics* physics = GetApp()->GetPhysicsManager();
             _actor = physics->AddActor(
-                _id,
+                GetID(),
                 staticOrDynamic,
                 shapeType,
                 scene,
@@ -64,10 +64,10 @@ namespace realware
 
         void cGameObject::SetPhysicsController(const f32 eyeHeight, const f32 height, const f32 radius, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance)
         {
-            mPhysics* physics = _app->GetPhysicsManager();
+            mPhysics* physics = GetApp()->GetPhysicsManager();
 
             _controller = physics->AddController(
-                _id,
+                GetID(),
                 eyeHeight,
                 height,
                 radius,
@@ -79,60 +79,23 @@ namespace realware
         }
 
         mGameObject::mGameObject(const cApplication* const app) :
-            _app((cApplication*)app), _maxGameObjectCount(((cApplication*)app)->GetDesc()->MaxGameObjectCount)
+            _app((cApplication*)app), _maxGameObjectCount(((cApplication*)app)->GetDesc()->MaxGameObjectCount), _gameObjects((cApplication*)_app, _maxGameObjectCount)
         {
         }
 
         cGameObject* mGameObject::AddGameObject(const std::string& id)
         {
-            const usize gameObjectCount = _gameObjects.size();
-
-            for (usize i = 0; i < gameObjectCount; i++)
-            {
-                if (_gameObjects[i]._isDeleted == K_TRUE)
-                {
-                    _gameObjects[i] = cGameObject();
-                    _gameObjects[i]._id = id;
-                    _gameObjects[i]._app = _app;
-                    _gameObjects[i]._isDeleted = K_FALSE;
-
-                    return &_gameObjects[i];
-                }
-            }
-            
-            if (gameObjectCount < _maxGameObjectCount)
-            {
-                cGameObject gameObject = cGameObject();
-                gameObject._id = id;
-                gameObject._app = _app;
-                gameObject._isDeleted = K_FALSE;
-                _gameObjects.push_back(gameObject);
-
-                return &_gameObjects[gameObjectCount];
-            }
-
-            return nullptr;
+            return _gameObjects.Add(id);
         }
 
         cGameObject* mGameObject::FindGameObject(const std::string& id)
         {
-            for (usize i = 0; i < _maxGameObjectCount; i++)
-            {
-                if (_gameObjects[i]._isDeleted == K_FALSE && _gameObjects[i].GetID() == id)
-                    return &_gameObjects[i];
-            }
-            
-            return nullptr;
+            return _gameObjects.Find(id);
         }
 
         void mGameObject::DeleteGameObject(const std::string& id)
         {
-            cGameObject* object = FindGameObject(id);
-            if (object != nullptr)
-            {
-                object->_isDeleted = K_TRUE;
-                delete object->_transform;
-            }
+            _gameObjects.Delete(id);
         }
     }
 }

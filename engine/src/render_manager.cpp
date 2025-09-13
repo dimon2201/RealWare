@@ -53,10 +53,10 @@ namespace realware
             HighlightColor = material->GetHighlightColor();
         }
 
-        void sMaterialInstance::SetDiffuseTexture(const sTextureAtlasTexture& area)
+        void sMaterialInstance::SetDiffuseTexture(const cTextureAtlasTexture& area)
         {
-            DiffuseTextureLayerInfo = area.Offset.z;
-            DiffuseTextureInfo = glm::vec4(area.Offset.x, area.Offset.y, area.Size.x, area.Size.y);
+            DiffuseTextureLayerInfo = area.GetOffset().z;
+            DiffuseTextureInfo = glm::vec4(area.GetOffset().x, area.GetOffset().y, area.GetSize().x, area.GetSize().y);
         }
 
         sLightInstance::sLightInstance(const cGameObject* const object)
@@ -73,7 +73,8 @@ namespace realware
             );
         }
 
-        mRender::mRender(const cApplication* const app, const cRenderContext* const context) : _app((cApplication*)app), _context((cRenderContext*)context)
+        mRender::mRender(const cApplication* const app, const cRenderContext* const context) :
+            _app((cApplication*)app), _context((cRenderContext*)context), _materialsCPU((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxMaterialCount)
         {
             sApplicationDescriptor* desc = _app->GetDesc();
             const glm::vec2 windowSize = _app->GetWindowSize();
@@ -97,7 +98,6 @@ namespace realware
             _lights = malloc(desc->LightBufferSize);
             _lightsByteSize = 0;
             _materialsMap = new std::unordered_map<render::cMaterial*, s32>();
-            _materialsCPU.resize(desc->MaxMaterialCount);
 
             sTexture* color = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
             sTexture* accumulation = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA16F, nullptr);
@@ -226,12 +226,14 @@ namespace realware
             free(_instances);
         }
 
-        cMaterial* mRender::AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
+        cMaterial* mRender::AddMaterial(const std::string& id, const cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
         {
-            _materialsCPU[_materialCountCPU] = cMaterial(id, diffuseTexture, diffuseColor, highlightColor);
-            _materialCountCPU += 1;
+            return _materialsCPU.Add(id, diffuseTexture, diffuseColor, highlightColor);
+        }
 
-            return &_materialsCPU[_materialCountCPU - 1];
+        cMaterial* mRender::FindMaterial(const std::string& id)
+        {
+            return _materialsCPU.Find(id);
         }
 
         sVertexArray* mRender::CreateDefaultVertexArray()
@@ -275,16 +277,7 @@ namespace realware
 
         void mRender::DeleteMaterial(const std::string& id)
         {
-            for (usize i = 0; i < _materialCountCPU; i++)
-            {
-                if (_materialsCPU[i].GetID() == id)
-                {
-                    if (_materialCountCPU > 1)
-                        _materialsCPU[i] = _materialsCPU[_materialCountCPU - 1];
-
-                    return;
-                }
-            }
+            _materialsCPU.Delete(id);
         }
 
         void mRender::ClearGeometryBuffer()
@@ -319,7 +312,7 @@ namespace realware
 
         void mRender::UpdateLights()
         {
-            _lightsByteSize = 16; // because vec4 (16 bytes) goes first (contains light count)
+            /*_lightsByteSize = 16; // because vec4 (16 bytes) goes first (contains light count)
             memset(_lights, 0, 16 + (sizeof(sLightInstance) * 16));
 
             glm::uvec4 lightCount = glm::uvec4(0);
@@ -339,7 +332,7 @@ namespace realware
 
             memcpy((void*)(usize)_lights, &lightCount, sizeof(glm::uvec4));
 
-            _context->WriteBuffer(_lightBuffer, 0, _lightsByteSize, _lights);
+            _context->WriteBuffer(_lightBuffer, 0, _lightsByteSize, _lights);*/
         }
 
         void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, std::vector<cGameObject>& objects, const cGameObject* const cameraObject)
@@ -368,7 +361,7 @@ namespace realware
                             sMaterialInstance mi(materialIndex, material);
                             if (material->GetDiffuseTexture())
                             {
-                                sTextureAtlasTexture* frame = material->GetDiffuseTexture();
+                                cTextureAtlasTexture* frame = material->GetDiffuseTexture();
                                 mi.SetDiffuseTexture(_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else
@@ -441,7 +434,7 @@ namespace realware
                             sMaterialInstance mi(materialIndex, material);
                             if (material->GetDiffuseTexture() != nullptr)
                             {
-                                sTextureAtlasTexture* frame = material->GetDiffuseTexture();
+                                cTextureAtlasTexture* frame = material->GetDiffuseTexture();
                                 mi.SetDiffuseTexture(_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else
@@ -742,17 +735,6 @@ namespace realware
             _compositeFinal->Desc.Viewport[3] = size.y;
             _compositeFinal->Desc.InputTextures[0] = _opaque->Desc.RenderTarget->ColorAttachments[0];
             _compositeFinal->Desc.InputTextureNames[0] = "ColorTexture";
-        }
-
-        cMaterial* mRender::GetMaterial(const std::string& id)
-        {
-            for (usize i = 0; i < _materialCountCPU; i++)
-            {
-                if (_materialsCPU[i].GetID() == id)
-                    return &_materialsCPU[i];
-            }
-
-            return nullptr;
         }
     }
 }

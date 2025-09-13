@@ -3,6 +3,7 @@
 #include <string>
 #include <windows.h>
 #include "sound_context.hpp"
+#include "sound_manager.hpp"
 
 namespace realware
 {
@@ -10,9 +11,9 @@ namespace realware
 
     namespace sound
     {
-        sWAVFile* LoadWAVFile(const std::string& filename)
+        sWAVStructure* LoadWAVFile(const std::string& filename)
         {
-            sWAVFile* wav = new sWAVFile();
+            sWAVStructure* wav = new sWAVStructure();
 
             FILE* fp = nullptr;
             errno_t err = fopen_s(&fp, &filename.c_str()[0], "rb");
@@ -68,15 +69,6 @@ namespace realware
             return wav;
         }
 
-        void FreeWAVFile(sWAVFile* wavFile)
-        {
-            if (wavFile != nullptr)
-            {
-                free(wavFile->Data);
-                delete wavFile;
-            }
-        }
-
         cOpenALSoundContext::cOpenALSoundContext()
         {
             m_device = alcOpenDevice(nullptr);
@@ -91,26 +83,21 @@ namespace realware
             alcCloseDevice(m_device);
         }
 
-        sSound* cOpenALSoundContext::Create(const std::string& filename, const Category& format)
+        void cOpenALSoundContext::Create(const std::string& filename, const Category& format, const sWAVStructure** const file, types::u32& source, types::u32& buffer)
         {
-            sSound* sound = nullptr;
-
             if (format == Category::SOUND_FORMAT_WAV)
             {
-                sound = new sSound();
+                sWAVStructure* wavFile = LoadWAVFile(filename);
+                *file = wavFile;
 
-                sWAVFile* wavFile = LoadWAVFile(filename);
-                sound->Format = format;
-                sound->File = wavFile;
+                alGenSources(1, (ALuint*)&source);
+                alSourcef(source, AL_PITCH, 1);
+                alSourcef(source, AL_GAIN, 1);
+                alSource3f(source, AL_POSITION, 0, 0, 0);
+                alSource3f(source, AL_VELOCITY, 0, 0, 0);
+                alSourcei(source, AL_LOOPING, AL_FALSE);
 
-                alGenSources(1, (ALuint*)&sound->Source);
-                alSourcef(sound->Source, AL_PITCH, 1);
-                alSourcef(sound->Source, AL_GAIN, 1);
-                alSource3f(sound->Source, AL_POSITION, 0, 0, 0);
-                alSource3f(sound->Source, AL_VELOCITY, 0, 0, 0);
-                alSourcei(sound->Source, AL_LOOPING, AL_FALSE);
-
-                alGenBuffers(1, (ALuint*)&sound->Buffer);
+                alGenBuffers(1, (ALuint*)&buffer);
 
                 ALenum wavFormat = AL_FORMAT_STEREO16;
                 bool stereo = (wavFile->NumChannels > 1);
@@ -135,44 +122,37 @@ namespace realware
                         break;
                 }
 
-                alBufferData(sound->Buffer, wavFormat, wavFile->Data, wavFile->DataByteSize, wavFile->SampleRate);
-                alSourcei(sound->Source, AL_BUFFER, sound->Buffer);
+                alBufferData(buffer, wavFormat, wavFile->Data, wavFile->DataByteSize, wavFile->SampleRate);
+                alSourcei(source, AL_BUFFER, buffer);
             }
-
-            return sound;
         }
 
-        void cOpenALSoundContext::Destroy(const sSound* const sound)
+        void cOpenALSoundContext::Destroy(const cSound* const sound)
         {
-            if (sound->File != nullptr) {
-                if (sound->Format == Category::SOUND_FORMAT_WAV)
-                    FreeWAVFile((sWAVFile*)sound->File);
-            }
+            alDeleteBuffers(1, (ALuint*)&sound->GetBuffer());
+            alDeleteSources(1, (ALuint*)&sound->GetSource());
 
             delete sound;
-
-            alDeleteBuffers(1, (ALuint*)&sound->Buffer);
-            alDeleteSources(1, (ALuint*)&sound->Source);
         }
 
-        void cOpenALSoundContext::Play(const sSound* const sound)
+        void cOpenALSoundContext::Play(const cSound* const sound)
         {
-            alSourcePlay(sound->Source);
+            alSourcePlay(sound->GetSource());
         }
 
-        void cOpenALSoundContext::Stop(const sSound* const sound)
+        void cOpenALSoundContext::Stop(const cSound* const sound)
         {
-            alSourceStop(sound->Source);
+            alSourceStop(sound->GetSource());
         }
 
-        void cOpenALSoundContext::SetPosition(const sSound* const sound, const glm::vec3& position)
+        void cOpenALSoundContext::SetPosition(const cSound* const sound, const glm::vec3& position)
         {
-            alSource3f(sound->Source, AL_POSITION, position.x, position.y, position.z);
+            alSource3f(sound->GetSource(), AL_POSITION, position.x, position.y, position.z);
         }
 
-        void cOpenALSoundContext::SetVelocity(const sSound* const sound, const glm::vec3& velocity)
+        void cOpenALSoundContext::SetVelocity(const cSound* const sound, const glm::vec3& velocity)
         {
-            alSource3f(sound->Source, AL_VELOCITY, velocity.x, velocity.y, velocity.z);
+            alSource3f(sound->GetSource(), AL_VELOCITY, velocity.x, velocity.y, velocity.z);
         }
 
         void cOpenALSoundContext::SetListenerPosition(const glm::vec3& position)

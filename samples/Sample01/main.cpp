@@ -49,11 +49,11 @@ public:
         );
 
         // Textures
-        sTextureAtlasTexture* texture1 = _texture->AddTexture(
+        cTextureAtlasTexture* texture1 = _texture->AddTexture(
             "Texture1",
             "C:/DDD/RealWare/resources/texture1.png"
         );
-        sTextureAtlasTexture* texture2 = _texture->AddTexture(
+        cTextureAtlasTexture* texture2 = _texture->AddTexture(
             "Texture2",
             "C:/DDD/RealWare/resources/texture2.png"
         );
@@ -140,19 +140,20 @@ public:
         _renderContext->ClearDepth(1.0f);
 
         cGameObject* cameraObject = _cameraGameObject;
+        auto gameObjects = _gameObject->GetObjects().GetObjects();
         _render->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
         _render->DrawGeometryOpaque(
             _triangleGeometry,
-            _gameObject->GetObjects(),
+            gameObjects,
             cameraObject
         );
         _render->DrawGeometryTransparent(
             _triangleGeometry,
-            _gameObject->GetObjects(),
+            gameObjects,
             cameraObject
         );
         _render->CompositeTransparent();
-        _render->DrawTexts(_gameObject->GetObjects());
+        _render->DrawTexts(gameObjects);
         _render->CompositeFinal();
     }
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "../../thirdparty/glm/glm/glm.hpp"
+#include "id_vec.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -17,12 +18,20 @@ namespace realware
         class cRenderContext;
         struct sTexture;
 
-        struct sTextureAtlasTexture
+        struct cTextureAtlasTexture : public utils::cIdVecObject
         {
-            std::string ID = "";
-            types::boolean IsNormalized = types::K_FALSE;
-            glm::vec3 Offset = glm::vec3(0.0f);
-            glm::vec2 Size = glm::vec2(0.0f);
+        public:
+            explicit cTextureAtlasTexture(const types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size);
+            ~cTextureAtlasTexture() = default;
+
+            inline types::boolean IsNormalized() const { return _isNormalized; }
+            inline const glm::vec3& GetOffset() const { return _offset; }
+            inline const glm::vec2& GetSize() const { return _size; }
+
+        private:
+            types::boolean _isNormalized = types::K_FALSE;
+            glm::vec3 _offset = glm::vec3(0.0f);
+            glm::vec2 _size = glm::vec2(0.0f);
         };
 
         class mTexture
@@ -31,17 +40,13 @@ namespace realware
             explicit mTexture(const app::cApplication* const app, const cRenderContext* const context);
             ~mTexture();
 
-            sTextureAtlasTexture* AddTexture(const std::string& id, const std::string& filename);
+            cTextureAtlasTexture* AddTexture(const std::string& id, const std::string& filename);
+            cTextureAtlasTexture* FindTexture(const std::string& id);
             void DeleteTexture(const std::string& id);
-            //void LoadAnimation(const std::vector<const std::string&>& filenames, const std::string& tag, std::vector<sTextureAtlasTexture*>& frames);
-            //void PlayAnimation(entity object, cScene* scene, float speed);
-            //void IncrementAnimationFrame(entity object, cScene* scene);
-            //void RemoveAnimation(const std::string& tag);
 
-            sTextureAtlasTexture CalculateNormalizedArea(const sTextureAtlasTexture& area);
+            cTextureAtlasTexture CalculateNormalizedArea(const cTextureAtlasTexture& area);
 
-            sTextureAtlasTexture* GetTexture(const std::string& id);
-            std::vector<sTextureAtlasTexture*>* GetAnimation(const std::string& id);
+            cTextureAtlasTexture* GetTexture(const std::string& id);
             sTexture* GetAtlas();
             inline types::usize GetWidth() const;
             inline types::usize GetHeight() const;
@@ -51,8 +56,7 @@ namespace realware
             app::cApplication* _app = nullptr;
             cRenderContext* _context = nullptr;
             sTexture* _atlas = nullptr;
-            std::vector<sTextureAtlasTexture*> _textures = {};
-            std::vector<std::vector<sTextureAtlasTexture*>> _animations = {};
+            utils::cIdVec<cTextureAtlasTexture> _textures;
         };
     }
 }

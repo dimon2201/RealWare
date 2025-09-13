@@ -4,6 +4,7 @@
 #define _DIMON2201_TYPES_H_
 
 #include <cstdint>
+#include <string>
 
 namespace types
 {

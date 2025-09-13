@@ -177,7 +177,6 @@ namespace realware
 
         class cOpenGLRenderContext : public cRenderContext
         {
-
         public:
             cOpenGLRenderContext(const app::cApplication* const app);
             virtual ~cOpenGLRenderContext() override final;
@@ -231,7 +230,6 @@ namespace realware
 
         private:
             app::cApplication* _app = nullptr;
-
         };
     }
 }

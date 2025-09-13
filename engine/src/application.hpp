@@ -61,7 +61,6 @@ namespace realware
             };
 
             sWindowDescriptor WindowDesc;
-            types::u32 GlobalDataByteSize = 1024;
             types::u32 TextureAtlasWidth = 1920;
             types::u32 TextureAtlasHeight = 1080;
             types::u32 TextureAtlasDepth = 16;
@@ -71,11 +70,13 @@ namespace realware
             types::u32 MaterialBufferSize = 65536;
             types::u32 LightBufferSize = 65536;
             types::u32 MaxMaterialCount = 256;
-            types::u32 MaxGameObjectCount = 4294967295;
+            types::u32 MaxGameObjectCount = 65536;
             types::u32 MaxPhysicsSceneCount = 4;
             types::u32 MaxPhysicsSubstanceCount = 256;
             types::u32 MaxPhysicsActorCount = 65536;
             types::u32 MaxPhysicsControllerCount = 4;
+            types::u32 MaxSoundCount = 65536;
+            types::u32 MaxTextureCount = 65536;
         };
 
         class cApplication

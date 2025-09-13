@@ -39,8 +39,10 @@ namespace realware
             _error(new cError()),
             _cpuDispatcher(new cCPUDispatcher()),
             _simulationEvent(new cSimulationEvent()),
-            _sceneCount(0),
-            _substanceCount(0)
+            _scenes(_app, ((cApplication*)_app)->GetDesc()->MaxPhysicsSceneCount),
+            _substances(_app, ((cApplication*)_app)->GetDesc()->MaxPhysicsSubstanceCount),
+            _actors(_app, ((cApplication*)_app)->GetDesc()->MaxPhysicsActorCount),
+            _controllers(_app, ((cApplication*)_app)->GetDesc()->MaxPhysicsControllerCount)
         {
             _foundation = PxCreateFoundation(PX_PHYSICS_VERSION, *_allocator, *_error);
             if (_foundation == nullptr)
@@ -55,12 +57,6 @@ namespace realware
                 MessageBox(0, "Failed to initialize PhysXPhysics!", "Error", MB_ICONERROR);
                 return;
             }
-
-            auto desc = _app->GetDesc();
-            _scenes.resize(desc->MaxPhysicsSceneCount);
-            _substances.resize(desc->MaxPhysicsSubstanceCount);
-            _actors.resize(desc->MaxPhysicsActorCount);
-            _controllers.resize(desc->MaxPhysicsControllerCount);
         }
 
         mPhysics::~mPhysics()
@@ -84,20 +80,14 @@ namespace realware
 
             PxControllerManager* controllerManager = PxCreateControllerManager(*scene);
 
-            _scenes[_sceneCount] = cSimulationScene(id, scene, controllerManager);
-            _sceneCount += 1;
-
-            return &_scenes[_sceneCount - 1];
+            return _scenes.Add(id, scene, controllerManager);
         }
 
         cSubstance* mPhysics::AddSubstance(const std::string& id, const glm::vec3& params)
         {
             PxMaterial* material = _physics->createMaterial(params.x, params.y, params.z); // (staticFriction, dynamicFriction, restitution)
 
-            _substances[_substanceCount] = cSubstance(id, material);
-            _substanceCount += 1;
-
-            return &_substances[_substanceCount - 1];
+            return _substances.Add(id, material);
         }
 
         cController* mPhysics::AddController(const std::string& id, const f32 eyeHeight, const f32 height, const f32 radius, const render::sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance)
@@ -116,10 +106,7 @@ namespace realware
 
             PxController* controller = scene->GetControllerManager()->createController(desc);
 
-            _controllers[_controllerCount] = cController(id, controller, eyeHeight);
-            _controllerCount += 1;
-
-            return &_controllers[_controllerCount - 1];
+            return _controllers.Add(id, controller, eyeHeight);
         }
 
         cActor* mPhysics::AddActor(const std::string& id, const Category& staticOrDynamic, const Category& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const render::sTransform* const transform)
@@ -154,75 +141,47 @@ namespace realware
             if (actor != nullptr)
                 scene->GetScene()->addActor(*actor);
 
-            _actors[_actorCount] = cActor(id, actor);
-            _actorCount += 1;
+            return _actors.Add(id, actor);
+        }
 
-            return &_actors[_actorCount - 1];
+        cSimulationScene* mPhysics::FindScene(const std::string& id)
+        {
+            return _scenes.Find(id);
+        }
+
+        cSubstance* mPhysics::FindSubstance(const std::string& id)
+        {
+            return _substances.Find(id);
+        }
+
+        cActor* mPhysics::FindActor(const std::string& id)
+        {
+            return _actors.Find(id);
+        }
+
+        cController* mPhysics::FindController(const std::string& id)
+        {
+            return _controllers.Find(id);
         }
 
         void mPhysics::DeleteScene(const std::string& id)
         {
-            for (usize i = 0; i < _sceneCount; i++)
-            {
-                if (_scenes[i].GetID() == id)
-                {
-                    _scenes[i].GetScene()->release();
-                    _scenes[i].GetControllerManager()->release();
-
-                    if (_sceneCount > 1)
-                        _scenes[i] = _scenes[_sceneCount - 1];
-
-                    return;
-                }
-            }
+            _scenes.Delete(id);
         }
 
         void mPhysics::DeleteSubstance(const std::string& id)
         {
-            for (usize i = 0; i < _substanceCount; i++)
-            {
-                if (_substances[i].GetID() == id)
-                {
-                    _substances[i].GetSubstance()->release();
-
-                    if (_substanceCount > 1)
-                        _substances[i] = _substances[_substanceCount - 1];
-
-                    return;
-                }
-            }
+            _substances.Delete(id);
         }
 
         void mPhysics::DeleteActor(const std::string& id)
         {
-            for (usize i = 0; i < _actorCount; i++)
-            {
-                if (_actors[i].GetID() == id)
-                {
-                    _actors[i].GetActor()->release();
-
-                    if (_actorCount > 1)
-                        _actors[i] = _actors[_actorCount - 1];
-
-                    return;
-                }
-            }
+            _actors.Delete(id);
         }
 
         void mPhysics::DeleteController(const std::string& id)
         {
-            for (usize i = 0; i < _controllerCount; i++)
-            {
-                if (_controllers[i].GetID() == id)
-                {
-                    _controllers[i].GetController()->release();
-
-                    if (_controllerCount > 1)
-                        _controllers[i] = _controllers[_controllerCount - 1];
-
-                    return;
-                }
-            }
+            _controllers.Delete(id);
         }
 
         void mPhysics::MoveController(const cController* const controller, const glm::vec3& position, const f32 minStep)
@@ -249,34 +208,15 @@ namespace realware
 
         void mPhysics::Simulate()
         {
-            for (usize i = 0; i < _sceneCount; i++)
+            const auto& scenes = _scenes.GetObjects();
+            const usize sceneCount = scenes.size();
+
+            for (usize i = 0; i < sceneCount; i++)
             {
-                auto scene = _scenes[i].GetScene();
+                auto scene = scenes[i].GetScene();
                 scene->simulate(1.0f / 60.0f);
                 scene->fetchResults(true);
             }
-        }
-
-        cSimulationScene* mPhysics::GetScene(const std::string& id)
-        {
-            for (usize i = 0; i < _sceneCount; i++)
-            {
-                if (_scenes[i].GetID() == id)
-                    return &_scenes[i];
-            }
-
-            return nullptr;
-        }
-
-        cController* mPhysics::GetController(const std::string& id)
-        {
-            for (usize i = 0; i < _controllerCount; i++)
-            {
-                if (_controllers[i].GetID() == id)
-                    return &_controllers[i];
-            }
-
-            return nullptr;
         }
 
         /*void mPhysics::Update()

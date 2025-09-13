@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
+#include "id_vec.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -20,7 +21,7 @@ namespace realware
 
     namespace render
     {
-        struct sTextureAtlasTexture;
+        struct cTextureAtlasTexture;
     }
 
     namespace render
@@ -96,22 +97,20 @@ namespace realware
             glm::mat4 World = glm::mat4(1.0f);
         };
 
-        struct cMaterial
+        struct cMaterial : public utils::cIdVecObject
         {
         public:
             cMaterial() = default;
-            explicit cMaterial(const std::string& id, const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
-                : _id(id), _diffuseTexture((render::sTextureAtlasTexture*)diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor) {}
+            explicit cMaterial(const render::cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
+                : _diffuseTexture((render::cTextureAtlasTexture*)diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor) {}
             ~cMaterial() = default;
 
-            const std::string& GetID() const { return _id; }
-            render::sTextureAtlasTexture* GetDiffuseTexture() const { return _diffuseTexture; }
+            render::cTextureAtlasTexture* GetDiffuseTexture() const { return _diffuseTexture; }
             glm::vec4 GetDiffuseColor() const { return _diffuseColor; }
             glm::vec4 GetHighlightColor() const { return _highlightColor; }
 
         private:
-            std::string _id = "";
-            render::sTextureAtlasTexture* _diffuseTexture = nullptr;
+            render::cTextureAtlasTexture* _diffuseTexture = nullptr;
             glm::vec4 _diffuseColor = glm::vec4(1.0f);
             glm::vec4 _highlightColor = glm::vec4(1.0f);
         };
@@ -136,7 +135,7 @@ namespace realware
         {
             sMaterialInstance(types::s32 materialIndex, const cMaterial* const material);
 
-            void SetDiffuseTexture(const render::sTextureAtlasTexture& area);
+            void SetDiffuseTexture(const render::cTextureAtlasTexture& area);
 
             types::s32 BufferIndex = -1;
             types::f32 DiffuseTextureLayerInfo = 0.0f;
@@ -170,10 +169,10 @@ namespace realware
             explicit mRender(const app::cApplication* const app, const cRenderContext* const context);
             ~mRender();
 
-            cMaterial* AddMaterial(const std::string& id, const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
+            cMaterial* AddMaterial(const std::string& id, const render::cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
+            cMaterial* FindMaterial(const std::string& id);
             sVertexArray* CreateDefaultVertexArray();
             sVertexBufferGeometry* CreateGeometry(const sVertexBufferGeometry::eFormat& format, const types::usize verticesByteSize, const void* const vertices, const types::usize indicesByteSize, const void* const indices);
-            
             void DeleteMaterial(const std::string& id);
             inline void DestroyGeometry(sVertexBufferGeometry* geometry) { delete geometry; }
             void ClearGeometryBuffer();
@@ -196,7 +195,6 @@ namespace realware
             
             void ResizeWindow(const glm::vec2& size);
             
-            cMaterial* GetMaterial(const std::string& id);
             sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
             sBuffer* GetIndexBuffer() const { return _indexBuffer; }
             sBuffer* GetInstanceBuffer() const { return _instanceBuffer; }
@@ -233,7 +231,7 @@ namespace realware
             sRenderPass* _compositeTransparent = nullptr;
             sRenderPass* _compositeFinal = nullptr;
             types::usize _materialCountCPU = 0;
-            std::vector<cMaterial> _materialsCPU = {};
+            utils::cIdVec<cMaterial> _materialsCPU;
         };
     }
 }

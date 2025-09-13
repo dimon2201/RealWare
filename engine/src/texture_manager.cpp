@@ -4,15 +4,21 @@
 #include "texture_manager.hpp"
 #include "render_context.hpp"
 
+using namespace types;
+
 namespace realware
 {
     using namespace app;
     using namespace game;
-    using namespace types;
+    using namespace utils;
 
     namespace render
     {
-        mTexture::mTexture(const cApplication* const app, const cRenderContext* const context)
+        cTextureAtlasTexture::cTextureAtlasTexture(const types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size) : _isNormalized(isNormalized), _offset(offset), _size(size)
+        {
+        }
+
+        mTexture::mTexture(const cApplication* const app, const cRenderContext* const context) : _textures((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxTextureCount)
         {
             _app = (cApplication*)app;
 
@@ -35,7 +41,7 @@ namespace realware
             _context->DestroyTexture(_atlas);
         }
 
-        sTextureAtlasTexture* mTexture::AddTexture(const std::string& id, const std::string& filename)
+        cTextureAtlasTexture* mTexture::AddTexture(const std::string& id, const std::string& filename)
         {
             s32 width = 0;
             s32 height = 0;
@@ -63,6 +69,7 @@ namespace realware
                 data = dataTemp;
             }
 
+            const auto& textures = _textures.GetObjects();
             for (usize layer = 0; layer < _atlas->Depth; layer++)
             {
                 for (usize y = 0; y < _atlas->Height; y++)
@@ -71,31 +78,31 @@ namespace realware
                     {
                         types::boolean isIntersecting = K_FALSE;
 
-                        for (auto& area : _textures)
+                        for (auto& area : textures)
                         {
-                            if (area->IsNormalized == K_FALSE)
+                            if (area.IsNormalized() == K_FALSE)
                             {
                                 const glm::vec4 textureRect = glm::vec4(
                                     x, y, x + width, y + height
                                 );
-                                if ((area->Offset.z == layer &&
-                                    area->Offset.x <= textureRect.z && area->Offset.x + area->Size.x >= textureRect.x &&
-                                    area->Offset.y <= textureRect.w && area->Offset.y + area->Size.y >= textureRect.y) ||
+                                if ((area.GetOffset().z == layer &&
+                                    area.GetOffset().x <= textureRect.z && area.GetOffset().x + area.GetSize().x >= textureRect.x &&
+                                    area.GetOffset().y <= textureRect.w && area.GetOffset().y + area.GetSize().y >= textureRect.y) ||
                                     (x + width > _atlas->Width || y + height > _atlas->Height))
                                 {
                                     isIntersecting = K_FALSE;
                                     break;
                                 }
                             }
-                            else if (area->IsNormalized == K_TRUE)
+                            else if (area.IsNormalized() == K_TRUE)
                             {
                                 const glm::vec4 textureRectNorm = glm::vec4(
                                     (f32)x / (f32)_atlas->Width, (f32)y / (f32)_atlas->Height,
                                     ((f32)x + (f32)width) / (f32)_atlas->Width, ((f32)y + (f32)height) / (f32)_atlas->Height
                                 );
-                                if ((area->Offset.z == layer &&
-                                    area->Offset.x <= textureRectNorm.z && area->Offset.x + area->Size.x >= textureRectNorm.x &&
-                                    area->Offset.y <= textureRectNorm.w && area->Offset.y + area->Size.y >= textureRectNorm.y) ||
+                                if ((area.GetOffset().z == layer &&
+                                    area.GetOffset().x <= textureRectNorm.z && area.GetOffset().x + area.GetSize().x >= textureRectNorm.x &&
+                                    area.GetOffset().y <= textureRectNorm.w && area.GetOffset().y + area.GetSize().y >= textureRectNorm.y) ||
                                     (textureRectNorm.z > 1.0f || textureRectNorm.w > 1.0f))
                                 {
                                     isIntersecting = true;
@@ -106,20 +113,16 @@ namespace realware
 
                         if (!isIntersecting)
                         {
-                            sTextureAtlasTexture* const area = new sTextureAtlasTexture();
-                            area->ID = id;
-                            area->Offset = glm::vec3(x, y, layer);
-                            area->Size = glm::vec2(width, height);
+                            const glm::vec3 offset = glm::vec3(x, y, layer);
+                            const glm::vec2 size = glm::vec2(width, height);
 
-                            _textures.push_back(area);
-
-                            _context->WriteTexture(_atlas, area->Offset, area->Size, data);
+                            _context->WriteTexture(_atlas, offset, size, data);
                             if (_atlas->Format == render::sTexture::eFormat::RGBA8_MIPS)
                                 _context->GenerateTextureMips(_atlas);
 
                             free(data);
 
-                            return area;
+                            return _textures.Add(id, K_FALSE, offset, size);
                         }
                     }
                 }
@@ -130,115 +133,25 @@ namespace realware
             return nullptr;
         }
 
+        cTextureAtlasTexture* mTexture::FindTexture(const std::string& id)
+        {
+            return _textures.Find(id);
+        }
+
         void mTexture::DeleteTexture(const std::string& id)
         {
-            for (auto it = _textures.begin(); it != _textures.end(); it++)
-            {
-                if ((*it)->ID == id)
-                {
-                    _textures.erase(it);
-                    return;
-                }
-            }
+            _textures.Delete(id);
         }
 
-        /*void mTexture::LoadAnimation(const std::vector<const std::string&>& filenames, const std::string& tag, std::vector<sArea*>& frames)
+        cTextureAtlasTexture mTexture::CalculateNormalizedArea(const cTextureAtlasTexture& area)
         {
-            usize i = 0;
-            for (auto filename : filenames)
-            {
-                sTextureAtlasTexture* area = AddTexture(filename, tag);
-                if (area != nullptr)
-                {
-                    *area = CalculateNormalizedArea(*area);
-                    i += 1;
+            cTextureAtlasTexture norm = cTextureAtlasTexture(
+                types::K_TRUE,
+                glm::vec3(area.GetOffset().x / _atlas->Width, area.GetOffset().y / _atlas->Height, area.GetOffset().z),
+                glm::vec2(area.GetSize().x / _atlas->Width, area.GetSize().y / _atlas->Height)
+            );
 
-                    frames.emplace_back(area);
-                }
-            }
-
-            _animations.emplace_back(frames);
-        }
-
-        void mTexture::PlayAnimation(entity object, cScene* scene, float speed)
-        {
-            sCAnimation* animation = scene->Get<sCAnimation>(object);
-
-            if (animation->Tick >= animation->MaxTick) {
-                animation->Tick = 0.0f;
-            }
-
-            animation->Tick += speed;
-        }
-
-        void mTexture::IncrementAnimationFrame(entity object, cScene* scene)
-        {
-            sCAnimation* animation = scene->Get<sCAnimation>(object);
-
-            animation->CurrentFrameIndex[animation->CurrentAnimationIndex] += 1;
-            if (animation->CurrentFrameIndex[animation->CurrentAnimationIndex] >= animation->Frames[animation->CurrentAnimationIndex]->size()) {
-                animation->CurrentFrameIndex[animation->CurrentAnimationIndex] = 0;
-            }
-        }
-
-        void mTexture::RemoveAnimation(const std::string& tag)
-        {
-            for (auto it = _textures.begin(); it != _textures.end();)
-            {
-                if ((*it)->Tag == tag)
-                {
-                    _textures.erase(it);
-                }
-                else
-                {
-                    it++;
-                }
-            }
-
-            for (auto it = _animations.begin(); it != _animations.end(); it++)
-            {
-                if ((*it)[0]->Tag == tag)
-                {
-                    _animations.erase(it);
-                    return;
-                }
-            }
-        }*/
-
-        sTextureAtlasTexture* mTexture::GetTexture(const std::string& id)
-        {
-            for (auto& area : _textures) {
-                if (area->ID == id)
-                    return area;
-            }
-
-            return nullptr;
-        }
-
-        std::vector<sTextureAtlasTexture*>* mTexture::GetAnimation(const std::string& id)
-        {
-            for (auto& animation : _animations) {
-                for (auto& area : animation) {
-                    if (area->ID == id)
-                        return &animation;
-                }
-            }
-
-            return nullptr;
-        }
-
-        sTextureAtlasTexture mTexture::CalculateNormalizedArea(const sTextureAtlasTexture& area)
-        {
-            sTextureAtlasTexture a;
-            a.ID = area.ID;
-            a.IsNormalized = K_TRUE;
-            a.Offset.x = area.Offset.x / _atlas->Width;
-            a.Offset.y = area.Offset.y / _atlas->Height;
-            a.Offset.z = area.Offset.z;
-            a.Size.x = area.Size.x / _atlas->Width;
-            a.Size.y = area.Size.y / _atlas->Height;
-
-            return a;
+            return norm;
         }
 
         sTexture* mTexture::GetAtlas()

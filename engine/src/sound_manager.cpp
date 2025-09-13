@@ -1,35 +1,55 @@
+#include "application.hpp"
 #include "sound_manager.hpp"
 #include "sound_context.hpp"
+
+using namespace types;
 
 namespace realware
 {
     using namespace app;
+    using namespace game;
 
     namespace sound
     {
-        mSound::mSound(const cApplication* const app, const cSoundContext* const context) : _app((cApplication*)app), _context((cSoundContext*)context) {}
-
-        sSound* mSound::Load(const std::string& filename, const game::Category& format, const std::string& tag)
+        cSound::cSound(const u32 source, const u32 buffer) : _source(source), _buffer(buffer)
         {
-            sSound* sound = _context->Create(filename, format);
-            sound->Tag = tag;
-
-            _sounds.emplace_back(sound);
-
-            return sound;
         }
 
-        void mSound::Remove(const std::string& tag)
+        cSound::~cSound()
         {
-            for (auto it = _sounds.begin(); it != _sounds.end(); it++)
+            if (_file != nullptr)
             {
-                if ((*it)->Tag == tag)
+                if (_format == Category::SOUND_FORMAT_WAV)
                 {
-                    _context->Destroy(*it);
-                    _sounds.erase(it);
-                    break;
+                    free(_file->Data);
+                    delete _file;
                 }
             }
+        }
+
+        mSound::mSound(const cApplication* const app, const cSoundContext* const context) :
+            _app((cApplication*)app), _context((cSoundContext*)context), _sounds((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxSoundCount)
+        {
+        }
+
+        cSound* mSound::AddSound(const std::string& id, const std::string& filename, const game::Category& format)
+        {
+            u32 source = 0;
+            u32 buffer = 0;
+            sWAVStructure* file = nullptr;
+            _context->Create(filename, format, (const sWAVStructure** const)&file, source, buffer);
+
+            return _sounds.Add(id, source, buffer);
+        }
+
+        cSound* mSound::FindSound(const std::string& id)
+        {
+            return _sounds.Find(id);
+        }
+
+        void mSound::DeleteSound(const std::string& id)
+        {
+            _sounds.Delete(id);
         }
 
         /*void mSound::Play(entity object, cScene* scene)

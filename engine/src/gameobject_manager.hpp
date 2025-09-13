@@ -4,6 +4,7 @@
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "category.hpp"
+#include "id_vec.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -37,14 +38,14 @@ namespace realware
 
     namespace game
     {
-        class cGameObject
+        class cGameObject : public utils::cIdVecObject
         {
         public:
             explicit cGameObject();
             ~cGameObject() = default;
             
-            inline app::cApplication* GetApplication() { return _app; }
-            inline std::string GetID() const { return _id; }
+            inline app::cApplication* GetApplication() { return GetApp(); }
+            inline std::string GetID() const { return cIdVecObject::GetID(); }
             inline types::boolean GetVisible() const { return _isVisible; }
             inline types::boolean GetOpaque() const { return _isOpaque; }
             inline render::sVertexBufferGeometry* GetGeometry() const { return _geometry; }
@@ -79,9 +80,6 @@ namespace realware
             friend class mGameObject;
 
         private:
-            app::cApplication* _app = nullptr;
-            types::boolean _isDeleted = types::K_TRUE;
-            std::string _id = "";
             types::boolean _isVisible = types::K_TRUE;
             types::boolean _isOpaque = types::K_TRUE;
             render::sVertexBufferGeometry* _geometry = nullptr;
@@ -106,13 +104,13 @@ namespace realware
             cGameObject* FindGameObject(const std::string& id);
             void DeleteGameObject(const std::string& id);
 
-            inline std::vector<cGameObject>& GetObjects() { return _gameObjects; }
+            inline utils::cIdVec<cGameObject>& GetObjects() { return _gameObjects; }
 
         private:
             app::cApplication* _app = nullptr;
             types::usize _maxGameObjectCount = 0;
             types::usize _gameObjectCount = 0;
-            std::vector<cGameObject> _gameObjects = {};
+            utils::cIdVec<cGameObject> _gameObjects;
         };
     }
 }
