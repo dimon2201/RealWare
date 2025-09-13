@@ -87,7 +87,7 @@ namespace realware
 
             virtual void Start() = 0;
             virtual void FrameUpdate() = 0;
-            virtual void End() = 0;
+            virtual void Finish() = 0;
 
             void Run();
 

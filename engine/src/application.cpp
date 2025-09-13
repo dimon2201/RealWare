@@ -104,7 +104,7 @@ namespace realware
                 glfwPollEvents();
             }
 
-            End();
+            Finish();
         }
 
         void cApplication::CreateAppWindow()

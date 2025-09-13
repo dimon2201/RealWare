@@ -156,7 +156,7 @@ public:
         _render->CompositeFinal();
     }
 
-    virtual void End() override final
+    virtual void Finish() override final
     {
     }
 
