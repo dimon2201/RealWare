@@ -85,9 +85,9 @@ namespace realware
             explicit cApplication(const sApplicationDescriptor* const desc);
             ~cApplication();
 
-            virtual void Pre() = 0;
-            virtual void Update() = 0;
-            virtual void Post() = 0;
+            virtual void Start() = 0;
+            virtual void FrameUpdate() = 0;
+            virtual void End() = 0;
 
             void Run();
 

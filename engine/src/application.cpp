@@ -87,7 +87,7 @@ namespace realware
 
         void cApplication::Run()
         {
-            Pre();
+            Start();
 
             _timepointLast = std::chrono::high_resolution_clock::now();
 
@@ -98,13 +98,13 @@ namespace realware
                 _deltaTime = elapsed.count();
                 _timepointLast = currentTime;
 
-                Update();
+                FrameUpdate();
 
                 glfwSwapBuffers((GLFWwindow*)_window);
                 glfwPollEvents();
             }
 
-            Post();
+            End();
         }
 
         void cApplication::CreateAppWindow()

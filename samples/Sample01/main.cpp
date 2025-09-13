@@ -3,7 +3,6 @@
 #include <ctime>
 #include <vector>
 
-#include <GL/glew.h>
 #include "../../engine/thirdparty/glm/glm/glm.hpp"
 #include "../../engine/thirdparty/glm/glm/gtc/matrix_transform.hpp"
 #include "../../engine/src/application.hpp"
@@ -36,7 +35,7 @@ public:
         _render->DestroyPrimitive(_trianglePrimitive);
     }
 
-    virtual void Pre() override final
+    virtual void Start() override final
     {
         // Triangle geometry
         _trianglePrimitive = _render->CreatePrimitive(mRender::ePrimitive::TRIANGLE);
@@ -127,7 +126,7 @@ public:
         );
     }
 
-    virtual void Update() override final
+    virtual void FrameUpdate() override final
     {
         // Physics
         _physics->Simulate();
@@ -157,7 +156,7 @@ public:
         _render->CompositeFinal();
     }
 
-    virtual void Post() override final
+    virtual void End() override final
     {
     }
 
