@@ -11,18 +11,10 @@ namespace realware
 
     namespace fs
     {
-        class cFile
+        struct sFile
         {
-        public:
-            cFile(types::u8* data, types::usize byteSize) : _data(data), _byteSize(byteSize) {}
-            ~cFile() = delete;
-
-            inline types::u8* GetData() const { return _data; }
-            inline types::usize GetByteSize() const { return _byteSize; }
-
-        private:
-            types::u8* _data = nullptr;
-            types::usize _byteSize = 0;
+            types::u8* Data = nullptr;
+            types::usize DataByteSize = 0;
         };
 
         class mFileSystem
@@ -31,8 +23,8 @@ namespace realware
             explicit mFileSystem(const app::cApplication* const app) : _app((app::cApplication*)app) {};
             ~mFileSystem() = default;
 
-            cFile* CreateDataFile(const std::string& filepath, const types::boolean isString);
-            void DestroyDataFile(cFile* buffer);
+            sFile* CreateDataFile(const std::string& filepath, const types::boolean isString);
+            void DestroyDataFile(sFile* buffer);
 
         private:
             app::cApplication* _app = nullptr;

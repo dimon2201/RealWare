@@ -235,12 +235,12 @@ namespace realware
             std::string appendPathOpaqueVertexStr = appendStr;
             std::string appendPathOpaqueFragmentStr = appendStr;
 
-            fs::cFile* vertexShaderFile = _app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
-            std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile->GetData()));
+            fs::sFile* vertexShaderFile = _app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
+            std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile->Data));
             const char* vertex = vertexStr.c_str();
 
-            fs::cFile* fragmentShaderFile = _app->GetFileSystemManager()->CreateDataFile(fragmentPath, K_TRUE);
-            std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile->GetData()));
+            fs::sFile* fragmentShaderFile = _app->GetFileSystemManager()->CreateDataFile(fragmentPath, K_TRUE);
+            std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile->Data));
             const char* fragment = fragmentStr.c_str();
 
             GLint vertexByteSize = strlen(vertex);
