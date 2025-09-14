@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../thirdparty/glm/glm/glm.hpp"
+#include "category.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -17,20 +18,13 @@ namespace realware
         class mCamera
         {
         public:
-            enum eEulerAngle
-            {
-                PITCH = 0,
-                YAW = 1,
-                ROLL = 2
-            };
-
             explicit mCamera(const app::cApplication* const app) : _app((app::cApplication*)app) {}
             ~mCamera() = default;
 
             void CreateCamera();
             void DestroyCamera();
             void Update(const types::boolean updateMouseLook, const types::boolean updateMovement);
-            void AddEuler(const eEulerAngle& angle, const types::f32 value);
+            void AddEuler(const game::Category& angle, const types::f32 value);
             void Move(const types::f32 value);
             void Strafe(const types::f32 value);
             void Lift(const types::f32 value);
