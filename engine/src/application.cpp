@@ -11,6 +11,9 @@
 #include "physics_manager.hpp"
 #include "gameobject_manager.hpp"
 #include "texture_manager.hpp"
+#include "memory_pool.hpp"
+
+using namespace types;
 
 namespace realware
 {
@@ -20,7 +23,7 @@ namespace realware
     using namespace font;
     using namespace physics;
     using namespace fs;
-    using namespace types;
+    using namespace utils;
 
     namespace app
     {
@@ -76,6 +79,7 @@ namespace realware
             CreateAppWindow();
             CreateContexts();
             CreateAppManagers();
+            CreateMemoryPool();
         }
 
         cApplication::~cApplication()
@@ -166,6 +170,11 @@ namespace realware
             _gameObject = new mGameObject(this);
         }
 
+        void cApplication::CreateMemoryPool()
+        {
+            _memoryPool = new cMemoryPool(_desc.MemoryPoolByteSize, _desc.MemoryPoolReservedAllocations, _desc.MemoryPoolAlignment);
+        }
+
         void cApplication::DestroyAppWindow()
         {
             glfwDestroyWindow((GLFWwindow*)_window);
@@ -187,6 +196,11 @@ namespace realware
             delete _render;
             delete _texture;
             delete _camera;
+        }
+
+        void cApplication::DestroyMemoryPool()
+        {
+            delete _memoryPool;
         }
     }
 }

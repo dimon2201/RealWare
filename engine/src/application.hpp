@@ -46,6 +46,11 @@ namespace realware
         class mFileSystem;
     }
 
+    namespace utils
+    {
+        class cMemoryPool;
+    }
+
     namespace app
     {
         void WindowSizeCallback(GLFWwindow* window, int width, int height);
@@ -61,6 +66,9 @@ namespace realware
             };
 
             sWindowDescriptor WindowDesc;
+            types::u32 MemoryPoolByteSize = 1 * 1024 * 1024;
+            types::u32 MemoryPoolReservedAllocations = 65536;
+            types::u32 MemoryPoolAlignment = 64;
             types::u32 TextureAtlasWidth = 1920;
             types::u32 TextureAtlasHeight = 1080;
             types::u32 TextureAtlasDepth = 16;
@@ -101,6 +109,7 @@ namespace realware
             inline fs::mFileSystem* GetFileSystemManager() const { return _fileSystem; }
             inline physics::mPhysics* GetPhysicsManager() const { return _physics; }
             inline game::mGameObject* GetGameObjectManager() const { return _gameObject; }
+            inline utils::cMemoryPool* GetMemoryPool() const { return _memoryPool; }
 
             inline void* GetWindow() const { return _window; }
             inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
@@ -122,9 +131,11 @@ namespace realware
             void CreateAppWindow();
             void CreateContexts();
             void CreateAppManagers();
+            void CreateMemoryPool();
             void DestroyAppWindow();
             void DestroyContexts();
             void DestroyAppManagers();
+            void DestroyMemoryPool();
 
             inline glm::vec2 cApplication::GetMonitorSize() const { return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)); }
 
@@ -149,6 +160,7 @@ namespace realware
             fs::mFileSystem* _fileSystem = nullptr;
             physics::mPhysics* _physics = nullptr;
             game::mGameObject* _gameObject = nullptr;
+            utils::cMemoryPool* _memoryPool = nullptr;
             types::s32 _keys[MAX_KEY_COUNT] = {};
             types::f32 _deltaTime = 0.0;
             std::chrono::steady_clock::time_point _timepointLast;

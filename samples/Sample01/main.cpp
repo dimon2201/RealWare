@@ -16,6 +16,7 @@
 #include "../../engine/src/filesystem_manager.hpp"
 #include "../../engine/src/physics_manager.hpp"
 #include "../../engine/src/gameobject_manager.hpp"
+#include "../../engine/src/memory_pool.hpp"
 
 using namespace realware::app;
 using namespace realware::game;
@@ -23,6 +24,7 @@ using namespace realware::render;
 using namespace realware::font;
 using namespace realware::sound;
 using namespace realware::physics;
+using namespace realware::utils;
 using namespace types;
 
 class MyApp : public cApplication
