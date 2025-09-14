@@ -10,7 +10,7 @@ namespace realware
 
     namespace fs
     {
-        sFile mFileSystem::LoadFile(const std::string& filepath, boolean isString)
+        cFile* mFileSystem::CreateDataFile(const std::string& filepath, boolean isString)
         {
             std::ifstream inputFile(filepath, std::ios::binary);
             
@@ -23,17 +23,19 @@ namespace realware
             memset(data, 0, databyteSize);
             inputFile.read((char*)&data[0], byteSize);
 
-            sFile file(data, databyteSize);
+            cFile* file = new cFile(data, databyteSize);
 
             return file;
         }
 
-        void mFileSystem::UnloadFile(const sFile& file)
+        void mFileSystem::DestroyDataFile(cFile* file)
         {
-            if (file.Data == nullptr || file.ByteSize == 0)
+            void* fileData = file->GetData();
+
+            if (fileData == nullptr || file->GetByteSize() == 0)
                 return;
 
-            free(file.Data);
+            free(fileData);
         }
     }
 }

@@ -235,12 +235,12 @@ namespace realware
             std::string appendPathOpaqueVertexStr = appendStr;
             std::string appendPathOpaqueFragmentStr = appendStr;
 
-            fs::sFile vertexShaderFile = _app->GetFileSystemManager()->LoadFile(vertexPath, K_TRUE);
-            std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile.Data));
+            fs::cFile* vertexShaderFile = _app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
+            std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile->GetData()));
             const char* vertex = vertexStr.c_str();
 
-            fs::sFile fragmentShaderFile = _app->GetFileSystemManager()->LoadFile(fragmentPath, K_TRUE);
-            std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile.Data));
+            fs::cFile* fragmentShaderFile = _app->GetFileSystemManager()->CreateDataFile(fragmentPath, K_TRUE);
+            std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile->GetData()));
             const char* fragment = fragmentStr.c_str();
 
             GLint vertexByteSize = strlen(vertex);
@@ -283,8 +283,8 @@ namespace realware
 			glDeleteShader(vertexShader);
             glDeleteShader(fragmentShader);
 
-            _app->GetFileSystemManager()->UnloadFile(vertexShaderFile);
-            _app->GetFileSystemManager()->UnloadFile(fragmentShaderFile);
+            _app->GetFileSystemManager()->DestroyDataFile(vertexShaderFile);
+            _app->GetFileSystemManager()->DestroyDataFile(fragmentShaderFile);
 
             return shader;
         }
