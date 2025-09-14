@@ -117,7 +117,7 @@ namespace realware
 
             if (_desc.WindowDesc.IsFullscreen == K_FALSE)
             {
-                _window = (void*)glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title, nullptr, nullptr);
+                _window = (void*)glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title.c_str(), nullptr, nullptr);
             }
             else
             {
@@ -126,7 +126,7 @@ namespace realware
                 glm::vec2 monitorSize = GetMonitorSize();
                 _desc.WindowDesc.Width = monitorSize.x;
                 _desc.WindowDesc.Height = monitorSize.y;
-                _window = glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title, glfwGetPrimaryMonitor(), nullptr);
+                _window = glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title.c_str(), glfwGetPrimaryMonitor(), nullptr);
             }
 
             glfwSetWindowUserPointer((GLFWwindow*)_window, this);

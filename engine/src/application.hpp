@@ -54,7 +54,7 @@ namespace realware
         {
             struct sWindowDescriptor
             {
-                const char* Title = "DefaultWindow";
+                std::string Title = "DefaultWindow";
                 types::u32 Width = 640;
                 types::u32 Height = 480;
                 types::boolean IsFullscreen = types::K_FALSE;
@@ -104,7 +104,7 @@ namespace realware
 
             inline void* GetWindow() const { return _window; }
             inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
-            inline const char* GetWindowTitle() const { return _desc.WindowDesc.Title; }
+            inline const std::string& GetWindowTitle() const { return _desc.WindowDesc.Title; }
             inline HWND GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
             inline types::boolean GetKey(int key) const { return _keys[key]; }
 
