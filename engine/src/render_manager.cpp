@@ -487,6 +487,8 @@ namespace realware
                     continue;
 
                 cText* text = it.GetText();
+                const auto& alphabet = text->GetFont()->GetAlphabet();
+                const sTexture* atlas = text->GetFont()->GetAtlas();
 
                 _instancesByteSize = 0;
                 _materialsByteSize = 0;
@@ -510,7 +512,7 @@ namespace realware
                    
                     if (glyphChar == '\t')
                     {
-                        offset.x += text->GetFont()->OffsetTab * textScale.x;
+                        offset.x += text->GetFont()->GetTabOffset() * textScale.x;
                         continue;
                     }
                     else if (glyphChar == '\n')
@@ -518,29 +520,29 @@ namespace realware
                         s32 maxHeight = 0;
                         s32 cnt = 1;
                         offset.x = 0.0f;
-                        offset.y -= text->GetFont()->OffsetNewline * textScale.y;
+                        offset.y -= text->GetFont()->GetNewlineOffset() * textScale.y;
                         continue;
                     }
                     else if (glyphChar == ' ')
                     {
-                        offset.x += text->GetFont()->OffsetSpace * textScale.x;
+                        offset.x += text->GetFont()->GetSpaceOffset() * textScale.x;
                         continue;
                     }
 
-                    auto alphabetEntry = text->GetFont()->Alphabet.find(glyphChar);
-                    if (alphabetEntry == text->GetFont()->Alphabet.end())
+                    auto alphabetEntry = alphabet.find(glyphChar);
+                    if (alphabetEntry == alphabet.end())
                         continue;
-                    const font::sFont::sGlyph& glyph = alphabetEntry->second;
+                    const sGlyph& glyph = alphabetEntry->second;
 
                     sTextInstance t;
                     t.Info.x = textPosition.x + offset.x;
                     t.Info.y = textPosition.y + (offset.y - (float)((glyph.Height - glyph.Top) * textScale.y));
                     t.Info.z = (float)glyph.Width * textScale.x;
                     t.Info.w = (float)glyph.Height * textScale.y;
-                    t.AtlasInfo.x = (float)glyph.AtlasXOffset / (float)text->GetFont()->Atlas->Width;
-                    t.AtlasInfo.y = (float)glyph.AtlasYOffset / (float)text->GetFont()->Atlas->Height;
-                    t.AtlasInfo.z = (float)glyph.Width / (float)text->GetFont()->Atlas->Width;
-                    t.AtlasInfo.w = (float)glyph.Height / (float)text->GetFont()->Atlas->Height;
+                    t.AtlasInfo.x = (float)glyph.AtlasXOffset / (float)atlas->Width;
+                    t.AtlasInfo.y = (float)glyph.AtlasYOffset / (float)atlas->Height;
+                    t.AtlasInfo.z = (float)glyph.Width / (float)atlas->Width;
+                    t.AtlasInfo.w = (float)glyph.Height / (float)atlas->Height;
 
                     offset.x += glyph.AdvanceX * textScale.x;
 
@@ -559,7 +561,7 @@ namespace realware
                 _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
 
                 _context->BindRenderPass(_text);
-                _context->BindTexture(_text->Desc.Shader, "FontAtlas", text->GetFont()->Atlas, 0);
+                _context->BindTexture(_text->Desc.Shader, "FontAtlas", atlas, 0);
                 _context->DrawQuads(actualCharCount);
                 _context->UnbindRenderPass(_text);
             }

@@ -28,50 +28,52 @@ namespace realware
                 FT_Done_FreeType(_lib);
         }
 
-        usize CalculateNewlineOffset(const sFont* const  font)
+        usize CalculateNewlineOffset(cFont* const font)
         {
-            return font->Font->size->metrics.height >> 6;
+            return font->GetFont()->size->metrics.height >> 6;
         }
 
-        usize CalculateSpaceOffset(const sFont* const font)
+        usize CalculateSpaceOffset(cFont* const font)
         {
-            const FT_UInt spaceIndex = FT_Get_Char_Index(font->Font, ' ');
-            if (FT_Load_Glyph(font->Font, spaceIndex, FT_LOAD_DEFAULT) == 0)
-                return font->Font->glyph->advance.x >> 6;
+            const FT_Face& ftFont = font->GetFont();
+            const FT_UInt spaceIndex = FT_Get_Char_Index(ftFont, ' ');
+            if (FT_Load_Glyph(ftFont, spaceIndex, FT_LOAD_DEFAULT) == 0)
+                return ftFont->glyph->advance.x >> 6;
             else
                 return 0;
         }
 
-        void FillAlphabetAndFindAtlasSize(sFont* const font, usize& xOffset, usize& atlasWidth, usize& atlasHeight)
+        void FillAlphabetAndFindAtlasSize(cFont* const font, usize& xOffset, usize& atlasWidth, usize& atlasHeight)
         {
+            const FT_Face& ftFont = font->GetFont();
             usize maxGlyphHeight = 0;
 
-            for (int c = 0; c < 256; c++)
+            for (usize c = 0; c < 256; c++)
             {
                 if (c == '\n' || c == ' ' || c == '\t')
                     continue;
 
-                const FT_Int ci = FT_Get_Char_Index(font->Font, c);
-                if (FT_Load_Glyph(font->Font, (FT_UInt)ci, FT_LOAD_DEFAULT) == 0)
+                const FT_Int ci = FT_Get_Char_Index(ftFont, c);
+                if (FT_Load_Glyph(ftFont, (FT_UInt)ci, FT_LOAD_DEFAULT) == 0)
                 {
-                    font->GlyphCount += 1;
+                    font->SetGlyphCount(font->GetGlyphCount() + 1);
 
-                    FT_Render_Glyph(font->Font->glyph, FT_RENDER_MODE_NORMAL);
+                    FT_Render_Glyph(ftFont->glyph, FT_RENDER_MODE_NORMAL);
 
-                    sFont::sGlyph glyph = {};
+                    sGlyph glyph = {};
                     glyph.Character = (u8)c;
-                    glyph.Width = font->Font->glyph->bitmap.width;
-                    glyph.Height = font->Font->glyph->bitmap.rows;
-                    glyph.Left = font->Font->glyph->bitmap_left;
-                    glyph.Top = font->Font->glyph->bitmap_top;
-                    glyph.AdvanceX = font->Font->glyph->advance.x >> 6;
-                    glyph.AdvanceY = font->Font->glyph->advance.y >> 6;
+                    glyph.Width = ftFont->glyph->bitmap.width;
+                    glyph.Height = ftFont->glyph->bitmap.rows;
+                    glyph.Left = ftFont->glyph->bitmap_left;
+                    glyph.Top = ftFont->glyph->bitmap_top;
+                    glyph.AdvanceX = ftFont->glyph->advance.x >> 6;
+                    glyph.AdvanceY = ftFont->glyph->advance.y >> 6;
                     glyph.BitmapData = malloc(glyph.Width * glyph.Height);
 
-                    if (font->Font->glyph->bitmap.buffer)
-                        memcpy(glyph.BitmapData, font->Font->glyph->bitmap.buffer, glyph.Width * glyph.Height);
+                    if (ftFont->glyph->bitmap.buffer)
+                        memcpy(glyph.BitmapData, ftFont->glyph->bitmap.buffer, glyph.Width * glyph.Height);
 
-                    font->Alphabet.insert({ (u8)c, glyph });
+                    font->GetAlphabet().insert({(u8)c, glyph});
 
                     xOffset += glyph.Width + 1;
 
@@ -117,7 +119,7 @@ namespace realware
             atlasHeight = NextPowerOfTwo(atlasHeight);
         }
 
-        void FillAtlasWithGlyphs(sFont* const font, usize& atlasWidth, usize& atlasHeight, cRenderContext* const context)
+        void FillAtlasWithGlyphs(cFont* const font, usize& atlasWidth, usize& atlasHeight, cRenderContext* const context)
         {
             usize maxGlyphHeight = 0;
 
@@ -128,7 +130,7 @@ namespace realware
             usize yOffset = 0;
             u8* const pixelsU8 = (u8* const)atlasPixels;
 
-            for (auto& glyph : font->Alphabet)
+            for (auto& glyph : font->GetAlphabet())
             {
                 glyph.second.AtlasXOffset = xOffset;
                 glyph.second.AtlasYOffset = yOffset;
@@ -158,33 +160,34 @@ namespace realware
                 }
             }
 
-            font->Atlas = context->CreateTexture(
+            font->SetAtlas(context->CreateTexture(
                 atlasWidth,
                 atlasHeight,
                 0,
                 render::sTexture::eType::TEXTURE_2D,
                 render::sTexture::eFormat::R8,
                 atlasPixels
-            );
+            ));
 
             free(atlasPixels);
         }
 
-        sFont* mFont::CreateFontTTF(const std::string& filename, const usize glyphSize)
+        cFont* mFont::CreateFontTTF(const std::string& filename, const usize glyphSize)
         {
-            sFont* const font = new sFont();
+            cFont* const font = new cFont();
+            FT_Face& ftFont = font->GetFont();
 
-            if (FT_New_Face(_lib, filename.c_str(), 0, &font->Font) == 0)
+            if (FT_New_Face(_lib, filename.c_str(), 0, &ftFont) == 0)
             {
-                FT_Select_Charmap(font->Font, FT_ENCODING_UNICODE);
+                FT_Select_Charmap(ftFont, FT_ENCODING_UNICODE);
 
-                if (FT_Set_Pixel_Sizes(font->Font, glyphSize, glyphSize) == 0)
+                if (FT_Set_Pixel_Sizes(ftFont, glyphSize, glyphSize) == 0)
                 {
-                    font->GlyphCount = 0;
-                    font->GlyphSize = glyphSize;
-                    font->OffsetNewline = CalculateNewlineOffset(font);
-                    font->OffsetSpace = CalculateSpaceOffset(font);
-                    font->OffsetTab = font->OffsetSpace * 4;
+                    font->SetGlyphCount(0);
+                    font->SetGlyphSize(glyphSize);
+                    font->SetNewlineOffset(CalculateNewlineOffset(font));
+                    font->SetSpaceOffset(CalculateSpaceOffset(font));
+                    font->SetTabOffset(font->GetSpaceOffset() * 4);
 
                     usize atlasWidth = 0;
                     usize atlasHeight = 0;
@@ -212,25 +215,28 @@ namespace realware
             return font;
         }
 
-        cText* mFont::CreateText(const sFont* const font, const std::string& text)
+        cText* mFont::CreateText(const cFont* const font, const std::string& text)
         {
             cText* const textObject = new cText(font, text);
 
             return textObject;
         }
 
-        void mFont::DestroyFontTTF(sFont* font)
+        void mFont::DestroyFontTTF(cFont* font)
         {
-            for (auto glyph : font->Alphabet)
+            auto& alphabet = font->GetAlphabet();
+            auto atlas = font->GetAtlas();
+
+            for (auto& glyph : alphabet)
                 free(glyph.second.BitmapData);
 
-            font->Alphabet.clear();
+            alphabet.clear();
 
-            _context->DestroyTexture(font->Atlas);
+            _context->DestroyTexture(atlas);
 
-            FT_Done_Face(font->Font);
+            FT_Done_Face(font->GetFont());
 
-            delete font->Atlas;
+            delete atlas;
             delete font;
         }
 
@@ -239,7 +245,7 @@ namespace realware
             delete text;
         }
 
-        f32 mFont::GetTextWidth(const sFont* const font, const std::string& text)
+        f32 mFont::GetTextWidth(cFont* const font, const std::string& text)
         {
             f32 textWidth = 0.0f;
             f32 maxTextWidth = 0.0f;
@@ -248,15 +254,15 @@ namespace realware
 
             for (usize i = 0; i < textByteSize; i++)
             {
-                const sFont::sGlyph& glyph = font->Alphabet.find(text[i])->second;
+                const sGlyph& glyph = font->GetAlphabet().find(text[i])->second;
 
                 if (text[i] == '\t')
                 {
-                    textWidth += font->OffsetTab;
+                    textWidth += font->GetTabOffset();
                 }
                 else if (text[i] == ' ')
                 {
-                    textWidth += font->OffsetSpace;
+                    textWidth += font->GetSpaceOffset();
                 }
                 else if (text[i] == '\n')
                 {
@@ -279,20 +285,20 @@ namespace realware
             return maxTextWidth;
         }
 
-        f32 mFont::GetTextHeight(const sFont* font, const std::string& text)
+        f32 mFont::GetTextHeight(cFont* font, const std::string& text)
         {
             f32 textHeight = 0.0f;
             f32 maxHeight = 0.0f;
             const usize textByteSize = strlen(text.c_str());
             const glm::vec2 windowSize = _app->GetWindowSize();
 
-            for (s32 i = 0; i < textByteSize; i++)
+            for (usize i = 0; i < textByteSize; i++)
             {
-                const sFont::sGlyph& glyph = font->Alphabet.find(text[i])->second;
+                const sGlyph& glyph = font->GetAlphabet().find(text[i])->second;
 
                 if (text[i] == '\n')
                 {
-                    textHeight += font->OffsetNewline;
+                    textHeight += font->GetNewlineOffset();
                 }
                 else
                 {

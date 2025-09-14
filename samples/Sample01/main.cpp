@@ -72,7 +72,7 @@ public:
         );
         
         // Text
-        sFont* font = _font->CreateFontTTF("C:/DDD/RealWare/resources/fonts/brahms.ttf", 64);
+        cFont* font = _font->CreateFontTTF("C:/DDD/RealWare/resources/fonts/brahms.ttf", 64);
         cText* text = _font->CreateText(font, "New line\ntest\nanother newline\there");
 
         // Physics
