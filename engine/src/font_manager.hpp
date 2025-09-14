@@ -35,50 +35,29 @@ namespace realware
             void* BitmapData = nullptr;
         };
 
-        struct cFont
+        struct sFont
         {
-        public:
-            cFont() = default;
-            ~cFont() = default;
-
-            inline FT_Face& GetFont() { return _font; }
-            inline types::usize GetGlyphCount() const { return _glyphCount; }
-            inline types::usize GetGlyphSize() const { return _glyphSize; }
-            inline types::usize GetNewlineOffset() const { return _offsetNewline; }
-            inline types::usize GetSpaceOffset() const { return _offsetSpace; }
-            inline types::usize GetTabOffset() const { return _offsetTab; }
-            inline std::unordered_map<types::u8, sGlyph>& GetAlphabet() { return _alphabet; }
-            inline render::sTexture* GetAtlas() const { return _atlas; }
-
-            inline void SetGlyphCount(const types::usize value) { _glyphCount = value; }
-            inline void SetGlyphSize(const types::usize value) { _glyphSize = value; }
-            inline void SetNewlineOffset(const types::usize value) { _offsetNewline = value; }
-            inline void SetSpaceOffset(const types::usize value) { _offsetSpace = value; }
-            inline void SetTabOffset(const types::usize value) { _offsetTab = value; }
-            inline void SetAtlas(const render::sTexture* const atlas) { _atlas = (render::sTexture*)atlas; }
-
-        private:
-            FT_Face _font = {};
-            types::usize _glyphCount = 0;
-            types::usize _glyphSize = 0;
-            types::usize _offsetNewline = 0;
-            types::usize _offsetSpace = 0;
-            types::usize _offsetTab = 0;
-            std::unordered_map<types::u8, sGlyph> _alphabet = {};
-            render::sTexture* _atlas = nullptr;
+            FT_Face Font = {};
+            types::usize GlyphCount = 0;
+            types::usize GlyphSize = 0;
+            types::usize OffsetNewline = 0;
+            types::usize OffsetSpace = 0;
+            types::usize OffsetTab = 0;
+            std::unordered_map<types::u8, sGlyph> Alphabet = {};
+            render::sTexture* Atlas = nullptr;
         };
 
         class cText
         {
         public:
-            explicit cText(const cFont* const font, const std::string& text) : _font((cFont*)font), _text(text) {}
+            explicit cText(const sFont* const font, const std::string& text) : _font((sFont*)font), _text(text) {}
             ~cText() = default;
 
-            inline cFont* GetFont() const { return _font; }
+            inline sFont* GetFont() const { return _font; }
             inline std::string GetText() const { return _text; }
 
         private:
-            cFont* _font = nullptr;
+            sFont* _font = nullptr;
             std::string _text = "";
         };
 
@@ -88,13 +67,13 @@ namespace realware
             mFont(const app::cApplication* const app, const render::cRenderContext* const context);
             ~mFont();
 
-            cFont* CreateFontTTF(const std::string& filename, const types::usize glyphSize);
-            cText* CreateText(const cFont* const font, const std::string& text);
-            void DestroyFontTTF(cFont* font);
+            sFont* CreateFontTTF(const std::string& filename, const types::usize glyphSize);
+            cText* CreateText(const sFont* const font, const std::string& text);
+            void DestroyFontTTF(sFont* font);
             void DestroyText(cText* text);
             
-            types::f32 GetTextWidth(cFont* const font, const std::string& text);
-            types::f32 GetTextHeight(cFont* const font, const std::string& text);
+            types::f32 GetTextWidth(sFont* const font, const std::string& text);
+            types::f32 GetTextHeight(sFont* const font, const std::string& text);
             types::usize GetCharacterCount(const std::string& text);
             types::usize GetNewlineCount(const std::string& text);
 

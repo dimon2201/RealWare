@@ -487,8 +487,8 @@ namespace realware
                     continue;
 
                 cText* text = it.GetText();
-                const auto& alphabet = text->GetFont()->GetAlphabet();
-                const sTexture* atlas = text->GetFont()->GetAtlas();
+                const auto& alphabet = text->GetFont()->Alphabet;
+                const sTexture* atlas = text->GetFont()->Atlas;
 
                 _instancesByteSize = 0;
                 _materialsByteSize = 0;
@@ -512,7 +512,7 @@ namespace realware
                    
                     if (glyphChar == '\t')
                     {
-                        offset.x += text->GetFont()->GetTabOffset() * textScale.x;
+                        offset.x += text->GetFont()->OffsetTab * textScale.x;
                         continue;
                     }
                     else if (glyphChar == '\n')
@@ -520,12 +520,12 @@ namespace realware
                         s32 maxHeight = 0;
                         s32 cnt = 1;
                         offset.x = 0.0f;
-                        offset.y -= text->GetFont()->GetNewlineOffset() * textScale.y;
+                        offset.y -= text->GetFont()->OffsetNewline * textScale.y;
                         continue;
                     }
                     else if (glyphChar == ' ')
                     {
-                        offset.x += text->GetFont()->GetSpaceOffset() * textScale.x;
+                        offset.x += text->GetFont()->OffsetSpace * textScale.x;
                         continue;
                     }
 
