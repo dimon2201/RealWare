@@ -182,9 +182,9 @@ namespace realware
             
             void UpdateLights();
 
-            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject);
-            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject);
-            void DrawTexts(std::vector<game::cGameObject>& objects);
+            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject);
+            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject);
+            void DrawTexts(const std::vector<game::cGameObject>& objects);
             
             void CompositeTransparent();
             void CompositeFinal();

@@ -335,9 +335,9 @@ namespace realware
             _context->WriteBuffer(_lightBuffer, 0, _lightsByteSize, _lights);*/
         }
 
-        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, std::vector<cGameObject>& objects, const cGameObject* const cameraObject)
+        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject)
         {
-            s32 instanceCount = 0;
+            usize instanceCount = 0;
             _instancesByteSize = 0;
             _materialsByteSize = 0;
             _materialsMap->clear();
@@ -406,9 +406,9 @@ namespace realware
             _context->UnbindRenderPass(_opaque);
         }
 
-        void mRender::DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, std::vector<cGameObject>& objects, const cGameObject* const cameraObject)
+        void mRender::DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject)
         {
-            s32 instanceCount = 0;
+            usize instanceCount = 0;
             _instancesByteSize = 0;
             _materialsByteSize = 0;
             _materialsMap->clear();
@@ -479,7 +479,7 @@ namespace realware
             _context->UnbindRenderPass(_transparent);
         }
 
-        void mRender::DrawTexts(std::vector<cGameObject>& objects)
+        void mRender::DrawTexts(const std::vector<cGameObject>& objects)
         {
             for (auto& it : objects)
             {

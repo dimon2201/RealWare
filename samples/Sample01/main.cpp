@@ -141,7 +141,7 @@ public:
         _renderContext->ClearDepth(1.0f);
 
         cGameObject* cameraObject = _cameraGameObject;
-        auto gameObjects = _gameObject->GetObjects().GetObjects();
+        const auto& gameObjects = _gameObject->GetObjects().GetObjects();
         _render->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
         _render->DrawGeometryOpaque(
             _triangleGeometry,
