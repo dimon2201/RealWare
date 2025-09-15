@@ -75,7 +75,7 @@ public:
         
         // Text
         sFont* font = _font->CreateFontTTF("C:/DDD/RealWare/resources/fonts/brahms.ttf", 64);
-        cText* text = _font->CreateText(font, "New line\ntest\nanother newline\there");
+        sText* text = _font->CreateText(font, "New line\ntest\nanother newline\there");
 
         // Physics
         cSimulationScene* pxScene = _physics->AddScene("PXScene1");

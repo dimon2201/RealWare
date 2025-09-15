@@ -47,18 +47,10 @@ namespace realware
             render::sTexture* Atlas = nullptr;
         };
 
-        class cText
+        struct sText
         {
-        public:
-            explicit cText(const sFont* const font, const std::string& text) : _font((sFont*)font), _text(text) {}
-            ~cText() = default;
-
-            inline sFont* GetFont() const { return _font; }
-            inline std::string GetText() const { return _text; }
-
-        private:
-            sFont* _font = nullptr;
-            std::string _text = "";
+            sFont* Font = nullptr;
+            std::string Text = "";
         };
 
         class mFont
@@ -68,9 +60,9 @@ namespace realware
             ~mFont();
 
             sFont* CreateFontTTF(const std::string& filename, const types::usize glyphSize);
-            cText* CreateText(const sFont* const font, const std::string& text);
+            sText* CreateText(const sFont* const font, const std::string& text);
             void DestroyFontTTF(sFont* font);
-            void DestroyText(cText* text);
+            void DestroyText(sText* text);
             
             types::f32 GetTextWidth(sFont* const font, const std::string& text);
             types::f32 GetTextHeight(sFont* const font, const std::string& text);

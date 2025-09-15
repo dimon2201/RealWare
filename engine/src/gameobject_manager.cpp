@@ -2,6 +2,9 @@
 #include "gameobject_manager.hpp"
 #include "render_manager.hpp"
 #include "physics_manager.hpp"
+#include "memory_pool.hpp"
+
+using namespace types;
 
 namespace realware
 {
@@ -9,13 +12,14 @@ namespace realware
     using namespace render;
     using namespace font;
     using namespace physics;
-    using namespace types;
+    using namespace utils;
 
     namespace game
     {
-        cGameObject::cGameObject()
+        cGameObject::cGameObject(const cMemoryPool* const memoryPool)
         {
-            _transform = new sTransform();
+            sTransform* pTransform = (sTransform*)(((cMemoryPool*)memoryPool)->Allocate(sizeof(sTransform)));
+            _transform = new (pTransform) sTransform();
         }
 
         glm::vec3 cGameObject::GetPosition() const
@@ -85,7 +89,7 @@ namespace realware
 
         cGameObject* mGameObject::AddGameObject(const std::string& id)
         {
-            return _gameObjects.Add(id);
+            return _gameObjects.Add(id, _app->GetMemoryPool());
         }
 
         cGameObject* mGameObject::FindGameObject(const std::string& id)

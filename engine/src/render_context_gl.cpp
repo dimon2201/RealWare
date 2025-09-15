@@ -7,12 +7,15 @@
 #include "types.hpp"
 #include "application.hpp"
 #include "render_manager.hpp"
+#include "memory_pool.hpp"
+
+using namespace types;
 
 namespace realware
 {
     using namespace app;
     using namespace game;
-    using namespace types;
+    using namespace utils;
 
     namespace render
     {
@@ -54,7 +57,9 @@ namespace realware
 
         sBuffer* cOpenGLRenderContext::CreateBuffer(const usize byteSize, const sBuffer::eType& type, const void* const data)
         {
-            sBuffer* const buffer = new sBuffer();
+            sBuffer* pBuffer = (sBuffer*)_app->GetMemoryPool()->Allocate(sizeof(sBuffer));
+            sBuffer* buffer = new (pBuffer) sBuffer();
+
             buffer->ByteSize = byteSize;
             buffer->Type = type;
             buffer->Slot = 0;
@@ -164,12 +169,16 @@ namespace realware
             glDeleteBuffers(1, (GLuint*)&buffer->Instance);
 
             if (buffer != nullptr)
-                delete buffer;
+            {
+                buffer->~sBuffer();
+                _app->GetMemoryPool()->Free(buffer);
+            }
         }
 
         sVertexArray* cOpenGLRenderContext::CreateVertexArray()
         {
-            sVertexArray* vertexArray = new sVertexArray();
+            sVertexArray* pVertexArray = (sVertexArray*)_app->GetMemoryPool()->Allocate(sizeof(sVertexArray));
+            sVertexArray* vertexArray = new (pVertexArray) sVertexArray();
 
             glGenVertexArrays(1, (GLuint*)&vertexArray->Instance);
 
@@ -209,7 +218,10 @@ namespace realware
             glDeleteVertexArrays(1, (GLuint*)&vertexArray->Instance);
 
             if (vertexArray != nullptr)
-                delete vertexArray;
+            {
+                vertexArray->~sVertexArray();
+                _app->GetMemoryPool()->Free(vertexArray);
+            }
         }
 
         void cOpenGLRenderContext::BindShader(const sShader* const shader)
@@ -223,13 +235,10 @@ namespace realware
             glUseProgram(0);
         }
 
-        sShader* cOpenGLRenderContext::LoadShader(
-            const std::string& header,
-            const std::string& vertexPath,
-            const std::string& fragmentPath
-        )
+        sShader* cOpenGLRenderContext::LoadShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath)
         {
-            sShader* shader = new sShader();
+            sShader* pShader = (sShader*)_app->GetMemoryPool()->Allocate(sizeof(sShader));
+            sShader* shader = new (pShader) sShader();
 
             std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
             std::string appendPathOpaqueVertexStr = appendStr;
@@ -301,7 +310,9 @@ namespace realware
 
         sTexture* cOpenGLRenderContext::CreateTexture(const usize width, const usize height, const usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data)
         {
-            sTexture* texture = new sTexture();
+            sTexture* pTexture = (sTexture*)_app->GetMemoryPool()->Allocate(sizeof(sTexture));
+            sTexture* texture = new (pTexture) sTexture();
+            
             texture->Width = width;
             texture->Height = height;
             texture->Depth = depth;
@@ -538,12 +549,17 @@ namespace realware
             glDeleteTextures(1, (GLuint*)&texture->Instance);
 
             if (texture != nullptr)
-                delete texture;
+            {
+                texture->~sTexture();
+                _app->GetMemoryPool()->Free(texture);
+            }
         }
 
         sRenderTarget* cOpenGLRenderContext::CreateRenderTarget(const std::vector<sTexture*>& colorAttachments, const sTexture* const depthAttachment)
         {
-            sRenderTarget* renderTarget = new sRenderTarget();
+            sRenderTarget* pRenderTarget = (sRenderTarget*)_app->GetMemoryPool()->Allocate(sizeof(sRenderTarget));
+            sRenderTarget* renderTarget = new (pRenderTarget) sRenderTarget();
+
             renderTarget->ColorAttachments = colorAttachments;
             renderTarget->DepthAttachment = (sTexture*)depthAttachment;
 
@@ -634,12 +650,17 @@ namespace realware
             glDeleteFramebuffers(1, (GLuint*)&renderTarget->Instance);
 
             if (renderTarget != nullptr)
-                delete renderTarget;
+            {
+                renderTarget->~sRenderTarget();
+                _app->GetMemoryPool()->Free(renderTarget);
+            }
         }
 
         sRenderPass* cOpenGLRenderContext::CreateRenderPass(const sRenderPass::sDescriptor& descriptor)
         {
-            sRenderPass* renderPass = new sRenderPass();
+            sRenderPass* pRenderPass = (sRenderPass*)_app->GetMemoryPool()->Allocate(sizeof(sRenderPass));
+            sRenderPass* renderPass = new (pRenderPass) sRenderPass();
+
             memset(renderPass, 0, sizeof(sRenderPass));
 
             renderPass->Desc = descriptor;
@@ -698,7 +719,10 @@ namespace realware
             DestroyVertexArray(renderPass->Desc.VertexArray);
 
             if (renderPass != nullptr)
-                delete renderPass;
+            {
+                renderPass->~sRenderPass();
+                _app->GetMemoryPool()->Free(renderPass);
+            }
         }
 
         void cOpenGLRenderContext::BindDefaultInputLayout()

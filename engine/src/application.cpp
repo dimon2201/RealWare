@@ -76,10 +76,10 @@ namespace realware
 
         cApplication::cApplication(const sApplicationDescriptor* const desc) : _desc(*desc)
         {
+            CreateMemoryPool();
             CreateAppWindow();
             CreateContexts();
             CreateAppManagers();
-            CreateMemoryPool();
         }
 
         cApplication::~cApplication()
@@ -87,6 +87,7 @@ namespace realware
             DestroyAppManagers();
             DestroyContexts();
             DestroyAppWindow();
+            DestroyMemoryPool();
         }
 
         void cApplication::Run()
@@ -152,27 +153,44 @@ namespace realware
             glfwSetMouseButtonCallback((GLFWwindow*)_window, &MouseButtonCallback);
         }
 
+        void cApplication::CreateMemoryPool()
+        {
+            _memoryPool = new cMemoryPool(_desc.MemoryPoolByteSize, _desc.MemoryPoolReservedAllocations, _desc.MemoryPoolAlignment);
+        }
+
         void cApplication::CreateContexts()
         {
-            _renderContext = new cOpenGLRenderContext(this);
-            _soundContext = new cOpenALSoundContext();
+            cOpenGLRenderContext* pOpenGLRenderContext = (cOpenGLRenderContext*)_memoryPool->Allocate(sizeof(cOpenGLRenderContext));
+            cOpenALSoundContext* pOpenALSoundContext = (cOpenALSoundContext*)_memoryPool->Allocate(sizeof(cOpenALSoundContext));
+            
+            _renderContext = new (pOpenGLRenderContext) cOpenGLRenderContext(this);
+            _soundContext = new (pOpenALSoundContext) cOpenALSoundContext(this);
         }
 
         void cApplication::CreateAppManagers()
         {
-            _camera = new mCamera(this);
-            _texture = new mTexture(this, _renderContext);
-            _render = new mRender(this, _renderContext);
-            _font = new mFont(this, _renderContext);
-            _sound = new mSound(this, _soundContext);
-            _fileSystem = new mFileSystem(this);
-            _physics = new mPhysics(this);
-            _gameObject = new mGameObject(this);
+            mCamera* pCamera = (mCamera*)_memoryPool->Allocate(sizeof(mCamera));
+            mTexture* pTexture = (mTexture*)_memoryPool->Allocate(sizeof(mTexture));
+            mFileSystem* pFileSystem = (mFileSystem*)_memoryPool->Allocate(sizeof(mFileSystem));
+            mRender* pRender = (mRender*)_memoryPool->Allocate(sizeof(mRender));
+            mFont* pFont = (mFont*)_memoryPool->Allocate(sizeof(mFont));
+            mSound* pSound = (mSound*)_memoryPool->Allocate(sizeof(mSound));
+            mPhysics* pPhysics = (mPhysics*)_memoryPool->Allocate(sizeof(mPhysics));
+            mGameObject* pGameObject = (mGameObject*)_memoryPool->Allocate(sizeof(mGameObject));
+
+            _camera = new (pCamera) mCamera(this);
+            _texture = new (pTexture) mTexture(this, _renderContext);
+            _fileSystem = new (pFileSystem) mFileSystem(this);
+            _render = new (pRender) mRender(this, _renderContext);
+            _font = new (pFont) mFont(this, _renderContext);
+            _sound = new (pSound) mSound(this, _soundContext);
+            _physics = new (pPhysics) mPhysics(this);
+            _gameObject = new (pGameObject) mGameObject(this);
         }
 
-        void cApplication::CreateMemoryPool()
+        void cApplication::DestroyMemoryPool()
         {
-            _memoryPool = new cMemoryPool(_desc.MemoryPoolByteSize, _desc.MemoryPoolReservedAllocations, _desc.MemoryPoolAlignment);
+            delete _memoryPool;
         }
 
         void cApplication::DestroyAppWindow()
@@ -182,25 +200,30 @@ namespace realware
 
         void cApplication::DestroyContexts()
         {
-            delete _soundContext;
-            delete _renderContext;
+            _soundContext->~cSoundContext();
+            _renderContext->~cRenderContext();
+            _memoryPool->Free(_soundContext);
+            _memoryPool->Free(_renderContext);
         }
 
         void cApplication::DestroyAppManagers()
         {
-            delete _gameObject;
-            delete _physics;
-            delete _fileSystem;
-            delete _sound;
-            delete _font;
-            delete _render;
-            delete _texture;
-            delete _camera;
-        }
-
-        void cApplication::DestroyMemoryPool()
-        {
-            delete _memoryPool;
+            _gameObject->~mGameObject();
+            _physics->~mPhysics();
+            _sound->~mSound();
+            _font->~mFont();
+            _render->~mRender();
+            _fileSystem->~mFileSystem();
+            _texture->~mTexture();
+            _camera->~mCamera();
+            _memoryPool->Free(_gameObject);
+            _memoryPool->Free(_physics);
+            _memoryPool->Free(_sound);
+            _memoryPool->Free(_font);
+            _memoryPool->Free(_render);
+            _memoryPool->Free(_fileSystem);
+            _memoryPool->Free(_texture);
+            _memoryPool->Free(_camera);
         }
     }
 }

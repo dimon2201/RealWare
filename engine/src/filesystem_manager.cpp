@@ -2,15 +2,20 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include "application.hpp"
 #include "filesystem_manager.hpp"
+#include "memory_pool.hpp"
+
+using namespace types;
 
 namespace realware
 {
-    using namespace types;
+    using namespace app;
+    using namespace utils;
 
     namespace fs
     {
-        sFile* mFileSystem::CreateDataFile(const std::string& filepath, boolean isString)
+        sFile* mFileSystem::CreateDataFile(const std::string& filepath, types::boolean isString)
         {
             std::ifstream inputFile(filepath, std::ios::binary);
             
@@ -23,7 +28,9 @@ namespace realware
             memset(data, 0, databyteSize);
             inputFile.read((char*)&data[0], byteSize);
 
-            sFile* file = new sFile;
+            sFile* pFile = (sFile*)_app->GetMemoryPool()->Allocate(sizeof(sFile));
+            sFile* file = new (pFile) sFile;
+
             file->Data = data;
             file->DataByteSize = databyteSize;
 

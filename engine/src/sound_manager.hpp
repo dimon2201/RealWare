@@ -41,13 +41,14 @@ namespace realware
         struct cSound : public utils::cIdVecObject
         {
         public:
-            explicit cSound(const types::u32 source, const types::u32 buffer);
+            explicit cSound(const app::cApplication* const app, const types::u32 source, const types::u32 buffer);
             ~cSound();
 
             inline const types::u32& GetSource() const { return _source; }
             inline const types::u32& GetBuffer() const { return _buffer; }
 
         private:
+            app::cApplication* _app = nullptr;
             game::Category _format = game::Category::SOUND_FORMAT_WAV;
             sWAVStructure* _file = nullptr;
             types::u32 _source = 0;

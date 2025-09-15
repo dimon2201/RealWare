@@ -24,7 +24,7 @@ namespace realware
 
     namespace font
     {
-        class cText;
+        class sText;
     }
 
     namespace physics
@@ -36,12 +36,17 @@ namespace realware
         class mPhysics;
     }
 
+    namespace utils
+    {
+        class cMemoryPool;
+    }
+
     namespace game
     {
         class cGameObject : public utils::cIdVecObject
         {
         public:
-            explicit cGameObject();
+            explicit cGameObject(const utils::cMemoryPool* const memoryPool);
             ~cGameObject() = default;
             
             inline app::cApplication* GetApplication() { return GetApp(); }
@@ -57,7 +62,7 @@ namespace realware
             inline glm::mat4 GetViewProjectionMatrix() const { return _viewProjection; }
             inline render::sTransform* GetTransform() const { return _transform; }
             inline render::cMaterial* GetMaterial() const { return _material; }
-            inline font::cText* GetText() const { return _text; }
+            inline font::sText* GetText() const { return _text; }
             inline render::sLight* GetLight() const { return _light; }
             inline physics::cActor* GetPhysicsActor() const { return _actor; }
             inline physics::cController* GetPhysicsController() const { return _controller; }
@@ -72,7 +77,7 @@ namespace realware
             inline void SetWorldMatrix(const glm::mat4& world) { _world = world; }
             inline void SetViewProjectionMatrix(const glm::mat4& viewProjection) { _viewProjection = viewProjection; }
             inline void SetMaterial(const render::cMaterial* const material) { _material = (render::cMaterial*)material; }
-            inline void SetText(const font::cText* const text) { _text = (font::cText*)text; }
+            inline void SetText(const font::sText* const text) { _text = (font::sText*)text; }
             inline void SetLight(const render::sLight* const light) { _light = (render::sLight*)light; }
             void SetPhysicsActor(const Category& staticOrDynamic, const Category& shapeType, const physics::cSimulationScene* const scene, const physics::cSubstance* const substance, const types::f32 mass);
             void SetPhysicsController(const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const glm::vec3& up, const physics::cSimulationScene* const scene, const physics::cSubstance* const substance);
@@ -88,7 +93,7 @@ namespace realware
             glm::mat4 _viewProjection = glm::mat4(1.0f);
             render::sTransform* _transform = nullptr;
             render::cMaterial* _material = nullptr;
-            font::cText* _text = nullptr;
+            font::sText* _text = nullptr;
             render::sLight* _light = nullptr;
             physics::cActor* _actor = nullptr;
             physics::cController* _controller = nullptr;

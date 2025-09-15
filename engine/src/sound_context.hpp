@@ -10,6 +10,11 @@
 
 namespace realware
 {
+    namespace app
+    {
+        class cApplication;
+    }
+
     namespace sound
     {
         struct sWAVStructure;
@@ -22,7 +27,7 @@ namespace realware
             virtual ~cSoundContext() = default;
 
             virtual void Create(const std::string& filename, const game::Category& format, const sWAVStructure** const file, types::u32& source, types::u32& buffer) = 0;
-            virtual void Destroy(const cSound* const sound) = 0;
+            virtual void Destroy(cSound* sound) = 0;
             virtual void Play(const cSound* const sound) = 0;
             virtual void Stop(const cSound* const sound) = 0;
             virtual void SetPosition(const cSound* const sound, const glm::vec3& position) = 0;
@@ -35,11 +40,11 @@ namespace realware
         class cOpenALSoundContext : public cSoundContext
         {
         public:
-            cOpenALSoundContext();
+            cOpenALSoundContext(const app::cApplication* const app);
             virtual ~cOpenALSoundContext() override final;
 
             virtual void Create(const std::string& filename, const game::Category& format, const sWAVStructure** const file, types::u32& source, types::u32& buffer) override final;
-            virtual void Destroy(const cSound* const sound) override final;
+            virtual void Destroy(cSound* sound) override final;
             virtual void Play(const cSound* const sound) override final;
             virtual void Stop(const cSound* const sound) override final;
             virtual void SetPosition(const cSound* const sound, const glm::vec3& position) override final;
@@ -49,8 +54,9 @@ namespace realware
             virtual void SetListenerOrientation(const glm::vec3& at, const glm::vec3& up) override final;
 
         private:
-            ALCdevice* m_device = nullptr;
-            ALCcontext* m_context = nullptr;
+            app::cApplication* _app = nullptr;
+            ALCdevice* _device = nullptr;
+            ALCcontext* _context = nullptr;
         };
     }
 }

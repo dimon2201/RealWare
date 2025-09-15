@@ -12,13 +12,16 @@
 #include "gameobject_manager.hpp"
 #include "font_manager.hpp"
 #include "application.hpp"
+#include "memory_pool.hpp"
+
+using namespace types;
 
 namespace realware
 {
     using namespace app;
     using namespace game;
     using namespace font;
-    using namespace types;
+    using namespace utils;
 
     namespace render
     {
@@ -97,7 +100,8 @@ namespace realware
             _materialsByteSize = 0;
             _lights = malloc(desc->LightBufferSize);
             _lightsByteSize = 0;
-            _materialsMap = new std::unordered_map<render::cMaterial*, s32>();
+            std::unordered_map<render::cMaterial*, s32>* pMaterialsMap = (std::unordered_map<render::cMaterial*, s32>*)_app->GetMemoryPool()->Allocate(sizeof(std::unordered_map<render::cMaterial*, s32>));
+            _materialsMap = new (pMaterialsMap) std::unordered_map<render::cMaterial*, s32>();
 
             sTexture* color = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
             sTexture* accumulation = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA16F, nullptr);
@@ -220,7 +224,8 @@ namespace realware
             _context->DestroyBuffer(_vertexBuffer);
             _context->DestroyBuffer(_indexBuffer);
             _context->DestroyBuffer(_instanceBuffer);
-            delete _materialsMap;
+            _materialsMap->~unordered_map<render::cMaterial*, s32>();
+            _app->GetMemoryPool()->Free(_materialsMap);
             free(_vertices);
             free(_indices);
             free(_instances);
@@ -234,6 +239,11 @@ namespace realware
         cMaterial* mRender::FindMaterial(const std::string& id)
         {
             return _materialsCPU.Find(id);
+        }
+
+        void mRender::DeleteMaterial(const std::string& id)
+        {
+            _materialsCPU.Delete(id);
         }
 
         sVertexArray* mRender::CreateDefaultVertexArray()
@@ -253,7 +263,8 @@ namespace realware
 
         sVertexBufferGeometry* mRender::CreateGeometry(const sVertexBufferGeometry::eFormat& format, const usize verticesByteSize, const void* const vertices, const usize indicesByteSize, const void* const indices)
         {
-            sVertexBufferGeometry* geometry = new sVertexBufferGeometry;
+            sVertexBufferGeometry* pGeometry = (sVertexBufferGeometry*)_app->GetMemoryPool()->Allocate(sizeof(sVertexBufferGeometry));
+            sVertexBufferGeometry* geometry = new (pGeometry) sVertexBufferGeometry();
 
             memcpy((void*)((usize)_vertices + (usize)_verticesByteSize), vertices, verticesByteSize);
             memcpy((void*)((usize)_indices + (usize)_indicesByteSize), indices, indicesByteSize);
@@ -275,9 +286,10 @@ namespace realware
             return geometry;
         }
 
-        void mRender::DeleteMaterial(const std::string& id)
+        void mRender::DestroyGeometry(sVertexBufferGeometry* geometry)
         {
-            _materialsCPU.Delete(id);
+            geometry->~sVertexBufferGeometry();
+            _app->GetMemoryPool()->Free(geometry);
         }
 
         void mRender::ClearGeometryBuffer()
@@ -486,9 +498,11 @@ namespace realware
                 if (it.GetText() == nullptr)
                     continue;
 
-                cText* text = it.GetText();
-                const auto& alphabet = text->GetFont()->Alphabet;
-                const sTexture* atlas = text->GetFont()->Atlas;
+                sText* text = it.GetText();
+                sFont* textFont = text->Font;
+                const std::string& textString = text->Text;
+                const auto& alphabet = textFont->Alphabet;
+                const sTexture* atlas = text->Font->Atlas;
 
                 _instancesByteSize = 0;
                 _materialsByteSize = 0;
@@ -503,16 +517,16 @@ namespace realware
                     (1.0f / windowSize.y) * it.GetScale().y
                 );
 
-                usize charCount = text->GetText().length();
+                usize charCount = textString.length();
                 usize actualCharCount = 0;
                 glm::vec2 offset = glm::vec2(0.0f);
                 for (usize i = 0; i < charCount; i++)
                 {
-                    char glyphChar = text->GetText()[i];
+                    char glyphChar = textString[i];
                    
                     if (glyphChar == '\t')
                     {
-                        offset.x += text->GetFont()->OffsetTab * textScale.x;
+                        offset.x += textFont->OffsetTab * textScale.x;
                         continue;
                     }
                     else if (glyphChar == '\n')
@@ -520,12 +534,12 @@ namespace realware
                         s32 maxHeight = 0;
                         s32 cnt = 1;
                         offset.x = 0.0f;
-                        offset.y -= text->GetFont()->OffsetNewline * textScale.y;
+                        offset.y -= textFont->OffsetNewline * textScale.y;
                         continue;
                     }
                     else if (glyphChar == ' ')
                     {
-                        offset.x += text->GetFont()->OffsetSpace * textScale.x;
+                        offset.x += textFont->OffsetSpace * textScale.x;
                         continue;
                     }
 
@@ -585,7 +599,8 @@ namespace realware
 
         sPrimitive* mRender::CreatePrimitive(const ePrimitive& primitive)
         {
-            sPrimitive* primitiveObject = new sPrimitive;
+            sPrimitive* pPrimitiveObject = (sPrimitive*)_app->GetMemoryPool()->Allocate(sizeof(sPrimitive));
+            sPrimitive* primitiveObject = new (pPrimitiveObject) sPrimitive();
 
             if (primitive == ePrimitive::TRIANGLE)
             {
@@ -646,7 +661,9 @@ namespace realware
         sModel* mRender::CreateModel(const std::string& filename)
         {
             // Create model
-            sModel* model = new sModel();
+            sModel* pModel = (sModel*)_app->GetMemoryPool()->Allocate(sizeof(sModel));
+            sModel* model = new (pModel) sModel();
+
             model->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
 
             // Load model
@@ -705,7 +722,8 @@ namespace realware
                 free(primitiveObject->Vertices);
             if (primitiveObject->Indices)
                 free(primitiveObject->Indices);
-            delete primitiveObject;
+            primitiveObject->~sPrimitive();
+            _app->GetMemoryPool()->Free(primitiveObject);
         }
 
         void mRender::ResizeWindow(const glm::vec2& size)

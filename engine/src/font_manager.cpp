@@ -2,12 +2,15 @@
 #include "font_manager.hpp"
 #include "render_context.hpp"
 #include "application.hpp"
+#include "memory_pool.hpp"
+
+using namespace types;
 
 namespace realware
 {
     using namespace app;
     using namespace render;
-    using namespace types;
+    using namespace utils;
 
     namespace font
     {
@@ -174,7 +177,9 @@ namespace realware
 
         sFont* mFont::CreateFontTTF(const std::string& filename, const usize glyphSize)
         {
-            sFont* const font = new sFont();
+            sFont* pFont = (sFont*)_app->GetMemoryPool()->Allocate(sizeof(sFont));
+            sFont* font = new (pFont) sFont;
+
             FT_Face& ftFont = font->Font;
 
             if (FT_New_Face(_lib, filename.c_str(), 0, &ftFont) == 0)
@@ -199,7 +204,8 @@ namespace realware
                 }
                 else
                 {
-                    delete font;
+                    font->~sFont();
+                    _app->GetMemoryPool()->Free(font);
                     
                     return nullptr;
                 }
@@ -207,7 +213,9 @@ namespace realware
             else
             {
                 std::cout << "Error creating FreeType font face!" << std::endl;
-                delete font;
+
+                font->~sFont();
+                _app->GetMemoryPool()->Free(font);
                 
                 return nullptr;
             }
@@ -215,9 +223,13 @@ namespace realware
             return font;
         }
 
-        cText* mFont::CreateText(const sFont* const font, const std::string& text)
+        sText* mFont::CreateText(const sFont* const font, const std::string& text)
         {
-            cText* const textObject = new cText(font, text);
+            sText* pTextObject = (sText*)_app->GetMemoryPool()->Allocate(sizeof(sText));
+            sText* textObject = new (pTextObject) sText;
+
+            textObject->Font = (sFont*)font;
+            textObject->Text = text;
 
             return textObject;
         }
@@ -236,13 +248,14 @@ namespace realware
 
             FT_Done_Face(font->Font);
 
-            delete atlas;
-            delete font;
+            font->~sFont();
+            _app->GetMemoryPool()->Free(font);
         }
 
-        void mFont::DestroyText(cText* text)
+        void mFont::DestroyText(sText* text)
         {
-            delete text;
+            text->~sText();
+            _app->GetMemoryPool()->Free(text);
         }
 
         f32 mFont::GetTextWidth(sFont* const font, const std::string& text)

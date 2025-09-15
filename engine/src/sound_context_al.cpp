@@ -2,18 +2,23 @@
 #include <cstdio>
 #include <string>
 #include <windows.h>
+#include "application.hpp"
 #include "sound_context.hpp"
 #include "sound_manager.hpp"
+#include "memory_pool.hpp"
 
 namespace realware
 {
+    using namespace app;
     using namespace game;
+    using namespace utils;
 
     namespace sound
     {
-        sWAVStructure* LoadWAVFile(const std::string& filename)
+        sWAVStructure* LoadWAVFile(cMemoryPool* const memoryPool, const std::string& filename)
         {
-            sWAVStructure* wav = new sWAVStructure();
+            sWAVStructure* pWav = (sWAVStructure*)memoryPool->Allocate(sizeof(sWAVStructure));
+            sWAVStructure* wav = new (pWav) sWAVStructure();
 
             FILE* fp = nullptr;
             errno_t err = fopen_s(&fp, &filename.c_str()[0], "rb");
@@ -69,25 +74,26 @@ namespace realware
             return wav;
         }
 
-        cOpenALSoundContext::cOpenALSoundContext()
+        cOpenALSoundContext::cOpenALSoundContext(const cApplication* const app)
         {
-            m_device = alcOpenDevice(nullptr);
-            m_context = alcCreateContext(m_device, nullptr);
-            alcMakeContextCurrent(m_context);
+            _app = (cApplication*)app;
+            _device = alcOpenDevice(nullptr);
+            _context = alcCreateContext(_device, nullptr);
+            alcMakeContextCurrent(_context);
         }
 
         cOpenALSoundContext::~cOpenALSoundContext()
         {
             alcMakeContextCurrent(nullptr);
-            alcDestroyContext(m_context);
-            alcCloseDevice(m_device);
+            alcDestroyContext(_context);
+            alcCloseDevice(_device);
         }
 
         void cOpenALSoundContext::Create(const std::string& filename, const Category& format, const sWAVStructure** const file, types::u32& source, types::u32& buffer)
         {
             if (format == Category::SOUND_FORMAT_WAV)
             {
-                sWAVStructure* wavFile = LoadWAVFile(filename);
+                sWAVStructure* wavFile = LoadWAVFile(_app->GetMemoryPool(), filename);
                 *file = wavFile;
 
                 alGenSources(1, (ALuint*)&source);
@@ -127,12 +133,13 @@ namespace realware
             }
         }
 
-        void cOpenALSoundContext::Destroy(const cSound* const sound)
+        void cOpenALSoundContext::Destroy(cSound* sound)
         {
             alDeleteBuffers(1, (ALuint*)&sound->GetBuffer());
             alDeleteSources(1, (ALuint*)&sound->GetSource());
 
-            delete sound;
+            sound->~cSound();
+            _app->GetMemoryPool()->Free(sound);
         }
 
         void cOpenALSoundContext::Play(const cSound* const sound)

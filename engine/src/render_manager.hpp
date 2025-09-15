@@ -171,10 +171,11 @@ namespace realware
 
             cMaterial* AddMaterial(const std::string& id, const render::cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
             cMaterial* FindMaterial(const std::string& id);
+            void DeleteMaterial(const std::string& id);
             sVertexArray* CreateDefaultVertexArray();
             sVertexBufferGeometry* CreateGeometry(const sVertexBufferGeometry::eFormat& format, const types::usize verticesByteSize, const void* const vertices, const types::usize indicesByteSize, const void* const indices);
-            void DeleteMaterial(const std::string& id);
-            inline void DestroyGeometry(sVertexBufferGeometry* geometry) { delete geometry; }
+            void DestroyGeometry(sVertexBufferGeometry* geometry);
+            
             void ClearGeometryBuffer();
 
             void ClearRenderPass(const sRenderPass* const renderPass, const types::boolean clearColor, const types::usize bufferIndex, const glm::vec4& color, const types::boolean clearDepth, const types::f32 depth);

@@ -1,6 +1,7 @@
 #include "application.hpp"
 #include "sound_manager.hpp"
 #include "sound_context.hpp"
+#include "memory_pool.hpp"
 
 using namespace types;
 
@@ -8,10 +9,11 @@ namespace realware
 {
     using namespace app;
     using namespace game;
+    using namespace utils;
 
     namespace sound
     {
-        cSound::cSound(const u32 source, const u32 buffer) : _source(source), _buffer(buffer)
+        cSound::cSound(const cApplication* const app, const u32 source, const u32 buffer) : _app((cApplication*)app), _source(source), _buffer(buffer)
         {
         }
 
@@ -22,7 +24,9 @@ namespace realware
                 if (_format == Category::SOUND_FORMAT_WAV)
                 {
                     free(_file->Data);
-                    delete _file;
+
+                    _file->~sWAVStructure();
+                    _app->GetMemoryPool()->Free(_file);
                 }
             }
         }
@@ -39,7 +43,7 @@ namespace realware
             sWAVStructure* file = nullptr;
             _context->Create(filename, format, (const sWAVStructure** const)&file, source, buffer);
 
-            return _sounds.Add(id, source, buffer);
+            return _sounds.Add(id, _app, source, buffer);
         }
 
         cSound* mSound::FindSound(const std::string& id)
