@@ -22,17 +22,17 @@ namespace realware
             _transform = new (pTransform) sTransform();
         }
 
-        glm::vec3 cGameObject::GetPosition() const
+        const glm::vec3& cGameObject::GetPosition() const
         {
             return _transform->Position;
         }
 
-        glm::vec3 cGameObject::GetRotation() const
+        const glm::vec3& cGameObject::GetRotation() const
         {
             return _transform->Rotation;
         }
 
-        glm::vec3 cGameObject::GetScale() const
+        const glm::vec3& cGameObject::GetScale() const
         {
             return _transform->Scale;
         }
@@ -52,9 +52,9 @@ namespace realware
             _transform->Scale = scale;
         }
 
-        void cGameObject::SetPhysicsActor(const Category& staticOrDynamic, const Category& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass)
+        void cGameObject::SetPhysicsActor(const Category& staticOrDynamic, const Category& shapeType, const sSimulationScene* const scene, const sSubstance* const substance, const f32 mass)
         {
-            mPhysics* physics = GetApp()->GetPhysicsManager();
+            mPhysics* physics = App->GetPhysicsManager();
             _actor = physics->AddActor(
                 GetID(),
                 staticOrDynamic,
@@ -66,9 +66,9 @@ namespace realware
             );
         }
 
-        void cGameObject::SetPhysicsController(const f32 eyeHeight, const f32 height, const f32 radius, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance)
+        void cGameObject::SetPhysicsController(const f32 eyeHeight, const f32 height, const f32 radius, const glm::vec3& up, const sSimulationScene* const scene, const sSubstance* const substance)
         {
-            mPhysics* physics = GetApp()->GetPhysicsManager();
+            mPhysics* physics = App->GetPhysicsManager();
 
             _controller = physics->AddController(
                 GetID(),

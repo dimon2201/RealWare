@@ -40,7 +40,7 @@ public:
     virtual void Start() override final
     {
         // Triangle geometry
-        _trianglePrimitive = _render->CreatePrimitive(mRender::ePrimitive::TRIANGLE);
+        _trianglePrimitive = _render->CreatePrimitive(Category::PRIMITIVE_TRIANGLE);
         _triangleGeometry = _render->CreateGeometry(
             _trianglePrimitive->Format,
             _trianglePrimitive->VerticesByteSize,
@@ -50,23 +50,23 @@ public:
         );
 
         // Textures
-        cTextureAtlasTexture* texture1 = _texture->AddTexture(
+        sTextureAtlasTexture* texture1 = _texture->AddTexture(
             "Texture1",
             "C:/DDD/RealWare/resources/texture1.png"
         );
-        cTextureAtlasTexture* texture2 = _texture->AddTexture(
+        sTextureAtlasTexture* texture2 = _texture->AddTexture(
             "Texture2",
             "C:/DDD/RealWare/resources/texture2.png"
         );
 
         // Materials
-        cMaterial* material1 = _render->AddMaterial(
+        sMaterial* material1 = _render->AddMaterial(
             "Material1",
             texture1,
             glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
             glm::vec4(1.0f)
         );
-        cMaterial* material2 = _render->AddMaterial(
+        sMaterial* material2 = _render->AddMaterial(
             "Material2",
             texture2,
             glm::vec4(1.0f, 0.0f, 0.0f, 0.5f),
@@ -78,8 +78,8 @@ public:
         sText* text = _font->CreateText(font, "New line\ntest\nanother newline\there");
 
         // Physics
-        cSimulationScene* pxScene = _physics->AddScene("PXScene1");
-        cSubstance* pxSubstance = _physics->AddSubstance("PXSubstance1");
+        sSimulationScene* pxScene = _physics->AddScene("PXScene1");
+        sSubstance* pxSubstance = _physics->AddSubstance("PXSubstance1");
 
         // Game objects
         cGameObject* triangleObject1 = _gameObject->AddGameObject("TriangleObject1");

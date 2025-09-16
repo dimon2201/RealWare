@@ -19,21 +19,21 @@ namespace realware
         struct sVertexBufferGeometry;
         struct sLight;
         struct sTransform;
-        class cMaterial;
+        struct sMaterial;
     }
 
     namespace font
     {
-        class sText;
+        struct sText;
     }
 
     namespace physics
     {
-        class cSimulationScene;
-        class cSubstance;
-        class cActor;
-        class cController;
-        class mPhysics;
+        struct sSimulationScene;
+        struct sSubstance;
+        struct sActor;
+        struct sController;
+        struct mPhysics;
     }
 
     namespace utils
@@ -43,29 +43,29 @@ namespace realware
 
     namespace game
     {
-        class cGameObject : public utils::cIdVecObject
+        class cGameObject : public utils::sIdVecObject
         {
         public:
             explicit cGameObject(const utils::cMemoryPool* const memoryPool);
             ~cGameObject() = default;
             
-            inline app::cApplication* GetApplication() { return GetApp(); }
-            inline std::string GetID() const { return cIdVecObject::GetID(); }
+            inline app::cApplication* GetApplication() { return App; }
+            inline std::string GetID() const { return ID; }
             inline types::boolean GetVisible() const { return _isVisible; }
             inline types::boolean GetOpaque() const { return _isOpaque; }
             inline render::sVertexBufferGeometry* GetGeometry() const { return _geometry; }
             inline types::boolean GetIs2D() const { return _is2D; }
-            glm::vec3 GetPosition() const;
-            glm::vec3 GetRotation() const;
-            glm::vec3 GetScale() const;
+            const glm::vec3& GetPosition() const;
+            const glm::vec3& GetRotation() const;
+            const glm::vec3& GetScale() const;
             inline glm::mat4 GetWorldMatrix() const { return _world; }
             inline glm::mat4 GetViewProjectionMatrix() const { return _viewProjection; }
             inline render::sTransform* GetTransform() const { return _transform; }
-            inline render::cMaterial* GetMaterial() const { return _material; }
+            inline render::sMaterial* GetMaterial() const { return _material; }
             inline font::sText* GetText() const { return _text; }
             inline render::sLight* GetLight() const { return _light; }
-            inline physics::cActor* GetPhysicsActor() const { return _actor; }
-            inline physics::cController* GetPhysicsController() const { return _controller; }
+            inline physics::sActor* GetPhysicsActor() const { return _actor; }
+            inline physics::sController* GetPhysicsController() const { return _controller; }
 
             inline void SetVisible(const types::boolean isVisible) { _isVisible = isVisible; }
             inline void SetOpaque(const types::boolean isOpaque) { _isOpaque = isOpaque; }
@@ -76,11 +76,11 @@ namespace realware
             void SetScale(const glm::vec3& scale);
             inline void SetWorldMatrix(const glm::mat4& world) { _world = world; }
             inline void SetViewProjectionMatrix(const glm::mat4& viewProjection) { _viewProjection = viewProjection; }
-            inline void SetMaterial(const render::cMaterial* const material) { _material = (render::cMaterial*)material; }
+            inline void SetMaterial(const render::sMaterial* const material) { _material = (render::sMaterial*)material; }
             inline void SetText(const font::sText* const text) { _text = (font::sText*)text; }
             inline void SetLight(const render::sLight* const light) { _light = (render::sLight*)light; }
-            void SetPhysicsActor(const Category& staticOrDynamic, const Category& shapeType, const physics::cSimulationScene* const scene, const physics::cSubstance* const substance, const types::f32 mass);
-            void SetPhysicsController(const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const glm::vec3& up, const physics::cSimulationScene* const scene, const physics::cSubstance* const substance);
+            void SetPhysicsActor(const game::Category& staticOrDynamic, const game::Category& shapeType, const physics::sSimulationScene* const scene, const physics::sSubstance* const substance, const types::f32 mass);
+            void SetPhysicsController(const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const glm::vec3& up, const physics::sSimulationScene* const scene, const physics::sSubstance* const substance);
 
             friend class mGameObject;
 
@@ -92,11 +92,11 @@ namespace realware
             glm::mat4 _world = glm::mat4(1.0f);
             glm::mat4 _viewProjection = glm::mat4(1.0f);
             render::sTransform* _transform = nullptr;
-            render::cMaterial* _material = nullptr;
+            render::sMaterial* _material = nullptr;
             font::sText* _text = nullptr;
             render::sLight* _light = nullptr;
-            physics::cActor* _actor = nullptr;
-            physics::cController* _controller = nullptr;
+            physics::sActor* _actor = nullptr;
+            physics::sController* _controller = nullptr;
         };
 
         class mGameObject

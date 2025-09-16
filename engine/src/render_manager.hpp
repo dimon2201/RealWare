@@ -5,6 +5,7 @@
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "id_vec.hpp"
+#include "category.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -21,7 +22,7 @@ namespace realware
 
     namespace render
     {
-        struct cTextureAtlasTexture;
+        struct sTextureAtlasTexture;
     }
 
     namespace render
@@ -97,22 +98,17 @@ namespace realware
             glm::mat4 World = glm::mat4(1.0f);
         };
 
-        struct cMaterial : public utils::cIdVecObject
+        struct sMaterial : public utils::sIdVecObject
         {
         public:
-            cMaterial() = default;
-            explicit cMaterial(const render::cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
-                : _diffuseTexture((render::cTextureAtlasTexture*)diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor) {}
-            ~cMaterial() = default;
+            sMaterial() = default;
+            explicit sMaterial(const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
+                : DiffuseTexture((render::sTextureAtlasTexture*)diffuseTexture), DiffuseColor(diffuseColor), HighlightColor(highlightColor) {}
+            ~sMaterial() = default;
 
-            render::cTextureAtlasTexture* GetDiffuseTexture() const { return _diffuseTexture; }
-            glm::vec4 GetDiffuseColor() const { return _diffuseColor; }
-            glm::vec4 GetHighlightColor() const { return _highlightColor; }
-
-        private:
-            render::cTextureAtlasTexture* _diffuseTexture = nullptr;
-            glm::vec4 _diffuseColor = glm::vec4(1.0f);
-            glm::vec4 _highlightColor = glm::vec4(1.0f);
+            render::sTextureAtlasTexture* DiffuseTexture = nullptr;
+            glm::vec4 DiffuseColor = glm::vec4(1.0f);
+            glm::vec4 HighlightColor = glm::vec4(1.0f);
         };
 
         struct sRenderInstance
@@ -121,7 +117,7 @@ namespace realware
 
             types::f32 Use2D = 0.0f;
             types::s32 MaterialIndex = -1;
-            unsigned _pad[2] = {};
+            types::dword _pad[2] = {};
             glm::mat4 World = {};
         };
 
@@ -133,9 +129,9 @@ namespace realware
 
         struct sMaterialInstance
         {
-            sMaterialInstance(types::s32 materialIndex, const cMaterial* const material);
+            sMaterialInstance(types::s32 materialIndex, const sMaterial* const material);
 
-            void SetDiffuseTexture(const render::cTextureAtlasTexture& area);
+            void SetDiffuseTexture(const render::sTextureAtlasTexture& area);
 
             types::s32 BufferIndex = -1;
             types::f32 DiffuseTextureLayerInfo = 0.0f;
@@ -160,17 +156,11 @@ namespace realware
         class mRender
         {
         public:
-            enum class ePrimitive
-            {
-                TRIANGLE = 1,
-                QUAD = 2
-            };
-
             explicit mRender(const app::cApplication* const app, const cRenderContext* const context);
             ~mRender();
 
-            cMaterial* AddMaterial(const std::string& id, const render::cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
-            cMaterial* FindMaterial(const std::string& id);
+            sMaterial* AddMaterial(const std::string& id, const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
+            sMaterial* FindMaterial(const std::string& id);
             void DeleteMaterial(const std::string& id);
             sVertexArray* CreateDefaultVertexArray();
             sVertexBufferGeometry* CreateGeometry(const sVertexBufferGeometry::eFormat& format, const types::usize verticesByteSize, const void* const vertices, const types::usize indicesByteSize, const void* const indices);
@@ -190,7 +180,7 @@ namespace realware
             void CompositeTransparent();
             void CompositeFinal();
             
-            sPrimitive* CreatePrimitive(const ePrimitive& primitive);
+            sPrimitive* CreatePrimitive(const game::Category& primitive);
             sModel* CreateModel(const std::string& filename);
             void DestroyPrimitive(sPrimitive* primitiveObject);
             
@@ -225,14 +215,14 @@ namespace realware
             types::usize _materialsByteSize = 0;
             void* _lights = nullptr;
             types::usize _lightsByteSize = 0;
-            std::unordered_map<render::cMaterial*, types::s32>* _materialsMap = {};
+            std::unordered_map<render::sMaterial*, types::s32>* _materialsMap = {};
             sRenderPass* _opaque = nullptr;
             sRenderPass* _transparent = nullptr;
             sRenderPass* _text = nullptr;
             sRenderPass* _compositeTransparent = nullptr;
             sRenderPass* _compositeFinal = nullptr;
             types::usize _materialCountCPU = 0;
-            utils::cIdVec<cMaterial> _materialsCPU;
+            utils::cIdVec<sMaterial> _materialsCPU;
         };
     }
 }

@@ -15,7 +15,9 @@ namespace realware
             SOUND_FORMAT_WAV = 6,
             CAMERA_ANGLE_PITCH = 7,
             CAMERA_ANGLE_YAW = 8,
-            CAMERA_ANGLE_ROLL = 9
+            CAMERA_ANGLE_ROLL = 9,
+            PRIMITIVE_TRIANGLE = 10,
+            PRIMITIVE_QUAD = 11
         };
     }
 }

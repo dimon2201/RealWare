@@ -81,71 +81,45 @@ namespace realware
 			virtual void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override final {}
         };
 
-        class cSimulationScene : public utils::cIdVecObject
+        struct sSimulationScene : public utils::sIdVecObject
         {
-        public:
-            cSimulationScene() = default;
-            explicit cSimulationScene(const physx::PxScene* const scene, const physx::PxControllerManager* const controllerManager) : _scene((physx::PxScene*)scene), _controllerManager((physx::PxControllerManager*)controllerManager) {}
-            ~cSimulationScene() = default;
+            sSimulationScene() = default;
+            explicit sSimulationScene(const physx::PxScene* const scene, const physx::PxControllerManager* const controllerManager) : Scene((physx::PxScene*)scene), ControllerManager((physx::PxControllerManager*)controllerManager) {}
+            ~sSimulationScene() = default;
 
-            inline physx::PxScene* GetScene() const { return _scene; }
-            inline physx::PxControllerManager* GetControllerManager() const { return _controllerManager; }
-
-        private:
-            physx::PxScene* _scene = nullptr;
-            physx::PxControllerManager* _controllerManager = nullptr;
+            physx::PxScene* Scene = nullptr;
+            physx::PxControllerManager* ControllerManager = nullptr;
         };
 
-        class cSubstance : public utils::cIdVecObject
+        struct sSubstance : public utils::sIdVecObject
         {
         public:
-            cSubstance() = default;
-            explicit cSubstance(const physx::PxMaterial* const substance) : _substance((physx::PxMaterial*)substance) {}
-            ~cSubstance() = default;
+            sSubstance() = default;
+            explicit sSubstance(const physx::PxMaterial* const substance) : Substance((physx::PxMaterial*)substance) {}
+            ~sSubstance() = default;
 
-            inline physx::PxMaterial* GetSubstance() const { return _substance; }
-
-        private:
-            physx::PxMaterial* _substance = nullptr;
+            physx::PxMaterial* Substance = nullptr;
         };
 
-        class cController : public utils::cIdVecObject
+        struct sController : public utils::sIdVecObject
         {
         public:
-            cController() = default;
-            explicit cController(const physx::PxController* const controller, const types::f32 eyeHeight) : _controller((physx::PxController*)controller), _eyeHeight(eyeHeight) {}
-            ~cController() = default;
+            sController() = default;
+            explicit sController(const physx::PxController* const controller, const types::f32 eyeHeight) : Controller((physx::PxController*)controller), EyeHeight(eyeHeight) {}
+            ~sController() = default;
 
-            inline physx::PxController* GetController() const { return _controller; }
-            inline types::f32 GetEyeHeight() const { return _eyeHeight; }
-
-        private:
-            physx::PxController* _controller = nullptr;
-            types::f32 _eyeHeight = 0.0f;
+            physx::PxController* Controller = nullptr;
+            types::f32 EyeHeight = 0.0f;
         };
 
-        class cActor : public utils::cIdVecObject
+        struct sActor : public utils::sIdVecObject
         {
         public:
-            enum class Type
-            {
-                STATIC = 0,
-                DYNAMIC = 1
-            };
+            sActor() = default;
+            explicit sActor(const physx::PxActor* const actor) : Actor((physx::PxActor*)actor) {}
+            ~sActor() = default;
 
-            enum class Shape
-            {
-                BOX = 0
-            };
-
-            cActor() = default;
-            explicit cActor(const physx::PxActor* const actor) : _actor((physx::PxActor*)actor) {}
-            ~cActor() = default;
-
-            inline physx::PxActor* GetActor() const { return _actor; }
-
-        private:
-            physx::PxActor* _actor = nullptr;
+            physx::PxActor* Actor = nullptr;
         };
 
         class mPhysics
@@ -154,21 +128,21 @@ namespace realware
             explicit mPhysics(const app::cApplication* const app);
             ~mPhysics();
 
-            cSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
-            cSubstance* AddSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
-            cActor* AddActor(const std::string& id, const game::Category& staticOrDynamic, const game::Category& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const types::f32 mass, const render::sTransform* const transform);
-            cController* AddController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const render::sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance);
-            cSimulationScene* FindScene(const std::string&);
-            cSubstance* FindSubstance(const std::string&);
-            cActor* FindActor(const std::string&);
-            cController* FindController(const std::string&);
+            sSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
+            sSubstance* AddSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
+            sActor* AddActor(const std::string& id, const game::Category& staticOrDynamic, const game::Category& shapeType, const sSimulationScene* const scene, const sSubstance* const substance, const types::f32 mass, const render::sTransform* const transform);
+            sController* AddController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const render::sTransform* const transform, const glm::vec3& up, const sSimulationScene* const scene, const sSubstance* const substance);
+            sSimulationScene* FindScene(const std::string&);
+            sSubstance* FindSubstance(const std::string&);
+            sActor* FindActor(const std::string&);
+            sController* FindController(const std::string&);
             void DeleteScene(const std::string& id);
             void DeleteSubstance(const std::string& id);
             void DeleteActor(const std::string& id);
             void DeleteController(const std::string& id);
 
-            void MoveController(const cController* const controller, const glm::vec3& position, const types::f32 minStep = 0.001f);
-            glm::vec3 GetControllerPosition(const cController* const controller);
+            void MoveController(const sController* const controller, const glm::vec3& position, const types::f32 minStep = 0.001f);
+            glm::vec3 GetControllerPosition(const sController* const controller);
 
             void Simulate();
 
@@ -200,10 +174,10 @@ namespace realware
             physx::PxFoundation* _foundation = nullptr;
             physx::PxPhysics* _physics = nullptr;
             std::mutex _mutex;
-            utils::cIdVec<cSimulationScene> _scenes;
-            utils::cIdVec<cSubstance> _substances;
-            utils::cIdVec<cActor> _actors;
-            utils::cIdVec<cController> _controllers;
+            utils::cIdVec<sSimulationScene> _scenes;
+            utils::cIdVec<sSubstance> _substances;
+            utils::cIdVec<sActor> _actors;
+            utils::cIdVec<sController> _controllers;
         };
     }
 }

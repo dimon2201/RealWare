@@ -12,24 +12,11 @@ namespace realware
 
 	namespace utils
 	{
-		class cIdVecObject
+		struct sIdVecObject
 		{
-		public:
-			cIdVecObject() = default;
-			~cIdVecObject() = default;
-
-			const std::string& GetID() const { return _id; }
-			app::cApplication* GetApp() const { return _app; }
-			types::boolean IsDeleted() const { return _isDeleted; }
-
-			inline void SetID(const std::string& id) { _id = id; }
-			inline void SetApp(const app::cApplication* const app) { _app = (app::cApplication*)app; }
-			inline void SetIsDeleted(const types::boolean isDeleted) { _isDeleted = isDeleted; }
-
-		private:
-			std::string _id = "";
-			app::cApplication* _app = nullptr;
-			types::boolean _isDeleted = types::K_FALSE;
+			std::string ID = "";
+			app::cApplication* App = nullptr;
+			types::boolean IsDeleted = types::K_FALSE;
 		};
 
 		template <typename T>
@@ -66,12 +53,12 @@ namespace realware
 
 			for (types::usize i = 0; i < objectCount; i++)
 			{
-				if (_objects[i].IsDeleted() == K_TRUE)
+				if (_objects[i].IsDeleted == K_TRUE)
 				{
 					_objects[i] = T(std::forward<Args>(args)...);
-					_objects[i].SetID(id);
-					_objects[i].SetApp(_app);
-					_objects[i].SetIsDeleted(K_FALSE);
+					_objects[i].ID = id;
+					_objects[i].App = _app;
+					_objects[i].IsDeleted = K_FALSE;
 
 					return &_objects[i];
 				}
@@ -82,9 +69,9 @@ namespace realware
 				_objects.emplace_back(std::forward<Args>(args)...);
 
 				T& object = _objects.back();
-				object.SetID(id);
-				object.SetApp(_app);
-				object.SetIsDeleted(K_FALSE);
+				object.ID = id;
+				object.App = _app;
+				object.IsDeleted = K_FALSE;
 
 				return &object;
 			}
@@ -99,7 +86,7 @@ namespace realware
 
 			for (types::usize i = 0; i < objectCount; i++)
 			{
-				if (_objects[i].IsDeleted() == K_FALSE && _objects[i].GetID() == id)
+				if (_objects[i].IsDeleted == K_FALSE && _objects[i].ID == id)
 					return &_objects[i];
 			}
 
@@ -111,7 +98,7 @@ namespace realware
 		{
 			T* object = Find(id);
 			if (object != nullptr)
-				object->SetIsDeleted(K_TRUE);
+				object->IsDeleted = K_TRUE;
 		}
 	}
 }

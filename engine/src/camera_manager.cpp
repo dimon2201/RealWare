@@ -98,7 +98,7 @@ namespace realware
         void mCamera::Move(const f32 value)
         {
             mPhysics* const physics = _app->GetPhysicsManager();
-            cController* const controller = _cameraGameObject->GetPhysicsController();
+            sController* const controller = _cameraGameObject->GetPhysicsController();
             sTransform* const transform = _cameraGameObject->GetTransform();
             const glm::vec3 position = transform->Position;
             const glm::vec3 newPosition = transform->Position + _direction * value;
@@ -115,7 +115,7 @@ namespace realware
         void mCamera::Strafe(const f32 value)
         {
             mPhysics* const physics = _app->GetPhysicsManager();
-            cController* const controller = _cameraGameObject->GetPhysicsController();
+            sController* const controller = _cameraGameObject->GetPhysicsController();
             sTransform* const transform = _cameraGameObject->GetTransform();
             const glm::vec3 right = glm::cross(_direction, glm::vec3(0.0f, 1.0f, 0.0f));
             const glm::vec3 position = transform->Position;
@@ -133,7 +133,7 @@ namespace realware
         void mCamera::Lift(const f32 value)
         {
             mPhysics* const physics = _app->GetPhysicsManager();
-            cController* const controller = _cameraGameObject->GetPhysicsController();
+            sController* const controller = _cameraGameObject->GetPhysicsController();
             sTransform* const transform = _cameraGameObject->GetTransform();
             const glm::vec3 position = transform->Position;
             const glm::vec3 newPosition = transform->Position + glm::vec3(0.0f, 1.0f, 0.0f) * value;

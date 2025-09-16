@@ -13,20 +13,20 @@ namespace realware
 
     namespace sound
     {
-        cSound::cSound(const cApplication* const app, const u32 source, const u32 buffer) : _app((cApplication*)app), _source(source), _buffer(buffer)
+        sSound::sSound(const cApplication* const app, const u32 source, const u32 buffer) : App((cApplication*)app), Source(source), Buffer(buffer)
         {
         }
 
-        cSound::~cSound()
+        sSound::~sSound()
         {
-            if (_file != nullptr)
+            if (File != nullptr)
             {
-                if (_format == Category::SOUND_FORMAT_WAV)
+                if (Format == Category::SOUND_FORMAT_WAV)
                 {
-                    free(_file->Data);
+                    free(File->Data);
 
-                    _file->~sWAVStructure();
-                    _app->GetMemoryPool()->Free(_file);
+                    File->~sWAVStructure();
+                    App->GetMemoryPool()->Free(File);
                 }
             }
         }
@@ -36,7 +36,7 @@ namespace realware
         {
         }
 
-        cSound* mSound::AddSound(const std::string& id, const std::string& filename, const game::Category& format)
+        sSound* mSound::AddSound(const std::string& id, const std::string& filename, const game::Category& format)
         {
             u32 source = 0;
             u32 buffer = 0;
@@ -46,7 +46,7 @@ namespace realware
             return _sounds.Add(id, _app, source, buffer);
         }
 
-        cSound* mSound::FindSound(const std::string& id)
+        sSound* mSound::FindSound(const std::string& id)
         {
             return _sounds.Find(id);
         }

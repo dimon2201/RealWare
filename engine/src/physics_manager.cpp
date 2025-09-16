@@ -69,7 +69,7 @@ namespace realware
             delete _allocator;
         }
 
-        cSimulationScene* mPhysics::AddScene(const std::string& id, const glm::vec3& gravity)
+        sSimulationScene* mPhysics::AddScene(const std::string& id, const glm::vec3& gravity)
         {
             PxSceneDesc sceneDesc(_physics->getTolerancesScale());
             sceneDesc.gravity = PxVec3(gravity.x, gravity.y, gravity.z);
@@ -83,14 +83,14 @@ namespace realware
             return _scenes.Add(id, scene, controllerManager);
         }
 
-        cSubstance* mPhysics::AddSubstance(const std::string& id, const glm::vec3& params)
+        sSubstance* mPhysics::AddSubstance(const std::string& id, const glm::vec3& params)
         {
             PxMaterial* material = _physics->createMaterial(params.x, params.y, params.z); // (staticFriction, dynamicFriction, restitution)
 
             return _substances.Add(id, material);
         }
 
-        cController* mPhysics::AddController(const std::string& id, const f32 eyeHeight, const f32 height, const f32 radius, const render::sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance)
+        sController* mPhysics::AddController(const std::string& id, const f32 eyeHeight, const f32 height, const f32 radius, const render::sTransform* const transform, const glm::vec3& up, const sSimulationScene* const scene, const sSubstance* const substance)
         {
             glm::vec3 position = transform->Position;
 
@@ -102,14 +102,14 @@ namespace realware
             desc.slopeLimit = cosf(PxPi / 4.0f); // ограничение наклона поверхности
             desc.contactOffset = 0.01f;   // минимальное расстояние до коллизий
             desc.upDirection = PxVec3(up.y, up.x, up.z); // направление вверх
-            desc.material = substance->GetSubstance();
+            desc.material = substance->Substance;
 
-            PxController* controller = scene->GetControllerManager()->createController(desc);
+            PxController* controller = scene->ControllerManager->createController(desc);
 
             return _controllers.Add(id, controller, eyeHeight);
         }
 
-        cActor* mPhysics::AddActor(const std::string& id, const Category& staticOrDynamic, const Category& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const f32 mass, const render::sTransform* const transform)
+        sActor* mPhysics::AddActor(const std::string& id, const Category& staticOrDynamic, const Category& shapeType, const sSimulationScene* const scene, const sSubstance* const substance, const f32 mass, const render::sTransform* const transform)
         {
             glm::vec3 position = transform->Position;
             glm::vec3 scale = transform->Scale;
@@ -118,9 +118,9 @@ namespace realware
             
             PxShape* shape = nullptr;
             if (shapeType == Category::PHYSICS_SHAPE_PLANE)
-                shape = _physics->createShape(PxPlaneGeometry(), *substance->GetSubstance());
+                shape = _physics->createShape(PxPlaneGeometry(), *substance->Substance);
             else if (shapeType == Category::PHYSICS_SHAPE_BOX)
-                shape = _physics->createShape(PxBoxGeometry(scale.y, scale.x, scale.z), *substance->GetSubstance());
+                shape = _physics->createShape(PxBoxGeometry(scale.y, scale.x, scale.z), *substance->Substance);
 
             PxActor* actor = nullptr;
             if (staticOrDynamic == Category::PHYSICS_ACTOR_STATIC)
@@ -139,27 +139,27 @@ namespace realware
                 shape->release();
 
             if (actor != nullptr)
-                scene->GetScene()->addActor(*actor);
+                scene->Scene->addActor(*actor);
 
             return _actors.Add(id, actor);
         }
 
-        cSimulationScene* mPhysics::FindScene(const std::string& id)
+        sSimulationScene* mPhysics::FindScene(const std::string& id)
         {
             return _scenes.Find(id);
         }
 
-        cSubstance* mPhysics::FindSubstance(const std::string& id)
+        sSubstance* mPhysics::FindSubstance(const std::string& id)
         {
             return _substances.Find(id);
         }
 
-        cActor* mPhysics::FindActor(const std::string& id)
+        sActor* mPhysics::FindActor(const std::string& id)
         {
             return _actors.Find(id);
         }
 
-        cController* mPhysics::FindController(const std::string& id)
+        sController* mPhysics::FindController(const std::string& id)
         {
             return _controllers.Find(id);
         }
@@ -184,9 +184,9 @@ namespace realware
             _controllers.Delete(id);
         }
 
-        void mPhysics::MoveController(const cController* const controller, const glm::vec3& position, const f32 minStep)
+        void mPhysics::MoveController(const sController* const controller, const glm::vec3& position, const f32 minStep)
         {
-            PxController* pxController = controller->GetController();
+            PxController* pxController = controller->Controller;
             f32 deltaTime = _app->GetDeltaTime();
 
             PxControllerFilters filters;
@@ -198,12 +198,12 @@ namespace realware
             );
         }
 
-        glm::vec3 mPhysics::GetControllerPosition(const cController* const controller)
+        glm::vec3 mPhysics::GetControllerPosition(const sController* const controller)
         {
-            PxController* pxController = controller->GetController();
+            PxController* pxController = controller->Controller;
             PxExtendedVec3 position = pxController->getPosition();
 
-            return glm::vec3(position.y, position.x + controller->GetEyeHeight(), position.z);
+            return glm::vec3(position.y, position.x + controller->EyeHeight, position.z);
         }
 
         void mPhysics::Simulate()
@@ -213,7 +213,7 @@ namespace realware
 
             for (usize i = 0; i < sceneCount; i++)
             {
-                auto scene = scenes[i].GetScene();
+                auto scene = scenes[i].Scene;
                 scene->simulate(1.0f / 60.0f);
                 scene->fetchResults(true);
             }

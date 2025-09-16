@@ -133,33 +133,33 @@ namespace realware
             }
         }
 
-        void cOpenALSoundContext::Destroy(cSound* sound)
+        void cOpenALSoundContext::Destroy(sSound* sound)
         {
-            alDeleteBuffers(1, (ALuint*)&sound->GetBuffer());
-            alDeleteSources(1, (ALuint*)&sound->GetSource());
+            alDeleteBuffers(1, (ALuint*)&sound->Buffer);
+            alDeleteSources(1, (ALuint*)&sound->Source);
 
-            sound->~cSound();
+            sound->~sSound();
             _app->GetMemoryPool()->Free(sound);
         }
 
-        void cOpenALSoundContext::Play(const cSound* const sound)
+        void cOpenALSoundContext::Play(const sSound* const sound)
         {
-            alSourcePlay(sound->GetSource());
+            alSourcePlay(sound->Source);
         }
 
-        void cOpenALSoundContext::Stop(const cSound* const sound)
+        void cOpenALSoundContext::Stop(const sSound* const sound)
         {
-            alSourceStop(sound->GetSource());
+            alSourceStop(sound->Source);
         }
 
-        void cOpenALSoundContext::SetPosition(const cSound* const sound, const glm::vec3& position)
+        void cOpenALSoundContext::SetPosition(const sSound* const sound, const glm::vec3& position)
         {
-            alSource3f(sound->GetSource(), AL_POSITION, position.x, position.y, position.z);
+            alSource3f(sound->Source, AL_POSITION, position.x, position.y, position.z);
         }
 
-        void cOpenALSoundContext::SetVelocity(const cSound* const sound, const glm::vec3& velocity)
+        void cOpenALSoundContext::SetVelocity(const sSound* const sound, const glm::vec3& velocity)
         {
-            alSource3f(sound->GetSource(), AL_VELOCITY, velocity.x, velocity.y, velocity.z);
+            alSource3f(sound->Source, AL_VELOCITY, velocity.x, velocity.y, velocity.z);
         }
 
         void cOpenALSoundContext::SetListenerPosition(const glm::vec3& position)

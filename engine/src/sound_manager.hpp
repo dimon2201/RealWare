@@ -38,21 +38,16 @@ namespace realware
             types::u16* Data;
         };
 
-        struct cSound : public utils::cIdVecObject
+        struct sSound : public utils::sIdVecObject
         {
-        public:
-            explicit cSound(const app::cApplication* const app, const types::u32 source, const types::u32 buffer);
-            ~cSound();
+            explicit sSound(const app::cApplication* const app, const types::u32 source, const types::u32 buffer);
+            ~sSound();
 
-            inline const types::u32& GetSource() const { return _source; }
-            inline const types::u32& GetBuffer() const { return _buffer; }
-
-        private:
-            app::cApplication* _app = nullptr;
-            game::Category _format = game::Category::SOUND_FORMAT_WAV;
-            sWAVStructure* _file = nullptr;
-            types::u32 _source = 0;
-            types::u32 _buffer = 0;
+            app::cApplication* App = nullptr;
+            game::Category Format = game::Category::SOUND_FORMAT_WAV;
+            sWAVStructure* File = nullptr;
+            types::u32 Source = 0;
+            types::u32 Buffer = 0;
         };
 
         class mSound
@@ -61,8 +56,8 @@ namespace realware
             mSound(const app::cApplication* const app, const cSoundContext* const context);
             ~mSound() = default;
 
-            cSound* AddSound(const std::string& id, const std::string& filename, const game::Category& format);
-            cSound* FindSound(const std::string& id);
+            sSound* AddSound(const std::string& id, const std::string& filename, const game::Category& format);
+            sSound* FindSound(const std::string& id);
             void DeleteSound(const std::string& id);
             //void Play(core::entity object, core::cScene* scene);
             //void Stop(core::entity object, core::cScene* scene);
@@ -70,7 +65,7 @@ namespace realware
         private:
             app::cApplication* _app = nullptr;
             cSoundContext* _context = nullptr;
-            utils::cIdVec<cSound> _sounds;
+            utils::cIdVec<sSound> _sounds;
         };
     }
 }

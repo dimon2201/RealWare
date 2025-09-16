@@ -49,17 +49,17 @@ namespace realware
             World = transform.World;
         }
 
-        sMaterialInstance::sMaterialInstance(s32 materialIndex, const cMaterial* const material)
+        sMaterialInstance::sMaterialInstance(s32 materialIndex, const sMaterial* const material)
         {
             BufferIndex = materialIndex;
-            DiffuseColor = material->GetDiffuseColor();
-            HighlightColor = material->GetHighlightColor();
+            DiffuseColor = material->DiffuseColor;
+            HighlightColor = material->HighlightColor;
         }
 
-        void sMaterialInstance::SetDiffuseTexture(const cTextureAtlasTexture& area)
+        void sMaterialInstance::SetDiffuseTexture(const sTextureAtlasTexture& area)
         {
-            DiffuseTextureLayerInfo = area.GetOffset().z;
-            DiffuseTextureInfo = glm::vec4(area.GetOffset().x, area.GetOffset().y, area.GetSize().x, area.GetSize().y);
+            DiffuseTextureLayerInfo = area.Offset.z;
+            DiffuseTextureInfo = glm::vec4(area.Offset.x, area.Offset.y, area.Size.x, area.Size.y);
         }
 
         sLightInstance::sLightInstance(const cGameObject* const object)
@@ -100,8 +100,8 @@ namespace realware
             _materialsByteSize = 0;
             _lights = malloc(desc->LightBufferSize);
             _lightsByteSize = 0;
-            std::unordered_map<render::cMaterial*, s32>* pMaterialsMap = (std::unordered_map<render::cMaterial*, s32>*)_app->GetMemoryPool()->Allocate(sizeof(std::unordered_map<render::cMaterial*, s32>));
-            _materialsMap = new (pMaterialsMap) std::unordered_map<render::cMaterial*, s32>();
+            std::unordered_map<render::sMaterial*, s32>* pMaterialsMap = (std::unordered_map<render::sMaterial*, s32>*)_app->GetMemoryPool()->Allocate(sizeof(std::unordered_map<render::sMaterial*, s32>));
+            _materialsMap = new (pMaterialsMap) std::unordered_map<render::sMaterial*, s32>();
 
             sTexture* color = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA8, nullptr);
             sTexture* accumulation = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::RGBA16F, nullptr);
@@ -224,19 +224,19 @@ namespace realware
             _context->DestroyBuffer(_vertexBuffer);
             _context->DestroyBuffer(_indexBuffer);
             _context->DestroyBuffer(_instanceBuffer);
-            _materialsMap->~unordered_map<render::cMaterial*, s32>();
+            _materialsMap->~unordered_map<render::sMaterial*, s32>();
             _app->GetMemoryPool()->Free(_materialsMap);
             free(_vertices);
             free(_indices);
             free(_instances);
         }
 
-        cMaterial* mRender::AddMaterial(const std::string& id, const cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
+        sMaterial* mRender::AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
         {
             return _materialsCPU.Add(id, diffuseTexture, diffuseColor, highlightColor);
         }
 
-        cMaterial* mRender::FindMaterial(const std::string& id)
+        sMaterial* mRender::FindMaterial(const std::string& id)
         {
             return _materialsCPU.Find(id);
         }
@@ -361,7 +361,7 @@ namespace realware
                     if (it.GetVisible() == K_TRUE && it.GetOpaque() == K_TRUE)
                     {
                         sTransform transform(&it);
-                        cMaterial* material = it.GetMaterial();
+                        sMaterial* material = it.GetMaterial();
                         transform.Transform();
 
                         s32 materialIndex = -1;
@@ -371,9 +371,9 @@ namespace realware
                             materialIndex = _materialsMap->size();
 
                             sMaterialInstance mi(materialIndex, material);
-                            if (material->GetDiffuseTexture())
+                            if (material->DiffuseTexture)
                             {
-                                cTextureAtlasTexture* frame = material->GetDiffuseTexture();
+                                sTextureAtlasTexture* frame = material->DiffuseTexture;
                                 mi.SetDiffuseTexture(_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else
@@ -434,7 +434,7 @@ namespace realware
                     if (isVisible == K_TRUE && isOpaque == K_FALSE)
                     {
                         sTransform transform(&it);
-                        cMaterial* material = it.GetMaterial();
+                        sMaterial* material = it.GetMaterial();
                         transform.Transform();
 
                         s32 materialIndex = -1;
@@ -444,9 +444,9 @@ namespace realware
                             materialIndex = _materialsMap->size();
 
                             sMaterialInstance mi(materialIndex, material);
-                            if (material->GetDiffuseTexture() != nullptr)
+                            if (material->DiffuseTexture != nullptr)
                             {
-                                cTextureAtlasTexture* frame = material->GetDiffuseTexture();
+                                sTextureAtlasTexture* frame = material->DiffuseTexture;
                                 mi.SetDiffuseTexture(_app->GetTextureManager()->CalculateNormalizedArea(*frame));
                             }
                             else
@@ -566,7 +566,7 @@ namespace realware
                     actualCharCount += 1;
                 }
 
-                cMaterial* material = it.GetMaterial();
+                sMaterial* material = it.GetMaterial();
                 sMaterialInstance mi(0, material);
                 memcpy(_materials, &mi, sizeof(sMaterialInstance));
                 _materialsByteSize += sizeof(sMaterialInstance);
@@ -597,12 +597,12 @@ namespace realware
             _context->UnbindShader();
         }
 
-        sPrimitive* mRender::CreatePrimitive(const ePrimitive& primitive)
+        sPrimitive* mRender::CreatePrimitive(const Category& primitive)
         {
             sPrimitive* pPrimitiveObject = (sPrimitive*)_app->GetMemoryPool()->Allocate(sizeof(sPrimitive));
             sPrimitive* primitiveObject = new (pPrimitiveObject) sPrimitive();
 
-            if (primitive == ePrimitive::TRIANGLE)
+            if (primitive == Category::PRIMITIVE_TRIANGLE)
             {
                 primitiveObject->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
                 primitiveObject->Vertices = (render::sVertex*)malloc(sizeof(render::sVertex) * 3);
@@ -625,7 +625,7 @@ namespace realware
                 primitiveObject->Indices[1] = 1;
                 primitiveObject->Indices[2] = 2;
             }
-            else if (primitive == ePrimitive::QUAD)
+            else if (primitive == Category::PRIMITIVE_QUAD)
             {
                 primitiveObject->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
                 primitiveObject->Vertices = (render::sVertex*)malloc(sizeof(render::sVertex) * 4);

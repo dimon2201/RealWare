@@ -18,7 +18,7 @@ namespace realware
     namespace sound
     {
         struct sWAVStructure;
-        class cSound;
+        struct sSound;
 
         class cSoundContext
         {
@@ -27,11 +27,11 @@ namespace realware
             virtual ~cSoundContext() = default;
 
             virtual void Create(const std::string& filename, const game::Category& format, const sWAVStructure** const file, types::u32& source, types::u32& buffer) = 0;
-            virtual void Destroy(cSound* sound) = 0;
-            virtual void Play(const cSound* const sound) = 0;
-            virtual void Stop(const cSound* const sound) = 0;
-            virtual void SetPosition(const cSound* const sound, const glm::vec3& position) = 0;
-            virtual void SetVelocity(const cSound* const sound, const glm::vec3& velocity) = 0;
+            virtual void Destroy(sSound* sound) = 0;
+            virtual void Play(const sSound* const sound) = 0;
+            virtual void Stop(const sSound* const sound) = 0;
+            virtual void SetPosition(const sSound* const sound, const glm::vec3& position) = 0;
+            virtual void SetVelocity(const sSound* const sound, const glm::vec3& velocity) = 0;
             virtual void SetListenerPosition(const glm::vec3& position) = 0;
             virtual void SetListenerVelocity(const glm::vec3& velocity) = 0;
             virtual void SetListenerOrientation(const glm::vec3& at, const glm::vec3& up) = 0;
@@ -44,11 +44,11 @@ namespace realware
             virtual ~cOpenALSoundContext() override final;
 
             virtual void Create(const std::string& filename, const game::Category& format, const sWAVStructure** const file, types::u32& source, types::u32& buffer) override final;
-            virtual void Destroy(cSound* sound) override final;
-            virtual void Play(const cSound* const sound) override final;
-            virtual void Stop(const cSound* const sound) override final;
-            virtual void SetPosition(const cSound* const sound, const glm::vec3& position) override final;
-            virtual void SetVelocity(const cSound* const sound, const glm::vec3& velocity) override final;
+            virtual void Destroy(sSound* sound) override final;
+            virtual void Play(const sSound* const sound) override final;
+            virtual void Stop(const sSound* const sound) override final;
+            virtual void SetPosition(const sSound* const sound, const glm::vec3& position) override final;
+            virtual void SetVelocity(const sSound* const sound, const glm::vec3& velocity) override final;
             virtual void SetListenerPosition(const glm::vec3& position) override final;
             virtual void SetListenerVelocity(const glm::vec3& velocity) override final;
             virtual void SetListenerOrientation(const glm::vec3& at, const glm::vec3& up) override final;
