@@ -28,6 +28,12 @@ namespace realware
             glm::vec2 Size = glm::vec2(0.0f);
         };
 
+        struct sTextureAtlasTextureGPU
+        {
+            glm::vec4 TextureInfo = glm::vec4(0.0f);
+            types::f32 TextureLayerInfo = 0.0f;
+        };
+
         class mTexture
         {
         public:

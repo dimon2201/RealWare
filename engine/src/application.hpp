@@ -77,6 +77,7 @@ namespace realware
             types::u32 InstanceBufferSize = 65536;
             types::u32 MaterialBufferSize = 65536;
             types::u32 LightBufferSize = 65536;
+            types::u32 TextureAtlasTexturesBufferSize = 65536;
             types::u32 MaxMaterialCount = 256;
             types::u32 MaxGameObjectCount = 65536;
             types::u32 MaxPhysicsSceneCount = 4;
@@ -101,6 +102,8 @@ namespace realware
 
             inline types::boolean GetRunState() const { return glfwWindowShouldClose((GLFWwindow*)_window); }
 
+            inline render::cRenderContext* GetRenderContext() const { return _renderContext; }
+            inline sound::cSoundContext* GetSoundContext() const { return _soundContext; }
             inline game::mCamera* GetCameraManager() const { return _camera; }
             inline render::mTexture* GetTextureManager() const { return _texture; }
             inline render::mRender* GetRenderManager() const { return _render; }

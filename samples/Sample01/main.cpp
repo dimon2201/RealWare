@@ -37,8 +37,79 @@ public:
         _render->DestroyPrimitive(_trianglePrimitive);
     }
 
+    sRenderPass* CreateCustomRenderPass()
+    {
+        mRender* render = GetRenderManager();
+        mTexture* texture = GetTextureManager();
+        cRenderContext* renderContext = GetRenderContext();
+        sRenderPass* opaqueRenderPass = render->GetOpaqueRenderPass();
+        const glm::vec2 windowSize = GetWindowSize();
+
+        u8 customRenderPassTexture1Data[3 * 4] = {
+            255,
+            0,
+            0,
+
+            0,
+            255,
+            0,
+
+            0,
+            0,
+            255,
+
+            255,
+            255,
+            255
+        };
+        sTextureAtlasTexture* customRenderPassTexture = texture->AddTexture(
+            "CustomRenderPassTexture1",
+            glm::vec2(2, 2),
+            3,
+            &customRenderPassTexture1Data[0]
+        );
+
+        std::string vertexFunc = "";
+        std::string fragmentFunc = "";
+        render->LoadVertexFragmentFuncs(
+            "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_vertex.shader",
+            "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_fragment.shader",
+            vertexFunc,
+            fragmentFunc
+        );
+
+        sRenderPass::sDescriptor renderPassDesc;
+        renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+        renderPassDesc.InputBuffers.emplace_back(render->GetVertexBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetIndexBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetInstanceBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetMaterialBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetLightBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetTextureAtlasTexturesBuffer());
+        renderPassDesc.InputTextures.emplace_back(GetTextureManager()->GetAtlas());
+        renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
+        renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture);
+        renderPassDesc.Shader = renderContext->CreateShader(
+            opaqueRenderPass->Desc.Shader,
+            vertexFunc,
+            fragmentFunc
+        );
+        renderPassDesc.RenderTarget = opaqueRenderPass->Desc.RenderTarget;
+        renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize.x, windowSize.y);
+        renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
+        renderPassDesc.DepthMode.UseDepthWrite = K_TRUE;
+        renderPassDesc.BlendMode.FactorCount = 1;
+        renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::ONE;
+        renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::ZERO;
+        
+        return renderContext->CreateRenderPass(renderPassDesc);
+    }
+
     virtual void Start() override final
     {
+        // Create custom render pass
+        _customRenderPass = CreateCustomRenderPass();
+
         // Triangle geometry
         _trianglePrimitive = _render->CreatePrimitive(Category::PRIMITIVE_TRIANGLE);
         _triangleGeometry = _render->CreateGeometry(
@@ -133,6 +204,9 @@ public:
 
     virtual void FrameUpdate() override final
     {
+        // Custom render pass
+        _customRenderPass->Desc.Viewport = glm::vec4(0.0f, 0.0f, GetWindowSize().x, GetWindowSize().y);
+
         // Physics
         _physics->Simulate();
 
@@ -149,16 +223,17 @@ public:
         _render->DrawGeometryOpaque(
             _triangleGeometry,
             gameObjects,
-            cameraObject
-        );
-        _render->DrawGeometryTransparent(
-            _triangleGeometry,
-            gameObjects,
             cameraObject,
-            _render->FindMaterial("Material2")->CustomShader
+            _customRenderPass
         );
-        _render->CompositeTransparent();
-        _render->DrawTexts(gameObjects);
+        //_render->DrawGeometryTransparent(
+        //    _triangleGeometry,
+        //    gameObjects,
+        //    cameraObject,
+        //    _render->FindMaterial("Material2")->CustomShader
+        //);
+        //_render->CompositeTransparent();
+        //_render->DrawTexts(gameObjects);
         _render->CompositeFinal();
     }
 
@@ -170,6 +245,7 @@ private:
     sPrimitive* _trianglePrimitive = nullptr;
     sVertexBufferGeometry* _triangleGeometry = nullptr;
     cGameObject* _cameraGameObject = nullptr;
+    sRenderPass* _customRenderPass = nullptr;
 };
 
 int main()

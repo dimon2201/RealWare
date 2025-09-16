@@ -92,6 +92,8 @@ namespace realware
             _materialBuffer->Slot = 1;
             _lightBuffer = _context->CreateBuffer(desc->LightBufferSize, sBuffer::eType::LARGE, nullptr);
             _lightBuffer->Slot = 2;
+            _textureAtlasTexturesBuffer = _context->CreateBuffer(desc->TextureAtlasTexturesBufferSize, sBuffer::eType::LARGE, nullptr);
+            _textureAtlasTexturesBuffer->Slot = 3;
             _vertices = malloc(desc->VertexBufferSize);
             _verticesByteSize = 0;
             _indices = malloc(desc->IndexBufferSize);
@@ -102,6 +104,8 @@ namespace realware
             _materialsByteSize = 0;
             _lights = malloc(desc->LightBufferSize);
             _lightsByteSize = 0;
+            _textureAtlasTextures = malloc(desc->TextureAtlasTexturesBufferSize);
+            _textureAtlasTexturesByteSize = 0;
             std::unordered_map<render::sMaterial*, s32>* pMaterialsMap = (std::unordered_map<render::sMaterial*, s32>*)_app->GetMemoryPool()->Allocate(sizeof(std::unordered_map<render::sMaterial*, s32>));
             _materialsMap = new (pMaterialsMap) std::unordered_map<render::sMaterial*, s32>();
 
@@ -111,8 +115,8 @@ namespace realware
             sTexture* revealage = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::R8F, nullptr);
             sTexture* depth = _context->CreateTexture(windowSize.x, windowSize.y, 0, render::sTexture::eType::TEXTURE_2D, render::sTexture::eFormat::DEPTH_STENCIL, nullptr);
 
-            sRenderTarget* opaqueRenderTarget = _context->CreateRenderTarget({ color }, depth);
-            sRenderTarget* transparentRenderTarget = _context->CreateRenderTarget({ accumulation, revealage }, depth);
+            _opaqueRenderTarget = _context->CreateRenderTarget({ color }, depth);
+            _transparentRenderTarget = _context->CreateRenderTarget({ accumulation, revealage }, depth);
 
             {
                 sRenderPass::sDescriptor renderPassDesc;
@@ -129,7 +133,7 @@ namespace realware
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
-                renderPassDesc.RenderTarget = opaqueRenderTarget;
+                renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
                 renderPassDesc.DepthMode.UseDepthWrite = K_TRUE;
@@ -152,7 +156,7 @@ namespace realware
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
-                renderPassDesc.RenderTarget = transparentRenderTarget;
+                renderPassDesc.RenderTarget = _transparentRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
                 renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
@@ -173,7 +177,7 @@ namespace realware
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
-                renderPassDesc.RenderTarget = opaqueRenderTarget;
+                renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
                 renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
@@ -182,16 +186,16 @@ namespace realware
             {
                 sRenderPass::sDescriptor renderPassDesc;
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
-                renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[0]);
+                renderPassDesc.InputTextures.emplace_back(_transparentRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("AccumulationTexture");
-                renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[1]);
+                renderPassDesc.InputTextures.emplace_back(_transparentRenderTarget->ColorAttachments[1]);
                 renderPassDesc.InputTextureNames.emplace_back("RevealageTexture");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
                     "RENDER_PATH_TRANSPARENT_COMPOSITE",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
                 );
-                renderPassDesc.RenderTarget = opaqueRenderTarget;
+                renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
                 renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
@@ -203,7 +207,7 @@ namespace realware
             {
                 sRenderPass::sDescriptor renderPassDesc;
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
-                renderPassDesc.InputTextures.emplace_back(opaqueRenderTarget->ColorAttachments[0]);
+                renderPassDesc.InputTextures.emplace_back(_opaqueRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
                     "RENDER_PATH_QUAD",
@@ -238,10 +242,9 @@ namespace realware
             sShader* customShader = nullptr;
             if (customVertexFuncPath != "" || customFragmentFuncPath != "")
             {
-                sFile* vertexFuncFile = _app->GetFileSystemManager()->CreateDataFile(customVertexFuncPath, K_TRUE);
-                sFile* fragmentFuncFile = _app->GetFileSystemManager()->CreateDataFile(customFragmentFuncPath, K_TRUE);
-                std::string vertexFunc = std::string((const char*)vertexFuncFile->Data);
-                std::string fragmentFunc = std::string((const char*)fragmentFuncFile->Data);
+                std::string vertexFunc = "";
+                std::string fragmentFunc = "";
+                LoadVertexFragmentFuncs(customVertexFuncPath, customFragmentFuncPath, vertexFunc, fragmentFunc);
 
                 if (customShaderRenderPath == Category::RENDER_PATH_OPAQUE)
                     customShader = _context->CreateShader(_opaque->Desc.Shader, vertexFunc, fragmentFunc);
@@ -367,11 +370,12 @@ namespace realware
             _context->WriteBuffer(_lightBuffer, 0, _lightsByteSize, _lights);*/
         }
 
-        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sShader* const singleShader)
+        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sRenderPass* const renderPass)
         {
             usize instanceCount = 0;
             _instancesByteSize = 0;
             _materialsByteSize = 0;
+            _textureAtlasTexturesByteSize = 0;
             _materialsMap->clear();
 
             for (auto& it : objects)
@@ -423,16 +427,120 @@ namespace realware
                 }
             }
 
+            std::vector<sTextureAtlasTexture*>& renderPassTextureAtlasTextures = renderPass->Desc.InputTextureAtlasTextures;
+            for (auto& textureAtlasTexture : renderPassTextureAtlasTextures)
+            {
+                sTextureAtlasTextureGPU tatGPU;
+                tatGPU.TextureInfo = glm::vec4(
+                    textureAtlasTexture->Offset.x,
+                    textureAtlasTexture->Offset.y,
+                    textureAtlasTexture->Size.x,
+                    textureAtlasTexture->Size.y
+                );
+                tatGPU.TextureLayerInfo = textureAtlasTexture->Offset.z;
+
+                memcpy((void*)((usize)_textureAtlasTextures + (usize)_textureAtlasTexturesByteSize), &tatGPU, sizeof(sTextureAtlasTextureGPU));
+                _textureAtlasTexturesByteSize += sizeof(sTextureAtlasTextureGPU);
+            }
+
+            _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
+            _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
+            _context->WriteBuffer(_textureAtlasTexturesBuffer, 0, _textureAtlasTexturesByteSize, _textureAtlasTextures);
+
+            if (renderPass == nullptr)
+            {
+                _context->BindRenderPass(_opaque);
+                _context->SetShaderUniform(_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            }
+            else
+            {
+                _context->BindRenderPass(renderPass);
+                _context->SetShaderUniform(renderPass->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            }
+
+            _context->Draw(
+                geometry->IndexCount,
+                geometry->VertexOffset / (usize)geometry->Format,
+                geometry->IndexOffset,
+                instanceCount
+            );
+
+            if (renderPass == nullptr)
+                _context->UnbindRenderPass(_opaque);
+            else
+                _context->UnbindRenderPass(renderPass);
+        }
+
+        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sShader* const singleShader)
+        {
+            usize instanceCount = 0;
+            _instancesByteSize = 0;
+            _materialsByteSize = 0;
+            _materialsMap->clear();
+
+            for (auto& it : objects)
+            {
+                if (it.GetGeometry() == geometry)
+                {
+                    if (it.GetVisible() == K_TRUE && it.GetOpaque() == K_TRUE)
+                    {
+                        sTransform transform(&it);
+                        transform.Transform();
+
+                        s32 materialIndex = -1;
+
+                        sMaterial* material = it.GetMaterial();
+
+                        auto it = _materialsMap->find(material);
+                        if (it == _materialsMap->end())
+                        {
+                            materialIndex = _materialsMap->size();
+
+                            sMaterialInstance mi(materialIndex, material);
+                            if (material->DiffuseTexture)
+                            {
+                                sTextureAtlasTexture* frame = material->DiffuseTexture;
+                                mi.SetDiffuseTexture(_app->GetTextureManager()->CalculateNormalizedArea(*frame));
+                            }
+                            else
+                            {
+                                mi.DiffuseTextureLayerInfo = -1.0f;
+                            }
+
+                            _materialsMap->insert({ material, materialIndex });
+
+                            memcpy((void*)((usize)_materials + (usize)_materialsByteSize), &mi, sizeof(sMaterialInstance));
+                            _materialsByteSize += sizeof(sMaterialInstance);
+                        }
+                        else
+                        {
+                            materialIndex = it->second;
+                        }
+
+                        sRenderInstance ri(materialIndex, transform);
+
+                        memcpy((void*)((usize)_instances + (usize)_instancesByteSize), &ri, sizeof(sRenderInstance));
+                        _instancesByteSize += sizeof(sRenderInstance);
+
+                        instanceCount += 1;
+                    }
+                }
+            }
+
             _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
             _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
 
-            _context->BindRenderPass(_opaque, singleShader);
-
-            if (singleShader != nullptr)
-                _context->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
-            else
+            if (singleShader == nullptr)
+            {
+                _context->BindRenderPass(_opaque);
                 _context->SetShaderUniform(_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
-            
+            }
+            else
+            {
+                _context->BindRenderPass(_opaque, singleShader);
+                _context->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            }
+
             _context->Draw(
                 geometry->IndexCount,
                 geometry->VertexOffset / (usize)geometry->Format,
@@ -754,6 +862,16 @@ namespace realware
                 free(primitiveObject->Indices);
             primitiveObject->~sPrimitive();
             _app->GetMemoryPool()->Free(primitiveObject);
+        }
+
+        void mRender::LoadVertexFragmentFuncs(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc)
+        {
+            sFile* vertexFuncFile = _app->GetFileSystemManager()->CreateDataFile(vertexFuncPath, K_TRUE);
+            sFile* fragmentFuncFile = _app->GetFileSystemManager()->CreateDataFile(fragmentFuncPath, K_TRUE);
+            vertexFunc = std::string((const char*)vertexFuncFile->Data);
+            fragmentFunc = std::string((const char*)fragmentFuncFile->Data);
+            _app->GetFileSystemManager()->DestroyDataFile(vertexFuncFile);
+            _app->GetFileSystemManager()->DestroyDataFile(fragmentFuncFile);
         }
 
         void mRender::ResizeWindow(const glm::vec2& size)

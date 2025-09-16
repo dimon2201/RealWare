@@ -174,8 +174,9 @@ namespace realware
             
             void UpdateLights();
 
-            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, render::sShader* const singleShader = nullptr);
-            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, render::sShader* const singleShader = nullptr);
+            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sRenderPass* const renderPass = nullptr);
+            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
+            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
             void DrawTexts(const std::vector<game::cGameObject>& objects);
             
             void CompositeTransparent();
@@ -185,6 +186,8 @@ namespace realware
             sModel* CreateModel(const std::string& filename);
             void DestroyPrimitive(sPrimitive* primitiveObject);
             
+            void LoadVertexFragmentFuncs(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc);
+
             void ResizeWindow(const glm::vec2& size);
             
             sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
@@ -192,11 +195,14 @@ namespace realware
             sBuffer* GetInstanceBuffer() const { return _instanceBuffer; }
             sBuffer* GetMaterialBuffer() const { return _materialBuffer; }
             sBuffer* GetLightBuffer() const { return _lightBuffer; }
+            sBuffer* GetTextureAtlasTexturesBuffer() const { return _textureAtlasTexturesBuffer; }
             inline sRenderPass* GetOpaqueRenderPass() const { return _opaque; }
             inline sRenderPass* GetTransparentRenderPass() const { return _transparent; }
             inline sRenderPass* GetTextRenderPass() const { return _text; }
             inline sRenderPass* GetCompositeTransparentRenderPass() const { return _compositeTransparent; }
             inline sRenderPass* GetCompositeFinalRenderPass() const { return _compositeFinal; }
+            inline sRenderTarget* GetOpaqueRenderTarget() const { return _opaqueRenderTarget; }
+            inline sRenderTarget* GetTransparentRenderTarget() const { return _transparentRenderTarget; }
 
         private:
             app::cApplication* _app = nullptr;
@@ -206,6 +212,7 @@ namespace realware
             sBuffer* _instanceBuffer = nullptr;
             sBuffer* _materialBuffer = nullptr;
             sBuffer* _lightBuffer = nullptr;
+            sBuffer* _textureAtlasTexturesBuffer = nullptr;
             void* _vertices = nullptr;
             types::usize _verticesByteSize = 0;
             void* _indices = nullptr;
@@ -216,12 +223,16 @@ namespace realware
             types::usize _materialsByteSize = 0;
             void* _lights = nullptr;
             types::usize _lightsByteSize = 0;
+            void* _textureAtlasTextures = nullptr;
+            types::usize _textureAtlasTexturesByteSize = 0;
             std::unordered_map<render::sMaterial*, types::s32>* _materialsMap = {};
             sRenderPass* _opaque = nullptr;
             sRenderPass* _transparent = nullptr;
             sRenderPass* _text = nullptr;
             sRenderPass* _compositeTransparent = nullptr;
             sRenderPass* _compositeFinal = nullptr;
+            sRenderTarget* _opaqueRenderTarget = nullptr;
+            sRenderTarget* _transparentRenderTarget = nullptr;
             types::usize _materialCountCPU = 0;
             utils::cIdVec<sMaterial> _materialsCPU;
         };

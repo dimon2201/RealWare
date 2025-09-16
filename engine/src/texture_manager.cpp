@@ -118,7 +118,10 @@ namespace realware
                             if (channels == 3)
                                 free((void*)data);
 
-                            return _textures.Add(id, K_FALSE, offset, size);
+                            sTextureAtlasTexture* newTex = _textures.Add(id, K_FALSE, offset, size);
+                            *newTex = CalculateNormalizedArea(*newTex);
+
+                            return newTex;
                         }
                     }
                 }

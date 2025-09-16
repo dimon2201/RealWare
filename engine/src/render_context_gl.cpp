@@ -33,6 +33,19 @@ namespace realware
             std::cout << message << std::endl;
         }
 
+        std::string CleanShaderSource(const std::string& src)
+        {
+            std::string out;
+            out.reserve(src.size());
+            for (u8 c : src)
+            {
+                if (c == '\t' || c == '\n' || c == '\r' || (c >= 32 && c <= 126))
+                    out.push_back(c);
+            }
+
+            return out;
+        }
+
         cOpenGLRenderContext::cOpenGLRenderContext(const cApplication* const app) : _app((cApplication*)app)
         {
             if (glewInit() != GLEW_OK)
@@ -246,11 +259,11 @@ namespace realware
             std::string appendPathFragmentStr = appendStr;
 
             fs::sFile* vertexShaderFile = _app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
-            shader->Vertex = appendPathVertexStr.append(std::string((const char*)vertexShaderFile->Data));
+            shader->Vertex = CleanShaderSource(appendPathVertexStr.append(std::string((const char*)vertexShaderFile->Data)));
             const char* vertex = shader->Vertex.c_str();
 
             fs::sFile* fragmentShaderFile = _app->GetFileSystemManager()->CreateDataFile(fragmentPath, K_TRUE);
-            shader->Fragment = appendPathFragmentStr.append(std::string((const char*)fragmentShaderFile->Data));
+            shader->Fragment = CleanShaderSource(appendPathFragmentStr.append(std::string((const char*)fragmentShaderFile->Data)));
             const char* fragment = shader->Fragment.c_str();
 
             GLint vertexByteSize = strlen(vertex);
@@ -304,9 +317,9 @@ namespace realware
             sShader* pShader = (sShader*)_app->GetMemoryPool()->Allocate(sizeof(sShader));
             sShader* shader = new (pShader) sShader();
 
-            const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec3 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
+            const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
             const std::string vertexFuncPassthroughCall = "Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);";
-            const std::string fragmentFuncDefinition = "void Fragment_Func(in vec3 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";
+            const std::string fragmentFuncDefinition = "void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";
             const std::string fragmentFuncPassthroughCall = "Fragment_Passthrough(textureColor, DiffuseColor, fragColor);";
 
             shader->Vertex = baseShader->Vertex;
@@ -325,6 +338,9 @@ namespace realware
             size_t fragmentFuncPassthroughPos = shader->Fragment.find(fragmentFuncPassthroughCall);
             if (fragmentFuncPassthroughPos != std::string::npos)
                 shader->Fragment.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
+
+            shader->Vertex = CleanShaderSource(shader->Vertex);
+            shader->Fragment = CleanShaderSource(shader->Fragment);
 
             const char* vertex = shader->Vertex.c_str();
             const char* fragment = shader->Fragment.c_str();

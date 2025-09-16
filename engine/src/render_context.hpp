@@ -15,6 +15,8 @@ namespace realware
 
     namespace render
     {
+        struct sTextureAtlasTexture;
+
         struct sGPUResource
         {
             types::u32 Instance = 0;
@@ -114,6 +116,7 @@ namespace realware
                 std::vector<sBuffer*> InputBuffers = {};
                 std::vector<sTexture*> InputTextures = {};
                 std::vector<std::string> InputTextureNames = {};
+                std::vector<sTextureAtlasTexture*> InputTextureAtlasTextures = {};
                 sShader* Shader = nullptr;
                 sRenderTarget* RenderTarget = nullptr;
                 sDepthMode DepthMode = {};
