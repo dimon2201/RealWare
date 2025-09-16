@@ -34,6 +34,7 @@ namespace realware
             explicit mTexture(const app::cApplication* const app, const cRenderContext* const context);
             ~mTexture();
 
+            sTextureAtlasTexture* AddTexture(const std::string& id, const glm::vec2& size, const types::usize channels, const types::u8* data);
             sTextureAtlasTexture* AddTexture(const std::string& id, const std::string& filename);
             sTextureAtlasTexture* FindTexture(const std::string& id);
             void DeleteTexture(const std::string& id);

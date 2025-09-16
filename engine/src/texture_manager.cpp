@@ -41,13 +41,10 @@ namespace realware
             _context->DestroyTexture(_atlas);
         }
 
-        sTextureAtlasTexture* mTexture::AddTexture(const std::string& id, const std::string& filename)
+        sTextureAtlasTexture* mTexture::AddTexture(const std::string& id, const glm::vec2& size, const usize channels, const u8* data)
         {
-            s32 width = 0;
-            s32 height = 0;
-            s32 channels = 0;
-            u8* data = nullptr;
-            data = stbi_load(filename.data(), &width, &height, &channels, 4);
+            usize width = size.x;
+            usize height = size.y;
 
             if (data == nullptr || channels < 3)
                 return nullptr;
@@ -63,8 +60,6 @@ namespace realware
                     dataTemp[(i * 4) + 2] = data[(i * 3) + 2];
                     dataTemp[(i * 4) + 3] = 255;
                 }
-
-                free(data);
 
                 data = dataTemp;
             }
@@ -120,7 +115,8 @@ namespace realware
                             if (_atlas->Format == render::sTexture::eFormat::RGBA8_MIPS)
                                 _context->GenerateTextureMips(_atlas);
 
-                            free(data);
+                            if (channels == 3)
+                                free((void*)data);
 
                             return _textures.Add(id, K_FALSE, offset, size);
                         }
@@ -128,9 +124,21 @@ namespace realware
                 }
             }
 
-            free(data);
+            if (channels == 3)
+                free((void*)data);
 
             return nullptr;
+        }
+
+        sTextureAtlasTexture* mTexture::AddTexture(const std::string& id, const std::string& filename)
+        {
+            s32 width = 0;
+            s32 height = 0;
+            s32 channels = 0;
+            u8* data = nullptr;
+            data = stbi_load(filename.data(), &width, &height, &channels, 4);
+
+            return AddTexture(id, glm::vec2(width, height), (usize)channels, data);
         }
 
         sTextureAtlasTexture* mTexture::FindTexture(const std::string& id)

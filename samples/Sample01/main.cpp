@@ -65,8 +65,6 @@ public:
             texture1,
             glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
             glm::vec4(1.0f)
-            //,"C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_vertex.shader",
-            //"C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_fragment.shader"
         );
         sMaterial* material2 = _render->AddMaterial(
             "Material2",
@@ -160,7 +158,7 @@ public:
             _render->FindMaterial("Material2")->CustomShader
         );
         _render->CompositeTransparent();
-        //_render->DrawTexts(gameObjects);
+        _render->DrawTexts(gameObjects);
         _render->CompositeFinal();
     }
 
