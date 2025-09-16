@@ -612,7 +612,9 @@ namespace realware
 
             if (texture->Type == sTexture::eType::TEXTURE_2D)
             {
-                char* pixels = (char*)malloc(texture->Width * texture->Height * 4);
+                cMemoryPool* const memoryPool = _app->GetMemoryPool();
+
+                char* pixels = (char*)memoryPool->Allocate(texture->Width * texture->Height * 4);
 
                 glBindTexture(GL_TEXTURE_2D, texture->Instance);
                 glGetTexImage(GL_TEXTURE_2D, 0, channelsGL, formatComponentGL, pixels);
@@ -620,7 +622,7 @@ namespace realware
 
                 lodepng_encode32_file(filename.c_str(), (const unsigned char*)pixels, texture->Width, texture->Height);
 
-                free(pixels);
+                memoryPool->Free(pixels);
             }
         }
 

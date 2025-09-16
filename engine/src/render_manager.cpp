@@ -81,6 +81,8 @@ namespace realware
         mRender::mRender(const cApplication* const app, const cRenderContext* const context) :
             _app((cApplication*)app), _context((cRenderContext*)context), _materialsCPU((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxMaterialCount)
         {
+            cMemoryPool* const memoryPool = _app->GetMemoryPool();
+
             sApplicationDescriptor* desc = _app->GetDesc();
             const glm::vec2 windowSize = _app->GetWindowSize();
 
@@ -94,17 +96,17 @@ namespace realware
             _lightBuffer->Slot = 2;
             _textureAtlasTexturesBuffer = _context->CreateBuffer(desc->TextureAtlasTexturesBufferSize, sBuffer::eType::LARGE, nullptr);
             _textureAtlasTexturesBuffer->Slot = 3;
-            _vertices = malloc(desc->VertexBufferSize);
+            _vertices = memoryPool->Allocate(desc->VertexBufferSize);
             _verticesByteSize = 0;
-            _indices = malloc(desc->IndexBufferSize);
+            _indices = memoryPool->Allocate(desc->IndexBufferSize);
             _indicesByteSize = 0;
-            _instances = malloc(desc->InstanceBufferSize);
+            _instances = memoryPool->Allocate(desc->InstanceBufferSize);
             _instancesByteSize = 0;
-            _materials = malloc(desc->MaterialBufferSize);
+            _materials = memoryPool->Allocate(desc->MaterialBufferSize);
             _materialsByteSize = 0;
-            _lights = malloc(desc->LightBufferSize);
+            _lights = memoryPool->Allocate(desc->LightBufferSize);
             _lightsByteSize = 0;
-            _textureAtlasTextures = malloc(desc->TextureAtlasTexturesBufferSize);
+            _textureAtlasTextures = memoryPool->Allocate(desc->TextureAtlasTexturesBufferSize);
             _textureAtlasTexturesByteSize = 0;
             std::unordered_map<render::sMaterial*, s32>* pMaterialsMap = (std::unordered_map<render::sMaterial*, s32>*)_app->GetMemoryPool()->Allocate(sizeof(std::unordered_map<render::sMaterial*, s32>));
             _materialsMap = new (pMaterialsMap) std::unordered_map<render::sMaterial*, s32>();
@@ -227,14 +229,16 @@ namespace realware
 
         mRender::~mRender()
         {
+            cMemoryPool* const memoryPool = _app->GetMemoryPool();
+
             _context->DestroyBuffer(_vertexBuffer);
             _context->DestroyBuffer(_indexBuffer);
             _context->DestroyBuffer(_instanceBuffer);
             _materialsMap->~unordered_map<render::sMaterial*, s32>();
-            _app->GetMemoryPool()->Free(_materialsMap);
-            free(_vertices);
-            free(_indices);
-            free(_instances);
+            memoryPool->Free(_materialsMap);
+            memoryPool->Free(_vertices);
+            memoryPool->Free(_indices);
+            memoryPool->Free(_instances);
         }
 
         sMaterial* mRender::AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, const Category& customShaderRenderPath, const std::string& customVertexFuncPath, const std::string& customFragmentFuncPath)
@@ -737,14 +741,16 @@ namespace realware
 
         sPrimitive* mRender::CreatePrimitive(const Category& primitive)
         {
+            cMemoryPool* const memoryPool = _app->GetMemoryPool();
+
             sPrimitive* pPrimitiveObject = (sPrimitive*)_app->GetMemoryPool()->Allocate(sizeof(sPrimitive));
             sPrimitive* primitiveObject = new (pPrimitiveObject) sPrimitive();
 
             if (primitive == Category::PRIMITIVE_TRIANGLE)
             {
                 primitiveObject->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
-                primitiveObject->Vertices = (render::sVertex*)malloc(sizeof(render::sVertex) * 3);
-                primitiveObject->Indices = (render::index*)malloc(sizeof(render::index) * 3);
+                primitiveObject->Vertices = (render::sVertex*)memoryPool->Allocate(sizeof(render::sVertex) * 3);
+                primitiveObject->Indices = (render::index*)memoryPool->Allocate(sizeof(render::index) * 3);
                 primitiveObject->VertexCount = 3;
                 primitiveObject->IndexCount = 3;
                 primitiveObject->VerticesByteSize = sizeof(render::sVertex) * 3;
@@ -766,8 +772,8 @@ namespace realware
             else if (primitive == Category::PRIMITIVE_QUAD)
             {
                 primitiveObject->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
-                primitiveObject->Vertices = (render::sVertex*)malloc(sizeof(render::sVertex) * 4);
-                primitiveObject->Indices = (render::index*)malloc(sizeof(render::index) * 6);
+                primitiveObject->Vertices = (render::sVertex*)memoryPool->Allocate(sizeof(render::sVertex) * 4);
+                primitiveObject->Indices = (render::index*)memoryPool->Allocate(sizeof(render::index) * 6);
                 primitiveObject->VertexCount = 4;
                 primitiveObject->IndexCount = 6;
                 primitiveObject->VerticesByteSize = sizeof(render::sVertex) * 4;
@@ -798,6 +804,8 @@ namespace realware
 
         sModel* mRender::CreateModel(const std::string& filename)
         {
+            cMemoryPool* const memoryPool = _app->GetMemoryPool();
+
             // Create model
             sModel* pModel = (sModel*)_app->GetMemoryPool()->Allocate(sizeof(sModel));
             sModel* model = new (pModel) sModel();
@@ -816,7 +824,7 @@ namespace realware
 
             // Load vertices
             usize totalVertexCount = 0;
-            model->Vertices = (render::sVertex*)malloc(scene->mMeshes[0]->mNumVertices * sizeof(render::sVertex));
+            model->Vertices = (render::sVertex*)memoryPool->Allocate(scene->mMeshes[0]->mNumVertices * sizeof(render::sVertex));
             memset(model->Vertices, 0, scene->mMeshes[0]->mNumVertices * sizeof(render::sVertex));
             for (usize i = 0; i < scene->mMeshes[0]->mNumVertices; i++)
             {
@@ -833,7 +841,7 @@ namespace realware
 
             // Load indices
             usize totalIndexCount = 0;
-            model->Indices = (render::index*)malloc(scene->mMeshes[0]->mNumFaces * 3 * sizeof(render::index));
+            model->Indices = (render::index*)memoryPool->Allocate(scene->mMeshes[0]->mNumFaces * 3 * sizeof(render::index));
             memset(model->Indices, 0, scene->mMeshes[0]->mNumFaces * 3 * sizeof(render::index));
             for (usize i = 0; i < scene->mMeshes[0]->mNumFaces; i++)
             {
@@ -856,12 +864,14 @@ namespace realware
 
         void mRender::DestroyPrimitive(sPrimitive* primitiveObject)
         {
+            cMemoryPool* const memoryPool = _app->GetMemoryPool();
+
             if (primitiveObject->Vertices)
-                free(primitiveObject->Vertices);
+                memoryPool->Free(primitiveObject->Vertices);
             if (primitiveObject->Indices)
-                free(primitiveObject->Indices);
+                memoryPool->Free(primitiveObject->Indices);
             primitiveObject->~sPrimitive();
-            _app->GetMemoryPool()->Free(primitiveObject);
+            memoryPool->Free(primitiveObject);
         }
 
         void mRender::LoadVertexFragmentFuncs(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc)

@@ -59,7 +59,7 @@ namespace realware
             // Data
             int NumSamples = wav->Subchunk2Size / (wav->NumChannels * (wav->BitsPerSample / 8));
             wav->DataByteSize = NumSamples * (wav->BitsPerSample / 8) * wav->NumChannels;
-            wav->Data = (unsigned short*)malloc(wav->DataByteSize);
+            wav->Data = (unsigned short*)memoryPool->Allocate(wav->DataByteSize);
             if (wav->BitsPerSample == 16 && wav->NumChannels == 2)
             {
                 for (int i = 0; i < NumSamples; i++)

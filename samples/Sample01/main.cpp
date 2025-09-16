@@ -62,11 +62,34 @@ public:
             255,
             255
         };
-        sTextureAtlasTexture* customRenderPassTexture = texture->AddTexture(
+        sTextureAtlasTexture* customRenderPassTexture1 = texture->AddTexture(
             "CustomRenderPassTexture1",
             glm::vec2(2, 2),
             3,
             &customRenderPassTexture1Data[0]
+        );
+        u8 customRenderPassTexture2Data[3 * 4] = {
+            255,
+            255,
+            255,
+
+            255,
+            255,
+            255,
+
+            255,
+            255,
+            255,
+
+            255,
+            255,
+            255
+        };
+        sTextureAtlasTexture* customRenderPassTexture2 = texture->AddTexture(
+            "CustomRenderPassTexture2",
+            glm::vec2(2, 2),
+            3,
+            &customRenderPassTexture2Data[0]
         );
 
         std::string vertexFunc = "";
@@ -88,7 +111,8 @@ public:
         renderPassDesc.InputBuffers.emplace_back(render->GetTextureAtlasTexturesBuffer());
         renderPassDesc.InputTextures.emplace_back(GetTextureManager()->GetAtlas());
         renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-        renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture);
+        renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture1);
+        renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture2);
         renderPassDesc.Shader = renderContext->CreateShader(
             opaqueRenderPass->Desc.Shader,
             vertexFunc,
@@ -255,6 +279,7 @@ int main()
     appDesc->WindowDesc.Width = 640;
     appDesc->WindowDesc.Height = 480;
     appDesc->WindowDesc.IsFullscreen = K_FALSE;
+    appDesc->MemoryPoolByteSize = 64 * 1024 * 1024;
 
     MyApp* app = new MyApp(appDesc);
     app->Run();

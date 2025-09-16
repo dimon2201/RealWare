@@ -3,6 +3,7 @@
 #include "application.hpp"
 #include "texture_manager.hpp"
 #include "render_context.hpp"
+#include "memory_pool.hpp"
 
 using namespace types;
 
@@ -51,7 +52,7 @@ namespace realware
 
             if (channels == 3)
             {
-                u8* const dataTemp = (u8* const)malloc(width * height * 4);
+                u8* const dataTemp = (u8* const)_app->GetMemoryPool()->Allocate(width * height * 4);
 
                 for (usize i = 0; i < width * height; i++)
                 {
@@ -116,7 +117,7 @@ namespace realware
                                 _context->GenerateTextureMips(_atlas);
 
                             if (channels == 3)
-                                free((void*)data);
+                                _app->GetMemoryPool()->Free((void*)data);
 
                             sTextureAtlasTexture* newTex = _textures.Add(id, K_FALSE, offset, size);
                             *newTex = CalculateNormalizedArea(*newTex);
@@ -128,7 +129,7 @@ namespace realware
             }
 
             if (channels == 3)
-                free((void*)data);
+                _app->GetMemoryPool()->Free((void*)data);
 
             return nullptr;
         }

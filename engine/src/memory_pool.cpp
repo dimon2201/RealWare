@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdlib>
 #include "memory_pool.hpp"
 
@@ -52,7 +53,7 @@ namespace realware
                     newAlloc.FreeFlag = 0;
                     newAlloc.AllocationByteSize = alloc.AllocationByteSize - alloc.OccupiedByteSize;
                     newAlloc.OccupiedByteSize = size;
-                    newAlloc.Address = (void*)(((u64)alloc.Address) + ((u64)alloc.OccupiedByteSize));
+                    newAlloc.Address = (void*)((usize)alloc.Address + (usize)alloc.OccupiedByteSize);
 
                     alloc.AllocationByteSize = alloc.OccupiedByteSize;
 
@@ -62,7 +63,12 @@ namespace realware
                 }
             }
 
-            if (_lastAddress >= _maxAddress) { return nullptr; }
+            if ((usize)_lastAddress + size >= (usize)_maxAddress)
+            {
+                std::cout << "Error: memory pool byte size '" << _byteSize << "' is not enough to allocate next '" << size << "' bytes!" << std::endl;
+                
+                return nullptr;
+            }
 
             sMemoryPoolAllocation newAlloc;
             newAlloc.FreeFlag = 0;
@@ -71,7 +77,7 @@ namespace realware
             newAlloc.Address = _lastAddress;
             _allocs.emplace_back(newAlloc);
 
-            _lastAddress = (void*)(((usize)_lastAddress) + size);
+            _lastAddress = (void*)((usize)_lastAddress + size);
 
             return newAlloc.Address;
         }

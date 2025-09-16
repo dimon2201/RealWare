@@ -24,7 +24,7 @@ namespace realware
             inputFile.seekg(0, std::ios::beg);
             const usize databyteSize = byteSize + (isString == K_TRUE ? 1 : 0);
             
-            u8* const data = (u8* const)malloc(databyteSize);
+            u8* const data = (u8* const)_app->GetMemoryPool()->Allocate(databyteSize);
             memset(data, 0, databyteSize);
             inputFile.read((char*)&data[0], byteSize);
 
@@ -44,7 +44,7 @@ namespace realware
             if (fileData == nullptr || file->DataByteSize == 0)
                 return;
 
-            free(fileData);
+            _app->GetMemoryPool()->Free(fileData);
         }
     }
 }

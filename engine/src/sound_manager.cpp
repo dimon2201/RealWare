@@ -23,10 +23,12 @@ namespace realware
             {
                 if (Format == Category::SOUND_FORMAT_WAV)
                 {
-                    free(File->Data);
+                    cMemoryPool* const memoryPool = App->GetMemoryPool();
+
+                    memoryPool->Free(File->Data);
 
                     File->~sWAVStructure();
-                    App->GetMemoryPool()->Free(File);
+                    memoryPool->Free(File);
                 }
             }
         }

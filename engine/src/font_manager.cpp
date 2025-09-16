@@ -46,7 +46,7 @@ namespace realware
                 return 0;
         }
 
-        void FillAlphabetAndFindAtlasSize(sFont* const font, usize& xOffset, usize& atlasWidth, usize& atlasHeight)
+        void FillAlphabetAndFindAtlasSize(cMemoryPool* const memoryPool, sFont* const font, usize& xOffset, usize& atlasWidth, usize& atlasHeight)
         {
             const FT_Face& ftFont = font->Font;
             usize maxGlyphHeight = 0;
@@ -71,7 +71,7 @@ namespace realware
                     glyph.Top = ftFont->glyph->bitmap_top;
                     glyph.AdvanceX = ftFont->glyph->advance.x >> 6;
                     glyph.AdvanceY = ftFont->glyph->advance.y >> 6;
-                    glyph.BitmapData = malloc(glyph.Width * glyph.Height);
+                    glyph.BitmapData = memoryPool->Allocate(glyph.Width * glyph.Height);
 
                     if (ftFont->glyph->bitmap.buffer)
                         memcpy(glyph.BitmapData, ftFont->glyph->bitmap.buffer, glyph.Width * glyph.Height);
@@ -122,11 +122,11 @@ namespace realware
             atlasHeight = NextPowerOfTwo(atlasHeight);
         }
 
-        void FillAtlasWithGlyphs(sFont* const font, usize& atlasWidth, usize& atlasHeight, cRenderContext* const context)
+        void FillAtlasWithGlyphs(cMemoryPool* const memoryPool, sFont* const font, usize& atlasWidth, usize& atlasHeight, cRenderContext* const context)
         {
             usize maxGlyphHeight = 0;
 
-            void* const atlasPixels = malloc(atlasWidth * atlasHeight);
+            void* const atlasPixels = memoryPool->Allocate(atlasWidth * atlasHeight);
             memset(atlasPixels, 0, atlasWidth * atlasHeight);
 
             usize xOffset = 0;
@@ -172,12 +172,13 @@ namespace realware
                 atlasPixels
             );
 
-            free(atlasPixels);
+            memoryPool->Free(atlasPixels);
         }
 
         sFont* mFont::CreateFontTTF(const std::string& filename, const usize glyphSize)
         {
-            sFont* pFont = (sFont*)_app->GetMemoryPool()->Allocate(sizeof(sFont));
+            cMemoryPool* const memoryPool = _app->GetMemoryPool();
+            sFont* pFont = (sFont*)memoryPool->Allocate(sizeof(sFont));
             sFont* font = new (pFont) sFont;
 
             FT_Face& ftFont = font->Font;
@@ -198,9 +199,9 @@ namespace realware
                     usize atlasHeight = 0;
                     usize xOffset = 0;
 
-                    FillAlphabetAndFindAtlasSize(font, xOffset, atlasWidth, atlasHeight);
+                    FillAlphabetAndFindAtlasSize(memoryPool, font, xOffset, atlasWidth, atlasHeight);
                     MakeAtlasSizePowerOf2(atlasWidth, atlasHeight);
-                    FillAtlasWithGlyphs(font, atlasWidth, atlasHeight, _context);
+                    FillAtlasWithGlyphs(memoryPool, font, atlasWidth, atlasHeight, _context);
                 }
                 else
                 {
@@ -240,7 +241,7 @@ namespace realware
             auto atlas = font->Atlas;
 
             for (auto& glyph : alphabet)
-                free(glyph.second.BitmapData);
+                _app->GetMemoryPool()->Free(glyph.second.BitmapData);
 
             alphabet.clear();
 
