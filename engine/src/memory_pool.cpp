@@ -34,7 +34,7 @@ namespace realware
         void* cMemoryPool::Allocate(const usize size)
         {
 #ifdef DEBUG
-            m_BytesOccupied += size;
+            _bytesOccupied += size;
 #endif
             for (auto& alloc : _allocs)
             {
@@ -83,8 +83,8 @@ namespace realware
                 if (alloc.Address == address)
                 {
 #ifdef DEBUG
-                    m_BytesFreed += alloc.OccupiedByteWidth;
-                    m_LastFreedBytes = alloc.OccupiedByteWidth;
+                    _bytesFreed += alloc.OccupiedByteSize;
+                    _lastFreedBytes = alloc.OccupiedByteSize;
 #endif
                     alloc.FreeFlag = 1;
                     alloc.OccupiedByteSize = 0;
