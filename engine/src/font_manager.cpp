@@ -3,6 +3,7 @@
 #include "render_context.hpp"
 #include "application.hpp"
 #include "memory_pool.hpp"
+#include "log.hpp"
 
 using namespace types;
 
@@ -10,6 +11,7 @@ namespace realware
 {
     using namespace app;
     using namespace render;
+    using namespace log;
     using namespace utils;
 
     namespace font
@@ -18,7 +20,7 @@ namespace realware
         {
             if (FT_Init_FreeType(&_lib))
             {
-                std::cout << "Failed to initialize FreeType library!" << std::endl;
+                Print("Failed to initialize FreeType library!");
                 return;
             }
 
@@ -213,7 +215,7 @@ namespace realware
             }
             else
             {
-                std::cout << "Error creating FreeType font face!" << std::endl;
+                Print("Error creating FreeType font face!");
 
                 font->~sFont();
                 _app->GetMemoryPool()->Free(font);

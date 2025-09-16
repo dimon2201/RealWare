@@ -1,11 +1,14 @@
 #include <iostream>
 #include <cstdlib>
 #include "memory_pool.hpp"
+#include "log.hpp"
 
 using namespace types;
 
 namespace realware
 {
+    using namespace log;
+
     namespace utils
     {
         cMemoryPool::cMemoryPool(const usize byteSize, const usize allocs, const usize alignment)
@@ -65,7 +68,7 @@ namespace realware
 
             if ((usize)_lastAddress + size >= (usize)_maxAddress)
             {
-                std::cout << "Error: memory pool byte size '" << _byteSize << "' is not enough to allocate next '" << size << "' bytes!" << std::endl;
+                Print("Error: memory pool byte size '" + std::to_string(_byteSize) + "' is not enough to allocate next '" + std::to_string(size) + "' bytes!");
                 
                 return nullptr;
             }

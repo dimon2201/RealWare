@@ -8,6 +8,7 @@
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "category.hpp"
 #include "id_vec.hpp"
+#include "log.hpp"
 
 namespace physx
 {
@@ -53,7 +54,7 @@ namespace realware
         {
             virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override final
             {
-                std::cout << message << std::endl;
+                log::Print(message);
             }
         };
 

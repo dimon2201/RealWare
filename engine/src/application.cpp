@@ -12,6 +12,7 @@
 #include "gameobject_manager.hpp"
 #include "texture_manager.hpp"
 #include "memory_pool.hpp"
+#include "log.hpp"
 
 using namespace types;
 
@@ -23,6 +24,7 @@ namespace realware
     using namespace font;
     using namespace physics;
     using namespace fs;
+    using namespace log;
     using namespace utils;
 
     namespace app
@@ -138,7 +140,7 @@ namespace realware
 
             if (!_window)
             {
-                std::cout << "Error: incompatible GL version!" << std::endl;
+                Print("Error: incompatible GL version!");
                 return;
             }
 

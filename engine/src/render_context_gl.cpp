@@ -9,6 +9,7 @@
 #include "application.hpp"
 #include "render_manager.hpp"
 #include "memory_pool.hpp"
+#include "log.hpp"
 
 using namespace types;
 
@@ -16,6 +17,7 @@ namespace realware
 {
     using namespace app;
     using namespace game;
+    using namespace log;
     using namespace utils;
 
     namespace render
@@ -30,7 +32,7 @@ namespace realware
             const void* userParam
         )
         {
-            std::cout << message << std::endl;
+            Print(message);
         }
 
         std::string CleanShaderSource(const std::string& src)
@@ -50,7 +52,7 @@ namespace realware
         {
             if (glewInit() != GLEW_OK)
             {
-                std::cout << "Error initializing GLEW!" << std::endl;
+                Print("Error: can't initialize GLEW!");
                 return;
             }
 
@@ -283,24 +285,24 @@ namespace realware
             GLint success;
             glGetProgramiv((GLuint)shader->Instance, GL_LINK_STATUS, &success);
             if (!success)
-                std::cout << "Error: Linking shader!" << std::endl;
+                Print("Error: can't link shader!");
             if (!glIsProgram((GLuint)shader->Instance))
-                std::cout << "Error: Invalid shader!" << std::endl;
+                Print("Error: invalid shader!");
 
             GLint logBufferByteSize = 0;
             char logBuffer[1024] = {};
             glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
             if (logBufferByteSize > 0)
             {
-                std::cout << "Vertex shader error, header: " << header << ", path: " << vertexPath << std::endl;
-                std::cout << logBuffer << std::endl;
+                Print("Error: vertex shader, header: " + header + ", path: " + vertexPath + "!");
+                Print(logBuffer);
             }
             logBufferByteSize = 0;
             glGetShaderInfoLog(fragmentShader, 1024, &logBufferByteSize, &logBuffer[0]);
             if (logBufferByteSize > 0)
             {
-                std::cout << "Fragment shader error, header: " << header << ", path: " << fragmentPath << std::endl;
-                std::cout << logBuffer << std::endl;
+                Print("Error: fragment shader, header: " + header + ", path: " + fragmentPath + "!");
+                Print(logBuffer);
             }
 			
 			glDeleteShader(vertexShader);
@@ -362,24 +364,24 @@ namespace realware
             GLint success;
             glGetProgramiv((GLuint)shader->Instance, GL_LINK_STATUS, &success);
             if (!success)
-                std::cout << "Error: Linking shader!" << std::endl;
+                Print("Error: can't link shader!");
             if (!glIsProgram((GLuint)shader->Instance))
-                std::cout << "Error: Invalid shader!" << std::endl;
+                Print("Error: invalid shader!");
 
             GLint logBufferByteSize = 0;
             char logBuffer[1024] = {};
             glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
             if (logBufferByteSize > 0)
             {
-                std::cout << "Vertex shader error" << std::endl;
-                std::cout << logBuffer << std::endl;
+                Print("Error: vertex shader!");
+                Print(logBuffer);
             }
             logBufferByteSize = 0;
             glGetShaderInfoLog(fragmentShader, 1024, &logBufferByteSize, &logBuffer[0]);
             if (logBufferByteSize > 0)
             {
-                std::cout << "Fragment shader error" << std::endl;
-                std::cout << logBuffer << std::endl;
+                Print("Error: fragment shader!");
+                Print(logBuffer);
             }
 
             glDeleteShader(vertexShader);
@@ -680,7 +682,7 @@ namespace realware
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			
 			if (status != GL_FRAMEBUFFER_COMPLETE)
-                std::cout << "Error: incomplete framebuffer!" << std::endl;
+                Print("Error: incomplete framebuffer!");
 
             return renderTarget;
         }

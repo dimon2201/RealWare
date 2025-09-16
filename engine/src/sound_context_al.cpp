@@ -6,11 +6,13 @@
 #include "sound_context.hpp"
 #include "sound_manager.hpp"
 #include "memory_pool.hpp"
+#include "log.hpp"
 
 namespace realware
 {
     using namespace app;
     using namespace game;
+    using namespace log;
     using namespace utils;
 
     namespace sound
@@ -24,24 +26,24 @@ namespace realware
             errno_t err = fopen_s(&fp, &filename.c_str()[0], "rb");
             if (err != 0)
             {
-                std::cout << "Error opening WAV file at '" << filename << "'!" << std::endl;
+                Print("Error: can't open WAV file at '" + filename + "'!");
                 MessageBox(0, "Error opening WAV file", 0, MB_ICONERROR);
             }
 
             // Chunk
             fread(&wav->Type[0], sizeof(char), 4, fp);
             if (std::string((const char*)&wav->Type[0]) != std::string("RIFF"))
-                std::cout << "Not a RIFF file!" << std::endl;
+                Print("Error: not a RIFF file!");
 
             fread(&wav->ChunkSize, sizeof(int), 1, fp);
             fread(&wav->Format[0], sizeof(char), 4, fp);
             if (std::string((const char*)&wav->Format[0]) != std::string("WAVE"))
-                std::cout << "Not a WAVE file!" << std::endl;
+                Print("Error: not a WAVE file!");
 
             // 1st Subchunk
             fread(&wav->Subchunk1ID[0], sizeof(char), 4, fp);
             if (std::string((const char*)&wav->Subchunk1ID[0]) != std::string("fmt "))
-                std::cout << "Missing fmt header!" << std::endl;
+                Print("Error: missing fmt header!");
             fread(&wav->Subchunk1Size, sizeof(int), 1, fp);
             fread(&wav->AudioFormat, sizeof(short), 1, fp);
             fread(&wav->NumChannels, sizeof(short), 1, fp);
@@ -53,7 +55,7 @@ namespace realware
             // 2nd Subchunk
             fread(&wav->Subchunk2ID[0], sizeof(char), 4, fp);
             if (std::string((const char*)&wav->Subchunk2ID[0]) != std::string("data"))
-                std::cout << "Missing data header!" << std::endl;
+                Print("Error: missing data header!");
             fread(&wav->Subchunk2Size, sizeof(int), 1, fp);
 
             // Data
