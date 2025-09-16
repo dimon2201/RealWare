@@ -47,7 +47,6 @@ namespace realware
 
             sTextureAtlasTexture CalculateNormalizedArea(const sTextureAtlasTexture& area);
 
-            sTextureAtlasTexture* GetTexture(const std::string& id);
             sTexture* GetAtlas();
             inline types::usize GetWidth() const;
             inline types::usize GetHeight() const;

@@ -19,10 +19,8 @@ namespace realware
         {
         }
 
-        mTexture::mTexture(const cApplication* const app, const cRenderContext* const context) : _textures((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxTextureCount)
+        mTexture::mTexture(const cApplication* const app, const cRenderContext* const context) : _app((cApplication*)app), _textures((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxTextureCount)
         {
-            _app = (cApplication*)app;
-
             sApplicationDescriptor* desc = _app->GetDesc();
 
             _context = (cRenderContext*)context;
@@ -44,26 +42,11 @@ namespace realware
 
         sTextureAtlasTexture* mTexture::AddTexture(const std::string& id, const glm::vec2& size, const usize channels, const u8* data)
         {
-            usize width = size.x;
-            usize height = size.y;
+            const usize width = size.x;
+            const usize height = size.y;
 
             if (data == nullptr || channels < 3)
                 return nullptr;
-
-            if (channels == 3)
-            {
-                u8* const dataTemp = (u8* const)_app->GetMemoryPool()->Allocate(width * height * 4);
-
-                for (usize i = 0; i < width * height; i++)
-                {
-                    dataTemp[(i * 4)] = data[(i * 3)];
-                    dataTemp[(i * 4) + 1] = data[(i * 3) + 1];
-                    dataTemp[(i * 4) + 2] = data[(i * 3) + 2];
-                    dataTemp[(i * 4) + 3] = 255;
-                }
-
-                data = dataTemp;
-            }
 
             const auto& textures = _textures.GetObjects();
             for (usize layer = 0; layer < _atlas->Depth; layer++)
@@ -116,9 +99,6 @@ namespace realware
                             if (_atlas->Format == render::sTexture::eFormat::RGBA8_MIPS)
                                 _context->GenerateTextureMips(_atlas);
 
-                            if (channels == 3)
-                                _app->GetMemoryPool()->Free((void*)data);
-
                             sTextureAtlasTexture* newTex = _textures.Add(id, K_FALSE, offset, size);
                             *newTex = CalculateNormalizedArea(*newTex);
 
@@ -127,9 +107,6 @@ namespace realware
                     }
                 }
             }
-
-            if (channels == 3)
-                _app->GetMemoryPool()->Free((void*)data);
 
             return nullptr;
         }
@@ -140,7 +117,7 @@ namespace realware
             s32 height = 0;
             s32 channels = 0;
             u8* data = nullptr;
-            data = stbi_load(filename.data(), &width, &height, &channels, 4);
+            data = stbi_load(filename.c_str(), &width, &height, &channels, 4);
 
             return AddTexture(id, glm::vec2(width, height), (usize)channels, data);
         }

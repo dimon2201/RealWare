@@ -404,7 +404,7 @@ namespace realware
                             if (material->DiffuseTexture)
                             {
                                 sTextureAtlasTexture* frame = material->DiffuseTexture;
-                                mi.SetDiffuseTexture(_app->GetTextureManager()->CalculateNormalizedArea(*frame));
+                                mi.SetDiffuseTexture(*frame);
                             }
                             else
                             {
@@ -504,7 +504,7 @@ namespace realware
                             if (material->DiffuseTexture)
                             {
                                 sTextureAtlasTexture* frame = material->DiffuseTexture;
-                                mi.SetDiffuseTexture(_app->GetTextureManager()->CalculateNormalizedArea(*frame));
+                                mi.SetDiffuseTexture(*frame);
                             }
                             else
                             {
@@ -534,17 +534,13 @@ namespace realware
             _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
             _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
 
-            if (singleShader == nullptr)
-            {
-                _context->BindRenderPass(_opaque);
-                _context->SetShaderUniform(_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
-            }
-            else
-            {
-                _context->BindRenderPass(_opaque, singleShader);
-                _context->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
-            }
+            _context->BindRenderPass(_opaque, singleShader);
 
+            if (singleShader == nullptr)
+                _context->SetShaderUniform(_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            else
+                _context->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            
             _context->Draw(
                 geometry->IndexCount,
                 geometry->VertexOffset / (usize)geometry->Format,
@@ -586,7 +582,7 @@ namespace realware
                             if (material->DiffuseTexture != nullptr)
                             {
                                 sTextureAtlasTexture* frame = material->DiffuseTexture;
-                                mi.SetDiffuseTexture(_app->GetTextureManager()->CalculateNormalizedArea(*frame));
+                                mi.SetDiffuseTexture(*frame);
                             }
                             else
                             {

@@ -45,7 +45,7 @@ public:
         sRenderPass* opaqueRenderPass = render->GetOpaqueRenderPass();
         const glm::vec2 windowSize = GetWindowSize();
 
-        u8 customRenderPassTexture1Data[3 * 4] = {
+        u8 customRenderPassTexture1Data[3 * 2 * 2] = {
             255,
             0,
             0,
@@ -68,7 +68,7 @@ public:
             3,
             &customRenderPassTexture1Data[0]
         );
-        u8 customRenderPassTexture2Data[3 * 4] = {
+        u8 customRenderPassTexture2Data[3 * 2 * 2] = {
             255,
             255,
             255,
@@ -166,9 +166,6 @@ public:
             texture2,
             glm::vec4(1.0f, 0.0f, 0.0f, 0.5f),
             glm::vec4(1.0f)
-            ,Category::RENDER_PATH_TRANSPARENT,
-            "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_vertex.shader",
-            "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_fragment.shader"
         );
         
         // Text
@@ -247,17 +244,15 @@ public:
         _render->DrawGeometryOpaque(
             _triangleGeometry,
             gameObjects,
-            cameraObject,
-            _customRenderPass
+            cameraObject
         );
-        //_render->DrawGeometryTransparent(
-        //    _triangleGeometry,
-        //    gameObjects,
-        //    cameraObject,
-        //    _render->FindMaterial("Material2")->CustomShader
-        //);
-        //_render->CompositeTransparent();
-        //_render->DrawTexts(gameObjects);
+        _render->DrawGeometryTransparent(
+            _triangleGeometry,
+            gameObjects,
+            cameraObject
+        );
+        _render->CompositeTransparent();
+        _render->DrawTexts(gameObjects);
         _render->CompositeFinal();
     }
 

@@ -439,8 +439,7 @@ namespace realware
                 channelsGL = GL_RED;
                 formatComponentGL = GL_FLOAT;
             }
-            else if (texture->Format == sTexture::eFormat::RGBA8 ||
-                texture->Format == sTexture::eFormat::RGBA8_MIPS)
+            else if (texture->Format == sTexture::eFormat::RGBA8 || texture->Format == sTexture::eFormat::RGBA8_MIPS)
             {
                 formatGL = GL_RGBA8;
                 channelsGL = GL_RGBA;
@@ -468,6 +467,7 @@ namespace realware
             if (texture->Type == sTexture::eType::TEXTURE_2D)
             {
                 glBindTexture(GL_TEXTURE_2D, texture->Instance);
+
                 glTexImage2D(GL_TEXTURE_2D, 0, formatGL, texture->Width, texture->Height, 0, channelsGL, formatComponentGL, data);
                 if (texture->Format != sTexture::eFormat::DEPTH_STENCIL)
                 {
@@ -484,11 +484,13 @@ namespace realware
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 }
+
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
             else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
             {
                 glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
+
                 glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatGL, texture->Width, texture->Height, texture->Depth, 0, channelsGL, formatComponentGL, data);
                 
                 if (texture->Format == sTexture::eFormat::RGBA8_MIPS)
@@ -503,6 +505,7 @@ namespace realware
                 }
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
                 glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
             }
 
@@ -547,35 +550,42 @@ namespace realware
 
         void cOpenGLRenderContext::WriteTexture(sTexture* const texture, const glm::vec3& offset, const glm::vec2& size, const void* const data)
         {
-            GLenum formatComponentGL = GL_UNSIGNED_BYTE;
+            GLenum formatGL = GL_RGBA8;
             GLenum channelsGL = GL_RGBA;
+            GLenum formatComponentGL = GL_UNSIGNED_BYTE;
             if (texture->Format == sTexture::eFormat::R8)
             {
+                formatGL = GL_R8;
                 channelsGL = GL_RED;
                 formatComponentGL = GL_UNSIGNED_BYTE;
             }
             else if (texture->Format == sTexture::eFormat::R8F)
             {
+                formatGL = GL_R8;
                 channelsGL = GL_RED;
                 formatComponentGL = GL_FLOAT;
             }
-            else if (texture->Format == sTexture::eFormat::RGBA8)
+            else if (texture->Format == sTexture::eFormat::RGBA8 || texture->Format == sTexture::eFormat::RGBA8_MIPS)
             {
+                formatGL = GL_RGBA8;
                 channelsGL = GL_RGBA;
                 formatComponentGL = GL_UNSIGNED_BYTE;
             }
             else if (texture->Format == sTexture::eFormat::RGB16F)
             {
+                formatGL = GL_RGB16F;
                 channelsGL = GL_RGB;
                 formatComponentGL = GL_HALF_FLOAT;
             }
             else if (texture->Format == sTexture::eFormat::RGBA16F)
             {
+                formatGL = GL_RGBA16F;
                 channelsGL = GL_RGBA;
                 formatComponentGL = GL_HALF_FLOAT;
             }
             else if (texture->Format == sTexture::eFormat::DEPTH_STENCIL)
             {
+                formatGL = GL_DEPTH24_STENCIL8;
                 channelsGL = GL_DEPTH_STENCIL;
                 formatComponentGL = GL_UNSIGNED_INT_24_8;
             }
