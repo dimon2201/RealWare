@@ -17,7 +17,9 @@ namespace realware
             CAMERA_ANGLE_YAW = 8,
             CAMERA_ANGLE_ROLL = 9,
             PRIMITIVE_TRIANGLE = 10,
-            PRIMITIVE_QUAD = 11
+            PRIMITIVE_QUAD = 11,
+            RENDER_PATH_OPAQUE = 12,
+            RENDER_PATH_TRANSPARENT = 13
         };
     }
 }

@@ -11,6 +11,7 @@
 #include "texture_manager.hpp"
 #include "gameobject_manager.hpp"
 #include "font_manager.hpp"
+#include "filesystem_manager.hpp"
 #include "application.hpp"
 #include "memory_pool.hpp"
 
@@ -21,6 +22,7 @@ namespace realware
     using namespace app;
     using namespace game;
     using namespace font;
+    using namespace fs;
     using namespace utils;
 
     namespace render
@@ -122,7 +124,7 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetLightBuffer());
                 renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
                     "RENDER_PATH_OPAQUE",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
@@ -145,7 +147,7 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
                     "RENDER_PATH_TRANSPARENT",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
@@ -166,7 +168,7 @@ namespace realware
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
                     "RENDER_PATH_TEXT",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
@@ -184,7 +186,7 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("AccumulationTexture");
                 renderPassDesc.InputTextures.emplace_back(transparentRenderTarget->ColorAttachments[1]);
                 renderPassDesc.InputTextureNames.emplace_back("RevealageTexture");
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
                     "RENDER_PATH_TRANSPARENT_COMPOSITE",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
@@ -203,7 +205,7 @@ namespace realware
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputTextures.emplace_back(opaqueRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->LoadShader(
+                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
                     "RENDER_PATH_QUAD",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
@@ -231,9 +233,23 @@ namespace realware
             free(_instances);
         }
 
-        sMaterial* mRender::AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
+        sMaterial* mRender::AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, const Category& customShaderRenderPath, const std::string& customVertexFuncPath, const std::string& customFragmentFuncPath)
         {
-            return _materialsCPU.Add(id, diffuseTexture, diffuseColor, highlightColor);
+            sShader* customShader = nullptr;
+            if (customVertexFuncPath != "" || customFragmentFuncPath != "")
+            {
+                sFile* vertexFuncFile = _app->GetFileSystemManager()->CreateDataFile(customVertexFuncPath, K_TRUE);
+                sFile* fragmentFuncFile = _app->GetFileSystemManager()->CreateDataFile(customFragmentFuncPath, K_TRUE);
+                std::string vertexFunc = std::string((const char*)vertexFuncFile->Data);
+                std::string fragmentFunc = std::string((const char*)fragmentFuncFile->Data);
+
+                if (customShaderRenderPath == Category::RENDER_PATH_OPAQUE)
+                    customShader = _context->CreateShader(_opaque->Desc.Shader, vertexFunc, fragmentFunc);
+                else if (customShaderRenderPath == Category::RENDER_PATH_TRANSPARENT)
+                    customShader = _context->CreateShader(_transparent->Desc.Shader, vertexFunc, fragmentFunc);
+            }
+
+            return _materialsCPU.Add(id, diffuseTexture, diffuseColor, highlightColor, customShader);
         }
 
         sMaterial* mRender::FindMaterial(const std::string& id)
@@ -243,6 +259,10 @@ namespace realware
 
         void mRender::DeleteMaterial(const std::string& id)
         {
+            sMaterial* const material = _materialsCPU.Find(id);
+            if (material->CustomShader != nullptr)
+                _context->DestroyShader(material->CustomShader);
+
             _materialsCPU.Delete(id);
         }
 
@@ -347,7 +367,7 @@ namespace realware
             _context->WriteBuffer(_lightBuffer, 0, _lightsByteSize, _lights);*/
         }
 
-        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject)
+        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sShader* const singleShader)
         {
             usize instanceCount = 0;
             _instancesByteSize = 0;
@@ -361,10 +381,12 @@ namespace realware
                     if (it.GetVisible() == K_TRUE && it.GetOpaque() == K_TRUE)
                     {
                         sTransform transform(&it);
-                        sMaterial* material = it.GetMaterial();
                         transform.Transform();
 
                         s32 materialIndex = -1;
+
+                        sMaterial* material = it.GetMaterial();
+
                         auto it = _materialsMap->find(material);
                         if (it == _materialsMap->end())
                         {
@@ -390,7 +412,7 @@ namespace realware
                         {
                             materialIndex = it->second;
                         }
-
+                        
                         sRenderInstance ri(materialIndex, transform);
 
                         memcpy((void*)((usize)_instances + (usize)_instancesByteSize), &ri, sizeof(sRenderInstance));
@@ -404,10 +426,13 @@ namespace realware
             _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
             _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
 
-            _context->BindRenderPass(_opaque);
+            _context->BindRenderPass(_opaque, singleShader);
 
-            _context->SetShaderUniform(_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
-
+            if (singleShader != nullptr)
+                _context->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            else
+                _context->SetShaderUniform(_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            
             _context->Draw(
                 geometry->IndexCount,
                 geometry->VertexOffset / (usize)geometry->Format,
@@ -418,7 +443,7 @@ namespace realware
             _context->UnbindRenderPass(_opaque);
         }
 
-        void mRender::DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject)
+        void mRender::DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sShader* const singleShader)
         {
             usize instanceCount = 0;
             _instancesByteSize = 0;
@@ -434,10 +459,12 @@ namespace realware
                     if (isVisible == K_TRUE && isOpaque == K_FALSE)
                     {
                         sTransform transform(&it);
-                        sMaterial* material = it.GetMaterial();
                         transform.Transform();
 
+                        sMaterial* material = it.GetMaterial();
+
                         s32 materialIndex = -1;
+
                         auto it = _materialsMap->find(material);
                         if (it == _materialsMap->end())
                         {
@@ -477,9 +504,12 @@ namespace realware
             _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
             _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
 
-            _context->BindRenderPass(_transparent);
+            _context->BindRenderPass(_transparent, singleShader);
 
-            _context->SetShaderUniform(_transparent->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            if (singleShader != nullptr)
+                _context->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            else
+                _context->SetShaderUniform(_transparent->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
 
             _context->Draw(
                 geometry->IndexCount,

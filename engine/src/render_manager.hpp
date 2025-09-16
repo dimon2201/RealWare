@@ -31,6 +31,7 @@ namespace realware
         struct sVertexArray;
         struct sRenderTarget;
         struct sRenderPass;
+        struct sShader;
         class cRenderContext;
 
         using index = types::u32;
@@ -100,12 +101,12 @@ namespace realware
 
         struct sMaterial : public utils::sIdVecObject
         {
-        public:
             sMaterial() = default;
-            explicit sMaterial(const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor)
-                : DiffuseTexture((render::sTextureAtlasTexture*)diffuseTexture), DiffuseColor(diffuseColor), HighlightColor(highlightColor) {}
+            explicit sMaterial(const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, const sShader* const customShader)
+                : DiffuseTexture((render::sTextureAtlasTexture*)diffuseTexture), DiffuseColor(diffuseColor), HighlightColor(highlightColor), CustomShader((sShader*)customShader) {}
             ~sMaterial() = default;
 
+            render::sShader* CustomShader = nullptr;
             render::sTextureAtlasTexture* DiffuseTexture = nullptr;
             glm::vec4 DiffuseColor = glm::vec4(1.0f);
             glm::vec4 HighlightColor = glm::vec4(1.0f);
@@ -159,7 +160,7 @@ namespace realware
             explicit mRender(const app::cApplication* const app, const cRenderContext* const context);
             ~mRender();
 
-            sMaterial* AddMaterial(const std::string& id, const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor);
+            sMaterial* AddMaterial(const std::string& id, const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, const game::Category& customShaderRenderPath = game::Category::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
             sMaterial* FindMaterial(const std::string& id);
             void DeleteMaterial(const std::string& id);
             sVertexArray* CreateDefaultVertexArray();
@@ -173,8 +174,8 @@ namespace realware
             
             void UpdateLights();
 
-            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject);
-            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject);
+            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, render::sShader* const singleShader = nullptr);
+            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, render::sShader* const singleShader = nullptr);
             void DrawTexts(const std::vector<game::cGameObject>& objects);
             
             void CompositeTransparent();

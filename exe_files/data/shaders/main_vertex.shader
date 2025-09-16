@@ -52,6 +52,24 @@ layout(std430, binding = 0) buffer TextInstanceBuffer { TextInstance textInstanc
 #endif
 layout(std430, binding = 1) buffer MaterialBuffer { Material materials[1024]; };
 
+#if defined(RENDER_PATH_OPAQUE) || defined(RENDER_PATH_TRANSPARENT)
+void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
+{
+	if (_use2D == 0) {
+		_glPosition = ViewProjection * _instance.World * vec4(_positionLocal, 1.0);
+	} else {
+		_glPosition = _instance.World * vec4(_positionLocal, 1.0);
+	}
+}
+
+void Vertex_Passthrough(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
+{
+	Vertex_Transform(_positionLocal, _instance, _use2D, _glPosition);
+}
+
+void Vertex_Func(in vec3 _positionLocal, in vec3 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}
+#endif
+
 void main()
 {
 	#if defined(RENDER_PATH_OPAQUE) || defined(RENDER_PATH_TRANSPARENT)
@@ -63,11 +81,8 @@ void main()
 	Texcoord.xy += material.DiffuseTextureInfo.xy;
 	DiffuseColor = material.DiffuseColor;
 
-	if (instance.Use2D == 0) {
-		gl_Position = ViewProjection * instance.World * vec4(InPositionLocal, 1.0);
-	} else {
-		gl_Position = instance.World * vec4(InPositionLocal, 1.0);
-	}
+	Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);
+	Vertex_Func(InPositionLocal, Texcoord, InNormal, gl_InstanceID, instance, material, instance.Use2D, gl_Position);
 	#endif
 	
 	#if defined(RENDER_PATH_QUAD) || defined(RENDER_PATH_TRANSPARENT_COMPOSITE)

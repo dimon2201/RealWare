@@ -31,25 +31,32 @@ uniform sampler2D RevealageTexture;
 uniform sampler2D FontAtlas;
 #endif
 
+#if defined(RENDER_PATH_OPAQUE) || defined(RENDER_PATH_TRANSPARENT)
+void Fragment_Passthrough(in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor)
+{
+	_fragColor = _textureColor * _materialDiffuseColor;
+}
+
+void Fragment_Func(in vec3 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}
+#endif
+
 void main()
 {
 	#if defined(RENDER_PATH_OPAQUE)
-	FragColor = texture(TextureAtlas, Texcoord.xyz);
-	if (Texcoord.z != -1.0) {
-		FragColor *= DiffuseColor;
-	} else {
-		FragColor = DiffuseColor;
-	}
+	vec4 textureColor = texture(TextureAtlas, Texcoord);
+	vec4 fragColor = vec4(0.0);
+	
+	Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
+	Fragment_Func(Texcoord, textureColor, DiffuseColor, fragColor);
+	FragColor = fragColor;
 	#endif
 	
 	#if defined(RENDER_PATH_TRANSPARENT)
-	vec4 fragColor = texture(TextureAtlas, Texcoord);
-
-	if (Texcoord.z != -1.0) {
-	   fragColor *= DiffuseColor;
-	} else {
-	   fragColor = DiffuseColor;
-	}
+	vec4 textureColor = texture(TextureAtlas, Texcoord);
+	vec4 fragColor = vec4(0.0);
+	
+	Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
+	Fragment_Func(Texcoord, textureColor, DiffuseColor, fragColor);
 
 	float weight = clamp(pow(min(1.0, fragColor.a * 10.0) + 0.01, 3.0) * 1e8 *
 	   pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <string>
 #include <lodepng.h>
 #include <GL/glew.h>
 #include "render_context.hpp"
@@ -235,22 +236,22 @@ namespace realware
             glUseProgram(0);
         }
 
-        sShader* cOpenGLRenderContext::LoadShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath)
+        sShader* cOpenGLRenderContext::CreateShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath)
         {
             sShader* pShader = (sShader*)_app->GetMemoryPool()->Allocate(sizeof(sShader));
             sShader* shader = new (pShader) sShader();
 
             std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
-            std::string appendPathOpaqueVertexStr = appendStr;
-            std::string appendPathOpaqueFragmentStr = appendStr;
+            std::string appendPathVertexStr = appendStr;
+            std::string appendPathFragmentStr = appendStr;
 
             fs::sFile* vertexShaderFile = _app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
-            std::string vertexStr = appendPathOpaqueVertexStr.append(std::string((const char*)vertexShaderFile->Data));
-            const char* vertex = vertexStr.c_str();
+            shader->Vertex = appendPathVertexStr.append(std::string((const char*)vertexShaderFile->Data));
+            const char* vertex = shader->Vertex.c_str();
 
             fs::sFile* fragmentShaderFile = _app->GetFileSystemManager()->CreateDataFile(fragmentPath, K_TRUE);
-            std::string fragmentStr = appendPathOpaqueFragmentStr.append(std::string((const char*)fragmentShaderFile->Data));
-            const char* fragment = fragmentStr.c_str();
+            shader->Fragment = appendPathFragmentStr.append(std::string((const char*)fragmentShaderFile->Data));
+            const char* fragment = shader->Fragment.c_str();
 
             GLint vertexByteSize = strlen(vertex);
             GLint fragmentByteSize = strlen(fragment);
@@ -296,6 +297,90 @@ namespace realware
             _app->GetFileSystemManager()->DestroyDataFile(fragmentShaderFile);
 
             return shader;
+        }
+
+        sShader* cOpenGLRenderContext::CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc)
+        {
+            sShader* pShader = (sShader*)_app->GetMemoryPool()->Allocate(sizeof(sShader));
+            sShader* shader = new (pShader) sShader();
+
+            const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec3 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
+            const std::string vertexFuncPassthroughCall = "Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);";
+            const std::string fragmentFuncDefinition = "void Fragment_Func(in vec3 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";
+            const std::string fragmentFuncPassthroughCall = "Fragment_Passthrough(textureColor, DiffuseColor, fragColor);";
+
+            shader->Vertex = baseShader->Vertex;
+            shader->Fragment = baseShader->Fragment;
+
+            size_t vertexFuncDefinitionPos = shader->Vertex.find(vertexFuncDefinition);
+            if (vertexFuncDefinitionPos != std::string::npos)
+                shader->Vertex.replace(vertexFuncDefinitionPos, vertexFuncDefinition.length(), vertexFunc);
+            size_t vertexFuncPasstroughCallPos = shader->Vertex.find(vertexFuncPassthroughCall);
+            if (vertexFuncPasstroughCallPos != std::string::npos)
+                shader->Vertex.replace(vertexFuncPasstroughCallPos, vertexFuncPassthroughCall.length(), "");
+
+            size_t fragmentFuncDefinitionPos = shader->Fragment.find(fragmentFuncDefinition);
+            if (fragmentFuncDefinitionPos != std::string::npos)
+                shader->Fragment.replace(fragmentFuncDefinitionPos, fragmentFuncDefinition.length(), fragmentFunc);
+            size_t fragmentFuncPassthroughPos = shader->Fragment.find(fragmentFuncPassthroughCall);
+            if (fragmentFuncPassthroughPos != std::string::npos)
+                shader->Fragment.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
+
+            const char* vertex = shader->Vertex.c_str();
+            const char* fragment = shader->Fragment.c_str();
+
+            GLint vertexByteSize = strlen(vertex);
+            GLint fragmentByteSize = strlen(fragment);
+
+            shader->Instance = glCreateProgram();
+            auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
+            auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+            glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
+            glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
+            glCompileShader(vertexShader);
+            glCompileShader(fragmentShader);
+            glAttachShader(shader->Instance, vertexShader);
+            glAttachShader(shader->Instance, fragmentShader);
+            glLinkProgram(shader->Instance);
+
+            GLint success;
+            glGetProgramiv((GLuint)shader->Instance, GL_LINK_STATUS, &success);
+            if (!success)
+                std::cout << "Error: Linking shader!" << std::endl;
+            if (!glIsProgram((GLuint)shader->Instance))
+                std::cout << "Error: Invalid shader!" << std::endl;
+
+            GLint logBufferByteSize = 0;
+            char logBuffer[1024] = {};
+            glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
+            if (logBufferByteSize > 0)
+            {
+                std::cout << "Vertex shader error" << std::endl;
+                std::cout << logBuffer << std::endl;
+            }
+            logBufferByteSize = 0;
+            glGetShaderInfoLog(fragmentShader, 1024, &logBufferByteSize, &logBuffer[0]);
+            if (logBufferByteSize > 0)
+            {
+                std::cout << "Fragment shader error" << std::endl;
+                std::cout << logBuffer << std::endl;
+            }
+
+            glDeleteShader(vertexShader);
+            glDeleteShader(fragmentShader);
+
+            return shader;
+        }
+
+        void cOpenGLRenderContext::DestroyShader(sShader* shader)
+        {
+            glDeleteProgram(shader->Instance);
+
+            if (shader != nullptr)
+            {
+                shader->~sShader();
+                _app->GetMemoryPool()->Free(shader);
+            }
         }
 
         void cOpenGLRenderContext::SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix)
@@ -685,9 +770,15 @@ namespace realware
             return renderPass;
         }
 
-        void cOpenGLRenderContext::BindRenderPass(const sRenderPass* const renderPass)
+        void cOpenGLRenderContext::BindRenderPass(const sRenderPass* const renderPass, const sShader* const customShader)
         {
-            BindShader(renderPass->Desc.Shader);
+            sShader* shader = nullptr;
+            if (customShader == nullptr)
+                shader = renderPass->Desc.Shader;
+            else
+                shader = (sShader*)customShader;
+
+            BindShader(shader);
             BindVertexArray(renderPass->Desc.VertexArray);
             if (renderPass->Desc.RenderTarget != nullptr)
                 BindRenderTarget(renderPass->Desc.RenderTarget);
@@ -699,7 +790,7 @@ namespace realware
             BindDepthMode(renderPass->Desc.DepthMode);
             BindBlendMode(renderPass->Desc.BlendMode);
             for (usize i = 0; i < renderPass->Desc.InputTextures.size(); i++)
-                BindTexture(renderPass->Desc.Shader, renderPass->Desc.InputTextureNames[i].c_str(), renderPass->Desc.InputTextures[i], i);
+                BindTexture(shader, renderPass->Desc.InputTextureNames[i].c_str(), renderPass->Desc.InputTextures[i], i);
         }
 
         void cOpenGLRenderContext::UnbindRenderPass(const sRenderPass* const renderPass)

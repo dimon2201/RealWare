@@ -43,6 +43,8 @@ namespace realware
 
         struct sShader : public sGPUResource
         {
+            std::string Vertex = "";
+            std::string Fragment = "";
         };
 
         struct sTexture : public sGPUResource
@@ -141,6 +143,9 @@ namespace realware
             virtual void DestroyVertexArray(sVertexArray* vertexArray) = 0;
             virtual void BindShader(const sShader* const shader) = 0;
             virtual void UnbindShader() = 0;
+            virtual sShader* CreateShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath) = 0;
+            virtual sShader* CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc) = 0;
+            virtual void DestroyShader(sShader* shader) = 0;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix) = 0;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const types::usize count, const types::f32* const values) = 0;
             virtual sTexture* CreateTexture(const types::usize width, const types::usize height, const types::usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data) = 0;
@@ -159,7 +164,7 @@ namespace realware
             virtual void UnbindRenderTarget() = 0;
             virtual void DestroyRenderTarget(sRenderTarget* renderTarget) = 0;
             virtual sRenderPass* CreateRenderPass(const sRenderPass::sDescriptor& descriptor) = 0;
-            virtual void BindRenderPass(const sRenderPass* const renderPass) = 0;
+            virtual void BindRenderPass(const sRenderPass* const renderPass, const sShader* const customShader = nullptr) = 0;
             virtual void UnbindRenderPass(const sRenderPass* const renderPass) = 0;
             virtual void DestroyRenderPass(sRenderPass* renderPass) = 0;
             virtual void BindDefaultInputLayout() = 0;
@@ -194,7 +199,9 @@ namespace realware
             virtual void DestroyVertexArray(sVertexArray* vertexArray) override final;
             virtual void BindShader(const sShader* const shader) override final;
             virtual void UnbindShader() override final;
-            sShader* cOpenGLRenderContext::LoadShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath);
+            virtual sShader* CreateShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath) override final;
+            virtual sShader* CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc) override final;
+            virtual void DestroyShader(sShader* shader) override final;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix) override final;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const types::usize count, const types::f32* const values) override final;
             virtual sTexture* CreateTexture(const types::usize width, const types::usize height, const types::usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data) override final;
@@ -213,7 +220,7 @@ namespace realware
             virtual void UnbindRenderTarget() override final;
             virtual void DestroyRenderTarget(sRenderTarget* renderTarget) override final;
             virtual sRenderPass* CreateRenderPass(const sRenderPass::sDescriptor& descriptor) override final;
-            virtual void BindRenderPass(const sRenderPass* const renderPass) override final;
+            virtual void BindRenderPass(const sRenderPass* const renderPass, const sShader* const customShader = nullptr) override final;
             virtual void UnbindRenderPass(const sRenderPass* const renderPass) override final;
             virtual void DestroyRenderPass(sRenderPass* renderPass) override final;
             virtual void BindDefaultInputLayout() override final;
