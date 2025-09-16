@@ -128,6 +128,7 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetLightBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
                 renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
@@ -151,6 +152,7 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
                 renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
@@ -174,6 +176,7 @@ namespace realware
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
                 renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
                     "RENDER_PATH_TEXT",
                     "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
