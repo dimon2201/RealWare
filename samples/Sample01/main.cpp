@@ -45,34 +45,35 @@ public:
         sRenderPass* opaqueRenderPass = render->GetOpaqueRenderPass();
         const glm::vec2 windowSize = GetWindowSize();
 
-        u8 customRenderPassTexture1Data[3 * 2 * 2] = {
+        u8 customRenderPassTexture1Data[4 * 2 * 2] = {
             255,
-            0,
-            0,
-
-            0,
-            255,
-            0,
-
             0,
             0,
             255,
 
             255,
+            0,
+            0,
             255,
+
+            255,
+            0,
+            0,
+            255,
+
+            255,
+            0,
+            0,
             255
         };
         sTextureAtlasTexture* customRenderPassTexture1 = texture->AddTexture(
             "CustomRenderPassTexture1",
             glm::vec2(2, 2),
-            3,
+            4,
             &customRenderPassTexture1Data[0]
         );
-        u8 customRenderPassTexture2Data[3 * 2 * 2] = {
+        u8 customRenderPassTexture2Data[4 * 2 * 2] = {
             255,
-            255,
-            255,
-
             255,
             255,
             255,
@@ -80,7 +81,14 @@ public:
             255,
             255,
             255,
+            255,
 
+            255,
+            255,
+            255,
+            255,
+
+            255,
             255,
             255,
             255
@@ -88,7 +96,7 @@ public:
         sTextureAtlasTexture* customRenderPassTexture2 = texture->AddTexture(
             "CustomRenderPassTexture2",
             glm::vec2(2, 2),
-            3,
+            4,
             &customRenderPassTexture2Data[0]
         );
 
@@ -113,11 +121,11 @@ public:
         renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
         renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture1);
         renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture2);
-        renderPassDesc.Shader = renderContext->CreateShader(
-            opaqueRenderPass->Desc.Shader,
-            vertexFunc,
-            fragmentFunc
-        );
+        renderPassDesc.InputTextureAtlasTextureNames.emplace_back("MyRedTexture");
+        renderPassDesc.InputTextureAtlasTextureNames.emplace_back("MyWhiteTexture");
+        renderPassDesc.ShaderBase = opaqueRenderPass->Desc.Shader;
+        renderPassDesc.ShaderVertexFunc = vertexFunc;
+        renderPassDesc.ShaderFragmentFunc = fragmentFunc;
         renderPassDesc.RenderTarget = opaqueRenderPass->Desc.RenderTarget;
         renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize.x, windowSize.y);
         renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
@@ -246,13 +254,13 @@ public:
             gameObjects,
             cameraObject
         );
-        _render->DrawGeometryTransparent(
-            _triangleGeometry,
-            gameObjects,
-            cameraObject
-        );
-        _render->CompositeTransparent();
-        _render->DrawTexts(gameObjects);
+        //_render->DrawGeometryTransparent(
+        //    _triangleGeometry,
+        //    gameObjects,
+        //    cameraObject
+        //);
+        //_render->CompositeTransparent();
+        //_render->DrawTexts(gameObjects);
         _render->CompositeFinal();
     }
 

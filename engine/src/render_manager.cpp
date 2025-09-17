@@ -131,11 +131,10 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
                 renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
-                    "RENDER_PATH_OPAQUE",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
+                renderPassDesc.ShaderBase = nullptr;
+                renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_OPAQUE;
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
@@ -155,11 +154,10 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
                 renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
-                    "RENDER_PATH_TRANSPARENT",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
+                renderPassDesc.ShaderBase = nullptr;
+                renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_TRANSPARENT;
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = _transparentRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
@@ -177,11 +175,10 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
-                    "RENDER_PATH_TEXT",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
+                renderPassDesc.ShaderBase = nullptr;
+                renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_TEXT;
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
@@ -195,11 +192,10 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("AccumulationTexture");
                 renderPassDesc.InputTextures.emplace_back(_transparentRenderTarget->ColorAttachments[1]);
                 renderPassDesc.InputTextureNames.emplace_back("RevealageTexture");
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
-                    "RENDER_PATH_TRANSPARENT_COMPOSITE",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
+                renderPassDesc.ShaderBase = nullptr;
+                renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_TRANSPARENT_COMPOSITE;
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
@@ -214,11 +210,10 @@ namespace realware
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
                 renderPassDesc.InputTextures.emplace_back(_opaqueRenderTarget->ColorAttachments[0]);
                 renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
-                renderPassDesc.Shader = ((cOpenGLRenderContext*)context)->CreateShader(
-                    "RENDER_PATH_QUAD",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader",
-                    "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader"
-                );
+                renderPassDesc.ShaderBase = nullptr;
+                renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_QUAD;
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = nullptr;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_FALSE;

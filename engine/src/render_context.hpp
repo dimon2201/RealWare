@@ -45,6 +45,15 @@ namespace realware
 
         struct sShader : public sGPUResource
         {
+            struct sDefinePair
+            {
+                sDefinePair(const std::string& name, const types::usize index) : Name(name), Index(index) {}
+                ~sDefinePair() = default;
+
+                std::string Name = "";
+                types::usize Index = 0;
+            };
+
             std::string Vertex = "";
             std::string Fragment = "";
         };
@@ -117,7 +126,14 @@ namespace realware
                 std::vector<sTexture*> InputTextures = {};
                 std::vector<std::string> InputTextureNames = {};
                 std::vector<sTextureAtlasTexture*> InputTextureAtlasTextures = {};
+                std::vector<std::string> InputTextureAtlasTextureNames = {};
                 sShader* Shader = nullptr;
+                sShader* ShaderBase = nullptr;
+                game::Category ShaderRenderPath = game::Category::RENDER_PATH_OPAQUE;
+                std::string ShaderVertexPath = "";
+                std::string ShaderFragmentPath = "";
+                std::string ShaderVertexFunc = "";
+                std::string ShaderFragmentFunc = "";
                 sRenderTarget* RenderTarget = nullptr;
                 sDepthMode DepthMode = {};
                 sBlendMode BlendMode = {};
@@ -146,8 +162,9 @@ namespace realware
             virtual void DestroyVertexArray(sVertexArray* vertexArray) = 0;
             virtual void BindShader(const sShader* const shader) = 0;
             virtual void UnbindShader() = 0;
-            virtual sShader* CreateShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath) = 0;
-            virtual sShader* CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc) = 0;
+            virtual sShader* CreateShader(const game::Category& renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<sShader::sDefinePair>& definePairs = {}) = 0;
+            virtual sShader* CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<sShader::sDefinePair>& definePairs = {}) = 0;
+            virtual void DefineInShader(sShader* const shader, const std::vector<sShader::sDefinePair>& definePairs) = 0;
             virtual void DestroyShader(sShader* shader) = 0;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix) = 0;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const types::usize count, const types::f32* const values) = 0;
@@ -202,8 +219,9 @@ namespace realware
             virtual void DestroyVertexArray(sVertexArray* vertexArray) override final;
             virtual void BindShader(const sShader* const shader) override final;
             virtual void UnbindShader() override final;
-            virtual sShader* CreateShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath) override final;
-            virtual sShader* CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc) override final;
+            virtual sShader* CreateShader(const game::Category& renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<sShader::sDefinePair>& definePairs = {}) override final;
+            virtual sShader* CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<sShader::sDefinePair>& definePairs = {}) override final;
+            virtual void DefineInShader(sShader* const shader, const std::vector<sShader::sDefinePair>& definePairs) override final;
             virtual void DestroyShader(sShader* shader) override final;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix) override final;
             virtual void SetShaderUniform(const sShader* const shader, const std::string& name, const types::usize count, const types::f32* const values) override final;

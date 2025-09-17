@@ -4,6 +4,7 @@
 #include "texture_manager.hpp"
 #include "render_context.hpp"
 #include "memory_pool.hpp"
+#include "log.hpp"
 
 using namespace types;
 
@@ -11,6 +12,7 @@ namespace realware
 {
     using namespace app;
     using namespace game;
+    using namespace log;
     using namespace utils;
 
     namespace render
@@ -45,8 +47,12 @@ namespace realware
             const usize width = size.x;
             const usize height = size.y;
 
-            if (data == nullptr || channels < 3)
+            if (data == nullptr || channels != 4)
+            {
+                Print("Error: you can only create texture with 4 channels in RGBA format!");
+
                 return nullptr;
+            }
 
             const auto& textures = _textures.GetObjects();
             for (usize layer = 0; layer < _atlas->Depth; layer++)
@@ -113,13 +119,15 @@ namespace realware
 
         sTextureAtlasTexture* mTexture::AddTexture(const std::string& id, const std::string& filename)
         {
+            const usize channelsRequired = 4;
+
             s32 width = 0;
             s32 height = 0;
             s32 channels = 0;
             u8* data = nullptr;
-            data = stbi_load(filename.c_str(), &width, &height, &channels, 4);
+            data = stbi_load(filename.c_str(), &width, &height, &channels, channelsRequired);
 
-            return AddTexture(id, glm::vec2(width, height), (usize)channels, data);
+            return AddTexture(id, glm::vec2(width, height), channelsRequired, data);
         }
 
         sTextureAtlasTexture* mTexture::FindTexture(const std::string& id)

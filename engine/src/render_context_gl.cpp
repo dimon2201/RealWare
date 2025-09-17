@@ -18,6 +18,8 @@ namespace realware
     using namespace app;
     using namespace game;
     using namespace log;
+    using namespace game;
+    using namespace log;
     using namespace utils;
 
     namespace render
@@ -251,26 +253,56 @@ namespace realware
             glUseProgram(0);
         }
 
-        sShader* cOpenGLRenderContext::CreateShader(const std::string& header, const std::string& vertexPath, const std::string& fragmentPath)
+        sShader* cOpenGLRenderContext::CreateShader(const Category& renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<sShader::sDefinePair>& definePairs)
         {
             sShader* pShader = (sShader*)_app->GetMemoryPool()->Allocate(sizeof(sShader));
             sShader* shader = new (pShader) sShader();
 
+            std::string header = "";
+            switch (renderPath)
+            {
+                case Category::RENDER_PATH_NONE:
+                    Print("Error: invalid 'RENDER_PATH_NONE' for shaders '" + vertexPath + "' and '" + fragmentPath + "'!");
+                    return nullptr;
+
+                case Category::RENDER_PATH_OPAQUE:
+                    header = "RENDER_PATH_OPAQUE";
+                    break;
+
+                case Category::RENDER_PATH_TRANSPARENT:
+                    header = "RENDER_PATH_OPAQUE";
+                    break;
+
+                case Category::RENDER_PATH_TEXT:
+                    header = "RENDER_PATH_TEXT";
+                    break;
+
+                case Category::RENDER_PATH_TRANSPARENT_COMPOSITE:
+                    header = "RENDER_PATH_TRANSPARENT_COMPOSITE";
+                    break;
+
+                case Category::RENDER_PATH_QUAD:
+                    header = "RENDER_PATH_QUAD";
+                    break;
+            }
+
             std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
-            std::string appendPathVertexStr = appendStr;
-            std::string appendPathFragmentStr = appendStr;
 
             fs::sFile* vertexShaderFile = _app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
-            shader->Vertex = CleanShaderSource(appendPathVertexStr.append(std::string((const char*)vertexShaderFile->Data)));
-            const char* vertex = shader->Vertex.c_str();
-
+            shader->Vertex = CleanShaderSource(std::string((const char*)vertexShaderFile->Data));
             fs::sFile* fragmentShaderFile = _app->GetFileSystemManager()->CreateDataFile(fragmentPath, K_TRUE);
-            shader->Fragment = CleanShaderSource(appendPathFragmentStr.append(std::string((const char*)fragmentShaderFile->Data)));
+            shader->Fragment = CleanShaderSource(std::string((const char*)fragmentShaderFile->Data));
+            
+            DefineInShader(shader, definePairs);
+
+            shader->Vertex = appendStr + shader->Vertex;
+            shader->Fragment = appendStr + shader->Fragment;
+
+            const char* vertex = shader->Vertex.c_str();
             const char* fragment = shader->Fragment.c_str();
 
             GLint vertexByteSize = strlen(vertex);
             GLint fragmentByteSize = strlen(fragment);
-
             shader->Instance = glCreateProgram();
             auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
             auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -314,7 +346,7 @@ namespace realware
             return shader;
         }
 
-        sShader* cOpenGLRenderContext::CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc)
+        sShader* cOpenGLRenderContext::CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<sShader::sDefinePair>& definePairs)
         {
             sShader* pShader = (sShader*)_app->GetMemoryPool()->Allocate(sizeof(sShader));
             sShader* shader = new (pShader) sShader();
@@ -344,12 +376,22 @@ namespace realware
             shader->Vertex = CleanShaderSource(shader->Vertex);
             shader->Fragment = CleanShaderSource(shader->Fragment);
 
+            DefineInShader(shader, definePairs);
+
+            size_t vertexVersionPos = shader->Vertex.find("#version 430");
+            if (vertexVersionPos != std::string::npos)
+                shader->Vertex.replace(vertexVersionPos, std::string("#version 430").length(), "");
+            size_t fragmentVersionPos = shader->Fragment.find("#version 430");
+            if (fragmentVersionPos != std::string::npos)
+                shader->Fragment.replace(fragmentVersionPos, std::string("#version 430").length(), "");
+
+            shader->Vertex = "#version 430\n\n" + shader->Vertex;
+            shader->Fragment = "#version 430\n\n" + shader->Fragment;
+
             const char* vertex = shader->Vertex.c_str();
             const char* fragment = shader->Fragment.c_str();
-
             GLint vertexByteSize = strlen(vertex);
             GLint fragmentByteSize = strlen(fragment);
-
             shader->Instance = glCreateProgram();
             auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
             auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -388,6 +430,19 @@ namespace realware
             glDeleteShader(fragmentShader);
 
             return shader;
+        }
+
+        void cOpenGLRenderContext::DefineInShader(sShader* const shader, const std::vector<sShader::sDefinePair>& definePairs)
+        {
+            if (!definePairs.empty())
+            {
+                std::string defineStr = "";
+                for (const auto& define : definePairs)
+                    defineStr += "#define " + define.Name + " " + std::to_string(define.Index) + "\n";
+
+                shader->Vertex = defineStr + shader->Vertex;
+                shader->Fragment = defineStr + shader->Fragment;
+            }
         }
 
         void cOpenGLRenderContext::DestroyShader(sShader* shader)
@@ -775,10 +830,41 @@ namespace realware
         {
             sRenderPass* pRenderPass = (sRenderPass*)_app->GetMemoryPool()->Allocate(sizeof(sRenderPass));
             sRenderPass* renderPass = new (pRenderPass) sRenderPass();
-
             memset(renderPass, 0, sizeof(sRenderPass));
-
             renderPass->Desc = descriptor;
+
+            std::vector<sShader::sDefinePair> definePairs = {};
+
+            if (renderPass->Desc.InputTextureAtlasTextures.size() != renderPass->Desc.InputTextureAtlasTextureNames.size())
+            {
+                Print("Error: mismatch of render pass input texture atlas texture array and input texture atlas texture name array!");
+                return nullptr;
+            }
+            for (usize i = 0; i < renderPass->Desc.InputTextureAtlasTextures.size(); i++)
+            {
+                const usize textureAtlasTextureIndex = i;
+                const std::string& textureAtlasTextureName = renderPass->Desc.InputTextureAtlasTextureNames[i];
+                definePairs.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
+            }
+
+            if (renderPass->Desc.ShaderBase == nullptr)
+            {
+                renderPass->Desc.Shader = CreateShader(
+                    renderPass->Desc.ShaderRenderPath,
+                    renderPass->Desc.ShaderVertexPath,
+                    renderPass->Desc.ShaderFragmentPath,
+                    definePairs
+                );
+            }
+            else
+            {
+                renderPass->Desc.Shader = CreateShader(
+                    renderPass->Desc.ShaderBase,
+                    renderPass->Desc.ShaderVertexFunc,
+                    renderPass->Desc.ShaderFragmentFunc,
+                    definePairs
+                );
+            }
 
             renderPass->Desc.VertexArray = CreateVertexArray();
             BindVertexArray(renderPass->Desc.VertexArray);

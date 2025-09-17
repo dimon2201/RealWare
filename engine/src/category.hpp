@@ -18,8 +18,12 @@ namespace realware
             CAMERA_ANGLE_ROLL = 9,
             PRIMITIVE_TRIANGLE = 10,
             PRIMITIVE_QUAD = 11,
-            RENDER_PATH_OPAQUE = 12,
-            RENDER_PATH_TRANSPARENT = 13
+            RENDER_PATH_NONE = 12,
+            RENDER_PATH_OPAQUE = 13,
+            RENDER_PATH_TRANSPARENT = 14,
+            RENDER_PATH_TEXT = 15,
+            RENDER_PATH_TRANSPARENT_COMPOSITE = 16,
+            RENDER_PATH_QUAD = 17
         };
     }
 }
