@@ -7,12 +7,20 @@ layout(location = 0) out vec4 Accumulation;
 layout(location = 1) out float Revealage;
 #endif
 
-in vec3 Texcoord;
+in vec3 TexcoordAtlas;
+in vec2 TexcoordOrig;
 flat in vec4 DiffuseColor;
 #if defined(RENDER_PATH_TEXT)
 flat in vec4 GlyphInfo;
 flat in vec4 GlyphAtlasInfos;
 #endif
+
+struct TextureAtlasTexture
+{
+	vec4 TextureInfo;
+	float TextureLayerInfo;
+};
+layout(std430, binding = 3) buffer TextureAtlasTexturesBuffer { TextureAtlasTexture textureAtlasTextures[1024]; };
 
 #if defined(RENDER_PATH_OPAQUE) || defined(RENDER_PATH_TRANSPARENT)
 uniform sampler2DArray TextureAtlas;
@@ -37,26 +45,26 @@ void Fragment_Passthrough(in vec4 _textureColor, in vec4 _materialDiffuseColor, 
 	_fragColor = _textureColor * _materialDiffuseColor;
 }
 
-void Fragment_Func(in vec3 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}
+void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}
 #endif
 
 void main()
 {
 	#if defined(RENDER_PATH_OPAQUE)
-	vec4 textureColor = texture(TextureAtlas, Texcoord);
+	vec4 textureColor = texture(TextureAtlas, TexcoordAtlas);
 	vec4 fragColor = vec4(0.0);
 	
 	Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
-	Fragment_Func(Texcoord, textureColor, DiffuseColor, fragColor);
+	Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
 	FragColor = fragColor;
 	#endif
 	
 	#if defined(RENDER_PATH_TRANSPARENT)
-	vec4 textureColor = texture(TextureAtlas, Texcoord);
+	vec4 textureColor = texture(TextureAtlas, TexcoordAtlas);
 	vec4 fragColor = vec4(0.0);
 	
 	Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
-	Fragment_Func(Texcoord, textureColor, DiffuseColor, fragColor);
+	Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
 
 	float weight = clamp(pow(min(1.0, fragColor.a * 10.0) + 0.01, 3.0) * 1e8 *
 	   pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
@@ -67,20 +75,20 @@ void main()
 	#if defined(RENDER_PATH_TRANSPARENT_COMPOSITE)
 	vec2 size = vec2(textureSize(AccumulationTexture, 0));
 
-	vec4 accumulation = texelFetch(AccumulationTexture, ivec2(Texcoord.xy * size), 0);
-	float revealage = texelFetch(RevealageTexture, ivec2(Texcoord.xy * size), 0).x;
+	vec4 accumulation = texelFetch(AccumulationTexture, ivec2(TexcoordAtlas.xy * size), 0);
+	float revealage = texelFetch(RevealageTexture, ivec2(TexcoordAtlas.xy * size), 0).x;
 
 	FragColor = vec4(accumulation.rgb / max(accumulation.a, 0.00001), 1.0 - revealage);
 	#endif
 	
 	#if defined(RENDER_PATH_QUAD)
 	vec2 size = vec2(textureSize(ColorTexture, 0));
-	vec4 mainColor = texelFetch(ColorTexture, ivec2(Texcoord.xy * size), 0);
+	vec4 mainColor = texelFetch(ColorTexture, ivec2(TexcoordAtlas.xy * size), 0);
 	FragColor = mainColor;
 	#endif
 
 	#if defined(RENDER_PATH_TEXT)
-	vec4 pixel = texture(FontAtlas, Texcoord.xy);
+	vec4 pixel = texture(FontAtlas, TexcoordAtlas.xy);
 	if (pixel.x < 0.01) { discard; };
 	FragColor = vec4(pixel.xxx, 1.0) * DiffuseColor;
 	#endif

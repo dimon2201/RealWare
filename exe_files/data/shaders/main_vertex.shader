@@ -4,7 +4,8 @@ layout(location = 1) in vec2 InTexcoord;
 layout(location = 2) in vec3 InNormal;
 #endif
 
-out vec3 Texcoord;
+out vec3 TexcoordAtlas;
+out vec2 TexcoordOrig;
 flat out vec4 DiffuseColor;
 #if defined(RENDER_PATH_TEXT)
 flat out vec4 GlyphInfo;
@@ -50,6 +51,7 @@ layout(std430, binding = 0) buffer InstanceBuffer { Instance instances[1024]; };
 #if defined(RENDER_PATH_TEXT)
 layout(std430, binding = 0) buffer TextInstanceBuffer { TextInstance textInstances[1024]; };
 #endif
+
 layout(std430, binding = 1) buffer MaterialBuffer { Material materials[1024]; };
 
 #if defined(RENDER_PATH_OPAQUE) || defined(RENDER_PATH_TRANSPARENT)
@@ -67,7 +69,7 @@ void Vertex_Passthrough(in vec3 _positionLocal, in Instance _instance, in float 
 	Vertex_Transform(_positionLocal, _instance, _use2D, _glPosition);
 }
 
-void Vertex_Func(in vec3 _positionLocal, in vec3 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}
+void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}
 #endif
 
 void main()
@@ -76,21 +78,22 @@ void main()
 	Instance instance = instances[gl_InstanceID];
 	Material material = materials[instance.MaterialIndex];
 
-	Texcoord = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.DiffuseTextureLayerInfo);
-	Texcoord.xy *= vec2(material.DiffuseTextureInfo.zw);
-	Texcoord.xy += material.DiffuseTextureInfo.xy;
+	TexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.DiffuseTextureLayerInfo);
+	TexcoordAtlas.xy *= vec2(material.DiffuseTextureInfo.zw);
+	TexcoordAtlas.xy += material.DiffuseTextureInfo.xy;
+	TexcoordOrig = InTexcoord;
 	DiffuseColor = material.DiffuseColor;
 
 	Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);
-	Vertex_Func(InPositionLocal, Texcoord, InNormal, gl_InstanceID, instance, material, instance.Use2D, gl_Position);
+	Vertex_Func(InPositionLocal, TexcoordOrig, InNormal, gl_InstanceID, instance, material, instance.Use2D, gl_Position);
 	#endif
 	
 	#if defined(RENDER_PATH_QUAD) || defined(RENDER_PATH_TRANSPARENT_COMPOSITE)
 	vec3 PositionLocal = vec3(0.0);
-	if (gl_VertexID == 0) { PositionLocal = vec3(-1.0, -1.0, 0.0); Texcoord = vec3(0.0, 0.0, 0.0); }
-	if (gl_VertexID == 1) { PositionLocal = vec3(-1.0, 1.0, 0.0); Texcoord = vec3(0.0, 1.0, 0.0); }
-	if (gl_VertexID == 2) { PositionLocal = vec3(1.0, -1.0, 0.0); Texcoord = vec3(1.0, 0.0, 0.0); }
-	if (gl_VertexID == 3) { PositionLocal = vec3(1.0, 1.0, 0.0); Texcoord = vec3(1.0, 1.0, 0.0); }
+	if (gl_VertexID == 0) { PositionLocal = vec3(-1.0, -1.0, 0.0); TexcoordAtlas = vec3(0.0, 0.0, 0.0); }
+	if (gl_VertexID == 1) { PositionLocal = vec3(-1.0, 1.0, 0.0); TexcoordAtlas = vec3(0.0, 1.0, 0.0); }
+	if (gl_VertexID == 2) { PositionLocal = vec3(1.0, -1.0, 0.0); TexcoordAtlas = vec3(1.0, 0.0, 0.0); }
+	if (gl_VertexID == 3) { PositionLocal = vec3(1.0, 1.0, 0.0); TexcoordAtlas = vec3(1.0, 1.0, 0.0); }
 	gl_Position = vec4(PositionLocal, 1.0);
 	#endif
 	
@@ -107,9 +110,10 @@ void main()
 	GlyphInfo = textInstance.Info;
 	GlyphAtlasInfo = textInstance.AtlasInfo;
 	DiffuseColor = material.DiffuseColor;
-	Texcoord = vec3(PositionLocal.x, 1.0 - PositionLocal.y, 0.0);
-	Texcoord *= GlyphAtlasInfo.zww;
-	Texcoord += GlyphAtlasInfo.xyy;
+	TexcoordAtlas = vec3(PositionLocal.x, 1.0 - PositionLocal.y, 0.0);
+	TexcoordAtlas *= GlyphAtlasInfo.zww;
+	TexcoordAtlas += GlyphAtlasInfo.xyy;
+	TexcoordOrig = vec2(0.0);
 	PositionLocal.xy *= GlyphInfo.zw;
 	PositionLocal.xy += GlyphInfo.xy;
 
