@@ -270,7 +270,7 @@ namespace realware
                     break;
 
                 case Category::RENDER_PATH_TRANSPARENT:
-                    header = "RENDER_PATH_OPAQUE";
+                    header = "RENDER_PATH_TRANSPARENT";
                     break;
 
                 case Category::RENDER_PATH_TEXT:

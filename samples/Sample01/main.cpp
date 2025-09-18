@@ -254,13 +254,13 @@ public:
             gameObjects,
             cameraObject
         );
-        //_render->DrawGeometryTransparent(
-        //    _triangleGeometry,
-        //    gameObjects,
-        //    cameraObject
-        //);
-        //_render->CompositeTransparent();
-        //_render->DrawTexts(gameObjects);
+        _render->DrawGeometryTransparent(
+            _triangleGeometry,
+            gameObjects,
+            cameraObject
+        );
+        _render->CompositeTransparent();
+        _render->DrawTexts(gameObjects);
         _render->CompositeFinal();
     }
 
