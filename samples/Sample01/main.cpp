@@ -185,6 +185,18 @@ public:
         sSubstance* pxSubstance = _physics->AddSubstance("PXSubstance1");
 
         // Game objects
+        cGameObject* floorObject1 = _gameObject->AddGameObject("FloorObject1");
+        floorObject1->SetVisible(K_FALSE);
+        floorObject1->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
+        floorObject1->SetScale(glm::vec3(1.0f));
+        floorObject1->SetPhysicsActor(
+            Category::PHYSICS_ACTOR_STATIC,
+            Category::PHYSICS_SHAPE_PLANE,
+            pxScene,
+            pxSubstance,
+            0.0f
+        );
+
         cGameObject* triangleObject1 = _gameObject->AddGameObject("TriangleObject1");
         triangleObject1->SetVisible(K_TRUE);
         triangleObject1->SetOpaque(K_TRUE);
@@ -194,7 +206,7 @@ public:
         triangleObject1->SetMaterial(material1);
         triangleObject1->SetPhysicsActor(
             Category::PHYSICS_ACTOR_STATIC,
-            Category::PHYSICS_SHAPE_PLANE,
+            Category::PHYSICS_SHAPE_BOX,
             pxScene,
             pxSubstance,
             0.0f
