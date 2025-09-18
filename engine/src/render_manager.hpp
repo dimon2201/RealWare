@@ -45,30 +45,24 @@ namespace realware
 
         struct sVertexBufferGeometry
         {
-            enum class eFormat
-            {
-                NONE = 1,
-                POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3 = 32
-            };
-
             types::usize VertexCount = 0;
             types::usize IndexCount = 0;
             void* VertexPtr = nullptr;
             void* IndexPtr = nullptr;
-            types::usize VertexOffset = 0;
-            types::usize IndexOffset = 0;
-            eFormat Format = eFormat::NONE;
+            types::usize OffsetVertex = 0;
+            types::usize OffsetIndex = 0;
+            game::Category Format = game::Category::VERTEX_BUFFER_FORMAT_NONE;
         };
 
         struct sPrimitive
         {
-            sVertexBufferGeometry::eFormat Format = render::sVertexBufferGeometry::eFormat::NONE;
             sVertex* Vertices = nullptr;
             index* Indices = nullptr;
             types::usize VertexCount = 0;
             types::usize IndexCount = 0;
             types::usize VerticesByteSize = 0;
             types::usize IndicesByteSize = 0;
+            game::Category Format = game::Category::VERTEX_BUFFER_FORMAT_NONE;
         };
 
         struct sModel : sPrimitive
@@ -164,7 +158,7 @@ namespace realware
             sMaterial* FindMaterial(const std::string& id);
             void DeleteMaterial(const std::string& id);
             sVertexArray* CreateDefaultVertexArray();
-            sVertexBufferGeometry* CreateGeometry(const sVertexBufferGeometry::eFormat& format, const types::usize verticesByteSize, const void* const vertices, const types::usize indicesByteSize, const void* const indices);
+            sVertexBufferGeometry* CreateGeometry(const game::Category& format, const types::usize verticesByteSize, const void* const vertices, const types::usize indicesByteSize, const void* const indices);
             void DestroyGeometry(sVertexBufferGeometry* geometry);
             
             void ClearGeometryBuffer();

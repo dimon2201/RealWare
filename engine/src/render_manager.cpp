@@ -14,6 +14,7 @@
 #include "filesystem_manager.hpp"
 #include "application.hpp"
 #include "memory_pool.hpp"
+#include "log.hpp"
 
 using namespace types;
 
@@ -23,6 +24,7 @@ namespace realware
     using namespace game;
     using namespace font;
     using namespace fs;
+    using namespace log;
     using namespace utils;
 
     namespace render
@@ -286,7 +288,7 @@ namespace realware
             return vertexArray;
         }
 
-        sVertexBufferGeometry* mRender::CreateGeometry(const sVertexBufferGeometry::eFormat& format, const usize verticesByteSize, const void* const vertices, const usize indicesByteSize, const void* const indices)
+        sVertexBufferGeometry* mRender::CreateGeometry(const Category& format, const usize verticesByteSize, const void* const vertices, const usize indicesByteSize, const void* const indices)
         {
             sVertexBufferGeometry* pGeometry = (sVertexBufferGeometry*)_app->GetMemoryPool()->Allocate(sizeof(sVertexBufferGeometry));
             sVertexBufferGeometry* geometry = new (pGeometry) sVertexBufferGeometry();
@@ -297,12 +299,26 @@ namespace realware
             _context->WriteBuffer(_vertexBuffer, _verticesByteSize, verticesByteSize, vertices);
             _context->WriteBuffer(_indexBuffer, _indicesByteSize, indicesByteSize, indices);
 
-            geometry->VertexCount = verticesByteSize / (usize)format;
+            usize vertexCount = verticesByteSize;
+            usize vertexOffset = _verticesByteSize;
+            switch (format)
+            {
+                case Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3:
+                    vertexCount /= 32;
+                    vertexOffset /= 32;
+                    break;
+
+                default:
+                    Print("Error: unsupported vertex buffer format!");
+                    return nullptr;
+            }
+
+            geometry->VertexCount = vertexCount;
             geometry->IndexCount = indicesByteSize / sizeof(u32);
             geometry->VertexPtr = _vertices;
             geometry->IndexPtr = _indices;
-            geometry->VertexOffset = _verticesByteSize;
-            geometry->IndexOffset = _indicesByteSize;
+            geometry->OffsetVertex = vertexOffset;
+            geometry->OffsetIndex = _indicesByteSize;
             geometry->Format = format;
 
             _verticesByteSize += verticesByteSize;
@@ -462,8 +478,8 @@ namespace realware
 
             _context->Draw(
                 geometry->IndexCount,
-                geometry->VertexOffset / (usize)geometry->Format,
-                geometry->IndexOffset,
+                geometry->OffsetVertex,
+                geometry->OffsetIndex,
                 instanceCount
             );
 
@@ -541,8 +557,8 @@ namespace realware
             
             _context->Draw(
                 geometry->IndexCount,
-                geometry->VertexOffset / (usize)geometry->Format,
-                geometry->IndexOffset,
+                geometry->OffsetVertex,
+                geometry->OffsetIndex,
                 instanceCount
             );
 
@@ -619,8 +635,8 @@ namespace realware
 
             _context->Draw(
                 geometry->IndexCount,
-                geometry->VertexOffset / (usize)geometry->Format,
-                geometry->IndexOffset,
+                geometry->OffsetVertex,
+                geometry->OffsetIndex,
                 instanceCount
             );
 
@@ -742,7 +758,7 @@ namespace realware
 
             if (primitive == Category::PRIMITIVE_TRIANGLE)
             {
-                primitiveObject->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
+                primitiveObject->Format = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
                 primitiveObject->Vertices = (render::sVertex*)memoryPool->Allocate(sizeof(render::sVertex) * 3);
                 primitiveObject->Indices = (render::index*)memoryPool->Allocate(sizeof(render::index) * 3);
                 primitiveObject->VertexCount = 3;
@@ -765,7 +781,7 @@ namespace realware
             }
             else if (primitive == Category::PRIMITIVE_QUAD)
             {
-                primitiveObject->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
+                primitiveObject->Format = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
                 primitiveObject->Vertices = (render::sVertex*)memoryPool->Allocate(sizeof(render::sVertex) * 4);
                 primitiveObject->Indices = (render::index*)memoryPool->Allocate(sizeof(render::index) * 6);
                 primitiveObject->VertexCount = 4;
@@ -804,7 +820,7 @@ namespace realware
             sModel* pModel = (sModel*)_app->GetMemoryPool()->Allocate(sizeof(sModel));
             sModel* model = new (pModel) sModel();
 
-            model->Format = render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3;
+            model->Format = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
 
             // Load model
             Assimp::Importer importer;

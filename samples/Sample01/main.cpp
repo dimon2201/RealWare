@@ -151,6 +151,14 @@ public:
             _trianglePrimitive->IndicesByteSize,
             _trianglePrimitive->Indices
         );
+        _quadPrimitive = _render->CreatePrimitive(Category::PRIMITIVE_QUAD);
+        _quadGeometry = _render->CreateGeometry(
+            _quadPrimitive->Format,
+            _quadPrimitive->VerticesByteSize,
+            _quadPrimitive->Vertices,
+            _quadPrimitive->IndicesByteSize,
+            _quadPrimitive->Indices
+        );
 
         // Textures
         sTextureAtlasTexture* texture1 = _texture->AddTexture(
@@ -215,7 +223,7 @@ public:
         cGameObject* triangleObject2 = _gameObject->AddGameObject("TriangleObject2");
         triangleObject2->SetVisible(K_TRUE);
         triangleObject2->SetOpaque(K_FALSE);
-        triangleObject2->SetGeometry(_triangleGeometry);
+        triangleObject2->SetGeometry(_quadGeometry);
         triangleObject2->SetPosition(glm::vec3(0.0f, 0.0f, -3.0f));
         triangleObject2->SetScale(glm::vec3(1.0f));
         triangleObject2->SetMaterial(material2);
@@ -267,7 +275,7 @@ public:
             cameraObject
         );
         _render->DrawGeometryTransparent(
-            _triangleGeometry,
+            _quadGeometry,
             gameObjects,
             cameraObject
         );
@@ -282,7 +290,9 @@ public:
 
 private:
     sPrimitive* _trianglePrimitive = nullptr;
+    sPrimitive* _quadPrimitive = nullptr;
     sVertexBufferGeometry* _triangleGeometry = nullptr;
+    sVertexBufferGeometry* _quadGeometry = nullptr;
     cGameObject* _cameraGameObject = nullptr;
     sRenderPass* _customRenderPass = nullptr;
 };
