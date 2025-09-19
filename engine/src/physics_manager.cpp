@@ -1,8 +1,10 @@
 #include <windows.h>
 #include <cooking/PxCooking.h>
+#include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
 #include "application.hpp"
 #include "render_manager.hpp"
 #include "physics_manager.hpp"
+#include "gameobject_manager.hpp"
 
 using namespace physx;
 
@@ -10,6 +12,7 @@ namespace realware
 {
     using namespace app;
     using namespace game;
+    using namespace render;
     using namespace types;
 
     namespace physics
@@ -30,7 +33,6 @@ namespace realware
                 pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
             return PxFilterFlag::eDEFAULT;
-
         }
 
         mPhysics::mPhysics(const cApplication* const app) :
@@ -72,7 +74,7 @@ namespace realware
         sSimulationScene* mPhysics::AddScene(const std::string& id, const glm::vec3& gravity)
         {
             PxSceneDesc sceneDesc(_physics->getTolerancesScale());
-            sceneDesc.gravity = PxVec3(gravity.x, gravity.y, gravity.z);
+            sceneDesc.gravity = PxVec3(gravity.y, gravity.x, gravity.z);
             sceneDesc.cpuDispatcher = _cpuDispatcher;
             sceneDesc.filterShader = PxDefaultSimulationFilterShader;
 
@@ -95,13 +97,14 @@ namespace realware
             glm::vec3 position = transform->Position;
 
             PxCapsuleControllerDesc desc;
+            desc.setToDefault();
             desc.height = height;
             desc.radius = radius;
             desc.position = PxExtendedVec3(position.y, position.x, position.z);
-            desc.stepOffset = 0.5f;       // максимальный шаг при коллизии
-            desc.slopeLimit = cosf(PxPi / 4.0f); // ограничение наклона поверхности
-            desc.contactOffset = 0.01f;   // минимальное расстояние до коллизий
-            desc.upDirection = PxVec3(up.y, up.x, up.z); // направление вверх
+            desc.stepOffset = 0.5f;
+            desc.slopeLimit = cosf(PxPi / 4.0f);
+            desc.contactOffset = 0.01f;
+            desc.upDirection = PxVec3(up.y, up.x, up.z);
             desc.material = substance->Substance;
 
             PxController* controller = scene->ControllerManager->createController(desc);
@@ -109,7 +112,7 @@ namespace realware
             return _controllers.Add(id, controller, eyeHeight);
         }
 
-        sActor* mPhysics::AddActor(const std::string& id, const Category& staticOrDynamic, const Category& shapeType, const sSimulationScene* const scene, const sSubstance* const substance, const f32 mass, const render::sTransform* const transform)
+        sActor* mPhysics::AddActor(const std::string& id, const Category& staticOrDynamic, const Category& shapeType, const sSimulationScene* const scene, const sSubstance* const substance, const f32 mass, const sTransform* const transform, const cGameObject* const gameObject)
         {
             glm::vec3 position = transform->Position;
             glm::vec3 scale = transform->Scale;
@@ -118,10 +121,16 @@ namespace realware
             
             PxShape* shape = nullptr;
             if (shapeType == Category::PHYSICS_SHAPE_PLANE)
-                shape = _physics->createShape(PxPlaneGeometry(), *substance->Substance);
+                shape = _physics->createShape(PxPlaneGeometry(), *substance->Substance, false, PxShapeFlag::eSIMULATION_SHAPE | PxShapeFlag::eSCENE_QUERY_SHAPE);
             else if (shapeType == Category::PHYSICS_SHAPE_BOX)
-                shape = _physics->createShape(PxBoxGeometry(scale.y, scale.x, scale.z), *substance->Substance);
+                shape = _physics->createShape(PxBoxGeometry(scale.y * 0.5f, scale.x * 0.5f, scale.z * 0.5f), *substance->Substance, false, PxShapeFlag::eSIMULATION_SHAPE | PxShapeFlag::eSCENE_QUERY_SHAPE);
 
+            if (shape == nullptr)
+                return nullptr;
+
+            shape->setContactOffset(0.1f);
+            shape->setRestOffset(0.05f);
+            
             PxActor* actor = nullptr;
             if (staticOrDynamic == Category::PHYSICS_ACTOR_STATIC)
             {
@@ -132,6 +141,8 @@ namespace realware
             {
                 actor = _physics->createRigidDynamic(pose);
                 ((PxRigidDynamic*)actor)->attachShape(*shape);
+                ((PxRigidDynamic*)actor)->setAngularDamping(0.75f);
+                ((PxRigidDynamic*)actor)->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
                 PxRigidBodyExt::updateMassAndInertia(*((PxRigidBody*)actor), mass);
             }
 
@@ -141,7 +152,7 @@ namespace realware
             if (actor != nullptr)
                 scene->Scene->addActor(*actor);
 
-            return _actors.Add(id, actor);
+            return _actors.Add(id, gameObject, actor, staticOrDynamic);
         }
 
         sSimulationScene* mPhysics::FindScene(const std::string& id)
@@ -189,7 +200,7 @@ namespace realware
             PxController* pxController = controller->Controller;
             f32 deltaTime = _app->GetDeltaTime();
 
-            PxControllerFilters filters;
+            PxControllerFilters filters = PxControllerFilters();
             PxU32 collisionFlags = pxController->move(
                 PxVec3(position.y, position.x, position.z),
                 minStep,
@@ -208,12 +219,39 @@ namespace realware
 
         void mPhysics::Simulate()
         {
+            const auto& actors = _actors.GetObjects();
+            const usize actorCount = actors.size();
+
+            for (auto& pair : actors)
+            {
+                if (pair.Type != Category::PHYSICS_ACTOR_DYNAMIC)
+                    continue;
+
+                sTransform* const transform = pair.GameObject->GetTransform();
+                PxActor* const pxActor = pair.Actor;
+
+                const PxTransform actorTransform = ((PxRigidDynamic*)pxActor)->getGlobalPose();
+                const glm::quat q = glm::quat(
+                    actorTransform.q.w,
+                    actorTransform.q.x,
+                    actorTransform.q.y,
+                    actorTransform.q.z
+                );
+                const glm::vec3 actorEuler = glm::eulerAngles(q);
+
+                {
+                    std::lock_guard<std::mutex> lock(_mutex);
+                    transform->Position = glm::vec3(actorTransform.p.y, actorTransform.p.x, actorTransform.p.z);
+                    transform->Rotation = glm::vec3(actorEuler.y, actorEuler.x, actorEuler.z);
+                }
+            }
+
             const auto& scenes = _scenes.GetObjects();
             const usize sceneCount = scenes.size();
 
             for (usize i = 0; i < sceneCount; i++)
             {
-                auto scene = scenes[i].Scene;
+                PxScene* const scene = scenes[i].Scene;
                 scene->simulate(1.0f / 60.0f);
                 scene->fetchResults(true);
             }

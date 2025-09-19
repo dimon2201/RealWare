@@ -35,6 +35,11 @@ namespace realware
         struct sTransform;
     }
 
+    namespace game
+    {
+        class cGameObject;
+    }
+
     namespace physics
     {
         class cAllocator : public physx::PxAllocatorCallback
@@ -117,10 +122,12 @@ namespace realware
         {
         public:
             sActor() = default;
-            explicit sActor(const physx::PxActor* const actor) : Actor((physx::PxActor*)actor) {}
+            explicit sActor(const game::cGameObject* const gameObject, const physx::PxActor* const actor, const game::Category& actorType) : GameObject((game::cGameObject*)gameObject), Actor((physx::PxActor*)actor), Type(actorType) {}
             ~sActor() = default;
 
+            game::cGameObject* GameObject = nullptr;
             physx::PxActor* Actor = nullptr;
+            game::Category Type = game::Category::PHYSICS_ACTOR_DYNAMIC;
         };
 
         class mPhysics
@@ -131,7 +138,7 @@ namespace realware
 
             sSimulationScene* AddScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
             sSubstance* AddSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
-            sActor* AddActor(const std::string& id, const game::Category& staticOrDynamic, const game::Category& shapeType, const sSimulationScene* const scene, const sSubstance* const substance, const types::f32 mass, const render::sTransform* const transform);
+            sActor* AddActor(const std::string& id, const game::Category& staticOrDynamic, const game::Category& shapeType, const sSimulationScene* const scene, const sSubstance* const substance, const types::f32 mass, const render::sTransform* const transform, const game::cGameObject* const gameObject);
             sController* AddController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const render::sTransform* const transform, const glm::vec3& up, const sSimulationScene* const scene, const sSubstance* const substance);
             sSimulationScene* FindScene(const std::string&);
             sSubstance* FindSubstance(const std::string&);

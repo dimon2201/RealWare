@@ -160,6 +160,16 @@ public:
             _quadPrimitive->Indices
         );
 
+        // Models
+        _cubeModel = _render->CreateModel("C:/DDD/RealWare/resources/cube.fbx");
+        _cubeGeometry = _render->CreateGeometry(
+            _cubeModel->Format,
+            _cubeModel->VerticesByteSize,
+            _cubeModel->Vertices,
+            _cubeModel->IndicesByteSize,
+            _cubeModel->Indices
+        );
+
         // Textures
         sTextureAtlasTexture* texture1 = _texture->AddTexture(
             "Texture1",
@@ -212,13 +222,6 @@ public:
         triangleObject1->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
         triangleObject1->SetScale(glm::vec3(1.0f));
         triangleObject1->SetMaterial(material1);
-        triangleObject1->SetPhysicsActor(
-            Category::PHYSICS_ACTOR_STATIC,
-            Category::PHYSICS_SHAPE_BOX,
-            pxScene,
-            pxSubstance,
-            0.0f
-        );
 
         cGameObject* triangleObject2 = _gameObject->AddGameObject("TriangleObject2");
         triangleObject2->SetVisible(K_TRUE);
@@ -227,6 +230,21 @@ public:
         triangleObject2->SetPosition(glm::vec3(0.0f, 0.0f, -3.0f));
         triangleObject2->SetScale(glm::vec3(1.0f));
         triangleObject2->SetMaterial(material2);
+
+        cGameObject* cubeObject1 = _gameObject->AddGameObject("CubeObject1");
+        cubeObject1->SetVisible(K_TRUE);
+        cubeObject1->SetOpaque(K_TRUE);
+        cubeObject1->SetGeometry(_cubeGeometry);
+        cubeObject1->SetPosition(glm::vec3(0.0f, 3.0f, 0.0f));
+        cubeObject1->SetScale(glm::vec3(1.0f));
+        cubeObject1->SetMaterial(material1);
+        cubeObject1->SetPhysicsActor(
+            Category::PHYSICS_ACTOR_DYNAMIC,
+            Category::PHYSICS_SHAPE_BOX,
+            pxScene,
+            pxSubstance,
+            1000.0f
+        );
 
         cGameObject* textObject = _gameObject->AddGameObject("TextObject");
         textObject->SetVisible(K_TRUE);
@@ -274,6 +292,11 @@ public:
             gameObjects,
             cameraObject
         );
+        _render->DrawGeometryOpaque(
+            _cubeGeometry,
+            gameObjects,
+            cameraObject
+        );
         _render->DrawGeometryTransparent(
             _quadGeometry,
             gameObjects,
@@ -291,8 +314,10 @@ public:
 private:
     sPrimitive* _trianglePrimitive = nullptr;
     sPrimitive* _quadPrimitive = nullptr;
+    sModel* _cubeModel = nullptr;
     sVertexBufferGeometry* _triangleGeometry = nullptr;
     sVertexBufferGeometry* _quadGeometry = nullptr;
+    sVertexBufferGeometry* _cubeGeometry = nullptr;
     cGameObject* _cameraGameObject = nullptr;
     sRenderPass* _customRenderPass = nullptr;
 };

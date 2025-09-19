@@ -62,7 +62,8 @@ namespace realware
                 scene,
                 substance,
                 mass,
-                _transform
+                _transform,
+                this
             );
         }
 
