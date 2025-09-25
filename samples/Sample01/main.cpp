@@ -102,7 +102,7 @@ public:
 
         std::string vertexFunc = "";
         std::string fragmentFunc = "";
-        render->LoadVertexFragmentFuncs(
+        render->LoadShaderFiles(
             "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_vertex.shader",
             "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_fragment.shader",
             vertexFunc,

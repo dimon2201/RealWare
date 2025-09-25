@@ -248,7 +248,7 @@ namespace realware
             {
                 std::string vertexFunc = "";
                 std::string fragmentFunc = "";
-                LoadVertexFragmentFuncs(customVertexFuncPath, customFragmentFuncPath, vertexFunc, fragmentFunc);
+                LoadShaderFiles(customVertexFuncPath, customFragmentFuncPath, vertexFunc, fragmentFunc);
 
                 if (customShaderRenderPath == Category::RENDER_PATH_OPAQUE)
                     customShader = _context->CreateShader(_opaque->Desc.Shader, vertexFunc, fragmentFunc);
@@ -884,7 +884,7 @@ namespace realware
             memoryPool->Free(primitiveObject);
         }
 
-        void mRender::LoadVertexFragmentFuncs(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc)
+        void mRender::LoadShaderFiles(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc)
         {
             sFile* vertexFuncFile = _app->GetFileSystemManager()->CreateDataFile(vertexFuncPath, K_TRUE);
             sFile* fragmentFuncFile = _app->GetFileSystemManager()->CreateDataFile(fragmentFuncPath, K_TRUE);

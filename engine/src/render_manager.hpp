@@ -180,7 +180,7 @@ namespace realware
             sModel* CreateModel(const std::string& filename);
             void DestroyPrimitive(sPrimitive* primitiveObject);
             
-            void LoadVertexFragmentFuncs(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc);
+            void LoadShaderFiles(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc);
 
             void ResizeWindow(const glm::vec2& size);
             
