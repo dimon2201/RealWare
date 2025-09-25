@@ -72,11 +72,10 @@ namespace realware
             types::u32 TextureAtlasDepth = 16;
             types::u32 VertexBufferSize = 65536;
             types::u32 IndexBufferSize = 65536;
-            types::u32 InstanceBufferSize = 65536;
-            types::u32 MaterialBufferSize = 65536;
-            types::u32 LightBufferSize = 65536;
-            types::u32 TextureAtlasTexturesBufferSize = 65536;
-            types::u32 MaxMaterialCount = 256;
+            types::u32 MaxRenderInstanceCount = 65536;
+            types::u32 MaxMaterialCount = 65536;
+            types::u32 MaxLightCount = 65536;
+            types::u32 MaxTextureAtlasTextureCount = 65536;
             types::u32 MaxGameObjectCount = 65536;
             types::u32 MaxPhysicsSceneCount = 4;
             types::u32 MaxPhysicsSubstanceCount = 256;

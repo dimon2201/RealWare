@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "log.hpp"
 #include "types.hpp"
 
 namespace realware
@@ -74,6 +75,10 @@ namespace realware
 				object.IsDeleted = K_FALSE;
 
 				return &object;
+			}
+			else
+			{
+				log::Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
 			}
 
 			return nullptr;

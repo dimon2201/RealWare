@@ -203,19 +203,28 @@ public:
         sSubstance* pxSubstance = _physics->AddSubstance("PXSubstance1");
 
         // Game objects
-        cGameObject* floorObject1 = _gameObject->AddGameObject("FloorObject1");
-        floorObject1->SetVisible(K_FALSE);
-        floorObject1->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
-        floorObject1->SetScale(glm::vec3(1.0f));
-        floorObject1->SetPhysicsActor(
-            Category::PHYSICS_ACTOR_STATIC,
-            Category::PHYSICS_SHAPE_PLANE,
-            pxScene,
-            pxSubstance,
-            0.0f
-        );
+        const usize N = 50;
+        for (usize z = 0; z < N; z++)
+        {
+            for (usize y = 0; y < N; y++)
+            {
+                for (usize x = 0; x < N; x++)
+                {
+                    const glm::vec3 position = glm::vec3(x, y, z);
+                    const std::string id = "Cube" + std::to_string(x) + std::to_string(y) + std::to_string(z);
 
-        cGameObject* triangleObject1 = _gameObject->AddGameObject("TriangleObject1");
+                    cGameObject* cubeObject1 = _gameObject->AddGameObject(id);
+                    cubeObject1->SetVisible(K_TRUE);
+                    cubeObject1->SetOpaque(K_TRUE);
+                    cubeObject1->SetGeometry(_cubeGeometry);
+                    cubeObject1->SetPosition(position);
+                    cubeObject1->SetScale(glm::vec3(1.0f));
+                    cubeObject1->SetMaterial(material1);
+                }
+            }
+        }
+
+        /*cGameObject* triangleObject1 = _gameObject->AddGameObject("TriangleObject1");
         triangleObject1->SetVisible(K_TRUE);
         triangleObject1->SetOpaque(K_TRUE);
         triangleObject1->SetGeometry(_triangleGeometry);
@@ -252,7 +261,7 @@ public:
         textObject->SetPosition(glm::vec3(0.5f, 0.5f, 0.0f));
         textObject->SetScale(glm::vec3(1.0f));
         textObject->SetMaterial(material1);
-        textObject->SetText(text);
+        textObject->SetText(text);*/
 
         // Create camera
         _camera->CreateCamera();
@@ -288,22 +297,10 @@ public:
         const auto& gameObjects = _gameObject->GetObjects().GetObjects();
         _render->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
         _render->DrawGeometryOpaque(
-            _triangleGeometry,
-            gameObjects,
-            cameraObject
-        );
-        _render->DrawGeometryOpaque(
             _cubeGeometry,
             gameObjects,
             cameraObject
         );
-        _render->DrawGeometryTransparent(
-            _quadGeometry,
-            gameObjects,
-            cameraObject
-        );
-        _render->CompositeTransparent();
-        _render->DrawTexts(gameObjects);
         _render->CompositeFinal();
     }
 
@@ -331,34 +328,13 @@ int main()
     appDesc->WindowDesc.IsFullscreen = K_FALSE;
     appDesc->MemoryPoolByteSize = 64 * 1024 * 1024;
 
+    appDesc->MaxRenderInstanceCount = (50 * 50 * 50);
+
     MyApp* app = new MyApp(appDesc);
     app->Run();
     
     delete app;
     delete appDesc;
-
-    /*glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    auto m_window = (void*)glfwCreateWindow(640, 480, "", nullptr, nullptr);
-    glfwMakeContextCurrent((GLFWwindow*)m_window);
-    glfwSwapInterval(1);
-    if (glewInit() != GLEW_OK)
-    {
-        std::cout << "Error initializing GLEW!" << std::endl;
-        return 0;
-    }
-
-    while (glfwWindowShouldClose((GLFWwindow*)m_window) == K_FALSE)
-    {
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-        glfwPollEvents();
-    }*/
 
     return 0;
 }

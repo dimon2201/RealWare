@@ -88,27 +88,32 @@ namespace realware
             sApplicationDescriptor* desc = _app->GetDesc();
             const glm::vec2 windowSize = _app->GetWindowSize();
 
+            _maxInstanceBufferByteSize = desc->MaxRenderInstanceCount * sizeof(sRenderInstance);
+            _maxMaterialBufferByteSize = desc->MaxMaterialCount * sizeof(sMaterialInstance);
+            _maxLightBufferByteSize = desc->MaxLightCount * sizeof(sLightInstance);
+            _maxTextureAtlasTexturesBufferByteSize = desc->MaxTextureAtlasTextureCount * sizeof(sTextureAtlasTextureGPU);
+
             _vertexBuffer = _context->CreateBuffer(desc->VertexBufferSize, sBuffer::eType::VERTEX, nullptr);
             _indexBuffer = _context->CreateBuffer(desc->IndexBufferSize, sBuffer::eType::INDEX, nullptr);
-            _instanceBuffer = _context->CreateBuffer(desc->InstanceBufferSize, sBuffer::eType::LARGE, nullptr);
+            _instanceBuffer = _context->CreateBuffer(_maxInstanceBufferByteSize, sBuffer::eType::LARGE, nullptr);
             _instanceBuffer->Slot = 0;
-            _materialBuffer = _context->CreateBuffer(desc->MaterialBufferSize, sBuffer::eType::LARGE, nullptr);
+            _materialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
             _materialBuffer->Slot = 1;
-            _lightBuffer = _context->CreateBuffer(desc->LightBufferSize, sBuffer::eType::LARGE, nullptr);
+            _lightBuffer = _context->CreateBuffer(_maxLightBufferByteSize, sBuffer::eType::LARGE, nullptr);
             _lightBuffer->Slot = 2;
-            _textureAtlasTexturesBuffer = _context->CreateBuffer(desc->TextureAtlasTexturesBufferSize, sBuffer::eType::LARGE, nullptr);
+            _textureAtlasTexturesBuffer = _context->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, sBuffer::eType::LARGE, nullptr);
             _textureAtlasTexturesBuffer->Slot = 3;
             _vertices = memoryPool->Allocate(desc->VertexBufferSize);
             _verticesByteSize = 0;
             _indices = memoryPool->Allocate(desc->IndexBufferSize);
             _indicesByteSize = 0;
-            _instances = memoryPool->Allocate(desc->InstanceBufferSize);
+            _instances = memoryPool->Allocate(_maxInstanceBufferByteSize);
             _instancesByteSize = 0;
-            _materials = memoryPool->Allocate(desc->MaterialBufferSize);
+            _materials = memoryPool->Allocate(_maxMaterialBufferByteSize);
             _materialsByteSize = 0;
-            _lights = memoryPool->Allocate(desc->LightBufferSize);
+            _lights = memoryPool->Allocate(_maxLightBufferByteSize);
             _lightsByteSize = 0;
-            _textureAtlasTextures = memoryPool->Allocate(desc->TextureAtlasTexturesBufferSize);
+            _textureAtlasTextures = memoryPool->Allocate(_maxTextureAtlasTexturesBufferByteSize);
             _textureAtlasTexturesByteSize = 0;
             std::unordered_map<render::sMaterial*, s32>* pMaterialsMap = (std::unordered_map<render::sMaterial*, s32>*)_app->GetMemoryPool()->Allocate(sizeof(std::unordered_map<render::sMaterial*, s32>));
             _materialsMap = new (pMaterialsMap) std::unordered_map<render::sMaterial*, s32>();
@@ -496,6 +501,8 @@ namespace realware
             _materialsByteSize = 0;
             _materialsMap->clear();
 
+            const sApplicationDescriptor* appDesc = _app->GetDesc();
+
             for (auto& it : objects)
             {
                 if (it.GetGeometry() == geometry)
@@ -527,8 +534,16 @@ namespace realware
 
                             _materialsMap->insert({ material, materialIndex });
 
-                            memcpy((void*)((usize)_materials + (usize)_materialsByteSize), &mi, sizeof(sMaterialInstance));
-                            _materialsByteSize += sizeof(sMaterialInstance);
+                            if (_materialsByteSize >= _maxMaterialBufferByteSize)
+                            {
+                                Print("Error: material buffer limit '" + std::to_string(_maxMaterialBufferByteSize) + "' exceeded!");
+                                return;
+                            }
+                            else
+                            {
+                                memcpy((void*)((usize)_materials + (usize)_materialsByteSize), &mi, sizeof(sMaterialInstance));
+                                _materialsByteSize += sizeof(sMaterialInstance);
+                            }
                         }
                         else
                         {
@@ -537,10 +552,17 @@ namespace realware
 
                         sRenderInstance ri(materialIndex, transform);
 
-                        memcpy((void*)((usize)_instances + (usize)_instancesByteSize), &ri, sizeof(sRenderInstance));
-                        _instancesByteSize += sizeof(sRenderInstance);
-
-                        instanceCount += 1;
+                        if (_instancesByteSize >= _maxInstanceBufferByteSize)
+                        {
+                            Print("Error: instance buffer limit '" + std::to_string(_maxInstanceBufferByteSize) + "' exceeded!");
+                            return;
+                        }
+                        else
+                        {
+                            memcpy((void*)((usize)_instances + (usize)_instancesByteSize), &ri, sizeof(sRenderInstance));
+                            _instancesByteSize += sizeof(sRenderInstance);
+                            instanceCount += 1;
+                        }
                     }
                 }
             }

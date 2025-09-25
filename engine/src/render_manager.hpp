@@ -201,6 +201,10 @@ namespace realware
         private:
             app::cApplication* _app = nullptr;
             iRenderContext* _context = nullptr;
+            types::usize _maxInstanceBufferByteSize = 0;
+            types::usize _maxMaterialBufferByteSize = 0;
+            types::usize _maxLightBufferByteSize = 0;
+            types::usize _maxTextureAtlasTexturesBufferByteSize = 0;
             sBuffer* _vertexBuffer = nullptr;
             sBuffer* _indexBuffer = nullptr;
             sBuffer* _instanceBuffer = nullptr;
