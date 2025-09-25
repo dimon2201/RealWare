@@ -15,7 +15,7 @@ namespace realware
 
     namespace render
     {
-        class cRenderContext;
+        class iRenderContext;
         struct sTexture;
 
         struct sTextureAtlasTexture : public utils::sIdVecObject
@@ -37,7 +37,7 @@ namespace realware
         class mTexture
         {
         public:
-            explicit mTexture(const app::cApplication* const app, const cRenderContext* const context);
+            explicit mTexture(const app::cApplication* const app, const iRenderContext* const context);
             ~mTexture();
 
             sTextureAtlasTexture* AddTexture(const std::string& id, const glm::vec2& size, const types::usize channels, const types::u8* data);
@@ -48,13 +48,13 @@ namespace realware
             sTextureAtlasTexture CalculateNormalizedArea(const sTextureAtlasTexture& area);
 
             sTexture* GetAtlas();
-            inline types::usize GetWidth() const;
-            inline types::usize GetHeight() const;
-            inline types::usize GetDepth() const;
+            types::usize GetWidth() const;
+            types::usize GetHeight() const;
+            types::usize GetDepth() const;
 
         protected:
             app::cApplication* _app = nullptr;
-            cRenderContext* _context = nullptr;
+            iRenderContext* _context = nullptr;
             sTexture* _atlas = nullptr;
             utils::cIdVec<sTextureAtlasTexture> _textures;
         };

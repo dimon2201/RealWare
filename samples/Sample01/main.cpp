@@ -41,7 +41,7 @@ public:
     {
         mRender* render = GetRenderManager();
         mTexture* texture = GetTextureManager();
-        cRenderContext* renderContext = GetRenderContext();
+        iRenderContext* renderContext = GetRenderContext();
         sRenderPass* opaqueRenderPass = render->GetOpaqueRenderPass();
         const glm::vec2 windowSize = GetWindowSize();
 

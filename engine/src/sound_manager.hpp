@@ -16,7 +16,7 @@ namespace realware
 
     namespace sound
     {
-        class cSoundContext;
+        class iSoundContext;
 
         struct sWAVStructure
         {
@@ -53,7 +53,7 @@ namespace realware
         class mSound
         {
         public:
-            mSound(const app::cApplication* const app, const cSoundContext* const context);
+            mSound(const app::cApplication* const app, const iSoundContext* const context);
             ~mSound() = default;
 
             sSound* AddSound(const std::string& id, const std::string& filename, const game::Category& format);
@@ -64,7 +64,7 @@ namespace realware
 
         private:
             app::cApplication* _app = nullptr;
-            cSoundContext* _context = nullptr;
+            iSoundContext* _context = nullptr;
             utils::cIdVec<sSound> _sounds;
         };
     }

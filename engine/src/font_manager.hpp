@@ -15,7 +15,7 @@ namespace realware
 
     namespace render
     {
-        class cRenderContext;
+        class iRenderContext;
         struct sTexture;
     }
 
@@ -56,7 +56,7 @@ namespace realware
         class mFont
         {
         public:
-            mFont(const app::cApplication* const app, const render::cRenderContext* const context);
+            mFont(const app::cApplication* const app, const render::iRenderContext* const context);
             ~mFont();
 
             sFont* CreateFontTTF(const std::string& filename, const types::usize glyphSize);
@@ -69,13 +69,12 @@ namespace realware
             types::usize GetCharacterCount(const std::string& text);
             types::usize GetNewlineCount(const std::string& text);
 
-            static constexpr types::usize MAX_ATLAS_WIDTH = 2048;
+            static constexpr types::usize K_MAX_ATLAS_WIDTH = 2048;
 
         private:
             app::cApplication* _app = nullptr;
             types::boolean _initialized = types::K_FALSE;
-            types::u16 _unicode[256] = {};
-            render::cRenderContext* _context = nullptr;
+            render::iRenderContext* _context = nullptr;
             FT_Library _lib = {};
         };
     }

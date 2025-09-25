@@ -18,7 +18,7 @@ namespace realware
 
     namespace render
     {
-        class cRenderContext;
+        class iRenderContext;
         class cRenderer;
         class mRender;
 		class mTexture;
@@ -26,7 +26,7 @@ namespace realware
 
     namespace sound
     {
-        class cSoundContext;
+        class iSoundContext;
         class mSound;
     }
 
@@ -53,8 +53,6 @@ namespace realware
 
     namespace app
     {
-        void WindowSizeCallback(GLFWwindow* window, int width, int height);
-
         struct sApplicationDescriptor
         {
             struct sWindowDescriptor
@@ -102,8 +100,8 @@ namespace realware
 
             inline types::boolean GetRunState() const { return glfwWindowShouldClose((GLFWwindow*)_window); }
 
-            inline render::cRenderContext* GetRenderContext() const { return _renderContext; }
-            inline sound::cSoundContext* GetSoundContext() const { return _soundContext; }
+            inline render::iRenderContext* GetRenderContext() const { return _renderContext; }
+            inline sound::iSoundContext* GetSoundContext() const { return _soundContext; }
             inline game::mCamera* GetCameraManager() const { return _camera; }
             inline render::mTexture* GetTextureManager() const { return _texture; }
             inline render::mRender* GetRenderManager() const { return _render; }
@@ -147,14 +145,14 @@ namespace realware
             inline types::boolean GetWindowFocus() { return _isFocused; }
             inline void SetCursorPosition(const glm::vec2& cursorPosition) { _cursorPosition = cursorPosition; }
 
-            static constexpr types::usize MAX_KEY_COUNT = 256;
-            static constexpr types::usize KEY_BUFFER_MASK = 0xFF;
+            static constexpr types::usize K_MAX_KEY_COUNT = 256;
+            static constexpr types::usize K_KEY_BUFFER_MASK = 0xFF;
 
         protected:
             sApplicationDescriptor _desc = {};
             void* _window = nullptr;
-            render::cRenderContext* _renderContext = nullptr;
-            sound::cSoundContext* _soundContext = nullptr;
+            render::iRenderContext* _renderContext = nullptr;
+            sound::iSoundContext* _soundContext = nullptr;
             game::mCamera* _camera = nullptr;
             render::mRender* _render = nullptr;
             render::mTexture* _texture = nullptr;
@@ -164,7 +162,7 @@ namespace realware
             physics::mPhysics* _physics = nullptr;
             game::mGameObject* _gameObject = nullptr;
             utils::cMemoryPool* _memoryPool = nullptr;
-            types::s32 _keys[MAX_KEY_COUNT] = {};
+            types::s32 _keys[K_MAX_KEY_COUNT] = {};
             types::f32 _deltaTime = 0.0;
             std::chrono::steady_clock::time_point _timepointLast;
             types::boolean _isFocused = types::K_FALSE;

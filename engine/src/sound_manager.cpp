@@ -33,8 +33,8 @@ namespace realware
             }
         }
 
-        mSound::mSound(const cApplication* const app, const cSoundContext* const context) :
-            _app((cApplication*)app), _context((cSoundContext*)context), _sounds((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxSoundCount)
+        mSound::mSound(const cApplication* const app, const iSoundContext* const context) :
+            _app((cApplication*)app), _context((iSoundContext*)context), _sounds((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxSoundCount)
         {
         }
 

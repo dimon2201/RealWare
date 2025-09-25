@@ -21,11 +21,11 @@ namespace realware
         {
         }
 
-        mTexture::mTexture(const cApplication* const app, const cRenderContext* const context) : _app((cApplication*)app), _textures((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxTextureCount)
+        mTexture::mTexture(const cApplication* const app, const iRenderContext* const context) : _app((cApplication*)app), _textures((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxTextureCount)
         {
             sApplicationDescriptor* desc = _app->GetDesc();
 
-            _context = (cRenderContext*)context;
+            _context = (iRenderContext*)context;
             _atlas = _context->CreateTexture(
                 desc->TextureAtlasWidth,
                 desc->TextureAtlasHeight,

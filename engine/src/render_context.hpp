@@ -143,11 +143,10 @@ namespace realware
             sDescriptor Desc;
         };
 
-        class cRenderContext
+        class iRenderContext
         {
         public:
-            cRenderContext() = default;
-            virtual ~cRenderContext() = default;
+            virtual ~iRenderContext() = default;
 
             virtual sBuffer* CreateBuffer(const types::usize byteSize, const sBuffer::eType& type, const void* const data) = 0;
             virtual void BindBuffer(const sBuffer* const buffer) = 0;
@@ -200,7 +199,7 @@ namespace realware
             virtual void DrawQuads(types::usize count) = 0;
         };
 
-        class cOpenGLRenderContext : public cRenderContext
+        class cOpenGLRenderContext : public iRenderContext
         {
         public:
             cOpenGLRenderContext(const app::cApplication* const app);

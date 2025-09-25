@@ -20,11 +20,10 @@ namespace realware
         struct sWAVStructure;
         struct sSound;
 
-        class cSoundContext
+        class iSoundContext
         {
         public:
-            cSoundContext() = default;
-            virtual ~cSoundContext() = default;
+            virtual ~iSoundContext() = default;
 
             virtual void Create(const std::string& filename, const game::Category& format, const sWAVStructure** const file, types::u32& source, types::u32& buffer) = 0;
             virtual void Destroy(sSound* sound) = 0;
@@ -37,7 +36,7 @@ namespace realware
             virtual void SetListenerOrientation(const glm::vec3& at, const glm::vec3& up) = 0;
         };
 
-        class cOpenALSoundContext : public cSoundContext
+        class cOpenALSoundContext : public iSoundContext
         {
         public:
             cOpenALSoundContext(const app::cApplication* const app);

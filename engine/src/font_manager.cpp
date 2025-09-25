@@ -16,7 +16,7 @@ namespace realware
 
     namespace font
     {
-        mFont::mFont(const cApplication* const app, const cRenderContext* const context) : _app((cApplication*)app), _context((cRenderContext*)context)
+        mFont::mFont(const cApplication* const app, const iRenderContext* const context) : _app((cApplication*)app), _context((iRenderContext*)context)
         {
             if (FT_Init_FreeType(&_lib))
             {
@@ -82,13 +82,13 @@ namespace realware
 
                     xOffset += glyph.Width + 1;
 
-                    if (atlasWidth < mFont::MAX_ATLAS_WIDTH - (glyph.Width + 1))
+                    if (atlasWidth < mFont::K_MAX_ATLAS_WIDTH - (glyph.Width + 1))
                         atlasWidth += glyph.Width + 1;
 
                     if (glyph.Height > maxGlyphHeight)
                         maxGlyphHeight = glyph.Height;
 
-                    if (xOffset >= mFont::MAX_ATLAS_WIDTH)
+                    if (xOffset >= mFont::K_MAX_ATLAS_WIDTH)
                     {
                         atlasHeight += maxGlyphHeight + 1;
                         xOffset = 0;
@@ -124,7 +124,7 @@ namespace realware
             atlasHeight = NextPowerOfTwo(atlasHeight);
         }
 
-        void FillAtlasWithGlyphs(cMemoryPool* const memoryPool, sFont* const font, usize& atlasWidth, usize& atlasHeight, cRenderContext* const context)
+        void FillAtlasWithGlyphs(cMemoryPool* const memoryPool, sFont* const font, usize& atlasWidth, usize& atlasHeight, iRenderContext* const context)
         {
             usize maxGlyphHeight = 0;
 
@@ -157,7 +157,7 @@ namespace realware
                 if (glyph.second.Height > maxGlyphHeight)
                     maxGlyphHeight = glyph.second.Height;
 
-                if (xOffset >= mFont::MAX_ATLAS_WIDTH)
+                if (xOffset >= mFont::K_MAX_ATLAS_WIDTH)
                 {
                     yOffset += maxGlyphHeight + 1;
                     xOffset = 0;

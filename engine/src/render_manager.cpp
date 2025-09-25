@@ -80,8 +80,8 @@ namespace realware
             );
         }
 
-        mRender::mRender(const cApplication* const app, const cRenderContext* const context) :
-            _app((cApplication*)app), _context((cRenderContext*)context), _materialsCPU((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxMaterialCount)
+        mRender::mRender(const cApplication* const app, const iRenderContext* const context) :
+            _app((cApplication*)app), _context((iRenderContext*)context), _materialsCPU((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxMaterialCount)
         {
             cMemoryPool* const memoryPool = _app->GetMemoryPool();
 

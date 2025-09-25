@@ -32,7 +32,7 @@ namespace realware
         void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
             cApplication* app = (cApplication*)glfwGetWindowUserPointer(window);
-            key &= app->KEY_BUFFER_MASK;
+            key &= app->K_KEY_BUFFER_MASK;
 
             if (action == GLFW_PRESS)
                 app->SetKey(key, K_TRUE);
@@ -202,8 +202,8 @@ namespace realware
 
         void cApplication::DestroyContexts()
         {
-            _soundContext->~cSoundContext();
-            _renderContext->~cRenderContext();
+            _soundContext->~iSoundContext();
+            _renderContext->~iRenderContext();
             _memoryPool->Free(_soundContext);
             _memoryPool->Free(_renderContext);
         }

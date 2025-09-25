@@ -32,7 +32,7 @@ namespace realware
         struct sRenderTarget;
         struct sRenderPass;
         struct sShader;
-        class cRenderContext;
+        class iRenderContext;
 
         using index = types::u32;
 
@@ -151,7 +151,7 @@ namespace realware
         class mRender
         {
         public:
-            explicit mRender(const app::cApplication* const app, const cRenderContext* const context);
+            explicit mRender(const app::cApplication* const app, const iRenderContext* const context);
             ~mRender();
 
             sMaterial* AddMaterial(const std::string& id, const render::sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, const game::Category& customShaderRenderPath = game::Category::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
@@ -184,12 +184,12 @@ namespace realware
 
             void ResizeWindow(const glm::vec2& size);
             
-            sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
-            sBuffer* GetIndexBuffer() const { return _indexBuffer; }
-            sBuffer* GetInstanceBuffer() const { return _instanceBuffer; }
-            sBuffer* GetMaterialBuffer() const { return _materialBuffer; }
-            sBuffer* GetLightBuffer() const { return _lightBuffer; }
-            sBuffer* GetTextureAtlasTexturesBuffer() const { return _textureAtlasTexturesBuffer; }
+            inline sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
+            inline sBuffer* GetIndexBuffer() const { return _indexBuffer; }
+            inline sBuffer* GetInstanceBuffer() const { return _instanceBuffer; }
+            inline sBuffer* GetMaterialBuffer() const { return _materialBuffer; }
+            inline sBuffer* GetLightBuffer() const { return _lightBuffer; }
+            inline sBuffer* GetTextureAtlasTexturesBuffer() const { return _textureAtlasTexturesBuffer; }
             inline sRenderPass* GetOpaqueRenderPass() const { return _opaque; }
             inline sRenderPass* GetTransparentRenderPass() const { return _transparent; }
             inline sRenderPass* GetTextRenderPass() const { return _text; }
@@ -200,7 +200,7 @@ namespace realware
 
         private:
             app::cApplication* _app = nullptr;
-            cRenderContext* _context = nullptr;
+            iRenderContext* _context = nullptr;
             sBuffer* _vertexBuffer = nullptr;
             sBuffer* _indexBuffer = nullptr;
             sBuffer* _instanceBuffer = nullptr;
