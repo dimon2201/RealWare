@@ -18,10 +18,16 @@ namespace realware
 
     namespace game
     {
+        mCamera::mCamera(const cApplication* const app) : _app((cApplication*)app)
+        {
+        }
+
         void mCamera::CreateCamera()
         {
             mGameObject* gameObjectManager = _app->GetGameObjectManager();
             _cameraGameObject = gameObjectManager->AddGameObject(K_CAMERA_ID);
+            _cameraGameObject->SetVisible(K_FALSE);
+            _cameraGameObject->SetOpaque(K_FALSE);
         }
 
         void mCamera::DestroyCamera()

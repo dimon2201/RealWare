@@ -88,33 +88,47 @@ namespace realware
             sApplicationDescriptor* desc = _app->GetDesc();
             const glm::vec2 windowSize = _app->GetWindowSize();
 
-            _maxInstanceBufferByteSize = desc->MaxRenderInstanceCount * sizeof(sRenderInstance);
+            _maxOpaqueInstanceBufferByteSize = desc->MaxRenderOpaqueInstanceCount * sizeof(sRenderInstance);
+            _maxTransparentInstanceBufferByteSize = desc->MaxRenderTransparentInstanceCount * sizeof(sRenderInstance);
+            _maxTextInstanceBufferByteSize = desc->MaxRenderTextInstanceCount * sizeof(sRenderInstance);
             _maxMaterialBufferByteSize = desc->MaxMaterialCount * sizeof(sMaterialInstance);
             _maxLightBufferByteSize = desc->MaxLightCount * sizeof(sLightInstance);
             _maxTextureAtlasTexturesBufferByteSize = desc->MaxTextureAtlasTextureCount * sizeof(sTextureAtlasTextureGPU);
 
             _vertexBuffer = _context->CreateBuffer(desc->VertexBufferSize, sBuffer::eType::VERTEX, nullptr);
             _indexBuffer = _context->CreateBuffer(desc->IndexBufferSize, sBuffer::eType::INDEX, nullptr);
-            _instanceBuffer = _context->CreateBuffer(_maxInstanceBufferByteSize, sBuffer::eType::LARGE, nullptr);
-            _instanceBuffer->Slot = 0;
-            _materialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
-            _materialBuffer->Slot = 1;
+            _opaqueInstanceBuffer = _context->CreateBuffer(_maxOpaqueInstanceBufferByteSize, sBuffer::eType::LARGE, nullptr);
+            _opaqueInstanceBuffer->Slot = 0;
+            _transparentInstanceBuffer = _context->CreateBuffer(_maxTransparentInstanceBufferByteSize, sBuffer::eType::LARGE, nullptr);
+            _transparentInstanceBuffer->Slot = 0;
+            _textInstanceBuffer = _context->CreateBuffer(_maxTextInstanceBufferByteSize, sBuffer::eType::LARGE, nullptr);
+            _textInstanceBuffer->Slot = 0;
+            _opaqueMaterialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
+            _opaqueMaterialBuffer->Slot = 1;
+            _transparentMaterialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
+            _transparentMaterialBuffer->Slot = 1;
             _lightBuffer = _context->CreateBuffer(_maxLightBufferByteSize, sBuffer::eType::LARGE, nullptr);
             _lightBuffer->Slot = 2;
-            _textureAtlasTexturesBuffer = _context->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, sBuffer::eType::LARGE, nullptr);
-            _textureAtlasTexturesBuffer->Slot = 3;
+            _opaqueTextureAtlasTexturesBuffer = _context->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, sBuffer::eType::LARGE, nullptr);
+            _opaqueTextureAtlasTexturesBuffer->Slot = 3;
             _vertices = memoryPool->Allocate(desc->VertexBufferSize);
             _verticesByteSize = 0;
             _indices = memoryPool->Allocate(desc->IndexBufferSize);
             _indicesByteSize = 0;
-            _instances = memoryPool->Allocate(_maxInstanceBufferByteSize);
-            _instancesByteSize = 0;
-            _materials = memoryPool->Allocate(_maxMaterialBufferByteSize);
-            _materialsByteSize = 0;
+            _opaqueInstances = memoryPool->Allocate(_maxOpaqueInstanceBufferByteSize);
+            _opaqueInstancesByteSize = 0;
+            _transparentInstances = memoryPool->Allocate(_maxTransparentInstanceBufferByteSize);
+            _transparentInstancesByteSize = 0;
+            _textInstances = memoryPool->Allocate(_maxTextInstanceBufferByteSize);
+            _textInstancesByteSize = 0;
+            _opaqueMaterials = memoryPool->Allocate(_maxMaterialBufferByteSize);
+            _opaqueMaterialsByteSize = 0;
+            _transparentMaterials = memoryPool->Allocate(_maxMaterialBufferByteSize);
+            _transparentMaterialsByteSize = 0;
             _lights = memoryPool->Allocate(_maxLightBufferByteSize);
             _lightsByteSize = 0;
-            _textureAtlasTextures = memoryPool->Allocate(_maxTextureAtlasTexturesBufferByteSize);
-            _textureAtlasTexturesByteSize = 0;
+            _opaqueTextureAtlasTextures = memoryPool->Allocate(_maxTextureAtlasTexturesBufferByteSize);
+            _opaqueTextureAtlasTexturesByteSize = 0;
             std::unordered_map<render::sMaterial*, s32>* pMaterialsMap = (std::unordered_map<render::sMaterial*, s32>*)_app->GetMemoryPool()->Allocate(sizeof(std::unordered_map<render::sMaterial*, s32>));
             _materialsMap = new (pMaterialsMap) std::unordered_map<render::sMaterial*, s32>();
 
@@ -132,10 +146,10 @@ namespace realware
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetVertexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueInstanceBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueMaterialBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetLightBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueTextureAtlasTexturesBuffer());
                 renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.ShaderBase = nullptr;
@@ -156,9 +170,8 @@ namespace realware
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetVertexBuffer());
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetTransparentInstanceBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetTransparentMaterialBuffer());
                 renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.ShaderBase = nullptr;
@@ -179,9 +192,9 @@ namespace realware
             {
                 sRenderPass::sDescriptor renderPassDesc;
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetInstanceBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetMaterialBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetTextureAtlasTexturesBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueInstanceBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueMaterialBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueTextureAtlasTexturesBuffer());
                 renderPassDesc.ShaderBase = nullptr;
                 renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_TEXT;
                 renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
@@ -238,12 +251,16 @@ namespace realware
 
             _context->DestroyBuffer(_vertexBuffer);
             _context->DestroyBuffer(_indexBuffer);
-            _context->DestroyBuffer(_instanceBuffer);
+            _context->DestroyBuffer(_textInstanceBuffer);
+            _context->DestroyBuffer(_transparentInstanceBuffer);
+            _context->DestroyBuffer(_opaqueInstanceBuffer);
             _materialsMap->~unordered_map<render::sMaterial*, s32>();
             memoryPool->Free(_materialsMap);
             memoryPool->Free(_vertices);
             memoryPool->Free(_indices);
-            memoryPool->Free(_instances);
+            memoryPool->Free(_textInstances);
+            memoryPool->Free(_transparentInstances);
+            memoryPool->Free(_opaqueInstances);
         }
 
         sMaterial* mRender::AddMaterial(const std::string& id, const sTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, const Category& customShaderRenderPath, const std::string& customVertexFuncPath, const std::string& customFragmentFuncPath)
@@ -393,61 +410,57 @@ namespace realware
             _context->WriteBuffer(_lightBuffer, 0, _lightsByteSize, _lights);*/
         }
 
-        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sRenderPass* const renderPass)
+        void mRender::WriteObjectsToOpaqueBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass)
         {
-            usize instanceCount = 0;
-            _instancesByteSize = 0;
-            _materialsByteSize = 0;
-            _textureAtlasTexturesByteSize = 0;
+            _opaqueInstanceCount = 0;
+            _opaqueInstancesByteSize = 0;
+            _opaqueMaterialsByteSize = 0;
+            _opaqueTextureAtlasTexturesByteSize = 0;
             _materialsMap->clear();
 
             for (auto& it : objects)
             {
-                if (it.GetGeometry() == geometry)
+                sTransform transform(&it);
+                transform.Transform();
+
+                s32 materialIndex = -1;
+
+                sMaterial* material = it.GetMaterial();
+                if (material != nullptr)
                 {
-                    if (it.GetVisible() == K_TRUE && it.GetOpaque() == K_TRUE)
+                    auto it = _materialsMap->find(material);
+                    if (it == _materialsMap->end())
                     {
-                        sTransform transform(&it);
-                        transform.Transform();
+                        materialIndex = _materialsMap->size();
 
-                        s32 materialIndex = -1;
-
-                        sMaterial* material = it.GetMaterial();
-
-                        auto it = _materialsMap->find(material);
-                        if (it == _materialsMap->end())
+                        sMaterialInstance mi(materialIndex, material);
+                        if (material->DiffuseTexture)
                         {
-                            materialIndex = _materialsMap->size();
-
-                            sMaterialInstance mi(materialIndex, material);
-                            if (material->DiffuseTexture)
-                            {
-                                sTextureAtlasTexture* frame = material->DiffuseTexture;
-                                mi.SetDiffuseTexture(*frame);
-                            }
-                            else
-                            {
-                                mi.DiffuseTextureLayerInfo = -1.0f;
-                            }
-
-                            _materialsMap->insert({ material, materialIndex });
-
-                            memcpy((void*)((usize)_materials + (usize)_materialsByteSize), &mi, sizeof(sMaterialInstance));
-                            _materialsByteSize += sizeof(sMaterialInstance);
+                            sTextureAtlasTexture* frame = material->DiffuseTexture;
+                            mi.SetDiffuseTexture(*frame);
                         }
                         else
                         {
-                            materialIndex = it->second;
+                            mi.DiffuseTextureLayerInfo = -1.0f;
                         }
-                        
-                        sRenderInstance ri(materialIndex, transform);
 
-                        memcpy((void*)((usize)_instances + (usize)_instancesByteSize), &ri, sizeof(sRenderInstance));
-                        _instancesByteSize += sizeof(sRenderInstance);
+                        _materialsMap->insert({ material, materialIndex });
 
-                        instanceCount += 1;
+                        memcpy((void*)((usize)_opaqueMaterials + (usize)_opaqueMaterialsByteSize), &mi, sizeof(sMaterialInstance));
+                        _opaqueMaterialsByteSize += sizeof(sMaterialInstance);
+                    }
+                    else
+                    {
+                        materialIndex = it->second;
                     }
                 }
+
+                sRenderInstance ri(materialIndex, transform);
+
+                memcpy((void*)((usize)_opaqueInstances + (usize)_opaqueInstancesByteSize), &ri, sizeof(sRenderInstance));
+                _opaqueInstancesByteSize += sizeof(sRenderInstance);
+
+                _opaqueInstanceCount += 1;
             }
 
             std::vector<sTextureAtlasTexture*>& renderPassTextureAtlasTextures = renderPass->Desc.InputTextureAtlasTextures;
@@ -462,14 +475,73 @@ namespace realware
                 );
                 tatGPU.TextureLayerInfo = textureAtlasTexture->Offset.z;
 
-                memcpy((void*)((usize)_textureAtlasTextures + (usize)_textureAtlasTexturesByteSize), &tatGPU, sizeof(sTextureAtlasTextureGPU));
-                _textureAtlasTexturesByteSize += sizeof(sTextureAtlasTextureGPU);
+                memcpy((void*)((usize)_opaqueTextureAtlasTextures + (usize)_opaqueTextureAtlasTexturesByteSize), &tatGPU, sizeof(sTextureAtlasTextureGPU));
+                _opaqueTextureAtlasTexturesByteSize += sizeof(sTextureAtlasTextureGPU);
             }
 
-            _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
-            _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
-            _context->WriteBuffer(_textureAtlasTexturesBuffer, 0, _textureAtlasTexturesByteSize, _textureAtlasTextures);
+            _context->WriteBuffer(_opaqueInstanceBuffer, 0, _opaqueInstancesByteSize, _opaqueInstances);
+            _context->WriteBuffer(_opaqueMaterialBuffer, 0, _opaqueMaterialsByteSize, _opaqueMaterials);
+            _context->WriteBuffer(_opaqueTextureAtlasTexturesBuffer, 0, _opaqueTextureAtlasTexturesByteSize, _opaqueTextureAtlasTextures);
+        }
 
+        void mRender::WriteObjectsToTransparentBuffers(const std::vector<game::cGameObject>& objects)
+        {
+            _transparentInstanceCount = 0;
+            _transparentInstancesByteSize = 0;
+            _transparentMaterialsByteSize = 0;
+            _materialsMap->clear();
+
+            for (auto& it : objects)
+            {
+                sTransform transform(&it);
+                transform.Transform();
+
+                s32 materialIndex = -1;
+                sMaterial* material = it.GetMaterial();
+
+                if (material != nullptr)
+                {
+                    auto it = _materialsMap->find(material);
+                    if (it == _materialsMap->end())
+                    {
+                        materialIndex = _materialsMap->size();
+
+                        sMaterialInstance mi(materialIndex, material);
+                        if (material->DiffuseTexture != nullptr)
+                        {
+                            sTextureAtlasTexture* frame = material->DiffuseTexture;
+                            mi.SetDiffuseTexture(*frame);
+                        }
+                        else
+                        {
+                            mi.DiffuseTextureLayerInfo = -1.0f;
+                        }
+
+                        _materialsMap->insert({ material, materialIndex });
+
+                        memcpy((void*)((usize)_transparentMaterials + (usize)_transparentMaterialsByteSize), &mi, sizeof(sMaterialInstance));
+                        _transparentMaterialsByteSize += sizeof(sMaterialInstance);
+                    }
+                    else
+                    {
+                        materialIndex = it->second;
+                    }
+                }
+
+                sRenderInstance ri(materialIndex, transform);
+
+                memcpy((void*)((usize)_transparentInstances + (usize)_transparentInstancesByteSize), &ri, sizeof(sRenderInstance));
+                _transparentInstancesByteSize += sizeof(sRenderInstance);
+
+                _transparentInstanceCount += 1;
+            }
+
+            _context->WriteBuffer(_transparentInstanceBuffer, 0, _transparentInstancesByteSize, _transparentInstances);
+            _context->WriteBuffer(_transparentMaterialBuffer, 0, _transparentMaterialsByteSize, _transparentMaterials);
+        }
+
+        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sRenderPass* const renderPass)
+        {
             if (renderPass == nullptr)
             {
                 _context->BindRenderPass(_opaque);
@@ -485,7 +557,7 @@ namespace realware
                 geometry->IndexCount,
                 geometry->OffsetVertex,
                 geometry->OffsetIndex,
-                instanceCount
+                _opaqueInstanceCount
             );
 
             if (renderPass == nullptr)
@@ -494,82 +566,8 @@ namespace realware
                 _context->UnbindRenderPass(renderPass);
         }
 
-        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sShader* const singleShader)
+        void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const cGameObject* const cameraObject, sShader* const singleShader)
         {
-            usize instanceCount = 0;
-            _instancesByteSize = 0;
-            _materialsByteSize = 0;
-            _materialsMap->clear();
-
-            const sApplicationDescriptor* appDesc = _app->GetDesc();
-
-            for (auto& it : objects)
-            {
-                if (it.GetGeometry() == geometry)
-                {
-                    if (it.GetVisible() == K_TRUE && it.GetOpaque() == K_TRUE)
-                    {
-                        sTransform transform(&it);
-                        transform.Transform();
-
-                        s32 materialIndex = -1;
-
-                        sMaterial* material = it.GetMaterial();
-
-                        auto it = _materialsMap->find(material);
-                        if (it == _materialsMap->end())
-                        {
-                            materialIndex = _materialsMap->size();
-
-                            sMaterialInstance mi(materialIndex, material);
-                            if (material->DiffuseTexture)
-                            {
-                                sTextureAtlasTexture* frame = material->DiffuseTexture;
-                                mi.SetDiffuseTexture(*frame);
-                            }
-                            else
-                            {
-                                mi.DiffuseTextureLayerInfo = -1.0f;
-                            }
-
-                            _materialsMap->insert({ material, materialIndex });
-
-                            if (_materialsByteSize >= _maxMaterialBufferByteSize)
-                            {
-                                Print("Error: material buffer limit '" + std::to_string(_maxMaterialBufferByteSize) + "' exceeded!");
-                                return;
-                            }
-                            else
-                            {
-                                memcpy((void*)((usize)_materials + (usize)_materialsByteSize), &mi, sizeof(sMaterialInstance));
-                                _materialsByteSize += sizeof(sMaterialInstance);
-                            }
-                        }
-                        else
-                        {
-                            materialIndex = it->second;
-                        }
-
-                        sRenderInstance ri(materialIndex, transform);
-
-                        if (_instancesByteSize >= _maxInstanceBufferByteSize)
-                        {
-                            Print("Error: instance buffer limit '" + std::to_string(_maxInstanceBufferByteSize) + "' exceeded!");
-                            return;
-                        }
-                        else
-                        {
-                            memcpy((void*)((usize)_instances + (usize)_instancesByteSize), &ri, sizeof(sRenderInstance));
-                            _instancesByteSize += sizeof(sRenderInstance);
-                            instanceCount += 1;
-                        }
-                    }
-                }
-            }
-
-            _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
-            _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
-
             _context->BindRenderPass(_opaque, singleShader);
 
             if (singleShader == nullptr)
@@ -581,73 +579,14 @@ namespace realware
                 geometry->IndexCount,
                 geometry->OffsetVertex,
                 geometry->OffsetIndex,
-                instanceCount
+                _opaqueInstanceCount
             );
 
             _context->UnbindRenderPass(_opaque);
         }
 
-        void mRender::DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sShader* const singleShader)
+        void mRender::DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const cGameObject* const cameraObject, sShader* const singleShader)
         {
-            usize instanceCount = 0;
-            _instancesByteSize = 0;
-            _materialsByteSize = 0;
-            _materialsMap->clear();
-
-            for (auto& it : objects)
-            {
-                if (it.GetGeometry() == geometry)
-                {
-                    types::boolean isVisible = it.GetVisible();
-                    types::boolean isOpaque = it.GetOpaque();
-                    if (isVisible == K_TRUE && isOpaque == K_FALSE)
-                    {
-                        sTransform transform(&it);
-                        transform.Transform();
-
-                        sMaterial* material = it.GetMaterial();
-
-                        s32 materialIndex = -1;
-
-                        auto it = _materialsMap->find(material);
-                        if (it == _materialsMap->end())
-                        {
-                            materialIndex = _materialsMap->size();
-
-                            sMaterialInstance mi(materialIndex, material);
-                            if (material->DiffuseTexture != nullptr)
-                            {
-                                sTextureAtlasTexture* frame = material->DiffuseTexture;
-                                mi.SetDiffuseTexture(*frame);
-                            }
-                            else
-                            {
-                                mi.DiffuseTextureLayerInfo = -1.0f;
-                            }
-
-                            _materialsMap->insert({ material, materialIndex });
-
-                            memcpy((void*)((usize)_materials + (usize)_materialsByteSize), &mi, sizeof(sMaterialInstance));
-                            _materialsByteSize += sizeof(sMaterialInstance);
-                        }
-                        else
-                        {
-                            materialIndex = it->second;
-                        }
-
-                        sRenderInstance ri(materialIndex, transform);
-
-                        memcpy((void*)((usize)_instances + (usize)_instancesByteSize), &ri, sizeof(sRenderInstance));
-                        _instancesByteSize += sizeof(sRenderInstance);
-
-                        instanceCount += 1;
-                    }
-                }
-            }
-
-            _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
-            _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
-
             _context->BindRenderPass(_transparent, singleShader);
 
             if (singleShader != nullptr)
@@ -659,7 +598,7 @@ namespace realware
                 geometry->IndexCount,
                 geometry->OffsetVertex,
                 geometry->OffsetIndex,
-                instanceCount
+                _transparentInstanceCount
             );
 
             _context->UnbindRenderPass(_transparent);
@@ -678,8 +617,7 @@ namespace realware
                 const auto& alphabet = textFont->Alphabet;
                 const sTexture* atlas = text->Font->Atlas;
 
-                _instancesByteSize = 0;
-                _materialsByteSize = 0;
+                _textInstancesByteSize = 0;
                 _materialsMap->clear();
 
                 sTransform transform(&it);
@@ -734,19 +672,19 @@ namespace realware
 
                     offset.x += glyph.AdvanceX * textScale.x;
 
-                    memcpy((void*)((usize)_instances + (usize)_instancesByteSize), &t, sizeof(sTextInstance));
-                    _instancesByteSize += sizeof(sTextInstance);
+                    memcpy((void*)((usize)_textInstances + (usize)_textInstancesByteSize), &t, sizeof(sTextInstance));
+                    _textInstancesByteSize += sizeof(sTextInstance);
 
                     actualCharCount += 1;
                 }
 
                 sMaterial* material = it.GetMaterial();
                 sMaterialInstance mi(0, material);
-                memcpy(_materials, &mi, sizeof(sMaterialInstance));
-                _materialsByteSize += sizeof(sMaterialInstance);
+                memcpy(_textMaterials, &mi, sizeof(sMaterialInstance));
+                _textMaterialsByteSize += sizeof(sMaterialInstance);
 
-                _context->WriteBuffer(_instanceBuffer, 0, _instancesByteSize, _instances);
-                _context->WriteBuffer(_materialBuffer, 0, _materialsByteSize, _materials);
+                _context->WriteBuffer(_textInstanceBuffer, 0, _textInstancesByteSize, _textInstances);
+                _context->WriteBuffer(_textMaterialBuffer, 0, _textMaterialsByteSize, _textMaterials);
 
                 _context->BindRenderPass(_text);
                 _context->BindTexture(_text->Desc.Shader, "FontAtlas", atlas, 0);

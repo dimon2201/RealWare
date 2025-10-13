@@ -29,10 +29,12 @@ namespace realware
 
 			template<typename... Args>
 			T* Add(const std::string& id, Args&&... args);
+			T* Add(const T& object);
 			T* Find(const std::string& id);
 			void Delete(const std::string& id);
 
 			inline std::vector<T>& GetObjects() { return _objects; }
+			inline types::usize GetObjectCount() { return _maxObjectCount; }
 
 		private:
 			app::cApplication* _app = nullptr;
@@ -65,7 +67,11 @@ namespace realware
 				}
 			}
 
-			if (objectCount < _maxObjectCount)
+			if (objectCount > _maxObjectCount)
+			{
+				log::Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
+			}
+			else
 			{
 				_objects.emplace_back(std::forward<Args>(args)...);
 
@@ -76,9 +82,36 @@ namespace realware
 
 				return &object;
 			}
-			else
+
+			return nullptr;
+		}
+
+		template<typename T>
+		T* cIdVec<T>::Add(const T& object)
+		{
+			const types::usize objectCount = _objects.size();
+
+			for (types::usize i = 0; i < objectCount; i++)
+			{
+				if (_objects[i].IsDeleted == K_TRUE)
+				{
+					_objects[i] = object;
+
+					return &_objects[i];
+				}
+			}
+
+			if (objectCount > _maxObjectCount)
 			{
 				log::Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
+			}
+			else
+			{
+				_objects.emplace_back(object);
+
+				T& object = _objects.back();
+
+				return &object;
 			}
 
 			return nullptr;

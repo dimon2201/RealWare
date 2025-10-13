@@ -18,7 +18,7 @@ namespace realware
         class mCamera
         {
         public:
-            explicit mCamera(const app::cApplication* const app) : _app((app::cApplication*)app) {}
+            explicit mCamera(const app::cApplication* const app);
             ~mCamera() = default;
 
             void CreateCamera();

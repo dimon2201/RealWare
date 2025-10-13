@@ -113,10 +113,10 @@ public:
         renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
         renderPassDesc.InputBuffers.emplace_back(render->GetVertexBuffer());
         renderPassDesc.InputBuffers.emplace_back(render->GetIndexBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetInstanceBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetMaterialBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueInstanceBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueMaterialBuffer());
         renderPassDesc.InputBuffers.emplace_back(render->GetLightBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetTextureAtlasTexturesBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueTextureAtlasTexturesBuffer());
         renderPassDesc.InputTextures.emplace_back(GetTextureManager()->GetAtlas());
         renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
         renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture1);
@@ -203,7 +203,7 @@ public:
         sSubstance* pxSubstance = _physics->AddSubstance("PXSubstance1");
 
         // Game objects
-        const usize N = 50;
+        const usize N = 30;
         for (usize z = 0; z < N; z++)
         {
             for (usize y = 0; y < N; y++)
@@ -215,11 +215,11 @@ public:
 
                     cGameObject* cubeObject1 = _gameObject->AddGameObject(id);
                     cubeObject1->SetVisible(K_TRUE);
-                    cubeObject1->SetOpaque(K_TRUE);
+                    cubeObject1->SetOpaque(K_FALSE);
                     cubeObject1->SetGeometry(_cubeGeometry);
                     cubeObject1->SetPosition(position);
                     cubeObject1->SetScale(glm::vec3(1.0f));
-                    cubeObject1->SetMaterial(material1);
+                    cubeObject1->SetMaterial(material2);
                 }
             }
         }
@@ -276,6 +276,17 @@ public:
             pxScene,
             pxSubstance
         );
+
+        auto gameObjects = _gameObject->GetObjects();
+        _opaqueGameObjects = new std::vector<cGameObject>();
+        for (auto& gameObject : gameObjects.GetObjects())
+        {
+            if (gameObject.GetOpaque() == K_FALSE)
+                _opaqueGameObjects->push_back(gameObject);
+        }
+
+        const auto& opaqueGameObjectsRef = *_opaqueGameObjects;
+        _render->WriteObjectsToOpaqueBuffers(opaqueGameObjectsRef, _render->GetOpaqueRenderPass());
     }
 
     virtual void FrameUpdate() override final
@@ -294,11 +305,9 @@ public:
         _renderContext->ClearDepth(1.0f);
 
         cGameObject* cameraObject = _cameraGameObject;
-        const auto& gameObjects = _gameObject->GetObjects().GetObjects();
         _render->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
         _render->DrawGeometryOpaque(
             _cubeGeometry,
-            gameObjects,
             cameraObject
         );
         _render->CompositeFinal();
@@ -317,6 +326,7 @@ private:
     sVertexBufferGeometry* _cubeGeometry = nullptr;
     cGameObject* _cameraGameObject = nullptr;
     sRenderPass* _customRenderPass = nullptr;
+    std::vector<cGameObject>* _opaqueGameObjects;
 };
 
 int main()
@@ -328,7 +338,8 @@ int main()
     appDesc->WindowDesc.IsFullscreen = K_FALSE;
     appDesc->MemoryPoolByteSize = 64 * 1024 * 1024;
 
-    appDesc->MaxRenderInstanceCount = (50 * 50 * 50);
+    appDesc->MaxGameObjectCount = 50 * 50 * 50;
+    appDesc->MaxRenderOpaqueInstanceCount = 50 * 50 * 50;
 
     MyApp* app = new MyApp(appDesc);
     app->Run();

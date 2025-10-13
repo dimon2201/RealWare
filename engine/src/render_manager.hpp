@@ -168,9 +168,11 @@ namespace realware
             
             void UpdateLights();
 
+            void WriteObjectsToOpaqueBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass);
+            void WriteObjectsToTransparentBuffers(const std::vector<game::cGameObject>& objects);
             void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sRenderPass* const renderPass);
-            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
-            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
+            void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
+            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
             void DrawTexts(const std::vector<game::cGameObject>& objects);
             
             void CompositeTransparent();
@@ -186,10 +188,12 @@ namespace realware
             
             inline sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
             inline sBuffer* GetIndexBuffer() const { return _indexBuffer; }
-            inline sBuffer* GetInstanceBuffer() const { return _instanceBuffer; }
-            inline sBuffer* GetMaterialBuffer() const { return _materialBuffer; }
+            inline sBuffer* GetOpaqueInstanceBuffer() const { return _opaqueInstanceBuffer; }
+            inline sBuffer* GetOpaqueMaterialBuffer() const { return _opaqueMaterialBuffer; }
+            inline sBuffer* GetTransparentInstanceBuffer() const { return _transparentInstanceBuffer; }
+            inline sBuffer* GetTransparentMaterialBuffer() const { return _transparentMaterialBuffer; }
             inline sBuffer* GetLightBuffer() const { return _lightBuffer; }
-            inline sBuffer* GetTextureAtlasTexturesBuffer() const { return _textureAtlasTexturesBuffer; }
+            inline sBuffer* GetOpaqueTextureAtlasTexturesBuffer() const { return _opaqueTextureAtlasTexturesBuffer; }
             inline sRenderPass* GetOpaqueRenderPass() const { return _opaque; }
             inline sRenderPass* GetTransparentRenderPass() const { return _transparent; }
             inline sRenderPass* GetTextRenderPass() const { return _text; }
@@ -201,28 +205,50 @@ namespace realware
         private:
             app::cApplication* _app = nullptr;
             iRenderContext* _context = nullptr;
-            types::usize _maxInstanceBufferByteSize = 0;
+            types::usize _maxOpaqueInstanceBufferByteSize = 0;
+            types::usize _maxTransparentInstanceBufferByteSize = 0;
+            types::usize _maxTextInstanceBufferByteSize = 0;
             types::usize _maxMaterialBufferByteSize = 0;
             types::usize _maxLightBufferByteSize = 0;
             types::usize _maxTextureAtlasTexturesBufferByteSize = 0;
             sBuffer* _vertexBuffer = nullptr;
             sBuffer* _indexBuffer = nullptr;
-            sBuffer* _instanceBuffer = nullptr;
-            sBuffer* _materialBuffer = nullptr;
+            sBuffer* _opaqueInstanceBuffer = nullptr;
+            sBuffer* _transparentInstanceBuffer = nullptr;
+            sBuffer* _textInstanceBuffer = nullptr;
+            sBuffer* _opaqueMaterialBuffer = nullptr;
+            sBuffer* _transparentMaterialBuffer = nullptr;
+            sBuffer* _textMaterialBuffer = nullptr;
             sBuffer* _lightBuffer = nullptr;
-            sBuffer* _textureAtlasTexturesBuffer = nullptr;
+            sBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
+            sBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
+            sBuffer* _textTextureAtlasTexturesBuffer = nullptr;
+            types::usize _opaqueInstanceCount = 0;
+            types::usize _transparentInstanceCount = 0;
             void* _vertices = nullptr;
             types::usize _verticesByteSize = 0;
             void* _indices = nullptr;
             types::usize _indicesByteSize = 0;
-            void* _instances = nullptr;
-            types::usize _instancesByteSize = 0;
-            void* _materials = nullptr;
-            types::usize _materialsByteSize = 0;
+            void* _opaqueInstances = nullptr;
+            types::usize _opaqueInstancesByteSize = 0;
+            void* _transparentInstances = nullptr;
+            types::usize _transparentInstancesByteSize = 0;
+            void* _textInstances = nullptr;
+            types::usize _textInstancesByteSize = 0;
+            void* _opaqueMaterials = nullptr;
+            types::usize _opaqueMaterialsByteSize = 0;
+            void* _transparentMaterials = nullptr;
+            types::usize _transparentMaterialsByteSize = 0;
+            void* _textMaterials = nullptr;
+            types::usize _textMaterialsByteSize = 0;
             void* _lights = nullptr;
             types::usize _lightsByteSize = 0;
-            void* _textureAtlasTextures = nullptr;
-            types::usize _textureAtlasTexturesByteSize = 0;
+            void* _opaqueTextureAtlasTextures = nullptr;
+            types::usize _opaqueTextureAtlasTexturesByteSize = 0;
+            void* _transparentTextureAtlasTextures = nullptr;
+            types::usize _transparentTextureAtlasTexturesByteSize = 0;
+            void* _textTextureAtlasTextures = nullptr;
+            types::usize _textTextureAtlasTexturesByteSize = 0;
             std::unordered_map<render::sMaterial*, types::s32>* _materialsMap = {};
             sRenderPass* _opaque = nullptr;
             sRenderPass* _transparent = nullptr;
