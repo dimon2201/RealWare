@@ -195,7 +195,7 @@ public:
         );
         
         // Text
-        sFont* font = _font->CreateFontTTF("C:/DDD/RealWare/resources/fonts/brahms.ttf", 64);
+        sFont* font = _font->CreateFontTTF("C:/DDD/RealWare/resources/brahms.ttf", 64);
         sText* text = _font->CreateText(font, "New line\ntest\nanother newline\there");
 
         // Physics

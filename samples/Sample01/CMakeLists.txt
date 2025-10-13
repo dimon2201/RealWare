@@ -18,3 +18,18 @@ add_executable(
 #set(FREETYPE_DLL_SRC_FILE_PATH ../../engine/thirdparty/Freetype/bin/freetype.dll)
 #set(FREETYPE_DLL_DST_FILE_PATH ../../cmake-build-debug/samples/HighPressure/freetype.dll)
 #file(COPY_FILE ${FREETYPE_DLL_SRC_FILE_PATH} ${FREETYPE_DLL_DST_FILE_PATH})
+
+#file(GLOB EXE_FILES ${CMAKE_SOURCE_DIR}/exe_files/*)
+#file(COPY ${EXE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+
+add_custom_command(
+    TARGET
+    RealWareSample01
+    POST_BUILD
+    COMMAND
+    ${CMAKE_COMMAND}
+    -E
+    copy_directory
+    "${CMAKE_SOURCE_DIR}/exe_files"
+    "${CMAKE_CURRENT_BINARY_DIR}/Debug"
+)
