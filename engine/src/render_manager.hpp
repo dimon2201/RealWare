@@ -189,9 +189,11 @@ namespace realware
             inline sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
             inline sBuffer* GetIndexBuffer() const { return _indexBuffer; }
             inline sBuffer* GetOpaqueInstanceBuffer() const { return _opaqueInstanceBuffer; }
+            inline sBuffer* GetTextInstanceBuffer() const { return _textInstanceBuffer; }
             inline sBuffer* GetOpaqueMaterialBuffer() const { return _opaqueMaterialBuffer; }
             inline sBuffer* GetTransparentInstanceBuffer() const { return _transparentInstanceBuffer; }
             inline sBuffer* GetTransparentMaterialBuffer() const { return _transparentMaterialBuffer; }
+            inline sBuffer* GetTextMaterialBuffer() const { return _textMaterialBuffer; }
             inline sBuffer* GetLightBuffer() const { return _lightBuffer; }
             inline sBuffer* GetOpaqueTextureAtlasTexturesBuffer() const { return _opaqueTextureAtlasTexturesBuffer; }
             inline sRenderPass* GetOpaqueRenderPass() const { return _opaque; }

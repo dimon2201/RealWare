@@ -253,7 +253,7 @@ public:
             pxScene,
             pxSubstance,
             1000.0f
-        );
+        );*/
 
         cGameObject* textObject = _gameObject->AddGameObject("TextObject");
         textObject->SetVisible(K_TRUE);
@@ -261,7 +261,7 @@ public:
         textObject->SetPosition(glm::vec3(0.5f, 0.5f, 0.0f));
         textObject->SetScale(glm::vec3(1.0f));
         textObject->SetMaterial(material1);
-        textObject->SetText(text);*/
+        textObject->SetText(text);
 
         // Create camera
         _camera->CreateCamera();
@@ -284,9 +284,11 @@ public:
             if (gameObject.GetOpaque() == K_FALSE)
                 _opaqueGameObjects->push_back(gameObject);
         }
-
         const auto& opaqueGameObjectsRef = *_opaqueGameObjects;
         _render->WriteObjectsToOpaqueBuffers(opaqueGameObjectsRef, _render->GetOpaqueRenderPass());
+
+        _textGameObjects = new std::vector<cGameObject>();
+        _textGameObjects->push_back(*textObject);
     }
 
     virtual void FrameUpdate() override final
@@ -310,6 +312,9 @@ public:
             _cubeGeometry,
             cameraObject
         );
+        _render->DrawTexts(
+            *_textGameObjects
+        );
         _render->CompositeFinal();
     }
 
@@ -327,6 +332,7 @@ private:
     cGameObject* _cameraGameObject = nullptr;
     sRenderPass* _customRenderPass = nullptr;
     std::vector<cGameObject>* _opaqueGameObjects;
+    std::vector<cGameObject>* _textGameObjects;
 };
 
 int main()

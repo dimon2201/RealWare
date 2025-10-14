@@ -105,6 +105,8 @@ namespace realware
             _textInstanceBuffer->Slot = 0;
             _opaqueMaterialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
             _opaqueMaterialBuffer->Slot = 1;
+            _textMaterialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
+            _textMaterialBuffer->Slot = 1;
             _transparentMaterialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
             _transparentMaterialBuffer->Slot = 1;
             _lightBuffer = _context->CreateBuffer(_maxLightBufferByteSize, sBuffer::eType::LARGE, nullptr);
@@ -125,6 +127,8 @@ namespace realware
             _opaqueMaterialsByteSize = 0;
             _transparentMaterials = memoryPool->Allocate(_maxMaterialBufferByteSize);
             _transparentMaterialsByteSize = 0;
+            _textMaterials = memoryPool->Allocate(_maxMaterialBufferByteSize);
+            _textMaterialsByteSize = 0;
             _lights = memoryPool->Allocate(_maxLightBufferByteSize);
             _lightsByteSize = 0;
             _opaqueTextureAtlasTextures = memoryPool->Allocate(_maxTextureAtlasTexturesBufferByteSize);
@@ -192,9 +196,8 @@ namespace realware
             {
                 sRenderPass::sDescriptor renderPassDesc;
                 renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_NONE;
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueInstanceBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueMaterialBuffer());
-                renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueTextureAtlasTexturesBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetTextInstanceBuffer());
+                renderPassDesc.InputBuffers.emplace_back(mRender::GetTextMaterialBuffer());
                 renderPassDesc.ShaderBase = nullptr;
                 renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_TEXT;
                 renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
