@@ -4,7 +4,7 @@ Lightweight C++11 game engine
 
 # Features
 - Perspective camera
-- File system data files
+- File system
 - TTF fonts
 - Memory pool
 - PhysX physics
