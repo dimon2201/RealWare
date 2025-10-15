@@ -224,37 +224,6 @@ public:
             }
         }
 
-        /*cGameObject* triangleObject1 = _gameObject->AddGameObject("TriangleObject1");
-        triangleObject1->SetVisible(K_TRUE);
-        triangleObject1->SetOpaque(K_TRUE);
-        triangleObject1->SetGeometry(_triangleGeometry);
-        triangleObject1->SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
-        triangleObject1->SetScale(glm::vec3(1.0f));
-        triangleObject1->SetMaterial(material1);
-
-        cGameObject* triangleObject2 = _gameObject->AddGameObject("TriangleObject2");
-        triangleObject2->SetVisible(K_TRUE);
-        triangleObject2->SetOpaque(K_FALSE);
-        triangleObject2->SetGeometry(_quadGeometry);
-        triangleObject2->SetPosition(glm::vec3(0.0f, 0.0f, -3.0f));
-        triangleObject2->SetScale(glm::vec3(1.0f));
-        triangleObject2->SetMaterial(material2);
-
-        cGameObject* cubeObject1 = _gameObject->AddGameObject("CubeObject1");
-        cubeObject1->SetVisible(K_TRUE);
-        cubeObject1->SetOpaque(K_TRUE);
-        cubeObject1->SetGeometry(_cubeGeometry);
-        cubeObject1->SetPosition(glm::vec3(0.0f, 3.0f, 0.0f));
-        cubeObject1->SetScale(glm::vec3(1.0f));
-        cubeObject1->SetMaterial(material1);
-        cubeObject1->SetPhysicsActor(
-            Category::PHYSICS_ACTOR_DYNAMIC,
-            Category::PHYSICS_SHAPE_BOX,
-            pxScene,
-            pxSubstance,
-            1000.0f
-        );*/
-
         cGameObject* textObject = _gameObject->AddGameObject("TextObject");
         textObject->SetVisible(K_TRUE);
         textObject->SetOpaque(K_TRUE);
