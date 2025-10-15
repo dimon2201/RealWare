@@ -3,7 +3,7 @@
 Lightweight C++11 game engine
 
 # Features
-- File system
+- File IO
 - TTF fonts
 - Memory pool
 - PhysX physics
