@@ -15,6 +15,10 @@ namespace realware
 
     namespace fs
     {
+        mFileSystem::mFileSystem(const app::cApplication* const app) : _app((app::cApplication*)app)
+        {
+        }
+
         sFile* mFileSystem::CreateDataFile(const std::string& filepath, types::boolean isString)
         {
             std::ifstream inputFile(filepath, std::ios::binary);

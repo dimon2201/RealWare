@@ -20,7 +20,7 @@ namespace realware
         class mFileSystem
         {
         public:
-            explicit mFileSystem(const app::cApplication* const app) : _app((app::cApplication*)app) {};
+            explicit mFileSystem(const app::cApplication* const app);
             ~mFileSystem() = default;
 
             sFile* CreateDataFile(const std::string& filepath, const types::boolean isString);

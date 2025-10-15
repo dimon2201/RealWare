@@ -278,14 +278,14 @@ public:
         );
 
         auto gameObjects = _gameObject->GetObjects();
-        _opaqueGameObjects = new std::vector<cGameObject>();
+        _transparentGameObjects = new std::vector<cGameObject>();
         for (auto& gameObject : gameObjects.GetObjects())
         {
             if (gameObject.GetOpaque() == K_FALSE)
-                _opaqueGameObjects->push_back(gameObject);
+                _transparentGameObjects->push_back(gameObject);
         }
-        const auto& opaqueGameObjectsRef = *_opaqueGameObjects;
-        _render->WriteObjectsToOpaqueBuffers(opaqueGameObjectsRef, _render->GetOpaqueRenderPass());
+        const auto& transparentGameObjectsRef = *_transparentGameObjects;
+        _render->WriteObjectsToTransparentBuffers(transparentGameObjectsRef);
 
         _textGameObjects = new std::vector<cGameObject>();
         _textGameObjects->push_back(*textObject);
@@ -308,13 +308,11 @@ public:
 
         cGameObject* cameraObject = _cameraGameObject;
         _render->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
-        _render->DrawGeometryOpaque(
+        _render->DrawGeometryTransparent(
             _cubeGeometry,
             cameraObject
         );
-        _render->DrawTexts(
-            *_textGameObjects
-        );
+        _render->CompositeTransparent();
         _render->CompositeFinal();
     }
 
@@ -331,7 +329,7 @@ private:
     sVertexBufferGeometry* _cubeGeometry = nullptr;
     cGameObject* _cameraGameObject = nullptr;
     sRenderPass* _customRenderPass = nullptr;
-    std::vector<cGameObject>* _opaqueGameObjects;
+    std::vector<cGameObject>* _transparentGameObjects;
     std::vector<cGameObject>* _textGameObjects;
 };
 
