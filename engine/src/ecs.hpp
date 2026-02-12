@@ -6,6 +6,9 @@
 #include "application.hpp"
 #include "hash_table.hpp"
 #include "stack.hpp"
+#include "entity.hpp"
+#include "scene.hpp"
+#include "single_value.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -15,71 +18,48 @@ namespace triton
 
 namespace triton::ecs
 {
-	using entity = types::u64;
-	static constexpr entity kInvalidEntity = 0;
-
-	struct sComponent {};
-
-	template <typename TComponent>
-	class cComponentStorage : public iObject
+	// TODO: move cSceneStorage to separate "scene_storage.hpp" file
+	class cSceneStorage : public iObject
 	{
-		static_assert(std::is_base_of_v<sComponent, TComponent>, "TComponent must inherit from sComponent");
+		TRITON_OBJECT(cSceneStorage)
 
-		cStack<TComponent>* _data = nullptr;
-		cHashTable<entity, types::u32>* _indices = nullptr;
+		cStack<cScene>* _scenes = nullptr;
+		cHashTable<std::string, cSingleValue>* _sceneIndices = nullptr;
 
 	public:
-		explicit cComponentStorage(triton::cContext* context);
-		virtual ~cComponentStorage() override final;
+		struct sFindResult
+		{
+			types::boolean isOK = types::K_FALSE;
+			types::usize index = 0;
+		};
 
-		TComponent* Create(entity ent);
-		TComponent* Get(entity ent);
-		void Destroy(entity ent);
+		explicit cSceneStorage(triton::cContext* context);
+		virtual ~cSceneStorage() override final;
+
+		cScene* Create(const std::string& name);
+		cScene* Get(const std::string& name);
+		cScene* Get(types::usize index);
+		void Destroy(const std::string& name);
+		sFindResult FindEntity(entity ent);
 	};
 
-	template <typename TComponent>
-	cComponentStorage<TComponent>::cComponentStorage(triton::cContext* context)
+	class cECSSystem : public iObject
 	{
-		const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+		TRITON_OBJECT(cECSSystem)
 
-		sChunkAllocatorDescriptor cad = {};
-		cad.chunkByteSize = caps->hashTableChunkByteSize;
-		cad.maxChunkCount = caps->hashTableMaxChunkCount;
-		cad.hashTableSize = caps->hashTableSize;
+		cSceneStorage* _scenes = nullptr;
 
-		_data = _context->Create<cStack<TComponent>>(_context, cad);
-		_indices = _context->Create<cHashTable<entity, types::u32>>(_context, cad);
-	}
+	public:
+		explicit cECSSystem(triton::cContext* context) : iObject(context)
+		{
+			_scenes = _context->Create<cSceneStorage>(_context);
+		}
 
-	template <typename TComponent>
-	cComponentStorage<TComponent>::~cComponentStorage()
-	{
-		_context->Destroy<cHashTable<entity, types::u32>>(_indices);
-		_context->Destroy<cStack<TComponent>>(_data);
-	}
+		virtual ~cECSSystem() override final
+		{
+			_context->Destroy<cSceneStorage>(_scenes);
+		}
 
-	template <typename TComponent>
-	TComponent* cComponentStorage<TComponent>::Create(entity ent)
-	{
-		_indices->Insert(ent, _data->GetSize());
-		TComponent* component = _data->Push();
-
-		return component;
-	}
-
-	template <typename TComponent>
-	TComponent* cComponentStorage<TComponent>::Get(entity ent)
-	{
-		types::u32 index = _indices->Find(ent);
-		TComponent* component = _data->At(index);
-
-		return component;
-	}
-
-	template <typename TComponent>
-	void cComponentStorage<TComponent>::Destroy(entity ent)
-	{
-		types::u32 index = _indices->Find(ent);
-		_data->Erase(index);
-	}
+		inline cSceneStorage* GetScenes() const { return _scenes; }
+	};
 }

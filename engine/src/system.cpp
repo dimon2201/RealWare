@@ -6,5 +6,5 @@ using namespace triton;
 
 namespace triton::ecs
 {
-	cSystem::cSystem(cContext* context) : iObject(context) {}
+	cSystem::cSystem(triton::cContext* context) : triton::iObject(context) {}
 }

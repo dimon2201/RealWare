@@ -9,121 +9,98 @@
 #include "sound_context.hpp"
 #include "sound_manager.hpp"
 #include "memory_pool.hpp"
+#include "context.hpp"
 #include "log.hpp"
 
 using namespace types;
 
 namespace triton
 {
-    cOpenALSoundAPI::cOpenALSoundAPI(cContext* context) : iSoundAPI(context)
+    cOALAudioBackend::cOALAudioBackend(cContext* context) : iAudioBackend(context)
     {
-        _device = alcOpenDevice(nullptr);
-        _context = alcCreateContext(_device, nullptr);
-        alcMakeContextCurrent(_context);
+        _alDevice = alcOpenDevice(nullptr);
+        _alContext = alcCreateContext(_alDevice, nullptr);
+        alcMakeContextCurrent(_alContext);
     }
 
-    cOpenALSoundAPI::~cOpenALSoundAPI()
+    cOALAudioBackend::~cOALAudioBackend()
     {
         alcMakeContextCurrent(nullptr);
-        alcDestroyContext(_context);
-        alcCloseDevice(_device);
+        alcDestroyContext(_alContext);
+        alcCloseDevice(_alDevice);
     }
 
-    void cOpenALSoundAPI::Create(cSound* sound)
+    void cOALAudioBackend::CreateSound(sSound& sound)
     {
-        if (sound->GetFormat() == cSound::eFormat::WAV)
-        {
-            ALuint source = 0;
-            ALuint buffer = 0;
+        ALuint source = 0, buffer = 0;
 
-            alGenSources(1, (ALuint*)&source);
-            alSourcef(source, AL_PITCH, 1);
-            alSourcef(source, AL_GAIN, 1);
-            alSource3f(source, AL_POSITION, 0, 0, 0);
-            alSource3f(source, AL_VELOCITY, 0, 0, 0);
-            alSourcei(source, AL_LOOPING, AL_FALSE);
+        ALenum wavFormat = AL_FORMAT_STEREO16;
+        if (sound.dataFormat == sSound::eDataFormat::STEREO8)
+            wavFormat = AL_FORMAT_STEREO8;
+        else if (sound.dataFormat == sSound::eDataFormat::MONO16)
+            wavFormat = AL_FORMAT_MONO16;
+        else if (sound.dataFormat == sSound::eDataFormat::MONO8)
+            wavFormat = AL_FORMAT_MONO8;
+        
+        alGenSources(1, (ALuint*)&source);
+        alSourcef(source, AL_PITCH, 1);
+        alSourcef(source, AL_GAIN, 1);
+        alSource3f(source, AL_POSITION, 0, 0, 0);
+        alSource3f(source, AL_VELOCITY, 0, 0, 0);
+        alSourcei(source, AL_LOOPING, AL_FALSE);
 
-            alGenBuffers(1, (ALuint*)&buffer);
+        alGenBuffers(1, (ALuint*)&buffer);
 
-            ALenum wavFormat = AL_FORMAT_STEREO16;
-            types::boolean stereo = sound->GetChannelCount() > 1;
-            switch (sound->GetBitsPerSample())
-            {
-                case 16:
-                    if (stereo)
-                    {
-                        wavFormat = AL_FORMAT_STEREO16;
-                        break;
-                    }
-                    else
-                    {
-                        wavFormat = AL_FORMAT_MONO16;
-                        break;
-                    }
-                case 8:
-                    if (stereo)
-                    {
-                        wavFormat = AL_FORMAT_STEREO8;
-                        break;
-                    }
-                    else
-                    {
-                        wavFormat = AL_FORMAT_MONO8;
-                        break;
-                    }
-                default:
-                    break;
-            }
+        alBufferData(buffer, wavFormat, sound.data, sound.dataByteSize, sound.sampleRate);
+        alSourcei(source, AL_BUFFER, buffer);
 
-            alBufferData(buffer, wavFormat, sound->GetData(), sound->GetDataByteSize(), sound->GetSampleRate());
-            alSourcei(source, AL_BUFFER, buffer);
-
-            sound->SetSource(source);
-            sound->SetBuffer(buffer);
-        }
+        sound.backendSound = _context->Create<cAudioBackendSound>(_context, source, buffer);
     }
 
-    void cOpenALSoundAPI::Destroy(cSound* sound)
+    void cOALAudioBackend::DestroySound(sSound& sound)
     {
-        u32 buffer = sound->GetBuffer();
-        u32 source = sound->GetSource();
+        ALuint source = 0, buffer = 0;
+        source = sound.backendSound->Source();
+        buffer = sound.backendSound->Buffer();
+
         alDeleteBuffers(1, (ALuint*)&buffer);
         alDeleteSources(1, (ALuint*)&source);
+        _context->Destroy<cAudioBackendSound>(sound.backendSound);
     }
 
-    void cOpenALSoundAPI::Play(const cSound* sound)
+    void cOALAudioBackend::PlaySound(sSound& sound)
     {
-        alSourcePlay(sound->GetSource());
+        alSourcePlay(sound.backendSound->Source());
     }
 
-    void cOpenALSoundAPI::Stop(const cSound* sound)
+    void cOALAudioBackend::StopSound(sSound& sound)
     {
-        alSourceStop(sound->GetSource());
+        alSourceStop(sound.backendSound->Source());
     }
 
-    void cOpenALSoundAPI::SetPosition(const cSound* sound, const glm::vec3& position)
+    void cOALAudioBackend::SetSoundPosition(sSound& sound, const cVector3& position)
     {
-        alSource3f(sound->GetSource(), AL_POSITION, position.x, position.y, position.z);
+        alSource3f(sound.backendSound->Source(), AL_POSITION, position.GetX(), position.GetY(), position.GetZ());
     }
 
-    void cOpenALSoundAPI::SetVelocity(const cSound* sound, const glm::vec3& velocity)
+    void cOALAudioBackend::SetSoundVelocity(sSound& sound, const cVector3& velocity)
     {
-        alSource3f(sound->GetSource(), AL_VELOCITY, velocity.x, velocity.y, velocity.z);
+        alSource3f(sound.backendSound->Source(), AL_VELOCITY, velocity.GetX(), velocity.GetY(), velocity.GetZ());
     }
 
-    void cOpenALSoundAPI::SetListenerPosition(const glm::vec3& position)
+    void cOALAudioBackend::SetListenerPosition(const cVector3& position)
     {
-        alListener3f(AL_POSITION, position.x, position.y, position.z);
+        alListener3f(AL_POSITION, position.GetX(), position.GetY(), position.GetZ());
     }
 
-    void cOpenALSoundAPI::SetListenerVelocity(const glm::vec3& velocity)
+    void cOALAudioBackend::SetListenerVelocity(const cVector3& velocity)
     {
-        alListener3f(AL_VELOCITY, velocity.x, velocity.y, velocity.z);
+        alListener3f(AL_VELOCITY, velocity.GetX(), velocity.GetY(), velocity.GetZ());
     }
 
-    void cOpenALSoundAPI::SetListenerOrientation(const glm::vec3& at, const glm::vec3& up)
+    void cOALAudioBackend::SetListenerOrientation(const cVector3& at, const cVector3& up)
     {
-        ALfloat values[] = { at.x, at.y, at.z, up.x, up.y, up.z };
+        ALfloat values[] = { at.GetX(), at.GetY(), at.GetZ(), up.GetX(), up.GetY(), up.GetZ() };
         alListenerfv(AL_ORIENTATION, &values[0]);
     }
 }

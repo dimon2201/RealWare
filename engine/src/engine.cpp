@@ -17,11 +17,14 @@
 #include "render_context.hpp"
 #include "audio.hpp"
 #include "math.hpp"
+#include "ecs.hpp"
 
 using namespace types;
 
 namespace triton
 {
+	using namespace ecs;
+
 	cEngine::cEngine(cContext* context, iApplication* app) : iObject(context), _app(app)
 	{
 		if (_app != nullptr)
@@ -53,6 +56,7 @@ namespace triton
 		_context->RegisterSubsystem(new cTime(_context));
 		_context->RegisterSubsystem(new cEventDispatcher(_context));
 		_context->RegisterSubsystem(new cMath(_context));
+		_context->RegisterSubsystem(new cECSSystem(_context));
 
 		// Create systems
 		cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);
@@ -62,7 +66,7 @@ namespace triton
 		audioSystem->Subscribe(
 			eEventType::FRAME_UPDATE,
 			[audioSystem] (iObject* self, cContext* context, cDataBuffer* data) {
-				audioSystem->OnFrameUpdate(context->GetScenes());
+				audioSystem->OnFrameUpdate();
 			}
 		);
 

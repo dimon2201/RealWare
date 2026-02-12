@@ -18,7 +18,7 @@ namespace triton
 {
     cCameraSystem::cCameraSystem(cContext* context) : cSystem(context) {}
 
-    void cCameraSystem::OnFrameUpdate(cStack<ecs::cScene>* scenes) {}
+    void cCameraSystem::OnFrameUpdate() {}
 
     /*void cCamera::Update()
     {

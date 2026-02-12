@@ -42,10 +42,10 @@ namespace triton
 		explicit cHashTable(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc);
 		virtual ~cHashTable() override final;
 
-		template<typename... Args>
-		TValue* Insert(const TKey& key, Args&&... args);
+		//template<typename... Args>
+		//TValue* Insert(const TKey& key, Args&&... args);
 		TValue* Insert(const TKey& key, TValue&& value);
-		TValue* Find(const TKey& key) const;
+		TValue* Find(const TKey& key) const; // TODO: return sHashTableResult instead of TValue*
 		TValue* Find(types::u32 index) const;
 		void Erase(const TKey& key);
 		void Erase(types::u32 index);

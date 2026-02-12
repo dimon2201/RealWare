@@ -204,23 +204,17 @@ namespace triton
 	template <typename TValue>
 	types::qword cMath::Hash(const TValue& value, types::qword mask)
 	{
-		if constexpr (std::is_enum_v<TValue>)
+		if constexpr (std::is_same_v<TValue, cTag>)
 		{
-			const types::usize byteSize = sizeof(TValue);
-
-			return HashBytes((const types::u8*)&value, byteSize, mask);
-		}
-		else if constexpr (std::is_same_v<TValue, cTag>)
-		{
-			return HashBytes(value.GetData(), value.GetByteSize(), mask);
+			return HashBytes((const types::u8*)value.GetData(), value.GetByteSize(), mask);
 		}
 		else if constexpr (std::is_same_v<TValue, std::string>)
 		{
-			return HashBytes(value.c_str(), value.size(), mask);
+			return HashBytes((const types::u8*)value.c_str(), value.size(), mask);
 		}
 		else
 		{
-			static_assert(sizeof(TValue) == 0, "Error: unsupported key type");
+			return HashBytes((const types::u8*)&value, sizeof(TValue), mask);
 		}
 	}
 }

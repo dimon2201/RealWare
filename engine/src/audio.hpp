@@ -4,15 +4,16 @@
 
 #include "category.hpp"
 #include "ecs.hpp"
+#include "system.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-	class iSoundAPI;
-	class cOpenALSoundAPI;
+	class cAudioBackendSound;
+	class iAudioBackend;
 	class cDataBuffer;
 
-	struct sWAVStructure
+	struct sWAVHeader
 	{
 		types::u8 _type[5] = {};
 		types::u8 _format[5] = {};
@@ -30,53 +31,34 @@ namespace triton
 		types::u32 _numSamples = 0;
 	};
 
-	class cSound : public iObject
+	struct sSound
 	{
-		TRITON_OBJECT(cSound)
-
-		friend class cOpenALSoundAPI;
-
-	public:
-		enum class eFormat
+		enum class eContainerFormat
 		{
 			NONE = 0,
 			WAV
 		};
 
-	public:
-		explicit cSound(cContext* context, eFormat format, const std::string& path);
-		virtual ~cSound() override final;
+		enum class eDataFormat
+		{
+			NONE = 0,
+			STEREO16,
+			MONO16,
+			STEREO8,
+			MONO8
+		};
 
-		inline eFormat GetFormat() const { return _format; }
-		inline types::u16 GetChannelCount() const { return _channelCount; }
-		inline types::u16 GetBitsPerSample() const { return _bitsPerSample; }
-		inline types::u32 GetSampleRate() const { return _sampleRate; }
-		inline types::u16* GetData() const { return _data; }
-		inline types::usize GetDataByteSize() const { return _dataByteSize; }
-		inline types::u32 GetSource() const { return _source; }
-		inline types::u32 GetBuffer() const { return _buffer; }
-		
-	private:
-		inline void SetSource(types::u32 source) { _source = source; }
-		inline void SetBuffer(types::u32 buffer) { _buffer = buffer; }
-
-	private:
-		iSoundAPI* _audioBackend = nullptr;
-		eFormat _format = eFormat::NONE;
-		types::u16 _channelCount = 0;
-		types::u16 _bitsPerSample = 0;
-		types::u32 _sampleRate = 0;
-		types::u16* _data = nullptr;
-		types::usize _dataByteSize = 0;
-		types::u32 _source = 0;
-		types::u32 _buffer = 0;
+		cAudioBackendSound* backendSound = nullptr;
+		eContainerFormat containerFormat = eContainerFormat::NONE;
+		eDataFormat dataFormat = eDataFormat::NONE;
+		types::u16 channelCount = 0;
+		types::u16 bitsPerSample = 0;
+		types::u32 sampleRate = 0;
+		types::u16* data = nullptr;
+		types::usize dataByteSize = 0;
 	};
 
-	struct sSound
-	{
-	};
-
-	class cAudio : public iObject
+	class cAudio : public ecs::cSystem
 	{
 		TRITON_OBJECT(cAudio)
 
@@ -87,20 +69,18 @@ namespace triton
 			OAL,
 		};
 
+	private:
+		API _backendAPI = API::NONE;
+		iAudioBackend* _backend = nullptr;
+
 	public:
 		explicit cAudio(cContext* context, API api);
 		virtual ~cAudio() override final;
 
-		void OnFrameUpdate(cStack<ecs::cScene>* scenes);
+		virtual void OnFrameUpdate();
 
-		void Play(ecs::entity ent); // TODO: lazy load sound from file in Play()
-		void Pause(ecs::entity ent);
-		void Stop(ecs::entity ent);
+		void CreateSound(sSound::eContainerFormat format, const std::string& filePath);
 
-		inline iSoundAPI* GetAPI() const { return _audioBackend; }
-
-	private:
-		API _audioBackendAPI = API::NONE;
-		iSoundAPI* _audioBackend = nullptr;
+		inline iAudioBackend* GetBackend() const { return _backend; }
 	};
 }

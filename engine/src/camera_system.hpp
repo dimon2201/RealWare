@@ -19,7 +19,7 @@ namespace triton
         explicit cCameraSystem(cContext* context);
         virtual ~cCameraSystem() override final = default;
 
-        virtual void OnFrameUpdate(cStack<ecs::cScene>* scenes) override;
+        virtual void OnFrameUpdate() override final;
 
         void Update();
         void AddEuler(eCategory angle, types::f32 value);

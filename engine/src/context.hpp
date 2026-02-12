@@ -11,8 +11,6 @@
 namespace triton
 {
 	class cMemoryAllocator;
-	template <typename TValue>
-	class cStack;
 
 	class cContext
 	{
@@ -38,8 +36,6 @@ namespace triton
 
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
 
-		inline cStack<ecs::cScene>* GetScenes() const { return _scenes; }
-
 		template <typename T>
 		inline T* GetFactory() const;
 
@@ -48,7 +44,6 @@ namespace triton
 
 	private:
 		cMemoryAllocator* _allocator = nullptr;
-		cStack<ecs::cScene>* _scenes = nullptr;
 		std::unordered_map<ClassType, iObject*> _factories;
 		std::unordered_map<ClassType, iObject*> _subsystems;
 	};
