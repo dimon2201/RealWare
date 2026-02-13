@@ -28,7 +28,7 @@ using namespace types;
 
 namespace triton
 {
-    cWindow::cWindow(cContext* context, const std::string& title, types::usize width, types::usize height, types::boolean fullscreen)
+    cWindow::cWindow(cContext* context, const std::string& title, usize width, usize height, types::boolean fullscreen)
         : iObject(context), _title(title), _fullscreen(fullscreen)
     {
         cInput* input = context->GetSubsystem<cInput>();
@@ -116,7 +116,7 @@ namespace triton
     iApplication::iApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
     {
         _engine = new cEngine(_context, this);
-        //_window = _context->Create<cWindow>(_context, caps->windowTitle, caps->windowWidth, caps->windowHeight, caps->fullscreen);
+        _window = _context->Create<cWindow>(_context, caps->windowTitle, caps->windowWidth, caps->windowHeight, caps->fullscreen);
     }
 
     iApplication::~iApplication()

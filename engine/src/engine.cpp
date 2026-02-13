@@ -39,7 +39,7 @@ namespace triton
 		_context->CreateMemoryAllocator();
 
 		// Register factories
-		//_context->RegisterFactory<cWindow>();
+		_context->RegisterFactory<cWindow>();
 		//_context->RegisterFactory<cBuffer>();
 		//_context->RegisterFactory<cShader>();
 		//_context->RegisterFactory<cTexture>();
@@ -48,8 +48,8 @@ namespace triton
 
 		// Register subsystems
 		_context->RegisterSubsystem(this);
+		_context->RegisterSubsystem(new cInput(_context));
 		//_context->RegisterSubsystem(new cGraphics(_context, cGraphics::eAPI::OGL));
-		//_context->RegisterSubsystem(new cInput(_context));
 		//_context->RegisterSubsystem(new cTextureAtlas(_context));
 		//_context->RegisterSubsystem(new cFileSystem(_context));
 		//_context->RegisterSubsystem(new cFont(_context));
