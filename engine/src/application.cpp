@@ -33,9 +33,6 @@ namespace triton
     {
         cInput* input = context->GetSubsystem<cInput>();
 
-        if (input->_initialized == K_FALSE)
-            return;
-
         glm::vec2 windowSize = glm::vec2(width, height);
 
         if (fullscreen == K_FALSE)

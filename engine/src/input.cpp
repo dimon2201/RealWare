@@ -74,16 +74,11 @@ namespace triton
 
     cInput::cInput(cContext* context) : iObject(context)
     {
-        if (_initialized == types::K_FALSE)
-        {
-            _initialized = types::K_TRUE;
-
-            glfwInit();
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        }
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     }
 
     glm::vec2 cInput::GetMonitorSize() const
