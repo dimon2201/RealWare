@@ -64,6 +64,8 @@ namespace triton
         virtual void Setup() = 0;
         virtual void Stop() = 0;
 
+        void Run();
+
         inline const sCapabilities* GetCapabilities() const { return _caps; }
         inline cEngine* GetEngine() const { return _engine; }
         inline cWindow* GetWindow() const { return _window; }

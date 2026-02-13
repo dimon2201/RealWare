@@ -20,7 +20,7 @@ namespace triton
     class cMemoryAllocator
     {
     public:
-        static constexpr types::usize MAX_BIN_COUNT = 64 + 1;
+        static constexpr types::usize MAX_BIN_COUNT = 64;
         static constexpr types::usize MAX_ALLOCATION_BYTE_SIZE = 32 * 1024;
 
     public:
