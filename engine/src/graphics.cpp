@@ -21,6 +21,7 @@
 #include "memory_pool.hpp"
 #include "log.hpp"
 #include "graphics.hpp"
+#include "input.hpp"
 #include "render_context.hpp"
 #include "log.hpp"
 

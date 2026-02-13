@@ -39,7 +39,7 @@ namespace triton
 		_context->CreateMemoryAllocator();
 
 		// Register factories
-		_context->RegisterFactory<cWindow>();
+		_context->RegisterFactory<cInputWindow>();
 		//_context->RegisterFactory<cBuffer>();
 		//_context->RegisterFactory<cShader>();
 		//_context->RegisterFactory<cTexture>();
@@ -93,7 +93,7 @@ namespace triton
 		//auto time = _context->GetSubsystem<cTime>();
 		//auto physics = _context->GetSubsystem<cPhysics>();
 
-		//cWindow* window = _app->GetWindow();
+		//cInputWindow* window = _app->GetWindow();
 
 		//time->BeginFrame();
 

@@ -28,97 +28,29 @@ using namespace types;
 
 namespace triton
 {
-    cWindow::cWindow(cContext* context, const std::string& title, usize width, usize height, types::boolean fullscreen)
-        : iObject(context), _title(title), _fullscreen(fullscreen)
-    {
-        cInput* input = context->GetSubsystem<cInput>();
-
-        glm::vec2 windowSize = glm::vec2(width, height);
-
-        if (fullscreen == K_FALSE)
-        {
-            _window = glfwCreateWindow(windowSize.x, windowSize.y, _title.c_str(), nullptr, nullptr);
-        }
-        else
-        {
-            glfwWindowHint(GLFW_DECORATED, 0);
-
-            windowSize = input->GetMonitorSize();
-            _window = glfwCreateWindow(windowSize.x, windowSize.y, _title.c_str(), glfwGetPrimaryMonitor(), nullptr);
-        }
-
-        if (!_window)
-        {
-            Print("Error: incompatible GL version!");
-            return;
-        }
-
-        _width = windowSize.x;
-        _height = windowSize.y;
-        _fullscreen = fullscreen;
-
-        glfwSetWindowUserPointer(_window, _context);
-
-        glfwMakeContextCurrent(_window);
-
-        glfwSwapInterval(1);
-
-        glfwSetKeyCallback(_window, &KeyCallback);
-        glfwSetWindowFocusCallback(_window, &WindowFocusCallback);
-        glfwSetWindowSizeCallback(_window, &WindowSizeCallback);
-        glfwSetCursorPosCallback(_window, &CursorCallback);
-        glfwSetMouseButtonCallback(_window, &MouseButtonCallback);
-    }
-
-    cWindow::~cWindow()
-    {
-        glfwDestroyWindow(_window);
-    }
-
-    void cWindow::Resize(const glm::vec2& size)
-    {
-        _width = size.x;
-        _height = size.y;
-    }
-
-    void cWindow::SwapBuffers()
-    {
-        glfwSwapBuffers(_window);
-    }
-
-    void cWindow::PollEvents()
-    {
-        glfwPollEvents();
-    }
-
-    types::boolean cWindow::GetRunState() const
-    {
-        return glfwWindowShouldClose(_window);
-    }
-
-    HWND cWindow::GetWin32Window() const
-    {
-        return glfwGetWin32Window(_window);
-    }
-
-    cVector2 cWindow::GetCursorPosition() const
-    {
-        f64 x = 0;
-        f64 y = 0;
-        glfwGetCursorPos(_window, &x, &y);
-
-        return cVector2((f32)x, (f32)y);
-    }
-
     iApplication::iApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
     {
         _engine = new cEngine(_context, this);
-        _window = _context->Create<cWindow>(_context, caps->windowTitle, caps->windowWidth, caps->windowHeight, caps->fullscreen);
+
+        cInput* input = _context->GetSubsystem<cInput>();
+        if (input == nullptr)
+            return;
+
+        _window = input->CreatePlatformWindow(
+            caps->windowTitle,
+            cVector2(caps->windowWidth, caps->windowHeight),
+            caps->fullscreen
+        );
     }
 
     iApplication::~iApplication()
     {
-        _context->Destroy<cWindow>(_window);
+        cInput* input = _context->GetSubsystem<cInput>();
+        if (input == nullptr)
+            return;
+
+        input->DestroyWindow(_window);
+
         delete _engine;
     }
 

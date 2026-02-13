@@ -10,7 +10,7 @@
 
 namespace triton
 {
-	class cWindow;
+	class cInputWindow;
 	class iGraphicsAPI;
     class iRenderContext;
     class cApplication;

@@ -1,88 +1,68 @@
 // input.cpp
 
-#include <windows.h>
-#include <GLFW/glfw3.h>
 #include "input.hpp"
-#include "application.hpp"
-#include "engine.hpp"
 #include "context.hpp"
-#include "graphics.hpp"
+#include "input_backend.hpp"
 
 using namespace types;
 
 namespace triton
 {
-    void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    cInputWindow::cInputWindow(cContext* context, const sInputBackendWindow& backendWindow)
+        : iObject(context), _backendWindow(backendWindow) {}
+    
+    types::boolean cInputWindow::IsWindowFocused() const
     {
-        const cpuword keyBufferMask = 0xFF;
-        key &= keyBufferMask;
+        iInputBackend* input = _context->GetSubsystem<iInputBackend>();
 
-        cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-        cInput* input = context->GetSubsystem<cInput>();
-
-        if (action == GLFW_PRESS)
-            input->SetKey(key, K_TRUE);
-        else if (action == GLFW_RELEASE)
-            input->SetKey(key, K_FALSE);
+        return input->IsWindowFocused();
     }
 
-    void WindowFocusCallback(GLFWwindow* window, int focused)
+    const cVector2& cInputWindow::GetSize() const
     {
-        cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-        cInput* input = context->GetSubsystem<cInput>();
-
-        if (focused)
-        {
-            if (input->GetWindowFocus() == K_FALSE)
-                input->SetWindowFocus(K_TRUE);
-        }
-        else
-        {
-            input->SetWindowFocus(K_FALSE);
-        }
+        return _backendWindow.size;
     }
 
-    void WindowSizeCallback(GLFWwindow* window, int width, int height)
+    cInput::cInput(cContext* context) : iObject(context) {}
+
+    cInputWindow* cInput::CreatePlatformWindow(
+        const std::string& title,
+        const cVector2& size,
+        types::boolean fullscreen
+    )
     {
-        cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-        cWindow* appWindow = context->GetSubsystem<cEngine>()->GetApplication()->GetWindow();
-        cGraphics* gfx = context->GetSubsystem<cGraphics>();
+        iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+        sInputBackendWindow ibw = input->CreatePlatformWindow(title, size, fullscreen);
 
-        appWindow->Resize(glm::vec2(width, height));
-
-        gfx->ResizeRenderTargets(glm::vec2(width, height));
+        return _context->Create<cInputWindow>(_context, ibw);
     }
 
-    void CursorCallback(GLFWwindow* window, double xpos, double ypos)
+    void cInput::DestroyWindow(cInputWindow* window)
     {
-        cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-        cInput* input = context->GetSubsystem<cInput>();
+        iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+        input->DestroyWindow(window->_backendWindow);
 
-        input->SetCursorPosition(glm::vec2(xpos, ypos));
+        _context->Destroy<cInputWindow>(window);
     }
 
-    void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+    cVector2 cInput::GetMonitorSize() const
     {
-        cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-        cInput* input = context->GetSubsystem<cInput>();
+        iInputBackend* input = _context->GetSubsystem<iInputBackend>();
 
-        if (action == GLFW_RELEASE)
-            input->SetMouseKey(button, 0);
-        else if (action == GLFW_PRESS)
-            input->SetMouseKey(button, 1);
+        return input->GetMonitorSize();
     }
 
-    cInput::cInput(cContext* context) : iObject(context)
+    types::boolean cInput::GetKeyPressed(types::qword keyCode) const
     {
-        glfwInit();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+
+        return input->GetKeyPressed(keyCode);
     }
 
-    glm::vec2 cInput::GetMonitorSize() const
+    types::boolean cInput::GetMouseKeyPressed(types::qword keyCode) const
     {
-        return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+        iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+
+        return input->GetMouseKeyPressed(keyCode);
     }
 }
