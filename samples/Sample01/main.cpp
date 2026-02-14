@@ -30,10 +30,11 @@ public:
 int main()
 {
     sCapabilities caps = {};
-    caps.windowTitle = "My Test Application";
-    caps.windowWidth = 800;
-    caps.windowHeight = 600;
-    caps.fullscreen = K_FALSE;
+    caps.windowCount = 1;
+    caps.windows[0].windowTitle = "My Test Application";
+    caps.windows[0].windowWidth = 800;
+    caps.windows[0].windowHeight = 600;
+    caps.windows[0].fullscreen = K_FALSE;
 
     cContext* context = new cContext();
 

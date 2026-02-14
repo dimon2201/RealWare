@@ -81,13 +81,13 @@ namespace triton
 
     void cRenderPass::ResizeColorAttachments(const glm::vec2& size)
     {
-        iGraphicsAPI* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+        iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
         gfx->ResizeRenderTargetColors(_renderPass->GetRenderTarget(), size);
     }
 
     void cRenderPass::ResizeDepthAttachment(const glm::vec2& size)
     {
-        iGraphicsAPI* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+        iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
         cRenderTarget* renderTarget = _renderPass->GetRenderTarget();
         renderTarget->SetDepthAttachment(gfx->ResizeTexture(renderTarget->GetDepthAttachment(), size));
     }
@@ -102,17 +102,17 @@ namespace triton
         }
         else if (api == eAPI::OGL)
         {
-            _gfx = new cOpenGLGraphicsAPI(_context);
+            _gfx = new cOGLGraphicsBackend(_context);
         }
         else if (api == eAPI::D3D11)
         {
         }
 
         cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-        iGraphicsAPI* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+        iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
         iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
         const sCapabilities* caps = app->GetCapabilities();
-        const cVector2 windowSize = app->GetWindow()->GetSize();
+        const cVector2 windowSize = app->GetWindows()->At(0)->GetSize();
 
         _maxOpaqueInstanceBufferByteSize = caps->maxRenderOpaqueInstanceCount * sizeof(sRenderInstance);
         _maxTransparentInstanceBufferByteSize = caps->maxRenderTransparentInstanceCount * sizeof(sRenderInstance);
@@ -269,7 +269,7 @@ namespace triton
     cGraphics::~cGraphics()
     {
         cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-        iGraphicsAPI* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+        iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
 
         DestroyRenderPass(_compositeFinal);
         DestroyRenderPass(_compositeTransparent);

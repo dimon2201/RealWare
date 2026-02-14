@@ -15,6 +15,8 @@ namespace triton
 {
     class cEngine;
     class cInputWindow;
+    template <typename TValue>
+    class cStack;
 
     class iApplication : public iObject
     {
@@ -38,11 +40,11 @@ namespace triton
 
         inline const sCapabilities* GetCapabilities() const { return _caps; }
         inline cEngine* GetEngine() const { return _engine; }
-        inline cInputWindow* GetWindow() const { return _window; }
+        inline cStack<cInputWindow>* GetWindows() const { return _windows; }
 
     protected:
         const sCapabilities* _caps = nullptr;
         cEngine* _engine = nullptr;
-        cInputWindow* _window = nullptr;
+        cStack<cInputWindow>* _windows = nullptr;
     };
 }

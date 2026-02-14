@@ -12,6 +12,7 @@
 
 namespace triton
 {
+    struct sInputBackendWindow;
     class cApplication;
     class cTextureAtlasTexture;
     class cRenderPass;
@@ -32,7 +33,7 @@ namespace triton
     {
         TRITON_OBJECT(cBuffer)
 
-        friend class cOpenGLGraphicsAPI;
+        friend class cOGLGraphicsBackend;
 
     public:
         enum class eType
@@ -60,7 +61,7 @@ namespace triton
     {
         TRITON_OBJECT(cVertexArray)
 
-        friend class cOpenGLGraphicsAPI;
+        friend class cOGLGraphicsBackend;
 
     public:
         explicit cVertexArray(cContext* context) : cGPUResource(context) {}
@@ -70,7 +71,7 @@ namespace triton
     {
         TRITON_OBJECT(cShader)
 
-        friend class cOpenGLGraphicsAPI;
+        friend class cOGLGraphicsBackend;
 
     public:
         struct sDefinePair
@@ -93,7 +94,7 @@ namespace triton
     {
         TRITON_OBJECT(cTexture)
 
-        friend class cOpenGLGraphicsAPI;
+        friend class cOGLGraphicsBackend;
 
     public:
         enum class eDimension
@@ -138,7 +139,7 @@ namespace triton
     {
         TRITON_OBJECT(cRenderTarget)
 
-        friend class cOpenGLGraphicsAPI;
+        friend class cOGLGraphicsBackend;
 
         inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
         inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
@@ -203,7 +204,7 @@ namespace triton
     {
         TRITON_OBJECT(cRenderPassGPU)
 
-        friend class cOpenGLGraphicsAPI;
+        friend class cOGLGraphicsBackend;
 
     public:
         explicit cRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, cRenderTarget* renderTarget);
@@ -219,14 +220,15 @@ namespace triton
         cRenderTarget* _renderTarget = nullptr;
     };
 
-    class iGraphicsAPI : public iObject
+    class iGraphicsBackend : public iObject
     {
-        TRITON_OBJECT(iGraphicsAPI)
+        TRITON_OBJECT(iGraphicsBackend)
 
     public:
-        explicit iGraphicsAPI(cContext* context) : iObject(context) {}
-        virtual ~iGraphicsAPI() = default;
+        explicit iGraphicsBackend(cContext* context) : iObject(context) {}
+        virtual ~iGraphicsBackend() = default;
 
+        virtual void BindContext(void* nativeWindow) = 0;
         virtual cBuffer* CreateBuffer(types::usize byteSize, cBuffer::eType type, types::s32 slot, const void* data) = 0;
         virtual void BindBuffer(const cBuffer* buffer) = 0;
 		virtual void BindBufferNotVAO(const cBuffer* buffer) = 0;
@@ -278,14 +280,15 @@ namespace triton
         virtual void DrawQuads(types::usize count) = 0;
     };
 
-    class cOpenGLGraphicsAPI : public iGraphicsAPI
+    class cOGLGraphicsBackend : public iGraphicsBackend
     {
-        TRITON_OBJECT(cOpenGLGraphicsAPI)
+        TRITON_OBJECT(cOGLGraphicsBackend)
 
     public:
-        explicit cOpenGLGraphicsAPI(cContext* context);
-        virtual ~cOpenGLGraphicsAPI() override final;
-
+        explicit cOGLGraphicsBackend(cContext* context);
+        virtual ~cOGLGraphicsBackend() override final;
+        
+        virtual void BindContext(void* nativeWindow) override final;
         virtual cBuffer* CreateBuffer(types::usize byteSize, cBuffer::eType type, types::s32 slot, const void* data) override final;
         virtual void BindBuffer(const cBuffer* buffer) override final;
         virtual void BindBufferNotVAO(const cBuffer* buffer) override final;

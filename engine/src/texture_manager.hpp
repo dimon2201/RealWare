@@ -11,7 +11,7 @@
 namespace triton
 {
     class cContext;
-    class iGraphicsAPI;
+    class iGraphicsBackend;
     class cApplication;
     class cTexture;
 
@@ -61,7 +61,7 @@ namespace triton
         void SetAtlas(const glm::vec3& size);
 
     protected:
-        iGraphicsAPI* _gfx = nullptr;
+        iGraphicsBackend* _gfx = nullptr;
         cTexture* _atlas = nullptr;
     };
 }

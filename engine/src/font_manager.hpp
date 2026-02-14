@@ -11,7 +11,7 @@
 
 namespace triton
 {
-    class iGraphicsAPI;
+    class iGraphicsBackend;
     class cApplication;
     class cTexture;
     class cContext;
@@ -104,7 +104,7 @@ namespace triton
 
     private:
         types::boolean _initialized = types::K_FALSE;
-        iGraphicsAPI* _gfx = nullptr;
+        iGraphicsBackend* _gfx = nullptr;
         FT_Library _lib = {};
     };
 }

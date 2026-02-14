@@ -35,7 +35,7 @@ namespace triton
     cFontFace::~cFontFace()
     {
         cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-        iGraphicsAPI* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+        iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
 
         for (const auto& glyph : _alphabet)
             memoryAllocator->Deallocate(glyph.second._bitmapData);
@@ -106,7 +106,7 @@ namespace triton
     {
         const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
         cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-        iGraphicsAPI* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+        iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
 
         usize maxGlyphHeight = 0;
 
@@ -206,7 +206,7 @@ namespace triton
     cFontFace* cFont::CreateFontTTF(const std::string& filename, usize glyphSize)
     {
         cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-        iGraphicsAPI* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+        iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
         cFontFace* font = _context->Create<cFontFace>(_context);
 
         FT_Face ftFont = font->GetFont();
@@ -276,7 +276,7 @@ namespace triton
         f32 textWidth = 0.0f;
         f32 maxTextWidth = 0.0f;
         const usize textByteSize = strlen(text.c_str());
-        const cVector2 windowSize = app->GetWindow()->GetSize();
+        const cVector2 windowSize = app->GetWindows()->At(0)->GetSize();
 
         for (usize i = 0; i < textByteSize; i++)
         {
@@ -318,7 +318,7 @@ namespace triton
         f32 textHeight = 0.0f;
         f32 maxHeight = 0.0f;
         const usize textByteSize = strlen(text.c_str());
-        const cVector2 windowSize = app->GetWindow()->GetSize();
+        const cVector2 windowSize = app->GetWindows()->At(0)->GetSize();
 
         for (usize i = 0; i < textByteSize; i++)
         {

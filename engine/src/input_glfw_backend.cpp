@@ -56,10 +56,6 @@ namespace triton
 
         glfwSetWindowUserPointer((GLFWwindow*)ibw.instance, _context);
 
-        glfwMakeContextCurrent((GLFWwindow*)ibw.instance);
-
-        glfwSwapInterval(1);
-
         glfwSetKeyCallback((GLFWwindow*)ibw.instance, &KeyCallback);
         glfwSetWindowFocusCallback((GLFWwindow*)ibw.instance, &WindowFocusCallback);
         glfwSetWindowSizeCallback((GLFWwindow*)ibw.instance, &WindowSizeCallback);

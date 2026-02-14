@@ -36,11 +36,16 @@ namespace triton
         if (input == nullptr)
             return;
 
-        _window = input->CreatePlatformWindow(
-            caps->windowTitle,
-            cVector2(caps->windowWidth, caps->windowHeight),
-            caps->fullscreen
-        );
+        for (usize i = 0; i < caps->windowCount; i++)
+        {
+            cInputWindow* window = input->CreatePlatformWindow(
+                caps->windows[i].windowTitle,
+                cVector2(caps->windows[i].windowWidth, caps->windows[i].windowHeight),
+                caps->windows[i].fullscreen
+            );
+
+            _windows->Push(*window);
+        }
     }
 
     iApplication::~iApplication()
@@ -49,7 +54,9 @@ namespace triton
         if (input == nullptr)
             return;
 
-        input->DestroyWindow(_window);
+        const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+        for (usize i = 0; i < caps->windowCount; i++)
+            input->DestroyWindow(_windows->At(i));
 
         delete _engine;
     }

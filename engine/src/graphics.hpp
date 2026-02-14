@@ -11,7 +11,7 @@
 namespace triton
 {
 	class cInputWindow;
-	class iGraphicsAPI;
+	class iGraphicsBackend;
     class iRenderContext;
     class cApplication;
     class cGameObject;
@@ -142,7 +142,7 @@ namespace triton
     {
         TRITON_OBJECT(cRenderPass)
 
-        friend class cOpenGLGraphicsAPI;
+        friend class cOGLGraphicsBackend;
 
     public:
         explicit cRenderPass(cContext* context, sRenderPassDescriptor* desc, cRenderPassGPU* renderPass);
@@ -226,7 +226,7 @@ namespace triton
         void CompositeTransparent();
         void CompositeFinal();
 
-        inline iGraphicsAPI* GetAPI() const { return _gfx; }
+        inline iGraphicsBackend* GetAPI() const { return _gfx; }
         inline cBuffer* GetVertexBuffer() const { return _vertexBuffer; }
         inline cBuffer* GetIndexBuffer() const { return _indexBuffer; }
         inline cBuffer* GetOpaqueInstanceBuffer() const { return _opaqueInstanceBuffer; }
@@ -247,7 +247,7 @@ namespace triton
         inline cRenderTarget* GetTransparentRenderTarget() const { return _transparentRenderTarget; }
 
 	private:
-		iGraphicsAPI* _gfx = nullptr;
+		iGraphicsBackend* _gfx = nullptr;
         types::usize _maxOpaqueInstanceBufferByteSize = 0;
         types::usize _maxTransparentInstanceBufferByteSize = 0;
         types::usize _maxTextInstanceBufferByteSize = 0;
