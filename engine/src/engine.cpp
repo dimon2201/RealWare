@@ -18,6 +18,7 @@
 #include "audio.hpp"
 #include "math.hpp"
 #include "ecs.hpp"
+#include "input_glfw_backend.hpp"
 
 using namespace types;
 
@@ -45,6 +46,9 @@ namespace triton
 		//_context->RegisterFactory<cTexture>();
 		//_context->RegisterFactory<cRenderTarget>();
 		//_context->RegisterFactory<cRenderPass>();
+
+		// Register backends
+		_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
 
 		// Register subsystems
 		_context->RegisterSubsystem(this);
