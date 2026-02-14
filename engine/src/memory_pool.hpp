@@ -2,14 +2,10 @@
 
 #pragma once
 
-#include <vector>
-#include "object.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-	class cContext;
-	
     struct sAllocatorBin
     {
         types::usize _blockSize = 0;
