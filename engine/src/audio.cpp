@@ -49,6 +49,11 @@ namespace triton
 
 	void cAudio::CreateSound(sSound::eContainerFormat format, const std::string& filePath)
 	{
+		// TODO: creation of sound
+		// SoundComponent& soundComp = scenes.GetComponent<SoundComponent>(entity);
+		// soundComp.sound = audioSystem.CreateSound(soundFormat, soundFilePath);
+		// soundComp.playState = cAudio::ePlayState::PLAY;
+
 		std::ifstream inputFile(filePath, std::ios::binary);
 		if (!inputFile)
 		{
