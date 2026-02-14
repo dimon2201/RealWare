@@ -4,7 +4,4 @@
 
 #include "backend.hpp"
 
-namespace triton
-{
-	iBackend::iBackend(cContext* context) : iObject(context) {}
-}
+triton::iBackend::iBackend(cContext* context) : iObject(context) {}

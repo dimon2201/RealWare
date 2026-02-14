@@ -37,50 +37,50 @@ namespace triton::ecs
 		TComponent* Get(entity ent);
 		void Destroy(entity ent);
 	};
+}
 
-	template <typename TComponent>
-	cComponentStorage<TComponent>::cComponentStorage(triton::cContext* context) : iObject(context)
-	{
-		const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+template <typename TComponent>
+triton::ecs::cComponentStorage<TComponent>::cComponentStorage(triton::cContext* context) : iObject(context)
+{
+	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
 
-		sChunkAllocatorDescriptor cad = {};
-		cad.chunkByteSize = caps->hashTableChunkByteSize;
-		cad.maxChunkCount = caps->hashTableMaxChunkCount;
-		cad.hashTableSize = caps->hashTableSize;
+	sChunkAllocatorDescriptor cad = {};
+	cad.chunkByteSize = caps->hashTableChunkByteSize;
+	cad.maxChunkCount = caps->hashTableMaxChunkCount;
+	cad.hashTableSize = caps->hashTableSize;
 
-		_data = _context->Create<cStack<TComponent>>(_context, cad);
-		_indices = _context->Create<cHashTable<entity, cSingleValue>>(_context, cad);
-	}
+	_data = _context->Create<cStack<TComponent>>(_context, cad);
+	_indices = _context->Create<cHashTable<entity, cSingleValue>>(_context, cad);
+}
 
-	template <typename TComponent>
-	cComponentStorage<TComponent>::~cComponentStorage()
-	{
-		_context->Destroy<cHashTable<entity, cSingleValue>>(_indices);
-		_context->Destroy<cStack<TComponent>>(_data);
-	}
+template <typename TComponent>
+triton::ecs::cComponentStorage<TComponent>::~cComponentStorage()
+{
+	_context->Destroy<cHashTable<entity, cSingleValue>>(_indices);
+	_context->Destroy<cStack<TComponent>>(_data);
+}
 
-	template <typename TComponent>
-	TComponent* cComponentStorage<TComponent>::Create(entity ent)
-	{
-		_indices->Insert(ent, _data->GetSize());
-		TComponent* component = _data->Push();
+template <typename TComponent>
+TComponent* triton::ecs::cComponentStorage<TComponent>::Create(entity ent)
+{
+	_indices->Insert(ent, _data->GetSize());
+	TComponent* component = _data->Push();
 
-		return component;
-	}
+	return component;
+}
 
-	template <typename TComponent>
-	TComponent* cComponentStorage<TComponent>::Get(entity ent)
-	{
-		cSingleValue* index = _indices->Find(ent);
-		TComponent* component = _data->At(index->Value());
+template <typename TComponent>
+TComponent* triton::ecs::cComponentStorage<TComponent>::Get(entity ent)
+{
+	cSingleValue* index = _indices->Find(ent);
+	TComponent* component = _data->At(index->Value());
 
-		return component;
-	}
+	return component;
+}
 
-	template <typename TComponent>
-	void cComponentStorage<TComponent>::Destroy(entity ent)
-	{
-		cSingleValue* index = _indices->Find(ent);
-		_data->Erase(index->Value());
-	}
+template <typename TComponent>
+void triton::ecs::cComponentStorage<TComponent>::Destroy(entity ent)
+{
+	cSingleValue* index = _indices->Find(ent);
+	_data->Erase(index->Value());
 }

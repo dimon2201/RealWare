@@ -8,6 +8,7 @@
 #include "log.hpp"
 #include "object.hpp"
 #include "hash_table.hpp"
+#include "engine.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -37,79 +38,79 @@ namespace triton
 	private:
 		types::usize _counter = 0;
 	};
+}
 
-	template <typename T>
-	cFactory<T>::cFactory(cContext* context) : iObject(context) {}
+template <typename T>
+triton::cFactory<T>::cFactory(cContext* context) : iObject(context) {}
 
-	template <typename T>
-	template <typename... Args>
-	T* cFactory<T>::Create(Args&&... args)
+template <typename T>
+template <typename... Args>
+T* triton::cFactory<T>::Create(Args&&... args)
+{
+	AssertCounter();
+
+	return New(nullptr, 0, std::forward<Args>(args)...);
+}
+
+template <typename T>
+template <typename... Args>
+T* triton::cFactory<T>::Create(types::u8* ptr, types::u32 index, Args&&... args)
+{
+	AssertCounter();
+
+	return New(ptr, index, std::forward<Args>(args)...);
+}
+
+template <typename T>
+void triton::cFactory<T>::Destroy(T* object)
+{
+	if (object == nullptr)
+		return;
+
+	object->~T();
+
+	if (object->_allocatedUsingMemAllocator == types::K_TRUE)
 	{
-		AssertCounter();
+		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
+		memoryAllocator->Deallocate(object);
+	}
+}
 
-		return New(nullptr, 0, std::forward<Args>(args)...);
+template <typename T>
+types::boolean triton::cFactory<T>::AssertCounter()
+{
+	if (_counter >= types::K_USIZE_MAX)
+	{
+		Print("Error: can't create object of type '" + T::GetTypeStatic() + "'!");
+
+		return types::K_TRUE;
 	}
 
-	template <typename T>
-	template <typename... Args>
-	T* cFactory<T>::Create(types::u8* ptr, types::u32 index, Args&&... args)
-	{
-		AssertCounter();
+	return types::K_FALSE;
+}
 
-		return New(ptr, index, std::forward<Args>(args)...);
+template <typename T>
+template <typename... Args>
+T* triton::cFactory<T>::New(types::u8* data, types::u32 index, Args&&... args)
+{
+	T* object = nullptr;
+
+	if (data == nullptr)
+	{
+		const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
+		object = (T*)memoryAllocator->Allocate(sizeof(T), caps->memoryAlignment);
+		object->_allocatedUsingMemAllocator = types::K_TRUE;
+	}
+	else
+	{
+		object = &(((T*)data)[index]);
+		object->_allocatedUsingMemAllocator = types::K_FALSE;
 	}
 
-	template <typename T>
-	void cFactory<T>::Destroy(T* object)
-	{
-		if (object == nullptr)
-			return;
+	new (object) T(std::forward<Args>(args)...);
 
-		object->~T();
+	object->_id = cIdentifier::Generate(T::GetTypeStatic());
 
-		if (object->_allocatedUsingMemAllocator == types::K_TRUE)
-		{
-			cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-			memoryAllocator->Deallocate(object);
-		}
-	}
-
-	template <typename T>
-	types::boolean cFactory<T>::AssertCounter()
-	{
-		if (_counter >= types::K_USIZE_MAX)
-		{
-			Print("Error: can't create object of type '" + T::GetTypeStatic() + "'!");
-
-			return types::K_TRUE;
-		}
-
-		return types::K_FALSE;
-	}
-
-	template <typename T>
-	template <typename... Args>
-	T* cFactory<T>::New(types::u8* data, types::u32 index, Args&&... args)
-	{
-		T* object = nullptr;
-
-		if (data == nullptr)
-		{
-			const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
-			cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-			object = (T*)memoryAllocator->Allocate(sizeof(T), caps->memoryAlignment);
-			object->_allocatedUsingMemAllocator = types::K_TRUE;
-		}
-		else
-		{
-			object = &(((T*)data)[index]);
-			object->_allocatedUsingMemAllocator = types::K_FALSE;
-		}
-
-		new (object) T(std::forward<Args>(args)...);
-
-		object->_id = cIdentifier::Generate(T::GetTypeStatic());
-
-		return object;
-	}
+	return object;
 }

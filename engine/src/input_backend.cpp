@@ -4,7 +4,4 @@
 
 #include "input_backend.hpp"
 
-namespace triton
-{
-	iInputBackend::iInputBackend(cContext* context) : iBackend(context) {}
-}
+triton::iInputBackend::iInputBackend(cContext* context) : iBackend(context) {}

@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include "object.hpp"
 #include "factory.hpp"
-#include "scene.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -55,97 +54,87 @@ namespace triton
 		::std::unordered_map<ClassType, iObject*> _factories;
 		::std::unordered_map<ClassType, iObject*> _subsystems;
 	};
+}
 
-	template <typename T, typename... Args>
-	T* cContext::Create(Args&&... args)
-	{
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _factories.find(type);
-		if (it != _factories.end())
-			return ((cFactory<T>*)it->second)->Create(std::forward<Args>(args)...);
-		else
-			return nullptr;
-	}
+template <typename T, typename... Args>
+T* triton::cContext::Create(Args&&... args)
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _factories.find(type);
+	if (it != _factories.end())
+		return ((cFactory<T>*)it->second)->Create(std::forward<Args>(args)...);
+	else
+		return nullptr;
+}
 
-	template <typename T, typename... Args>
-	T* cContext::Create(types::u8* ptr, types::u32 index, Args&&... args)
-	{
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _factories.find(type);
-		if (it != _factories.end())
-			return ((cFactory<T>*)it->second)->Create(ptr, index, std::forward<Args>(args)...);
-		else
-			return nullptr;
-	}
+template <typename T, typename... Args>
+T* triton::cContext::Create(types::u8* ptr, types::u32 index, Args&&... args)
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _factories.find(type);
+	if (it != _factories.end())
+		return ((cFactory<T>*)it->second)->Create(ptr, index, std::forward<Args>(args)...);
+	else
+		return nullptr;
+}
 
-	template <typename T>
-	void cContext::Destroy(T* object)
-	{
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _factories.find(type);
-		if (it != _factories.end())
-			((cFactory<T>*)it->second)->Destroy(object);
-	}
+template <typename T>
+void triton::cContext::Destroy(T* object)
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _factories.find(type);
+	if (it != _factories.end())
+		((cFactory<T>*)it->second)->Destroy(object);
+}
 
-	template <typename T>
-	void cContext::RegisterBackend(T* backend)
-	{
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _backends.find(type);
-		if (it == _backends.end())
-			_backends.insert({ type, backend });
+template <typename T>
+void triton::cContext::RegisterBackend(T* backend)
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _backends.find(type);
+	if (it == _backends.end())
+		_backends.insert({ type, backend });
+}
 
-	template <typename T>
-	void cContext::RegisterFactory()
-	{
-		// TODO: static_assert that T must inherit from iObject
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _factories.find(type);
-		if (it == _factories.end())
-			_factories.insert({type, new cFactory<T>(this)});
-	}
+template <typename T>
+void triton::cContext::RegisterFactory()
+{
+	// TODO: static_assert that T must inherit from iObject
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _factories.find(type);
+	if (it == _factories.end())
+		_factories.insert({type, new cFactory<T>(this)});
+}
 
-	template <typename T>
-	T* cContext::GetBackend() const
-	{
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _backends.find(type);
-		if (it != _backends.end())
-			return (T*)it->second;
-		else
-			return nullptr;
-	}
+template <typename T>
+T* triton::cContext::GetBackend() const
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _backends.find(type);
+	if (it != _backends.end())
+		return (T*)it->second;
+	else
+		return nullptr;
+}
 
-	template <typename T>
-	T* cContext::GetBackend() const
-	{
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _backends.find(type);
-		if (it != _backends.end())
-			return (T*)it->second;
-		else
-			return nullptr;
-	}
+template <typename T>
+T* triton::cContext::GetFactory() const
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _factories.find(type);
+	if (it != _factories.end())
+		return (T*)it->second;
+	else
+		return nullptr;
+}
 
-	template <typename T>
-	T* cContext::GetFactory() const
-	{
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _factories.find(type);
-		if (it != _factories.end())
-			return (T*)it->second;
-		else
-			return nullptr;
-	}
-
-	template <typename T>
-	T* cContext::GetSubsystem() const
-	{
-		const ClassType type = T::GetTypeStatic();
-		const auto it = _subsystems.find(type);
-		if (it != _subsystems.end())
-			return (T*)it->second;
-		else
-			return nullptr;
-	}
+template <typename T>
+T* triton::cContext::GetSubsystem() const
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _subsystems.find(type);
+	if (it != _subsystems.end())
+		return (T*)it->second;
+	else
+		return nullptr;
 }

@@ -36,12 +36,12 @@ namespace triton
         cDataFile* CreateDataFile(const std::string& path, types::boolean isText);
         void DestroyDataFile(cDataFile* buffer);
     };
+}
 
-    void* cDataFile::GetData() const
-    {
-        if (_data == nullptr)
-            return nullptr;
-        else
-            return _data->GetData();
-    }
+void* triton::cDataFile::GetData() const
+{
+    if (_data == nullptr)
+        return nullptr;
+    else
+        return _data->GetData();
 }

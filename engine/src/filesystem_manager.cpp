@@ -13,54 +13,51 @@
 
 using namespace types;
 
-namespace triton
+triton::cDataFile::cDataFile(cContext* context) : iObject(context) {}
+
+triton::cDataFile::~cDataFile()
 {
-    cDataFile::cDataFile(cContext* context) : iObject(context) {}
-
-    cDataFile::~cDataFile()
+    if (_data)
     {
-        if (_data)
-        {
-            auto memoryAllocator = _context->GetMemoryAllocator();
-            memoryAllocator->Deallocate(_data);
-        }
-    }
-
-    void cDataFile::Open(const std::string& path, types::boolean isText)
-    {
-        const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
         auto memoryAllocator = _context->GetMemoryAllocator();
-
-        if (_data)
-            memoryAllocator->Deallocate(_data);
-
-        std::ifstream inputFile(path, std::ios::binary);
-
-        inputFile.seekg(0, std::ios::end);
-        const usize byteSize = inputFile.tellg();
-        inputFile.seekg(0, std::ios::beg);
-        const usize databyteSize = byteSize + (isText == K_TRUE ? 1 : 0);
-
-        _data = (cDataBuffer*)memoryAllocator->Allocate(sizeof(cDataBuffer), caps->memoryAlignment);
-        memset(_data, 0, databyteSize);
-        inputFile.read((char*)&_data[0], byteSize);
+        memoryAllocator->Deallocate(_data);
     }
+}
 
-    cFileSystem::cFileSystem(cContext* context) : iObject(context) {}
+void triton::cDataFile::Open(const std::string& path, types::boolean isText)
+{
+    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+    auto memoryAllocator = _context->GetMemoryAllocator();
 
-    cDataFile* cFileSystem::CreateDataFile(const std::string& path, types::boolean isText)
-    {
-        cDataFile* file = _context->Create<cDataFile>(_context);
-        file->Open(path, isText);
+    if (_data)
+        memoryAllocator->Deallocate(_data);
 
-        return nullptr;
-    }
+    std::ifstream inputFile(path, std::ios::binary);
 
-    void cFileSystem::DestroyDataFile(cDataFile* file)
-    {
-        if (file == nullptr)
-            return;
+    inputFile.seekg(0, std::ios::end);
+    const usize byteSize = inputFile.tellg();
+    inputFile.seekg(0, std::ios::beg);
+    const usize databyteSize = byteSize + (isText == K_TRUE ? 1 : 0);
 
-        _context->Destroy<cDataFile>(file);
-    }
+    _data = (cDataBuffer*)memoryAllocator->Allocate(sizeof(cDataBuffer), caps->memoryAlignment);
+    memset(_data, 0, databyteSize);
+    inputFile.read((char*)&_data[0], byteSize);
+}
+
+triton::cFileSystem::cFileSystem(cContext* context) : iObject(context) {}
+
+triton::cDataFile* triton::cFileSystem::CreateDataFile(const std::string& path, types::boolean isText)
+{
+    cDataFile* file = _context->Create<cDataFile>(_context);
+    file->Open(path, isText);
+
+    return nullptr;
+}
+
+void triton::cFileSystem::DestroyDataFile(cDataFile* file)
+{
+    if (file == nullptr)
+        return;
+
+    _context->Destroy<cDataFile>(file);
 }

@@ -4,62 +4,59 @@
 
 using namespace types;
 
-namespace triton
+triton::cTag::cTag()
 {
-	cTag::cTag()
-	{
-		FillZeros();
-	}
+	FillZeros();
+}
 
-	cTag::cTag(const std::string& text) : cTag()
-	{
-		CopyChars((const u8*)text.c_str(), text.size());
-	}
+triton::cTag::cTag(const std::string& text) : cTag()
+{
+	CopyChars((const u8*)text.c_str(), text.size());
+}
 
-	cTag::cTag(const u8* chars, usize charsByteSize) : cTag()
-	{
-		CopyChars(chars, charsByteSize);
-	}
+triton::cTag::cTag(const u8* chars, usize charsByteSize) : cTag()
+{
+	CopyChars(chars, charsByteSize);
+}
 
-	bool cTag::operator==(const cTag& rhs)
+bool triton::cTag::operator==(const cTag& rhs)
+{
+	if (rhs.GetByteSize() != _byteSize)
+		return false;
+
+	for (usize i = 0; i < _byteSize; i++)
 	{
-		if (rhs.GetByteSize() != _byteSize)
+		if (rhs.GetData()[i] != _data[i])
 			return false;
-
-		for (usize i = 0; i < _byteSize; i++)
-		{
-			if (rhs.GetData()[i] != _data[i])
-				return false;
-		}
-
-		return true;
 	}
 
-	bool cTag::operator==(const std::string& rhs)
+	return true;
+}
+
+bool triton::cTag::operator==(const std::string& rhs)
+{
+	if (rhs.size() != _byteSize)
+		return false;
+
+	for (usize i = 0; i < _byteSize; i++)
 	{
-		if (rhs.size() != _byteSize)
+		if (rhs[i] != _data[i])
 			return false;
-
-		for (usize i = 0; i < _byteSize; i++)
-		{
-			if (rhs[i] != _data[i])
-				return false;
-		}
-
-		return true;
 	}
 
-	void cTag::FillZeros()
-	{
-		memset(&_data[0], 0, kMaxTagByteSize);
-	}
+	return true;
+}
 
-	void cTag::CopyChars(const u8* chars, usize charsByteSize)
-	{
-		if (chars == nullptr || charsByteSize == 0 || charsByteSize >= kMaxTagByteSize)
-			return;
+void triton::cTag::FillZeros()
+{
+	memset(&_data[0], 0, kMaxTagByteSize);
+}
 
-		_byteSize = charsByteSize;
-		memcpy(&_data[0], &chars[0], _byteSize);
-	}
+void triton::cTag::CopyChars(const u8* chars, usize charsByteSize)
+{
+	if (chars == nullptr || charsByteSize == 0 || charsByteSize >= kMaxTagByteSize)
+		return;
+
+	_byteSize = charsByteSize;
+	memcpy(&_data[0], &chars[0], _byteSize);
 }

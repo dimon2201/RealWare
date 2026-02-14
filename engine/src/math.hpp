@@ -147,7 +147,7 @@ namespace triton
 	{
 		friend class cMatrix4;
 		friend class cTransform;
-		
+
 	public:
 		explicit cMatrix4(const glm::mat4& mat);
 		explicit cMatrix4(types::f32 value);
@@ -200,21 +200,21 @@ namespace triton
 		template <typename TValue>
 		static types::qword Hash(const TValue& value, types::qword mask);
 	};
+}
 
-	template <typename TValue>
-	types::qword cMath::Hash(const TValue& value, types::qword mask)
+template <typename TValue>
+types::qword triton::cMath::Hash(const TValue& value, types::qword mask)
+{
+	if constexpr (std::is_same_v<TValue, cTag>)
 	{
-		if constexpr (std::is_same_v<TValue, cTag>)
-		{
-			return HashBytes((const types::u8*)value.GetData(), value.GetByteSize(), mask);
-		}
-		else if constexpr (std::is_same_v<TValue, std::string>)
-		{
-			return HashBytes((const types::u8*)value.c_str(), value.size(), mask);
-		}
-		else
-		{
-			return HashBytes((const types::u8*)&value, sizeof(TValue), mask);
-		}
+		return HashBytes((const types::u8*)value.GetData(), value.GetByteSize(), mask);
+	}
+	else if constexpr (std::is_same_v<TValue, std::string>)
+	{
+		return HashBytes((const types::u8*)value.c_str(), value.size(), mask);
+	}
+	else
+	{
+		return HashBytes((const types::u8*)&value, sizeof(TValue), mask);
 	}
 }

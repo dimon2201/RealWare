@@ -17,16 +17,16 @@ namespace triton
 
     public:
         static constexpr types::usize kMaxTagByteSize = 32;
-        using chars = std::array<types::u8, kMaxTagByteSize>;
+        using chars = ::std::array<types::u8, kMaxTagByteSize>;
 
     public:
         explicit cTag();
-        explicit cTag(const std::string& text);
+        explicit cTag(const ::std::string& text);
         explicit cTag(const types::u8* chars, types::usize charsByteSize);
         ~cTag() = default;
 
         bool operator==(const cTag& rhs);
-        bool operator==(const std::string& rhs);
+        bool operator==(const ::std::string& rhs);
 
         inline const chars& GetData() const { return _data; }
         inline types::usize GetByteSize() const { return _byteSize; }

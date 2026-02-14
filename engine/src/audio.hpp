@@ -79,7 +79,7 @@ namespace triton
 
 		virtual void OnFrameUpdate();
 
-		void CreateSound(sSound::eContainerFormat format, const std::string& filePath);
+		void CreateSound(sSound::eContainerFormat format, const ::std::string& filePath);
 
 		inline iAudioBackend* GetBackend() const { return _backend; }
 	};

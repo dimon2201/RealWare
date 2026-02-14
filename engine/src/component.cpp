@@ -4,7 +4,4 @@
 
 #include "component.hpp"
 
-namespace triton
-{
-    cComponent::cComponent(cContext* context) : iObject(context) {}
-}
+triton::cComponent::cComponent(cContext* context) : iObject(context) {}

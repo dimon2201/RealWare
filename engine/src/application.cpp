@@ -26,43 +26,40 @@
 
 using namespace types;
 
-namespace triton
+triton::iApplication::iApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
 {
-    iApplication::iApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
+    _engine = new cEngine(_context, this);
+
+    cInput* input = _context->GetSubsystem<cInput>();
+    if (input == nullptr)
+        return;
+
+    for (usize i = 0; i < caps->windowCount; i++)
     {
-        _engine = new cEngine(_context, this);
+        cInputWindow* window = input->CreatePlatformWindow(
+            caps->windows[i].windowTitle,
+            cVector2(caps->windows[i].windowWidth, caps->windows[i].windowHeight),
+            caps->windows[i].fullscreen
+        );
 
-        cInput* input = _context->GetSubsystem<cInput>();
-        if (input == nullptr)
-            return;
-
-        for (usize i = 0; i < caps->windowCount; i++)
-        {
-            cInputWindow* window = input->CreatePlatformWindow(
-                caps->windows[i].windowTitle,
-                cVector2(caps->windows[i].windowWidth, caps->windows[i].windowHeight),
-                caps->windows[i].fullscreen
-            );
-
-            _windows->Push(*window);
-        }
+        _windows->Push(*window);
     }
+}
 
-    iApplication::~iApplication()
-    {
-        cInput* input = _context->GetSubsystem<cInput>();
-        if (input == nullptr)
-            return;
+triton::iApplication::~iApplication()
+{
+    cInput* input = _context->GetSubsystem<cInput>();
+    if (input == nullptr)
+        return;
 
-        const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-        for (usize i = 0; i < caps->windowCount; i++)
-            input->DestroyWindow(_windows->At(i));
+    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+    for (usize i = 0; i < caps->windowCount; i++)
+        input->DestroyWindow(_windows->At(i));
 
-        delete _engine;
-    }
+    delete _engine;
+}
 
-    void iApplication::Run()
-    {
-        _engine->Run();
-    }
+void triton::iApplication::Run()
+{
+    _engine->Run();
 }

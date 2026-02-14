@@ -16,7 +16,7 @@ namespace triton
     struct sInputBackendWindow
     {
         types::qword instance = 0;
-        std::string title = "";
+        ::std::string title = "";
         cVector2 size = cVector2(0.0f);
         types::boolean fullscreen = types::K_FALSE;
     };
@@ -30,7 +30,7 @@ namespace triton
 		virtual ~iInputBackend() override = default;
 
         virtual sInputBackendWindow CreatePlatformWindow(
-            const std::string& title,
+            const ::std::string& title,
             const cVector2& size,
             types::boolean fullscreen
         ) = 0;

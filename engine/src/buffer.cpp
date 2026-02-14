@@ -4,15 +4,12 @@
 
 #include "buffer.hpp"
 
-namespace triton
+triton::cDataBuffer::cDataBuffer(cContext* context) : iObject(context) {}
+
+triton::cDataBuffer::~cDataBuffer()
 {
-    cDataBuffer::cDataBuffer(cContext* context) : iObject(context) {}
+}
 
-    cDataBuffer::~cDataBuffer()
-    {
-    }
-
-    void cDataBuffer::Create(void* data, types::usize byteSize)
-    {
-    }
+void triton::cDataBuffer::Create(void* data, types::usize byteSize)
+{
 }

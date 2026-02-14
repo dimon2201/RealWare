@@ -17,7 +17,7 @@ namespace triton
 	class cDataBuffer;
 	class cGameObject;
 
-	using ClassType = std::string;
+	using ClassType = ::std::string;
 
 	#define TRITON_OBJECT(typeName) \
 		public: \
@@ -27,7 +27,7 @@ namespace triton
 	class cIdentifier
 	{
 	public:
-		static cTag Generate(const std::string& seed);
+		static cTag Generate(const ::std::string& seed);
 	};
 
 	class iObject;
