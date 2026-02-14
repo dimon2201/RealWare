@@ -32,7 +32,7 @@ namespace triton
         types::boolean fullscreen
     )
     {
-        iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+        iInputBackend* input = _context->GetBackend<iInputBackend>();
         iGraphicsBackend* gfx = _context->GetSubsystem<iGraphicsBackend>();
         sInputBackendWindow ibw = input->CreatePlatformWindow(title, size, fullscreen);
         gfx->BindContext((void*)ibw.instance);
