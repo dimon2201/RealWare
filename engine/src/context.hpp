@@ -11,6 +11,7 @@
 namespace triton
 {
 	class cMemoryAllocator;
+	class iBackend;
 
 	class cContext
 	{
@@ -30,11 +31,17 @@ namespace triton
 		void CreateMemoryAllocator();
 
 		template <typename T>
+		void RegisterBackend(T* backend);
+
+		template <typename T>
 		void RegisterFactory();
 
 		void RegisterSubsystem(iObject* object);
 
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
+
+		template <typename T>
+		inline T* GetBackend() const;
 
 		template <typename T>
 		inline T* GetFactory() const;
@@ -44,8 +51,9 @@ namespace triton
 
 	private:
 		cMemoryAllocator* _allocator = nullptr;
-		std::unordered_map<ClassType, iObject*> _factories;
-		std::unordered_map<ClassType, iObject*> _subsystems;
+		::std::unordered_map<ClassType, iBackend*> _backends;
+		::std::unordered_map<ClassType, iObject*> _factories;
+		::std::unordered_map<ClassType, iObject*> _subsystems;
 	};
 
 	template <typename T, typename... Args>
@@ -80,12 +88,43 @@ namespace triton
 	}
 
 	template <typename T>
+	void cContext::RegisterBackend(T* backend)
+	{
+		const ClassType type = T::GetTypeStatic();
+		const auto it = _backends.find(type);
+		if (it == _backends.end())
+			_backends.insert({ type, backend });
+
+	template <typename T>
 	void cContext::RegisterFactory()
 	{
+		// TODO: static_assert that T must inherit from iObject
 		const ClassType type = T::GetTypeStatic();
 		const auto it = _factories.find(type);
 		if (it == _factories.end())
 			_factories.insert({type, new cFactory<T>(this)});
+	}
+
+	template <typename T>
+	T* cContext::GetBackend() const
+	{
+		const ClassType type = T::GetTypeStatic();
+		const auto it = _backends.find(type);
+		if (it != _backends.end())
+			return (T*)it->second;
+		else
+			return nullptr;
+	}
+
+	template <typename T>
+	T* cContext::GetBackend() const
+	{
+		const ClassType type = T::GetTypeStatic();
+		const auto it = _backends.find(type);
+		if (it != _backends.end())
+			return (T*)it->second;
+		else
+			return nullptr;
 	}
 
 	template <typename T>
