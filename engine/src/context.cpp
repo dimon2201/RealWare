@@ -14,6 +14,7 @@ namespace triton
 
 	void cContext::RegisterSubsystem(iObject* object)
 	{
+		// TODO: static_assert that T must inherit from iObject
 		ClassType type = object->GetType();
 		const auto it = _subsystems.find(type);
 		if (it == _subsystems.end())
