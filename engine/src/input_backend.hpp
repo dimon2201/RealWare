@@ -6,7 +6,8 @@
 #include <windows.h>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "backend.hpp"
-#include "input.hpp"
+#include "input_backend_window.hpp"
+#include "input_window.hpp"
 #include "math.hpp"
 #include "types.hpp"
 
@@ -14,14 +15,6 @@ namespace triton
 {
 	class cContext;
     
-    struct sInputBackendWindow
-    {
-        types::qword instance = 0;
-        ::std::string title = "";
-        cVector2 size = cVector2(0.0f);
-        types::boolean fullscreen = types::K_FALSE;
-    };
-
 	class iInputBackend : public iBackend
 	{
         TRITON_OBJECT(iInputBackend)
@@ -40,7 +33,7 @@ namespace triton
         virtual void SwapWindowBuffers(sInputBackendWindow& window) = 0;
         virtual void PollEvents() = 0;
         virtual void* GetWindowWin32Handle(sInputBackendWindow& window) = 0;
-        virtual triton::cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) = 0;
+        virtual cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) = 0;
         virtual types::boolean GetKeyPressed(types::qword keyCode) = 0;
         virtual types::boolean GetMouseKeyPressed(types::qword keyCode) = 0;
         virtual void SetKeyPressed(types::qword keyCode, types::boolean isPressed) = 0;
