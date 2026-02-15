@@ -23,15 +23,15 @@
 using namespace triton::ecs;
 using namespace types;
 
-triton::cEngine::cEngine(cContext* context, iApplication* app) : iObject(context), _app(app)
+triton::cEngine::cEngine(cContext* context, iApplication* app, cStack<cInputWindow>*& appWindows) : iObject(context), _app(app)
 {
 	if (_app != nullptr)
 		_caps = _app->GetCapabilities();
 
-	Initialize();
+	Initialize(appWindows);
 }
 
-void triton::cEngine::Initialize()
+void triton::cEngine::Initialize(cStack<cInputWindow>*& appWindows)
 {
 	// Create memory allocator
 	_context->CreateMemoryAllocator();
@@ -39,22 +39,25 @@ void triton::cEngine::Initialize()
 	// Register factories
 	_context->RegisterFactory<cInputWindow>();
 	_context->RegisterFactory<cStack<cInputWindow>>();
-	//_context->RegisterFactory<cBuffer>();
-	//_context->RegisterFactory<cShader>();
-	//_context->RegisterFactory<cTexture>();
-	//_context->RegisterFactory<cRenderTarget>();
-	//_context->RegisterFactory<cRenderPass>();
 
-	// Register backends
-	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
-	_context->RegisterBackend<iGraphicsBackend>(new cOGLGraphicsBackend(_context));
+	_context->RegisterFactory<cBuffer>();
+	_context->RegisterFactory<cTexture>();
+	_context->RegisterFactory<cRenderTarget>();
+	_context->RegisterFactory<cShader>();
+	_context->RegisterFactory<cVertexArray>();
+	_context->RegisterFactory<cRenderTarget>();
+	_context->RegisterFactory<cRenderPass>();
+	_context->RegisterFactory<cRenderPassGPU>();
+
+	_context->RegisterFactory<cDataBuffer>();
+	_context->RegisterFactory<cDataFile>();
 
 	// Register subsystems
 	_context->RegisterSubsystem(this);
 	_context->RegisterSubsystem(new cInput(_context));
-	//_context->RegisterSubsystem(new cGraphics(_context, cGraphics::eAPI::OGL));
-	//_context->RegisterSubsystem(new cTextureAtlas(_context));
-	//_context->RegisterSubsystem(new cFileSystem(_context));
+	_context->RegisterSubsystem(new cGraphics(_context));
+	_context->RegisterSubsystem(new cTextureAtlas(_context));
+	_context->RegisterSubsystem(new cFileSystem(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
@@ -62,6 +65,40 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cEventDispatcher(_context));
 	//_context->RegisterSubsystem(new cMath(_context));
 	//_context->RegisterSubsystem(new cECSSystem(_context));
+
+	// Create windows
+	if (appWindows != nullptr)
+	{
+		Print("Error: application windows already created!");
+
+		return;
+	}
+
+	sChunkAllocatorDescriptor cad = {};
+	cad.chunkByteSize = _caps->hashTableChunkByteSize;
+	cad.maxChunkCount = _caps->hashTableMaxChunkCount;
+	cad.hashTableSize = _caps->hashTableSize;
+	appWindows = new cStack<cInputWindow>(_context, cad);
+
+	cInput* input = _context->GetSubsystem<cInput>();
+	if (input == nullptr)
+		return;
+
+	for (usize i = 0; i < _caps->windowCount; i++)
+	{
+		cInputWindow* window = input->CreatePlatformWindow(
+			_caps->windows[i].windowTitle,
+			cVector2(_caps->windows[i].windowWidth, _caps->windows[i].windowHeight),
+			_caps->windows[i].fullscreen
+		);
+
+		appWindows->Push(*window);
+	}
+
+	// Initialize subsystems
+	// NOTE: order matters
+	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(2048, 2048, 16));
+	_context->GetSubsystem<cGraphics>()->Initialize();
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);

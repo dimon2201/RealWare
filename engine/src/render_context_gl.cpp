@@ -802,54 +802,54 @@ void triton::cOGLGraphicsBackend::DestroyRenderTarget(cRenderTarget* renderTarge
         _context->Destroy<cRenderTarget>(renderTarget);
 }
 
-triton::cRenderPassGPU* triton::cOGLGraphicsBackend::CreateRenderPass(const sRenderPassDescriptor* desc)
+triton::cRenderPassGPU* triton::cOGLGraphicsBackend::CreateRenderPass(const sRenderPassDescriptor& desc)
 {
     std::vector<cShader::sDefinePair> definePairs = {};
     cVertexArray* vertexArray = nullptr;
     cShader* shader = nullptr;
     cRenderTarget* renderTarget = nullptr;
 
-    if (desc->inputTextureAtlasTextures.size() != desc->inputTextureAtlasTextureNames.size())
+    if (desc.inputTextureAtlasTextures.size() != desc.inputTextureAtlasTextureNames.size())
     {
         Print("Error: mismatch of render pass input texture atlas texture array and input texture atlas texture name array!");
         return nullptr;
     }
-    for (usize i = 0; i < desc->inputTextureAtlasTextures.size(); i++)
+    for (usize i = 0; i < desc.inputTextureAtlasTextures.size(); i++)
     {
         const usize textureAtlasTextureIndex = i;
-        const std::string& textureAtlasTextureName = desc->inputTextureAtlasTextureNames[i];
+        const std::string& textureAtlasTextureName = desc.inputTextureAtlasTextureNames[i];
         definePairs.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
     }
 
-    if (desc->shaderBase == nullptr)
+    if (desc.shaderBase == nullptr)
     {
         shader = CreateShader(
-            desc->shaderRenderPath,
-            desc->shaderVertexPath,
-            desc->shaderFragmentPath,
+            desc.shaderRenderPath,
+            desc.shaderVertexPath,
+            desc.shaderFragmentPath,
             definePairs
         );
     }
     else
     {
         shader = CreateShader(
-            desc->shaderBase,
-            desc->shaderVertexFunc,
-            desc->shaderFragmentFunc,
+            desc.shaderBase,
+            desc.shaderVertexFunc,
+            desc.shaderFragmentFunc,
             definePairs
         );
     }
 
     vertexArray = CreateVertexArray();
     BindVertexArray(vertexArray);
-    if (desc->inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
+    if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
     {
-        for (auto buffer : desc->inputBuffers)
+        for (auto buffer : desc.inputBuffers)
             BindBuffer(buffer);
     }
-    else if (desc->inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
+    else if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
     {
-        for (auto buffer : desc->inputBuffers)
+        for (auto buffer : desc.inputBuffers)
             BindBuffer(buffer);
 
         BindDefaultInputLayout();

@@ -5,6 +5,7 @@
 #include <GLFW/glfw3native.h>
 #include <iostream>
 #include "application.hpp"
+#include "platform.hpp"
 #include "engine.hpp"
 #include "graphics.hpp"
 #include "context.hpp"
@@ -28,28 +29,7 @@ using namespace types;
 
 triton::iApplication::iApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
 {
-    _engine = new cEngine(_context, this);
-
-    sChunkAllocatorDescriptor cad = {};
-    cad.chunkByteSize = caps->hashTableChunkByteSize;
-    cad.maxChunkCount = caps->hashTableMaxChunkCount;
-    cad.hashTableSize = caps->hashTableSize;
-    _windows = _context->Create<cStack<cInputWindow>>(_context, cad);
-
-    cInput* input = _context->GetSubsystem<cInput>();
-    if (input == nullptr)
-        return;
-
-    for (usize i = 0; i < caps->windowCount; i++)
-    {
-        cInputWindow* window = input->CreatePlatformWindow(
-            caps->windows[i].windowTitle,
-            cVector2(caps->windows[i].windowWidth, caps->windows[i].windowHeight),
-            caps->windows[i].fullscreen
-        );
-
-        _windows->Push(*window);
-    }
+    _engine = new cEngine(_context, this, _windows);
 }
 
 triton::iApplication::~iApplication()

@@ -145,28 +145,28 @@ namespace triton
         friend class cOGLGraphicsBackend;
 
     public:
-        explicit cRenderPass(cContext* context, sRenderPassDescriptor* desc, cRenderPassGPU* renderPass);
+        explicit cRenderPass(cContext* context, const sRenderPassDescriptor& desc, cRenderPassGPU* renderPass);
         virtual ~cRenderPass() override final = default;
 
         void ResizeViewport(const glm::vec2& size);
         void ResizeColorAttachments(const glm::vec2& size);
         void ResizeDepthAttachment(const glm::vec2& size);
 
-        inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc->inputTextureAtlasTextures; }
+        inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc.inputTextureAtlasTextures; }
         inline cVertexArray* GetVertexArray() const { return _renderPass->GetVertexArray(); }
         inline cShader* GetShader() const { return _renderPass->GetShader(); }
         inline cRenderTarget* GetRenderTarget() const { return _renderPass->GetRenderTarget(); }
-        inline const sViewport& GetViewport() const { return _desc->viewport; }
-        inline const std::vector<cBuffer*>& GetInputBuffers() const { return _desc->inputBuffers; }
-        inline const std::vector<cTexture*>& GetInputTextures() const { return _desc->inputTextures; }
-        inline const std::vector<std::string>& GetInputTextureNames() const { return _desc->inputTextureNames; }
-        inline const sBlendMode& GetBlendMode() const { return _desc->blendMode; }
-        inline const sDepthMode& GetDepthMode() const { return _desc->depthMode; }
+        inline const sViewport& GetViewport() const { return _desc.viewport; }
+        inline const std::vector<cBuffer*>& GetInputBuffers() const { return _desc.inputBuffers; }
+        inline const std::vector<cTexture*>& GetInputTextures() const { return _desc.inputTextures; }
+        inline const std::vector<std::string>& GetInputTextureNames() const { return _desc.inputTextureNames; }
+        inline const sBlendMode& GetBlendMode() const { return _desc.blendMode; }
+        inline const sDepthMode& GetDepthMode() const { return _desc.depthMode; }
         inline cRenderPassGPU* GetRenderPassGPU() const { return _renderPass; }
-        inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc->inputTextures[textureIndex] = texture; }
+        inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc.inputTextures[textureIndex] = texture; }
 
     private:
-        sRenderPassDescriptor* _desc = nullptr;
+        sRenderPassDescriptor _desc = {};
         cRenderPassGPU* _renderPass = nullptr;
     };
 
@@ -183,14 +183,16 @@ namespace triton
 		};
 
 	public:
-		explicit cGraphics(cContext* context, eAPI api);
+		explicit cGraphics(cContext* context);
 		virtual ~cGraphics() override final;
+
+        void Initialize();
 
         // TODO: Remove material creation from cGraphics
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
         cVertexArray* CreateDefaultVertexArray();
         sVertexBufferGeometry* CreateGeometry(eCategory format, types::usize verticesByteSize, const void* vertices, types::usize indicesByteSize, const void* indices);
-        cRenderPass* CreateRenderPass(sRenderPassDescriptor* desc);
+        cRenderPass* CreateRenderPass(const sRenderPassDescriptor& desc);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
 
@@ -226,7 +228,6 @@ namespace triton
         void CompositeTransparent();
         void CompositeFinal();
 
-        inline iGraphicsBackend* GetAPI() const { return _gfx; }
         inline cBuffer* GetVertexBuffer() const { return _vertexBuffer; }
         inline cBuffer* GetIndexBuffer() const { return _indexBuffer; }
         inline cBuffer* GetOpaqueInstanceBuffer() const { return _opaqueInstanceBuffer; }
@@ -247,7 +248,6 @@ namespace triton
         inline cRenderTarget* GetTransparentRenderTarget() const { return _transparentRenderTarget; }
 
 	private:
-		iGraphicsBackend* _gfx = nullptr;
         types::usize _maxOpaqueInstanceBufferByteSize = 0;
         types::usize _maxTransparentInstanceBufferByteSize = 0;
         types::usize _maxTextInstanceBufferByteSize = 0;

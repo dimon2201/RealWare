@@ -4,23 +4,26 @@
 
 #include <unordered_map>
 #include "object.hpp"
+#include "input_window.hpp"
 #include "types.hpp"
 
 namespace triton
 {
+	struct sCapabilities;
 	class cContext;
 	class iApplication;
-	struct sCapabilities;
+	template <typename T>
+	class cStack;
 
 	class cEngine : public iObject
 	{
 		TRITON_OBJECT(cEngine)
 
 	public:
-		explicit cEngine(cContext* context, iApplication* app);
+		explicit cEngine(cContext* context, iApplication* app, cStack<cInputWindow>*& appWindows);
 		virtual ~cEngine() override final = default;
 
-		void Initialize();
+		void Initialize(cStack<cInputWindow>*& appWindows);
 		void Run();
 
 		inline iApplication* GetApplication() const { return _app; }

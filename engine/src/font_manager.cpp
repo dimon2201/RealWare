@@ -56,7 +56,7 @@ triton::cFontFace::cFontFace(cContext* context) : iObject(context) {}
 triton::cFontFace::~cFontFace()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
     for (const auto& glyph : _alphabet)
         memoryAllocator->Deallocate(glyph.second._bitmapData);
@@ -127,7 +127,7 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
 {
     const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
     usize maxGlyphHeight = 0;
 
@@ -184,7 +184,7 @@ triton::cText::cText(cContext* context) : iObject(context) {}
 
 triton::cText::~cText() {}
 
-triton::cFont::cFont(cContext* context) : iObject(context), _gfx(context->GetSubsystem<cGraphics>()->GetAPI())
+triton::cFont::cFont(cContext* context) : iObject(context), _gfx(_context->GetBackend<iGraphicsBackend>())
 {
     if (FT_Init_FreeType(&_lib))
     {
@@ -204,7 +204,7 @@ triton::cFont::~cFont()
 triton::cFontFace* triton::cFont::CreateFontTTF(const std::string& filename, usize glyphSize)
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBackend* gfx = _context->GetSubsystem<cGraphics>()->GetAPI();
+    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
     cFontFace* font = _context->Create<cFontFace>(_context);
 
     FT_Face ftFont = font->GetFont();

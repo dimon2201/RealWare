@@ -78,7 +78,7 @@ void triton::cEventDispatcher::Unsubscribe(iObject* receiver, eEventType type)
 
 void triton::cEventDispatcher::Send(eEventType type)
 {
-    cDataBuffer data(_context);
+    cDataBuffer data(_context, 64); // TODO: decide byte size for cDataBuffer
 
     Send(type, &data);
 }

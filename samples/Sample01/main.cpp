@@ -29,6 +29,20 @@ public:
 
 int main()
 {
+    /*
+        cPlatform* platform = new cPlatform(
+            cPlatform::eGraphicsBackend::OGL,
+            cPlatform::eInputBackend::GLFW
+        ); // тут хранятся все бэкенды
+        cInputWindow* window = platform->CreatePlatformWindow(); // тут обязательны вызовы бэкэндов
+        cMyApplication* myApp = new cMyApplication(context, &caps); // создается пользовательское приложение
+    */
+
+    cContext* context = new cContext();
+    std::cout << "Context initialized." << std::endl;
+
+    context->CreatePlatform(cPlatform::eInputBackend::GLFW, cPlatform::eGraphicsBackend::OGL);
+
     sCapabilities caps = {};
     caps.windowCount = 1;
     caps.windows[0].windowTitle = "My Test Application";
@@ -36,14 +50,12 @@ int main()
     caps.windows[0].windowHeight = 600;
     caps.windows[0].fullscreen = K_FALSE;
 
-    cContext* context = new cContext();
-
-    std::cout << "Context initialized." << std::endl;
-
     cMyApplication* myApp = new cMyApplication(context, &caps);
+    std::cout << "Application initialized." << std::endl;
+
     myApp->Run();
 
-    std::cout << "Application initialized." << std::endl;
+    context->DestroyPlatform(context->GetPlatform());
 
     return 0;
 }

@@ -12,16 +12,14 @@ namespace triton
         TRITON_OBJECT(cDataBuffer)
 
     public:
-        explicit cDataBuffer(cContext* context);
+        explicit cDataBuffer(cContext* context, types::usize byteSize);
         virtual ~cDataBuffer() override;
 
-        void Create(void* data, types::usize byteSize);
-
-        inline void* GetData() const { return _data; }
+        inline types::u8* GetData() const { return _data; }
         inline types::usize GetByteSize() const { return _byteSize; }
 
     private:
-        void* _data = nullptr;
+        types::u8* _data = nullptr;
         types::usize _byteSize = 0;
     };
 }

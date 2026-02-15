@@ -264,7 +264,7 @@ namespace triton
         virtual void BindRenderTarget(const cRenderTarget* renderTarget) = 0;
         virtual void UnbindRenderTarget() = 0;
         virtual void DestroyRenderTarget(cRenderTarget* renderTarget) = 0;
-        virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor* desc) = 0;
+        virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor& desc) = 0;
         virtual void BindRenderPass(const cRenderPass* renderPass, cShader* customShader = nullptr) = 0;
         virtual void UnbindRenderPass(const cRenderPass* renderPass) = 0;
         virtual void DestroyRenderPass(cRenderPassGPU* renderPass) = 0;
@@ -324,7 +324,7 @@ namespace triton
         virtual void BindRenderTarget(const cRenderTarget* renderTarget) override final;
         virtual void UnbindRenderTarget() override final;
         virtual void DestroyRenderTarget(cRenderTarget* renderTarget) override final;
-        virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor* desc) override final;
+        virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor& desc) override final;
         virtual void BindRenderPass(const cRenderPass* renderPass, cShader* customShader = nullptr) override final;
         virtual void UnbindRenderPass(const cRenderPass* renderPass) override final;
         virtual void DestroyRenderPass(cRenderPassGPU* renderPass) override final;

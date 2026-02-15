@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "platform.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -16,6 +17,7 @@ namespace triton
         };
 
         static constexpr types::usize kMaxWindowCount = 16;
+
         types::usize windowCount = 0;
         sWindowDescriptor windows[kMaxWindowCount];
         types::usize memoryAlignment = 64;

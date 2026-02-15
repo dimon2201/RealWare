@@ -13,10 +13,8 @@ namespace triton
         TRITON_OBJECT(cDataFile)
 
     public:
-        explicit cDataFile(cContext* context);
+        explicit cDataFile(cContext* context, const std::string& path, types::boolean isText);
         virtual ~cDataFile() override final;
-
-        void Open(const std::string& path, types::boolean isText);
 
         inline void* GetData() const;
         inline cDataBuffer* GetBuffer() const { return _data; }

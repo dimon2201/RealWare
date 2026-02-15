@@ -6,6 +6,7 @@
 #include <chrono>
 #include "object.hpp"
 #include "capabilities.hpp"
+#include "input_window.hpp"
 #include "math.hpp"
 #include "types.hpp"
 
@@ -13,8 +14,8 @@ struct GLFWwindow;
 
 namespace triton
 {
+    class cPlatform;
     class cEngine;
-    class cInputWindow;
     template <typename TValue>
     class cStack;
 
@@ -39,11 +40,13 @@ namespace triton
         void Run();
 
         inline const sCapabilities* GetCapabilities() const { return _caps; }
+        inline cPlatform* GetPlatform() const { return _platform; }
         inline cEngine* GetEngine() const { return _engine; }
         inline cStack<cInputWindow>* GetWindows() const { return _windows; }
 
     protected:
         const sCapabilities* _caps = nullptr;
+        cPlatform* _platform = nullptr;
         cEngine* _engine = nullptr;
         cStack<cInputWindow>* _windows = nullptr;
     };

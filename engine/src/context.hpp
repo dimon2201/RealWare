@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "object.hpp"
 #include "factory.hpp"
+#include "platform.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -27,16 +28,17 @@ namespace triton
 		template <typename T>
 		void Destroy(T* object);
 
-		void CreateMemoryAllocator();
-
-		template <typename T>
-		void RegisterBackend(T* backend);
+		cPlatform* CreatePlatform(cPlatform::eInputBackend inputBackend, cPlatform::eGraphicsBackend graphicsBackend);
+		cMemoryAllocator* CreateMemoryAllocator();
+		void DestroyPlatform(cPlatform* platform);
+		void DestroyAllocator(cMemoryAllocator* allocator);
 
 		template <typename T>
 		void RegisterFactory();
 
 		void RegisterSubsystem(iObject* object);
 
+		inline cPlatform* GetPlatform() const { return _platform; }
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
 
 		template <typename T>
@@ -49,8 +51,8 @@ namespace triton
 		inline T* GetSubsystem() const;
 
 	private:
+		cPlatform* _platform = nullptr;
 		cMemoryAllocator* _allocator = nullptr;
-		::std::unordered_map<ClassType, iBackend*> _backends;
 		::std::unordered_map<ClassType, iObject*> _factories;
 		::std::unordered_map<ClassType, iObject*> _subsystems;
 	};
@@ -88,15 +90,6 @@ void triton::cContext::Destroy(T* object)
 }
 
 template <typename T>
-void triton::cContext::RegisterBackend(T* backend)
-{
-	const ClassType type = T::GetTypeStatic();
-	const auto it = _backends.find(type);
-	if (it == _backends.end())
-		_backends.insert({ type, backend });
-}
-
-template <typename T>
 void triton::cContext::RegisterFactory()
 {
 	// TODO: static_assert that T must inherit from iObject
@@ -109,12 +102,7 @@ void triton::cContext::RegisterFactory()
 template <typename T>
 T* triton::cContext::GetBackend() const
 {
-	const ClassType type = T::GetTypeStatic();
-	const auto it = _backends.find(type);
-	if (it != _backends.end())
-		return (T*)it->second;
-	else
-		return nullptr;
+	return _platform->GetBackend<T>();
 }
 
 template <typename T>

@@ -4,8 +4,8 @@
 
 #include <string>
 #include <vector>
-#include "../../thirdparty/glm/glm/glm.hpp"
 #include "object.hpp"
+#include "math.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -47,6 +47,8 @@ namespace triton
         explicit cTextureAtlas(cContext* context);
         virtual ~cTextureAtlas();
 
+        void Initialize(const cVector3& size);
+
         // TODO: New implementation of texture creation
         //cTextureAtlasTexture* CreateTexture(const std::string& id, const glm::vec2& size, types::usize channels, const types::u8* data);
         //cTextureAtlasTexture* CreateTexture(const std::string& id, const std::string& filename);
@@ -57,8 +59,6 @@ namespace triton
         types::usize GetWidth() const;
         types::usize GetHeight() const;
         types::usize GetDepth() const;
-
-        void SetAtlas(const glm::vec3& size);
 
     protected:
         iGraphicsBackend* _gfx = nullptr;

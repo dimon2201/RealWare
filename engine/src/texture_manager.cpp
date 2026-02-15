@@ -27,12 +27,26 @@ triton::cTextureAtlasTexture::cTextureAtlasTexture(cContext* context, types::boo
     }
 }
 
-triton::cTextureAtlas::cTextureAtlas(cContext* context) : iObject(context), _gfx(_context->GetSubsystem<cGraphics>()->GetAPI()) {}
+triton::cTextureAtlas::cTextureAtlas(cContext* context) 
+    : iObject(context), _gfx(_context->GetBackend<iGraphicsBackend>()) {}
 
 triton::cTextureAtlas::~cTextureAtlas()
 {
     if (_atlas)
         _gfx->DestroyTexture(_atlas);
+}
+
+void triton::cTextureAtlas::Initialize(const cVector3& size)
+{
+    _atlas = _gfx->CreateTexture(
+        size.GetX(),
+        size.GetY(),
+        size.GetZ(),
+        cTexture::eDimension::TEXTURE_2D_ARRAY,
+        cTexture::eFormat::RGBA8_MIPS,
+        nullptr
+    );
+    _atlas->SetSlot(0);
 }
 
 // TODO: New implementation of texture creation
@@ -154,17 +168,4 @@ usize triton::cTextureAtlas::GetHeight() const
 usize triton::cTextureAtlas::GetDepth() const
 {
     return _atlas->GetDepth();
-}
-
-void triton::cTextureAtlas::SetAtlas(const glm::vec3& size)
-{
-    _atlas = _gfx->CreateTexture(
-        size.x,
-        size.y,
-        size.z,
-        cTexture::eDimension::TEXTURE_2D_ARRAY,
-        cTexture::eFormat::RGBA8_MIPS,
-        nullptr
-    );
-    _atlas->SetSlot(0);
 }

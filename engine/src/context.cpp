@@ -3,10 +3,29 @@
 #include "context.hpp"
 #include "memory_pool.hpp"
 
-void triton::cContext::CreateMemoryAllocator()
+triton::cPlatform* triton::cContext::CreatePlatform(cPlatform::eInputBackend inputBackend, cPlatform::eGraphicsBackend graphicsBackend)
+{
+	_platform = new cPlatform(this, inputBackend, graphicsBackend);
+
+	return _platform;
+}
+
+triton::cMemoryAllocator* triton::cContext::CreateMemoryAllocator()
 {
 	_allocator = new cMemoryAllocator();
 	_allocator->SetBins(65536);
+
+	return _allocator;
+}
+
+void triton::cContext::DestroyPlatform(cPlatform* platform)
+{
+	delete _platform;
+}
+
+void triton::cContext::DestroyAllocator(cMemoryAllocator* allocator)
+{
+	delete _allocator;
 }
 
 void triton::cContext::RegisterSubsystem(iObject* object)
