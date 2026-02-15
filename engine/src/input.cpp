@@ -45,7 +45,7 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
 )
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
-    iGraphicsBackend* gfx = _context->GetSubsystem<iGraphicsBackend>();
+    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
     sInputBackendWindow ibw = input->CreatePlatformWindow(title, size, fullscreen);
     gfx->BindContext((void*)ibw.instance);
 
