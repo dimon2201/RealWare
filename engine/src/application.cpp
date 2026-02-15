@@ -30,6 +30,12 @@ triton::iApplication::iApplication(cContext* context, const sCapabilities* caps)
 {
     _engine = new cEngine(_context, this);
 
+    sChunkAllocatorDescriptor cad = {};
+    cad.chunkByteSize = caps->hashTableChunkByteSize;
+    cad.maxChunkCount = caps->hashTableMaxChunkCount;
+    cad.hashTableSize = caps->hashTableSize;
+    _windows = _context->Create<cStack<cInputWindow>>(_context, cad);
+
     cInput* input = _context->GetSubsystem<cInput>();
     if (input == nullptr)
         return;
@@ -55,6 +61,8 @@ triton::iApplication::~iApplication()
     const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
     for (usize i = 0; i < caps->windowCount; i++)
         input->DestroyWindow(_windows->At(i));
+
+    _context->Destroy<cStack<cInputWindow>>(_windows);
 
     delete _engine;
 }

@@ -38,6 +38,7 @@ void triton::cEngine::Initialize()
 
 	// Register factories
 	_context->RegisterFactory<cInputWindow>();
+	_context->RegisterFactory<cStack<cInputWindow>>();
 	//_context->RegisterFactory<cBuffer>();
 	//_context->RegisterFactory<cShader>();
 	//_context->RegisterFactory<cTexture>();
@@ -115,7 +116,7 @@ void triton::cEngine::Run()
 
 	cStack<cInputWindow>* windows = GetApplication()->GetWindows();
 	usize windowCount = windows->GetSize();
-	for (usize closedWindowCounter = 0; closedWindowCounter == windowCount; closedWindowCounter = 0)
+	for (usize closedWindowCounter = 0; closedWindowCounter < windowCount; closedWindowCounter = 0)
 	{
 		for (usize i = 0; i < windowCount; i++)
 		{
