@@ -42,6 +42,7 @@ namespace triton
         virtual void SwapWindowBuffers(sInputBackendWindow& window) override final;
         virtual void PollEvents() override final;
         virtual void* GetWindowWin32Handle(sInputBackendWindow& window) override final;
+        virtual triton::cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) override final;
         virtual types::boolean GetKeyPressed(types::qword keyCode) override final;
         virtual types::boolean GetMouseKeyPressed(types::qword keyCode) override final;
         virtual void SetKeyPressed(types::qword keyCode, types::boolean isPressed) override final;

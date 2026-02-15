@@ -98,6 +98,17 @@ void* triton::cInputGLFWBackend::GetWindowWin32Handle(sInputBackendWindow& windo
     return (void*)glfwGetWin32Window((GLFWwindow*)window.instance);
 }
 
+triton::cInputWindow::eRunState triton::cInputGLFWBackend::GetWindowRunState(sInputBackendWindow& window)
+{
+    cInputWindow::eRunState runState = cInputWindow::eRunState::OPENED;
+
+    int flag = glfwWindowShouldClose((GLFWwindow*)window.instance);
+    if (flag == 1)
+        runState = cInputWindow::eRunState::CLOSED;
+
+    return runState;
+}
+
 types::boolean triton::cInputGLFWBackend::GetKeyPressed(qword keyCode)
 {
     return _keys[keyCode];

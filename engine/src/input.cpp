@@ -10,11 +10,25 @@ using namespace types;
 triton::cInputWindow::cInputWindow(cContext* context, const sInputBackendWindow& backendWindow)
     : iObject(context), _backendWindow(backendWindow) {}
     
+void triton::cInputWindow::SwapBuffers()
+{
+    iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+
+    return input->SwapWindowBuffers(_backendWindow);
+}
+
 types::boolean triton::cInputWindow::IsWindowFocused() const
 {
     iInputBackend* input = _context->GetSubsystem<iInputBackend>();
 
     return input->IsWindowFocused();
+}
+
+triton::cInputWindow::eRunState triton::cInputWindow::GetRunState()
+{
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
+    
+    return input->GetWindowRunState(_backendWindow);
 }
 
 const triton::cVector2& triton::cInputWindow::GetSize() const

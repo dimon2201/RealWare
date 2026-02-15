@@ -110,5 +110,23 @@ void triton::cEngine::Run()
 
 	//time->EndFrame();
 
+	iInputBackend* input = _context->GetBackend<iInputBackend>();
+
+	cStack<cInputWindow>* windows = GetApplication()->GetWindows();
+	usize windowCount = windows->GetSize();
+	for (usize closedWindowCounter = 0; closedWindowCounter == windowCount; closedWindowCounter = 0)
+	{
+		for (usize i = 0; i < windowCount; i++)
+		{
+			cInputWindow* window = windows->At(i);
+			if (windows->At(i)->GetRunState() == cInputWindow::eRunState::OPENED)
+				window->SwapBuffers();
+			else
+				closedWindowCounter++;
+		}
+
+		input->PollEvents();
+	}
+
 	_app->Stop();
 }
