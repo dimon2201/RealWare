@@ -17,6 +17,7 @@ namespace triton
     class cApplication;
     class cTextureAtlasTexture;
     class cRenderPass;
+    class cRenderTarget;
 
     class cGPUResource : public iObject
     {
@@ -199,6 +200,7 @@ namespace triton
         sDepthMode depthMode = {};
         sBlendMode blendMode = {};
         sViewport viewport = {};
+        cRenderTarget* renderTarget = nullptr;
     };
 
     class cRenderPassGPU : public iObject
@@ -208,17 +210,15 @@ namespace triton
         friend class cOGLGraphicsBackend;
 
     public:
-        explicit cRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, cRenderTarget* renderTarget);
+        explicit cRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader);
         virtual ~cRenderPassGPU() override final = default;
         
         inline cVertexArray* GetVertexArray() const { return _vertexArray; }
         inline cShader* GetShader() const { return _shader; }
-        inline cRenderTarget* GetRenderTarget() const { return _renderTarget; }
 
     private:
         cVertexArray* _vertexArray = nullptr;
         cShader* _shader = nullptr;
-        cRenderTarget* _renderTarget = nullptr;
     };
 
     class iGraphicsBackend : public iBackend

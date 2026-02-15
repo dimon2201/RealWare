@@ -80,13 +80,13 @@ void triton::cRenderPass::ResizeViewport(const glm::vec2& size)
 void triton::cRenderPass::ResizeColorAttachments(const glm::vec2& size)
 {
     iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
-    gfx->ResizeRenderTargetColors(_renderPass->GetRenderTarget(), size);
+    gfx->ResizeRenderTargetColors(GetRenderTarget(), size);
 }
 
 void triton::cRenderPass::ResizeDepthAttachment(const glm::vec2& size)
 {
     iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
-    cRenderTarget* renderTarget = _renderPass->GetRenderTarget();
+    cRenderTarget* renderTarget = GetRenderTarget();
     renderTarget->SetDepthAttachment(gfx->ResizeTexture(renderTarget->GetDepthAttachment(), size));
 }
     
@@ -149,7 +149,6 @@ void triton::cGraphics::Initialize()
     cTexture* revealage = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::R8F, nullptr);
     cTexture* depth = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::DEPTH_STENCIL, nullptr);
 
-    // TODO: move renderTarget field to sRenderPassDescriptor
     _opaqueRenderTarget = gfx->CreateRenderTarget({ color }, depth);
     _transparentRenderTarget = gfx->CreateRenderTarget({ accumulation, revealage }, depth);
 
@@ -176,6 +175,7 @@ void triton::cGraphics::Initialize()
     opaqueRenderPassDesc.blendMode.factorCount = 1;
     opaqueRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eFactor::ONE;
     opaqueRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eFactor::ZERO;
+    opaqueRenderPassDesc.renderTarget = _opaqueRenderTarget;
     _opaque = CreateRenderPass(opaqueRenderPassDesc);
 
     sRenderPassDescriptor transparentRenderPassDesc;
@@ -199,6 +199,7 @@ void triton::cGraphics::Initialize()
     transparentRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eFactor::ONE;
     transparentRenderPassDesc.blendMode.srcFactors[1] = sBlendMode::eFactor::ZERO;
     transparentRenderPassDesc.blendMode.dstFactors[1] = sBlendMode::eFactor::INV_SRC_COLOR;
+    transparentRenderPassDesc.renderTarget = _transparentRenderTarget;
     _transparent = CreateRenderPass(transparentRenderPassDesc);
 
     sRenderPassDescriptor textRenderPassDesc;
@@ -213,6 +214,7 @@ void triton::cGraphics::Initialize()
     //textRenderPassDesc.viewport = cVector4(0.0f, 0.0f, windowSize);
     textRenderPassDesc.depthMode.useDepthTest = K_FALSE;
     textRenderPassDesc.depthMode.useDepthWrite = K_FALSE;
+    textRenderPassDesc.renderTarget = _opaqueRenderTarget;
     _text = CreateRenderPass(textRenderPassDesc);
 
     sRenderPassDescriptor compositeTransparentRenderPassDesc;
@@ -233,6 +235,7 @@ void triton::cGraphics::Initialize()
     compositeTransparentRenderPassDesc.blendMode.factorCount = 1;
     compositeTransparentRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eFactor::SRC_ALPHA;
     compositeTransparentRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eFactor::INV_SRC_ALPHA;
+    compositeTransparentRenderPassDesc.renderTarget = _opaqueRenderTarget;
     _compositeTransparent = CreateRenderPass(compositeTransparentRenderPassDesc);
 
     sRenderPassDescriptor compositeFinalRenderPassDesc;
@@ -251,6 +254,7 @@ void triton::cGraphics::Initialize()
     compositeFinalRenderPassDesc.blendMode.factorCount = 1;
     compositeFinalRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eFactor::ONE;
     compositeFinalRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eFactor::ZERO;
+    compositeFinalRenderPassDesc.renderTarget = nullptr;
     _compositeFinal = CreateRenderPass(compositeFinalRenderPassDesc);
 }
 

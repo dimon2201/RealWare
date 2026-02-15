@@ -2,5 +2,5 @@
 
 #include "render_context.hpp"
 
-triton::cRenderPassGPU::cRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, cRenderTarget* renderTarget)
-	: iObject(context), _vertexArray(vertexArray), _shader(shader), _renderTarget(renderTarget) {}
+triton::cRenderPassGPU::cRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader)
+	: iObject(context), _vertexArray(vertexArray), _shader(shader) {}

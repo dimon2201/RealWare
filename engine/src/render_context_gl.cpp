@@ -807,7 +807,6 @@ triton::cRenderPassGPU* triton::cOGLGraphicsBackend::CreateRenderPass(const sRen
     std::vector<cShader::sDefinePair> definePairs = {};
     cVertexArray* vertexArray = nullptr;
     cShader* shader = nullptr;
-    cRenderTarget* renderTarget = nullptr;
 
     if (desc.inputTextureAtlasTextures.size() != desc.inputTextureAtlasTextureNames.size())
     {
@@ -857,7 +856,7 @@ triton::cRenderPassGPU* triton::cOGLGraphicsBackend::CreateRenderPass(const sRen
 
     UnbindVertexArray();
 
-    return _context->Create<cRenderPassGPU>(_context, vertexArray, shader, renderTarget);
+    return _context->Create<cRenderPassGPU>(_context, vertexArray, shader);
 }
 
 void triton::cOGLGraphicsBackend::BindRenderPass(const cRenderPass* renderPass, cShader* customShader)
@@ -870,8 +869,8 @@ void triton::cOGLGraphicsBackend::BindRenderPass(const cRenderPass* renderPass, 
 
     BindShader(shader);
     BindVertexArray(renderPass->GetRenderPassGPU()->GetVertexArray());
-    if (renderPass->GetRenderPassGPU()->GetRenderTarget() != nullptr)
-        BindRenderTarget(renderPass->GetRenderPassGPU()->GetRenderTarget());
+    if (renderPass->GetRenderTarget() != nullptr)
+        BindRenderTarget(renderPass->GetRenderTarget());
     else
         UnbindRenderTarget();
     Viewport(renderPass->GetViewport());
@@ -886,7 +885,7 @@ void triton::cOGLGraphicsBackend::BindRenderPass(const cRenderPass* renderPass, 
 void triton::cOGLGraphicsBackend::UnbindRenderPass(const cRenderPass* renderPass)
 {
     UnbindVertexArray();
-    if (renderPass->GetRenderPassGPU()->GetRenderTarget() != nullptr)
+    if (renderPass->GetRenderTarget() != nullptr)
         UnbindRenderTarget();
     for (auto buffer : renderPass->GetInputBuffers())
         UnbindBuffer(buffer);

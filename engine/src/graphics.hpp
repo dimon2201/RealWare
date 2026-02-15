@@ -155,7 +155,7 @@ namespace triton
         inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc.inputTextureAtlasTextures; }
         inline cVertexArray* GetVertexArray() const { return _renderPass->GetVertexArray(); }
         inline cShader* GetShader() const { return _renderPass->GetShader(); }
-        inline cRenderTarget* GetRenderTarget() const { return _renderPass->GetRenderTarget(); }
+        inline cRenderTarget* GetRenderTarget() const { return _desc.renderTarget; }
         inline const sViewport& GetViewport() const { return _desc.viewport; }
         inline const std::vector<cBuffer*>& GetInputBuffers() const { return _desc.inputBuffers; }
         inline const std::vector<cTexture*>& GetInputTextures() const { return _desc.inputTextures; }
