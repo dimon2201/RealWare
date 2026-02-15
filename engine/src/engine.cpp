@@ -52,6 +52,10 @@ void triton::cEngine::Initialize(cStack<cInputWindow>*& appWindows)
 	_context->RegisterFactory<cDataBuffer>();
 	_context->RegisterFactory<cDataFile>();
 
+	// Register backends
+	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
+	_context->RegisterBackend<iGraphicsBackend>(new cOGLGraphicsBackend(_context));
+
 	// Register subsystems
 	_context->RegisterSubsystem(this);
 	_context->RegisterSubsystem(new cInput(_context));

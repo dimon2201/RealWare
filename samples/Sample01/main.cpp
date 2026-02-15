@@ -41,8 +41,6 @@ int main()
     cContext* context = new cContext();
     std::cout << "Context initialized." << std::endl;
 
-    context->CreatePlatform(cPlatform::eInputBackend::GLFW, cPlatform::eGraphicsBackend::OGL);
-
     sCapabilities caps = {};
     caps.windowCount = 1;
     caps.windows[0].windowTitle = "My Test Application";
@@ -54,8 +52,6 @@ int main()
     std::cout << "Application initialized." << std::endl;
 
     myApp->Run();
-
-    context->DestroyPlatform(context->GetPlatform());
 
     return 0;
 }

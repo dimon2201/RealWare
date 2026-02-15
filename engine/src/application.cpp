@@ -5,7 +5,6 @@
 #include <GLFW/glfw3native.h>
 #include <iostream>
 #include "application.hpp"
-#include "platform.hpp"
 #include "engine.hpp"
 #include "graphics.hpp"
 #include "context.hpp"

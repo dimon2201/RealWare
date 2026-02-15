@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include "platform.hpp"
 #include "types.hpp"
 
 namespace triton
