@@ -46,6 +46,7 @@ void triton::cEngine::Initialize()
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
+	_context->RegisterBackend<iGraphicsBackend>(new cOGLGraphicsBackend(_context));
 
 	// Register subsystems
 	_context->RegisterSubsystem(this);

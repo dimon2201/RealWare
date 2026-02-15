@@ -7,6 +7,7 @@
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "category.hpp"
 #include "object.hpp"
+#include "backend.hpp"
 #include "math.hpp"
 #include "types.hpp"
 
@@ -220,12 +221,12 @@ namespace triton
         cRenderTarget* _renderTarget = nullptr;
     };
 
-    class iGraphicsBackend : public iObject
+    class iGraphicsBackend : public iBackend
     {
         TRITON_OBJECT(iGraphicsBackend)
 
     public:
-        explicit iGraphicsBackend(cContext* context) : iObject(context) {}
+        explicit iGraphicsBackend(cContext* context) : iBackend(context) {}
         virtual ~iGraphicsBackend() = default;
 
         virtual void BindContext(void* nativeWindow) = 0;
