@@ -12,14 +12,14 @@ triton::cInputWindow::cInputWindow(cContext* context, const sInputBackendWindow&
     
 void triton::cInputWindow::SwapBuffers()
 {
-    iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
 
     return input->SwapWindowBuffers(_backendWindow);
 }
 
 types::boolean triton::cInputWindow::IsWindowFocused() const
 {
-    iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
 
     return input->IsWindowFocused();
 }
@@ -54,7 +54,7 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
 
 void triton::cInput::DestroyWindow(cInputWindow* window)
 {
-    iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
     input->DestroyWindow(window->_backendWindow);
 
     _context->Destroy<cInputWindow>(window);
@@ -62,21 +62,21 @@ void triton::cInput::DestroyWindow(cInputWindow* window)
 
 triton::cVector2 triton::cInput::GetMonitorSize() const
 {
-    iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
 
     return input->GetMonitorSize();
 }
 
 types::boolean triton::cInput::GetKeyPressed(types::qword keyCode) const
 {
-    iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
 
     return input->GetKeyPressed(keyCode);
 }
 
 types::boolean triton::cInput::GetMouseKeyPressed(types::qword keyCode) const
 {
-    iInputBackend* input = _context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
 
     return input->GetMouseKeyPressed(keyCode);
 }

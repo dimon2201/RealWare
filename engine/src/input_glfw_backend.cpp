@@ -155,7 +155,7 @@ void triton::cInputGLFWBackend::KeyCallback(GLFWwindow* window, int key, int sca
     key &= keyBufferMask;
 
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-    iInputBackend* input = context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = context->GetBackend<iInputBackend>();
 
     if (action == GLFW_PRESS)
         input->SetKeyPressed(key, K_TRUE);
@@ -166,7 +166,7 @@ void triton::cInputGLFWBackend::KeyCallback(GLFWwindow* window, int key, int sca
 void triton::cInputGLFWBackend::WindowFocusCallback(GLFWwindow* window, int focused)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-    iInputBackend* input = context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = context->GetBackend<iInputBackend>();
 
     if (focused)
     {
@@ -182,7 +182,7 @@ void triton::cInputGLFWBackend::WindowFocusCallback(GLFWwindow* window, int focu
 void triton::cInputGLFWBackend::WindowSizeCallback(GLFWwindow* window, int width, int height)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-    iInputBackend* input = context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = context->GetBackend<iInputBackend>();
     cGraphics* gfx = context->GetSubsystem<cGraphics>();
 
     // TODO: resize specific cInputWindow based on GLFWwindow
@@ -194,7 +194,7 @@ void triton::cInputGLFWBackend::WindowSizeCallback(GLFWwindow* window, int width
 void triton::cInputGLFWBackend::CursorCallback(GLFWwindow* window, double xpos, double ypos)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-    iInputBackend* input = context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = context->GetBackend<iInputBackend>();
 
     input->SetWindowCursorPosition(cVector2(xpos, ypos));
 }
@@ -202,7 +202,7 @@ void triton::cInputGLFWBackend::CursorCallback(GLFWwindow* window, double xpos, 
 void triton::cInputGLFWBackend::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-    iInputBackend* input = context->GetSubsystem<iInputBackend>();
+    iInputBackend* input = context->GetBackend<iInputBackend>();
 
     if (action == GLFW_RELEASE)
         input->SetMouseKeyPressed(button, 0);
