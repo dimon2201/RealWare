@@ -103,7 +103,7 @@ triton::cInputWindow::eRunState triton::cInputGLFWBackend::GetWindowRunState(sIn
     cInputWindow::eRunState runState = cInputWindow::eRunState::OPENED;
 
     int flag = glfwWindowShouldClose((GLFWwindow*)window.instance);
-    if (flag == 1)
+    if (flag)
         runState = cInputWindow::eRunState::CLOSED;
 
     return runState;

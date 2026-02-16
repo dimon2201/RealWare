@@ -68,10 +68,6 @@ void triton::cInput::Initialize()
 
 void triton::cInput::Shutdown()
 {
-    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-    for (usize i = 0; i < caps->windowCount; i++)
-        DestroyWindow(_windows->At(i));
-
     _context->Destroy<cStack<cInputWindow>>(_windows);
 }
 
@@ -86,7 +82,9 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
     sInputBackendWindow ibw = input->CreatePlatformWindow(title, size, fullscreen);
     gfx->BindContext((void*)ibw.instance);
 
-    return _context->Create<cInputWindow>(_context, ibw);
+    cInputWindow* window = _context->Create<cInputWindow>(_context, ibw);
+
+    return window;
 }
 
 void triton::cInput::DestroyWindow(cInputWindow* window)

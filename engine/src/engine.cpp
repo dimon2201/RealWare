@@ -137,22 +137,32 @@ void triton::cEngine::Run()
 
 	//time->EndFrame();
 
-	iInputBackend* input = _context->GetBackend<iInputBackend>();
-
+	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
+	cInput* input = _context->GetSubsystem<cInput>();
 	cStack<cInputWindow>* windows = _context->GetSubsystem<cInput>()->GetWindows();
-	usize windowCount = windows->GetSize();
-	for (usize closedWindowCounter = 0; closedWindowCounter < windowCount; closedWindowCounter = 0)
+	s32 windowCount = windows->GetSize();
+	for (;;)
 	{
-		for (usize i = 0; i < windowCount; i++)
+		s32 windowCount = windows->GetSize();
+		if (windowCount == 0)
+			break;
+
+		for (s32 i = windowCount - 1; i > -1; i--)
 		{
 			cInputWindow* window = windows->At(i);
-			if (windows->At(i)->GetRunState() == cInputWindow::eRunState::OPENED)
+			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
+			{
 				window->SwapBuffers();
+			}
 			else
-				closedWindowCounter++;
+			{
+				input->DestroyWindow(window);
+
+				windows->Erase(i);
+			}
 		}
 
-		input->PollEvents();
+		inputBackend->PollEvents();
 	}
 
 	_app->Stop();
