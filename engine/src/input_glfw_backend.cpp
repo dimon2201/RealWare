@@ -139,6 +139,11 @@ void triton::cInputGLFWBackend::SetWindowCursorPosition(const cVector2& cursorPo
     _cursorPosition = cursorPosition;
 }
 
+void triton::cInputGLFWBackend::SetWindowSwapInterval(types::usize interval)
+{
+    glfwSwapInterval(interval);
+}
+
 triton::cVector2 triton::cInputGLFWBackend::GetMonitorSize()
 {
     return cVector2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));

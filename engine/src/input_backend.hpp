@@ -40,6 +40,7 @@ namespace triton
         virtual void SetMouseKeyPressed(types::qword keyCode, types::boolean isPressed) = 0;
         virtual void SetWindowFocus(types::boolean isFocused) = 0;
         virtual void SetWindowCursorPosition(const cVector2& cursorPosition) = 0;
+        virtual void SetWindowSwapInterval(types::usize interval) = 0;
         virtual cVector2 GetMonitorSize() = 0;
         virtual types::boolean IsWindowFocused() = 0;
 	};

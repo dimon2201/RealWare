@@ -51,11 +51,13 @@ triton::cOGLGraphicsBackend::cOGLGraphicsBackend(cContext* context) : iGraphicsB
 
 triton::cOGLGraphicsBackend::~cOGLGraphicsBackend() {}
 
-void triton::cOGLGraphicsBackend::BindContext(void* nativeWindow)
+void triton::cOGLGraphicsBackend::BindWindowContext(void* nativeWindow)
 {
     glfwMakeContextCurrent((GLFWwindow*)nativeWindow);
-    glfwSwapInterval(1);
+}
 
+void triton::cOGLGraphicsBackend::CreateGraphicsContext()
+{
     if (glewInit() != GLEW_OK)
     {
         Print("Error: can't initialize GL context!");

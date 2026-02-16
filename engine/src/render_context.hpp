@@ -229,7 +229,8 @@ namespace triton
         explicit iGraphicsBackend(cContext* context) : iBackend(context) {}
         virtual ~iGraphicsBackend() = default;
 
-        virtual void BindContext(void* nativeWindow) = 0;
+        virtual void BindWindowContext(void* nativeWindow) = 0;
+        virtual void CreateGraphicsContext() = 0;
         virtual cBuffer* CreateBuffer(types::usize byteSize, cBuffer::eType type, types::s32 slot, const void* data) = 0;
         virtual void BindBuffer(const cBuffer* buffer) = 0;
 		virtual void BindBufferNotVAO(const cBuffer* buffer) = 0;
@@ -289,7 +290,8 @@ namespace triton
         explicit cOGLGraphicsBackend(cContext* context);
         virtual ~cOGLGraphicsBackend() override final;
         
-        virtual void BindContext(void* nativeWindow) override final;
+        virtual void BindWindowContext(void* nativeWindow) override final;
+        virtual void CreateGraphicsContext() override final;
         virtual cBuffer* CreateBuffer(types::usize byteSize, cBuffer::eType type, types::s32 slot, const void* data) override final;
         virtual void BindBuffer(const cBuffer* buffer) override final;
         virtual void BindBufferNotVAO(const cBuffer* buffer) override final;

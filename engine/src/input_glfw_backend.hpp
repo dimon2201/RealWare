@@ -49,6 +49,7 @@ namespace triton
         virtual void SetMouseKeyPressed(types::qword keyCode, types::boolean isPressed) override final;
         virtual void SetWindowFocus(types::boolean isFocused) override final;
         virtual void SetWindowCursorPosition(const cVector2& cursorPosition) override final;
+        virtual void SetWindowSwapInterval(types::usize interval) override final;
         virtual cVector2 GetMonitorSize() override final;
         virtual types::boolean IsWindowFocused() override final;
 	};
