@@ -11,8 +11,8 @@ Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 - Multithreading (thread pool)
 - Event subscription/sending
 - PhysX 5.3 physics
-- OpenGL 4.3 rendering backend
-- OpenAL 1.1 sound backend
+- OpenGL 4.3 rendering
+- OpenAL 1.1 sound
 - Assimp model loading
 - Weighted blended order-independent transparency (WBOIT)
 - Single atlas for textures
