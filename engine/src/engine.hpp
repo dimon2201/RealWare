@@ -15,15 +15,16 @@ namespace triton
 	template <typename T>
 	class cStack;
 
-	class cEngine : public iObject
+	class cEngine final : public iObject
 	{
 		TRITON_OBJECT(cEngine)
 
 	public:
-		explicit cEngine(cContext* context, iApplication* app, cStack<cInputWindow>*& appWindows);
-		virtual ~cEngine() override final = default;
+		explicit cEngine(cContext* context, iApplication* app);
+		virtual ~cEngine() override final;
 
-		void Initialize(cStack<cInputWindow>*& appWindows);
+		void Initialize();
+		void Shutdown();
 		void Run();
 
 		inline iApplication* GetApplication() const { return _app; }

@@ -28,21 +28,11 @@ using namespace types;
 
 triton::iApplication::iApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
 {
-    _engine = new cEngine(_context, this, _windows);
+    _engine = new cEngine(_context, this);
 }
 
 triton::iApplication::~iApplication()
 {
-    cInput* input = _context->GetSubsystem<cInput>();
-    if (input == nullptr)
-        return;
-
-    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-    for (usize i = 0; i < caps->windowCount; i++)
-        input->DestroyWindow(_windows->At(i));
-
-    _context->Destroy<cStack<cInputWindow>>(_windows);
-
     delete _engine;
 }
 

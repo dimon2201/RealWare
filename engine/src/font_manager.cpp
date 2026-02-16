@@ -269,12 +269,12 @@ void triton::cFont::DestroyText(cText* text)
 
 f32 triton::cFont::GetTextWidth(cFontFace* font, const std::string& text) const
 {
-    iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    cInput* input = _context->GetSubsystem<cInput>();
 
     f32 textWidth = 0.0f;
     f32 maxTextWidth = 0.0f;
     const usize textByteSize = strlen(text.c_str());
-    const cVector2 windowSize = app->GetWindows()->At(0)->GetSize();
+    const cVector2 windowSize = input->GetWindows()->At(0)->GetSize();
 
     for (usize i = 0; i < textByteSize; i++)
     {
@@ -311,12 +311,12 @@ f32 triton::cFont::GetTextWidth(cFontFace* font, const std::string& text) const
 
 f32 triton::cFont::GetTextHeight(cFontFace* font, const std::string& text) const
 {
-    iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    cInput* input = _context->GetSubsystem<cInput>();
 
     f32 textHeight = 0.0f;
     f32 maxHeight = 0.0f;
     const usize textByteSize = strlen(text.c_str());
-    const cVector2 windowSize = app->GetWindows()->At(0)->GetSize();
+    const cVector2 windowSize = input->GetWindows()->At(0)->GetSize();
 
     for (usize i = 0; i < textByteSize; i++)
     {
