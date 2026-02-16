@@ -258,7 +258,7 @@ void triton::cGraphics::Initialize()
     _compositeFinal = CreateRenderPass(compositeFinalRenderPassDesc);
 }
 
-triton::cGraphics::~cGraphics()
+void triton::cGraphics::Shutdown()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
     iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();

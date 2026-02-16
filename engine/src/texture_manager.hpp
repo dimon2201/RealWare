@@ -45,9 +45,10 @@ namespace triton
 
     public:
         explicit cTextureAtlas(cContext* context);
-        virtual ~cTextureAtlas();
+        virtual ~cTextureAtlas() override final = default;
 
         void Initialize(const cVector3& size);
+        void Shutdown();
 
         // TODO: New implementation of texture creation
         //cTextureAtlasTexture* CreateTexture(const std::string& id, const glm::vec2& size, types::usize channels, const types::u8* data);

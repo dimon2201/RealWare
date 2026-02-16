@@ -27,6 +27,7 @@ namespace triton
 		virtual ~cInput() override final = default;
 
         void Initialize();
+        void Shutdown();
         cInputWindow* CreatePlatformWindow(
             const std::string& title,
             const cVector2& size,

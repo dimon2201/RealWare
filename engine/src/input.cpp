@@ -66,6 +66,15 @@ void triton::cInput::Initialize()
     }
 }
 
+void triton::cInput::Shutdown()
+{
+    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+    for (usize i = 0; i < caps->windowCount; i++)
+        DestroyWindow(_windows->At(i));
+
+    _context->Destroy<cStack<cInputWindow>>(_windows);
+}
+
 triton::cInputWindow* triton::cInput::CreatePlatformWindow(
     const std::string& title,
     const cVector2& size,

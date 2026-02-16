@@ -103,15 +103,9 @@ void triton::cEngine::Initialize()
 
 void triton::cEngine::Shutdown()
 {
-	cInput* input = _context->GetSubsystem<cInput>();
-	if (input == nullptr)
-		return;
-
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-	for (usize i = 0; i < caps->windowCount; i++)
-		input->DestroyWindow(_windows->At(i));
-
-	_context->Destroy<cStack<cInputWindow>>(_windows);
+	_context->GetSubsystem<cGraphics>()->Shutdown();
+	_context->GetSubsystem<cTextureAtlas>()->Shutdown();
+	_context->GetSubsystem<cInput>()->Shutdown();
 }
 
 void triton::cEngine::Run()

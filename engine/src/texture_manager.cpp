@@ -30,12 +30,6 @@ triton::cTextureAtlasTexture::cTextureAtlasTexture(cContext* context, types::boo
 triton::cTextureAtlas::cTextureAtlas(cContext* context) 
     : iObject(context), _gfx(_context->GetBackend<iGraphicsBackend>()) {}
 
-triton::cTextureAtlas::~cTextureAtlas()
-{
-    if (_atlas)
-        _gfx->DestroyTexture(_atlas);
-}
-
 void triton::cTextureAtlas::Initialize(const cVector3& size)
 {
     _atlas = _gfx->CreateTexture(
@@ -47,6 +41,12 @@ void triton::cTextureAtlas::Initialize(const cVector3& size)
         nullptr
     );
     _atlas->SetSlot(0);
+}
+
+void triton::cTextureAtlas::Shutdown()
+{
+    if (_atlas)
+        _gfx->DestroyTexture(_atlas);
 }
 
 // TODO: New implementation of texture creation

@@ -60,7 +60,7 @@ namespace triton
 template <typename TValue>
 triton::cStack<TValue>::cStack(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc) : iObject(context)
 {
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
 	_allocatorDesc = allocatorDesc;
@@ -194,7 +194,7 @@ types::u32 triton::cStack<TValue>::AllocateChunk()
 	if (_chunkCount >= _allocatorDesc.maxChunkCount)
 		return 0;
 
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 	_chunks[_chunkCount] = (TValue*)memoryAllocator->Allocate(_allocatorDesc.chunkByteSize, caps->memoryAlignment);
 
