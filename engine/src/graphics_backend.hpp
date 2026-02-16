@@ -1,4 +1,4 @@
-// render_context.hpp
+// graphics_backend.hpp
 
 #pragma once
 
@@ -35,7 +35,7 @@ namespace triton
     {
         TRITON_OBJECT(cBuffer)
 
-        friend class cOGLGraphicsBackend;
+        friend class cGraphicsOGLBackend;
 
     public:
         enum class eType
@@ -64,7 +64,7 @@ namespace triton
     {
         TRITON_OBJECT(cVertexArray)
 
-        friend class cOGLGraphicsBackend;
+        friend class cGraphicsOGLBackend;
 
     public:
         explicit cVertexArray(cContext* context) : cGPUResource(context) {}
@@ -74,7 +74,7 @@ namespace triton
     {
         TRITON_OBJECT(cShader)
 
-        friend class cOGLGraphicsBackend;
+        friend class cGraphicsOGLBackend;
 
         std::string _vertex = "";
         std::string _fragment = "";
@@ -96,7 +96,7 @@ namespace triton
     {
         TRITON_OBJECT(cTexture)
 
-        friend class cOGLGraphicsBackend;
+        friend class cGraphicsOGLBackend;
 
     public:
         enum class eDimension
@@ -142,7 +142,7 @@ namespace triton
     {
         TRITON_OBJECT(cRenderTarget)
 
-        friend class cOGLGraphicsBackend;
+        friend class cGraphicsOGLBackend;
 
         mutable std::vector<cTexture*> _colorAttachments = {};
         cTexture* _depthAttachment = nullptr;
@@ -207,7 +207,7 @@ namespace triton
     {
         TRITON_OBJECT(cRenderPassGPU)
 
-        friend class cOGLGraphicsBackend;
+        friend class cGraphicsOGLBackend;
 
         cVertexArray* _vertexArray = nullptr;
         cShader* _shader = nullptr;
@@ -225,8 +225,8 @@ namespace triton
         TRITON_OBJECT(iGraphicsBackend)
 
     public:
-        explicit iGraphicsBackend(cContext* context) : iBackend(context) {}
-        virtual ~iGraphicsBackend() = default;
+        explicit iGraphicsBackend(cContext* context);
+        virtual ~iGraphicsBackend() override = default;
 
         virtual void BindWindowContext(void* nativeWindow) = 0;
         virtual void CreateGraphicsContext() = 0;
@@ -279,66 +279,5 @@ namespace triton
         virtual void Draw(types::usize indexCount, types::usize vertexOffset, types::usize indexOffset, types::usize instanceCount) = 0;
         virtual void DrawQuad() = 0;
         virtual void DrawQuads(types::usize count) = 0;
-    };
-
-    class cOGLGraphicsBackend : public iGraphicsBackend
-    {
-        TRITON_OBJECT(cOGLGraphicsBackend)
-
-    public:
-        explicit cOGLGraphicsBackend(cContext* context);
-        virtual ~cOGLGraphicsBackend() override final;
-        
-        virtual void BindWindowContext(void* nativeWindow) override final;
-        virtual void CreateGraphicsContext() override final;
-        virtual cBuffer* CreateBuffer(types::usize byteSize, cBuffer::eType type, types::s32 slot, const void* data) override final;
-        virtual void BindBuffer(const cBuffer* buffer) override final;
-        virtual void BindBufferNotVAO(const cBuffer* buffer) override final;
-        virtual void UnbindBuffer(const cBuffer* buffer) override final;
-        virtual void WriteBuffer(const cBuffer* buffer, types::usize offset, types::usize byteSize, const void* data) override final;
-        virtual void DestroyBuffer(cBuffer* buffer) override final;
-        virtual cVertexArray* CreateVertexArray() override final;
-        virtual void BindVertexArray(const cVertexArray* vertexArray) override final;
-        virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) override final;
-        virtual void UnbindVertexArray() override final;
-        virtual void DestroyVertexArray(cVertexArray* vertexArray) override final;
-        virtual void BindShader(const cShader* shader) override final;
-        virtual void UnbindShader() override final;
-        virtual cShader* CreateShader(eCategory renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<cShader::sDefinePair>& definePairs = {}) override final;
-        virtual cShader* CreateShader(const cShader* baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<cShader::sDefinePair>& definePairs = {}) override final;
-        virtual void DefineInShader(cShader* shader, const std::vector<cShader::sDefinePair>& definePairs) override final;
-        virtual void DestroyShader(cShader* shader) override final;
-        virtual void SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix) override final;
-        virtual void SetShaderUniform(const cShader* shader, const std::string& name, types::usize count, const types::f32* values) override final;
-        virtual cTexture* CreateTexture(types::usize width, types::usize height, types::usize depth, cTexture::eDimension dimension, cTexture::eFormat format, const void* data) override final;
-        virtual cTexture* ResizeTexture(cTexture* texture, const glm::vec2& size) override final;
-        virtual void BindTexture(const cShader* shader, const std::string& name, const cTexture* texture, types::s32 slot) override final;
-        virtual void UnbindTexture(const cTexture* texture) override final;
-        virtual void WriteTexture(const cTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data) override final;
-        virtual void WriteTextureToFile(const cTexture* texture, const std::string& filename) override final;
-        virtual void GenerateTextureMips(const cTexture* texture) override final;
-        virtual void DestroyTexture(cTexture* texture) override final;
-        virtual cRenderTarget* CreateRenderTarget(const std::vector<cTexture*>& colorAttachments, cTexture* depthAttachment) override final;
-        virtual void ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size) override final;
-        virtual void ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size) override final;
-        virtual void UpdateRenderTargetBuffers(cRenderTarget* renderTarget) override final;
-        virtual void BindRenderTarget(const cRenderTarget* renderTarget) override final;
-        virtual void UnbindRenderTarget() override final;
-        virtual void DestroyRenderTarget(cRenderTarget* renderTarget) override final;
-        virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor& desc) override final;
-        virtual void BindRenderPass(const cRenderPass* renderPass, cShader* customShader = nullptr) override final;
-        virtual void UnbindRenderPass(const cRenderPass* renderPass) override final;
-        virtual void DestroyRenderPass(cRenderPassGPU* renderPass) override final;
-        virtual void BindDefaultInputLayout() override final;
-        virtual void BindDepthMode(const sDepthMode& blendMode) override final;
-        virtual void BindBlendMode(const sBlendMode& blendMode) override final;
-        virtual void Viewport(const sViewport& viewport) override final;
-        virtual void ClearColor(const glm::vec4& color) override final;
-        virtual void ClearDepth(types::f32 depth) override final;
-        virtual void ClearFramebufferColor(types::usize bufferIndex, const glm::vec4& color) override final;
-        virtual void ClearFramebufferDepth(types::f32 depth) override final;
-        virtual void Draw(types::usize indexCount, types::usize vertexOffset, types::usize indexOffset, types::usize instanceCount) override final;
-        virtual void DrawQuad() override final;
-        virtual void DrawQuads(types::usize count) override final;
     };
 }

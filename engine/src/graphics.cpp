@@ -12,7 +12,7 @@
 #include "graphics.hpp"
 #include "engine.hpp"
 #include "render_manager.hpp"
-#include "render_context.hpp"
+#include "graphics_backend.hpp"
 #include "texture_manager.hpp"
 #include "gameobject_manager.hpp"
 #include "font_manager.hpp"
@@ -22,7 +22,6 @@
 #include "log.hpp"
 #include "graphics.hpp"
 #include "input.hpp"
-#include "render_context.hpp"
 #include "log.hpp"
 
 using namespace types;

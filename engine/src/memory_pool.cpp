@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include "memory_pool.hpp"
 #include "application.hpp"
-#include "render_context.hpp"
+#include "graphics_backend.hpp"
 #include "log.hpp"
 
 using namespace types;

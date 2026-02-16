@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "font_manager.hpp"
-#include "render_context.hpp"
+#include "graphics_backend.hpp"
 #include "application.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"

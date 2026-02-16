@@ -9,7 +9,7 @@
 #include "graphics.hpp"
 #include "context.hpp"
 #include "render_manager.hpp"
-#include "render_context.hpp"
+#include "graphics_backend.hpp"
 #include "font_manager.hpp"
 #include "filesystem_manager.hpp"
 #include "physics_manager.hpp"

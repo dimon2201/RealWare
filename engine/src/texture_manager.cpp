@@ -4,7 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../thirdparty/stb-master/stb_image.h"
 #include "application.hpp"
-#include "render_context.hpp"
+#include "graphics_backend.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"
 #include "graphics.hpp"

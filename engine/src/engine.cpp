@@ -14,11 +14,12 @@
 #include "event_manager.hpp"
 #include "gameobject_manager.hpp"
 #include "thread_manager.hpp"
-#include "render_context.hpp"
+#include "graphics_backend.hpp"
 #include "audio.hpp"
 #include "math.hpp"
 #include "ecs.hpp"
 #include "input_glfw_backend.hpp"
+#include "graphics_ogl_backend.hpp"
 #include "audio_oal_backend.hpp"
 
 using namespace triton::ecs;
@@ -60,7 +61,7 @@ void triton::cEngine::Initialize()
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
-	_context->RegisterBackend<iGraphicsBackend>(new cOGLGraphicsBackend(_context));
+	_context->RegisterBackend<iGraphicsBackend>(new cGraphicsOGLBackend(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioOALBackend(_context));
 
 	// Register subsystems

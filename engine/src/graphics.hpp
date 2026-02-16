@@ -4,7 +4,7 @@
 
 #include <unordered_map>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "render_context.hpp"
+#include "graphics_backend.hpp"
 #include "category.hpp"
 #include "types.hpp"
 
