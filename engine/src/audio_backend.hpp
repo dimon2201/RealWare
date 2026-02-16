@@ -16,8 +16,8 @@ namespace triton
         TRITON_OBJECT(iAudioBackend)
 
     public:
-        explicit iAudioBackend(cContext* context) : iBackend(context) {}
-        virtual ~iAudioBackend() = default;
+        explicit iAudioBackend(cContext* context);
+        virtual ~iAudioBackend() override = default;
 
         virtual sAudioBackendSound CreateSound(
             cAudio::eDataFormat dataFormat,
