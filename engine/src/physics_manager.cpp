@@ -6,7 +6,6 @@
 #include "context.hpp"
 #include "time.hpp"
 #include "graphics.hpp"
-#include "render_manager.hpp"
 #include "physics_manager.hpp"
 #include "gameobject_manager.hpp"
 #include "engine.hpp"

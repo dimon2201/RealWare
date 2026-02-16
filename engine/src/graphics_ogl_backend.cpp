@@ -11,7 +11,6 @@
 #include "filesystem_manager.hpp"
 #include "types.hpp"
 #include "application.hpp"
-#include "render_manager.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"
 #include "engine.hpp"

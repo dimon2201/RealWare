@@ -8,7 +8,6 @@
 #include "engine.hpp"
 #include "graphics.hpp"
 #include "context.hpp"
-#include "render_manager.hpp"
 #include "graphics_backend.hpp"
 #include "font_manager.hpp"
 #include "filesystem_manager.hpp"

@@ -11,7 +11,6 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "engine.hpp"
-#include "render_manager.hpp"
 #include "graphics_backend.hpp"
 #include "texture_manager.hpp"
 #include "gameobject_manager.hpp"

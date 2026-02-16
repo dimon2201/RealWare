@@ -2,7 +2,6 @@
 
 #include "application.hpp"
 #include "gameobject_manager.hpp"
-#include "render_manager.hpp"
 #include "physics_manager.hpp"
 #include "memory_pool.hpp"
 
