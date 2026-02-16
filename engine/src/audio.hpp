@@ -31,8 +31,11 @@ namespace triton
 		types::u32 _numSamples = 0;
 	};
 
-	struct sSound
+	class cAudio : public ecs::cSystem
 	{
+		TRITON_OBJECT(cAudio)
+
+	public:
 		enum class eContainerFormat
 		{
 			NONE = 0,
@@ -48,39 +51,21 @@ namespace triton
 			MONO8
 		};
 
+		explicit cAudio(cContext* context);
+		virtual ~cAudio() override final = default;
+		virtual void OnFrameUpdate();
+		void CreateSound(eContainerFormat format, const ::std::string& filePath);
+	};
+
+	struct sAudioSound
+	{
 		cAudioBackendSound* backendSound = nullptr;
-		eContainerFormat containerFormat = eContainerFormat::NONE;
-		eDataFormat dataFormat = eDataFormat::NONE;
+		cAudio::eContainerFormat containerFormat = cAudio::eContainerFormat::NONE;
+		cAudio::eDataFormat dataFormat = cAudio::eDataFormat::NONE;
 		types::u16 channelCount = 0;
 		types::u16 bitsPerSample = 0;
 		types::u32 sampleRate = 0;
 		types::u16* data = nullptr;
 		types::usize dataByteSize = 0;
-	};
-
-	class cAudio : public ecs::cSystem
-	{
-		TRITON_OBJECT(cAudio)
-
-	public:
-		enum class API
-		{
-			NONE = 0,
-			OAL,
-		};
-
-	private:
-		API _backendAPI = API::NONE;
-		iAudioBackend* _backend = nullptr;
-
-	public:
-		explicit cAudio(cContext* context, API api);
-		virtual ~cAudio() override final;
-
-		virtual void OnFrameUpdate();
-
-		void CreateSound(sSound::eContainerFormat format, const ::std::string& filePath);
-
-		inline iAudioBackend* GetBackend() const { return _backend; }
 	};
 }

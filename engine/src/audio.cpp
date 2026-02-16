@@ -4,7 +4,6 @@
 #include "application.hpp"
 #include "audio.hpp"
 #include "context.hpp"
-#include "sound_context.hpp"
 #include "engine.hpp"
 #include "components.hpp"
 #include "log.hpp"
@@ -14,38 +13,11 @@ using namespace types;
 using namespace triton::ecs;
 using namespace triton::ecs::components;
 
-triton::cAudio::cAudio(cContext* context, API api) : cSystem(context), _backendAPI(api)
-{
-	if (api == API::NONE)
-	{
-		Print("Error: sound API not selected!");
-
-		return;
-	}
-	else if (api == API::OAL)
-	{
-		_backend = new cOALAudioBackend(_context);
-	}
-}
-
-triton::cAudio::~cAudio()
-{
-	if (_backendAPI == API::NONE)
-	{
-		Print("Error: sound API not selected!");
-
-		return;
-	}
-	else if (_backendAPI == API::OAL)
-	{
-		if (_backend)
-			delete _backend;
-	}
-}
+triton::cAudio::cAudio(cContext* context) : cSystem(context) {}
 
 void triton::cAudio::OnFrameUpdate() {}
 
-void triton::cAudio::CreateSound(sSound::eContainerFormat format, const std::string& filePath)
+void triton::cAudio::CreateSound(eContainerFormat format, const std::string& filePath)
 {
 	// TODO: creation of sound
 	// SoundComponent& soundComp = scenes.GetComponent<SoundComponent>(entity);
@@ -60,12 +32,12 @@ void triton::cAudio::CreateSound(sSound::eContainerFormat format, const std::str
 		return;
 	}
 
-	sSound sound = {};
+	sAudioSound sound = {};
 
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
-	if (format == sSound::eContainerFormat::WAV)
+	if (format == eContainerFormat::WAV)
 	{
 		sWAVHeader wh = {};
 
@@ -112,36 +84,34 @@ void triton::cAudio::CreateSound(sSound::eContainerFormat format, const std::str
 		inputFile.close();
 		
 		// Choose data format
-		sSound::eDataFormat dataFormat = sSound::eDataFormat::NONE;
+		eDataFormat dataFormat = eDataFormat::NONE;
 		types::boolean stereo = sound.channelCount > 1;
 		switch (sound.bitsPerSample)
 		{
 			case 16:
 				if (stereo)
 				{
-					sound.dataFormat = sSound::eDataFormat::STEREO16;
+					sound.dataFormat = eDataFormat::STEREO16;
 					break;
 				}
 				else
 				{
-					sound.dataFormat = sSound::eDataFormat::MONO16;
+					sound.dataFormat = eDataFormat::MONO16;
 					break;
 				}
 			case 8:
 				if (stereo)
 				{
-					sound.dataFormat = sSound::eDataFormat::STEREO8;
+					sound.dataFormat = eDataFormat::STEREO8;
 					break;
 				}
 				else
 				{
-					sound.dataFormat = sSound::eDataFormat::MONO8;
+					sound.dataFormat = eDataFormat::MONO8;
 					break;
 				}
 			default:
 				break;
 		}
 	}
-
-	_backend->CreateSound(sound);
 }
