@@ -19,6 +19,7 @@
 #include "math.hpp"
 #include "ecs.hpp"
 #include "input_glfw_backend.hpp"
+#include "audio_oal_backend.hpp"
 
 using namespace triton::ecs;
 using namespace types;
@@ -60,11 +61,13 @@ void triton::cEngine::Initialize()
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
 	_context->RegisterBackend<iGraphicsBackend>(new cOGLGraphicsBackend(_context));
+	_context->RegisterBackend<iAudioBackend>(new cAudioOALBackend(_context));
 
 	// Register subsystems
 	_context->RegisterSubsystem(this);
 	_context->RegisterSubsystem(new cInput(_context));
 	_context->RegisterSubsystem(new cGraphics(_context));
+	_context->RegisterSubsystem(new cAudio(_context));
 	_context->RegisterSubsystem(new cTextureAtlas(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	//_context->RegisterSubsystem(new cFont(_context));

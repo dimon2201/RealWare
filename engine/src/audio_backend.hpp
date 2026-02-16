@@ -4,19 +4,19 @@
 
 #include "audio.hpp"
 #include "audio_backend_sound.hpp"
-#include "object.hpp"
+#include "backend.hpp"
 #include "math.hpp"
 
 namespace triton
 {
     class cContext;
 
-    class iAudioBackend : public iObject
+    class iAudioBackend : public iBackend
     {
         TRITON_OBJECT(iAudioBackend)
 
     public:
-        explicit iAudioBackend(cContext* context) : iObject(context) {}
+        explicit iAudioBackend(cContext* context) : iBackend(context) {}
         virtual ~iAudioBackend() = default;
 
         virtual sAudioBackendSound CreateSound(
