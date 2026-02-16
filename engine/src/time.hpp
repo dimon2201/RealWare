@@ -15,6 +15,9 @@ namespace triton
 	{
 		TRITON_OBJECT(cTime)
 
+		std::chrono::steady_clock::time_point _timepointLast;
+		types::f32 _deltaTime = 0.0f;
+
 	public:
 		explicit cTime(cContext* context);
 		virtual ~cTime() override final = default;
@@ -24,9 +27,5 @@ namespace triton
 		void EndFrame();
 
 		inline types::f32 GetDeltaTime() const { return _deltaTime; }
-
-	private:
-		std::chrono::steady_clock::time_point _timepointLast;
-		types::f32 _deltaTime = 0.0f;
 	};
 }

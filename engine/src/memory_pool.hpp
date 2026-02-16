@@ -15,11 +15,13 @@ namespace triton
 
     class cMemoryAllocator
     {
+        sAllocatorBin* _bins = nullptr;
+        sAllocatorBin** _memSizeToBin = nullptr;
+
     public:
         static constexpr types::usize MAX_BIN_COUNT = 64;
         static constexpr types::usize MAX_ALLOCATION_BYTE_SIZE = 32 * 1024;
 
-    public:
         explicit cMemoryAllocator() = default;
         virtual ~cMemoryAllocator();
 
@@ -27,9 +29,5 @@ namespace triton
         void Deallocate(void* ptr);
 
         void SetBins(types::usize maxBinByteSize);
-
-    private:
-        sAllocatorBin* _bins = nullptr;
-        sAllocatorBin** _memSizeToBin = nullptr;
     };
 }

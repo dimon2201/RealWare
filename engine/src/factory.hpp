@@ -20,6 +20,12 @@ namespace triton
 	{
 		TRITON_OBJECT(cFactory)
 
+		types::usize _counter = 0;
+
+		types::boolean AssertCounter();
+		template <typename... Args>
+		T* New(types::u8* data, types::u32 index, Args&&... args);
+
 	public:
 		explicit cFactory(cContext* context);
 		virtual ~cFactory() override final = default;
@@ -29,14 +35,6 @@ namespace triton
 		template <typename... Args>
 		T* Create(types::u8* data, types::u32 index, Args&&... args);
 		void Destroy(T* object);
-
-	private:
-		types::boolean AssertCounter();
-		template <typename... Args>
-		T* New(types::u8* data, types::u32 index, Args&&... args);
-
-	private:
-		types::usize _counter = 0;
 	};
 }
 

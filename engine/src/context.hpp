@@ -14,6 +14,11 @@ namespace triton
 
 	class cContext
 	{
+		cMemoryAllocator* _allocator = nullptr;
+		::std::unordered_map<ClassType, std::shared_ptr<iBackend>> _backends;
+		::std::unordered_map<ClassType, iObject*> _factories;
+		::std::unordered_map<ClassType, iObject*> _subsystems;
+
 	public:
 		explicit cContext() = default;
 		~cContext() = default;
@@ -48,12 +53,6 @@ namespace triton
 
 		template <typename T>
 		inline T* GetSubsystem() const;
-
-	private:
-		cMemoryAllocator* _allocator = nullptr;
-		::std::unordered_map<ClassType, std::shared_ptr<iBackend>> _backends;
-		::std::unordered_map<ClassType, iObject*> _factories;
-		::std::unordered_map<ClassType, iObject*> _subsystems;
 	};
 }
 

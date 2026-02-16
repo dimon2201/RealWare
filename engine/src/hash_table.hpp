@@ -21,7 +21,7 @@ namespace triton
 	{
 		TRITON_OBJECT(cHashTablePair)
 
-			friend class cHashTable<TKey, TValue>;
+		friend class cHashTable<TKey, TValue>;
 
 		TKey _key = {};
 		TValue _value = {};
@@ -35,6 +35,14 @@ namespace triton
 	class cHashTable : public iObject
 	{
 		TRITON_OBJECT(cHashTable)
+
+		sChunkAllocatorDescriptor _allocatorDesc = {};
+		cStack<cHashTablePair<TKey, TValue>>* _elements;
+		types::usize _hashTableSize = 0;
+		types::qword _hashMask = 0;
+		cStackValue* _hashTable = nullptr;
+
+		void HashPair(const TKey& key, const TValue* value);
 
 	public:
 		static_assert(std::is_base_of_v<cStackValue, TValue>, "TValue must inherit from cStackValue");
@@ -51,15 +59,6 @@ namespace triton
 		void Erase(types::u32 index);
 
 		inline types::usize GetSize() const { return _elements->GetSize(); }
-
-	private:
-		void HashPair(const TKey& key, const TValue* value);
-
-		sChunkAllocatorDescriptor _allocatorDesc = {};
-		cStack<cHashTablePair<TKey, TValue>>* _elements;
-		types::usize _hashTableSize = 0;
-		types::qword _hashMask = 0;
-		cStackValue* _hashTable = nullptr;
 	};
 }
 

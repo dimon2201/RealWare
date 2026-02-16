@@ -23,6 +23,19 @@ namespace triton
 	{
 		TRITON_OBJECT(cStack)
 
+		sChunkAllocatorDescriptor _allocatorDesc = {};
+		types::usize _chunkCount = 0;
+		types::usize _objectByteSize = 0;
+		types::usize _objectCountPerChunk = 0;
+		types::usize _elementCount = 0;
+		TValue** _chunks = nullptr;
+
+		cStackValue New();
+		types::u32 AllocateChunk();
+		void DeallocateChunk(types::u32 chunkIndex);
+		types::u32 GetChunkIndex(types::u32 globalPosition) const;
+		types::u32 GetChunkLocalPosition(types::u32 chunkIndex, types::u32 globalPosition) const;
+
 	public:
 		static_assert(std::is_base_of_v<cStackValue, TValue>, "TValue must inherit from cStackValue");
 
@@ -39,21 +52,6 @@ namespace triton
 		void Pop();
 
 		inline types::usize GetSize() const { return _elementCount; }
-
-	private:
-		cStackValue New();
-		types::u32 AllocateChunk();
-		void DeallocateChunk(types::u32 chunkIndex);
-		types::u32 GetChunkIndex(types::u32 globalPosition) const;
-		types::u32 GetChunkLocalPosition(types::u32 chunkIndex, types::u32 globalPosition) const;
-
-	private:
-		sChunkAllocatorDescriptor _allocatorDesc = {};
-		types::usize _chunkCount = 0;
-		types::usize _objectByteSize = 0;
-		types::usize _objectCountPerChunk = 0;
-		types::usize _elementCount = 0;
-		TValue** _chunks = nullptr;
 	};
 }
 

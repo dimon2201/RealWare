@@ -42,15 +42,11 @@ int main()
     std::cout << "Context initialized." << std::endl;
 
     sCapabilities caps = {};
-    caps.windowCount = 2;
+    caps.windowCount = 1;
     caps.windows[0].windowTitle = "My Test Application";
     caps.windows[0].windowWidth = 800;
     caps.windows[0].windowHeight = 600;
     caps.windows[0].fullscreen = K_FALSE;
-    caps.windows[1].windowTitle = "Another Test App";
-    caps.windows[1].windowWidth = 640;
-    caps.windows[1].windowHeight = 480;
-    caps.windows[1].fullscreen = K_FALSE;
 
     cMyApplication* myApp = new cMyApplication(context, &caps);
     std::cout << "Application initialized." << std::endl;

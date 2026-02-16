@@ -19,6 +19,10 @@ namespace triton
 
         friend class mEvent;
 
+        eEventType _type = eEventType::NONE;
+        iObject* _receiver = nullptr;
+        mutable std::shared_ptr<EventFunction> _function;
+
     public:
         explicit cEventHandler(cContext* context, iObject* receiver, eEventType type, EventFunction&& function);
         virtual ~cEventHandler() override final = default;
@@ -27,16 +31,13 @@ namespace triton
         inline iObject* GetReceiver() const { return _receiver; }
         inline eEventType GetEventType() const { return _type; }
         inline std::shared_ptr<EventFunction> GetFunction() const { return _function; }
-
-    private:
-        eEventType _type = eEventType::NONE;
-        iObject* _receiver = nullptr;
-        mutable std::shared_ptr<EventFunction> _function;
     };
 
     class cEventDispatcher : public iObject
     {
         TRITON_OBJECT(cEventDispatcher)
+
+        cHashTable<eEventType, cStack<cEventHandler>>* _listeners = nullptr;
 
     public:
         explicit cEventDispatcher(cContext* context);
@@ -46,8 +47,5 @@ namespace triton
         void Unsubscribe(iObject* receiver, eEventType type);
         void Send(eEventType type);
         void Send(eEventType type, cDataBuffer* data);
-
-    private:
-        cHashTable<eEventType, cStack<cEventHandler>>* _listeners = nullptr;
     };
 }

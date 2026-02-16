@@ -19,6 +19,8 @@ namespace triton
 	{
 		friend class cVector2;
 
+		glm::vec2 _vec = glm::vec2(0.0f);
+
 	public:
 		explicit cVector2(const glm::vec2& vec);
 		explicit cVector2(types::f32 value);
@@ -40,9 +42,6 @@ namespace triton
 		inline void SetY(types::f32 value) { _vec.y = value; }
 		inline void AddX(types::f32 value) { _vec.x += value; }
 		inline void AddY(types::f32 value) { _vec.y += value; }
-
-	private:
-		glm::vec2 _vec = glm::vec2(0.0f);
 	};
 
 	class cVector3
@@ -51,6 +50,8 @@ namespace triton
 		friend class cQuaternion;
 		friend class cMatrix4;
 		friend class cTransform;
+
+		glm::vec3 _vec = glm::vec3(0.0f);
 
 	public:
 		explicit cVector3(const glm::vec3& vec);
@@ -78,14 +79,13 @@ namespace triton
 		inline void AddX(types::f32 value) { _vec.x += value; }
 		inline void AddY(types::f32 value) { _vec.y += value; }
 		inline void AddZ(types::f32 value) { _vec.z += value; }
-
-	private:
-		glm::vec3 _vec = glm::vec3(0.0f);
 	};
 
 	class cVector4
 	{
 		friend class cVector4;
+
+		glm::vec4 _vec = glm::vec4(0.0f);
 
 	public:
 		explicit cVector4(const glm::vec4& vec);
@@ -114,14 +114,13 @@ namespace triton
 		inline void AddY(types::f32 value) { _vec.y += value; }
 		inline void AddZ(types::f32 value) { _vec.z += value; }
 		inline void AddW(types::f32 value) { _vec.w += value; }
-
-	private:
-		glm::vec4 _vec = glm::vec4(0.0f);
 	};
 
 	class cQuaternion
 	{
 		friend class cQuaternion;
+
+		glm::quat _quat = {};
 
 	public:
 		explicit cQuaternion(const glm::quat& quat);
@@ -138,15 +137,14 @@ namespace triton
 		inline types::f32 GetY() const { return _quat.y; }
 		inline types::f32 GetZ() const { return _quat.z; }
 		inline types::f32 GetW() const { return _quat.w; }
-
-	private:
-		glm::quat _quat = {};
 	};
 
 	class cMatrix4
 	{
 		friend class cMatrix4;
 		friend class cTransform;
+
+		glm::mat4 _mat = {};
 
 	public:
 		explicit cMatrix4(const glm::mat4& mat);
@@ -156,13 +154,15 @@ namespace triton
 		~cMatrix4() = default;
 
 		cMatrix4 operator*(const cMatrix4& mat) const;
-
-	private:
-		glm::mat4 _mat = {};
 	};
 
 	class cTransform
 	{
+		mutable cVector3 _position = cVector3(0.0f);
+		mutable cVector3 _rotation = cVector3(0.0f);
+		mutable cVector3 _scale = cVector3(0.0f);
+		mutable cMatrix4 _world = cMatrix4(1.0f);
+
 	public:
 		explicit cTransform() = default;
 		~cTransform() = default;
@@ -176,12 +176,6 @@ namespace triton
 		inline void SetPosition(const cVector3& position) { _position = position; }
 		inline void SetRotation(const cVector3& rotation) { _rotation = rotation; }
 		inline void SetScale(const cVector3& scale) { _scale = scale; }
-
-	private:
-		mutable cVector3 _position = cVector3(0.0f);
-		mutable cVector3 _rotation = cVector3(0.0f);
-		mutable cVector3 _scale = cVector3(0.0f);
-		mutable cMatrix4 _world = cMatrix4(1.0f);
 	};
 
 	class cMath : public iObject

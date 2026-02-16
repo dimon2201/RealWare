@@ -34,6 +34,15 @@ namespace triton
     {
         TRITON_OBJECT(cFontFace)
 
+        FT_Face _font = {};
+        types::usize _glyphCount = 0;
+        types::usize _glyphSize = 0;
+        types::usize _offsetNewline = 0;
+        types::usize _offsetSpace = 0;
+        types::usize _offsetTab = 0;
+        mutable std::unordered_map<types::u8, sGlyph> _alphabet = {};
+        cTexture* _atlas = nullptr;
+
     public:
         explicit cFontFace(cContext* context);
         virtual ~cFontFace() override final;
@@ -52,21 +61,14 @@ namespace triton
         inline void SetOffsetNewline(types::usize offset) { _offsetNewline = offset; }
         inline void SetOffsetSpace(types::usize offset) { _offsetSpace = offset; }
         inline void SetOffsetTab(types::usize offset) { _offsetTab = offset; }
-
-    private:
-        FT_Face _font = {};
-        types::usize _glyphCount = 0;
-        types::usize _glyphSize = 0;
-        types::usize _offsetNewline = 0;
-        types::usize _offsetSpace = 0;
-        types::usize _offsetTab = 0;
-        mutable std::unordered_map<types::u8, sGlyph> _alphabet = {};
-        cTexture* _atlas = nullptr;
     };
 
     class cText : public iObject
     {
         TRITON_OBJECT(cText)
+
+        cFontFace* _font = nullptr;
+        std::string _text = "";
 
     public:
         explicit cText(cContext* context);
@@ -76,15 +78,15 @@ namespace triton
         inline const std::string& GetText() const { return _text; }
         inline void SetFont(cFontFace* font) { _font = font; }
         inline void SetText(const std::string& text) { _text = text; }
-
-    private:
-        cFontFace* _font = nullptr;
-        std::string _text = "";
     };
 
     class cFont : public iObject
     {
         TRITON_OBJECT(cFont)
+
+        types::boolean _initialized = types::K_FALSE;
+        iGraphicsBackend* _gfx = nullptr;
+        FT_Library _lib = {};
 
     public:
         explicit cFont(cContext* context);
@@ -101,10 +103,5 @@ namespace triton
         types::usize GetNewlineCount(const std::string& text) const;
 
         static constexpr types::usize K_MAX_ATLAS_WIDTH = 2048;
-
-    private:
-        types::boolean _initialized = types::K_FALSE;
-        iGraphicsBackend* _gfx = nullptr;
-        FT_Library _lib = {};
     };
 }

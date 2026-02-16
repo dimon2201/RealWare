@@ -79,30 +79,28 @@ namespace triton
     {
         TRITON_OBJECT(cPhysicsScene)
 
+        physx::PxScene* _scene = nullptr;
+        physx::PxControllerManager* _controllerManager = nullptr;
+
     public:
         explicit cPhysicsScene(cContext* context, physx::PxScene* scene, physx::PxControllerManager* controllerManager) : iObject(context), _scene(scene), _controllerManager(controllerManager) {}
         ~cPhysicsScene() = default;
 
         inline physx::PxScene* GetScene() const { return _scene; }
         inline physx::PxControllerManager* GetControllerManager() const { return _controllerManager; }
-
-    private:
-        physx::PxScene* _scene = nullptr;
-        physx::PxControllerManager* _controllerManager = nullptr;
     };
 
     class cPhysicsMaterial : public iObject
     {
         TRITON_OBJECT(cPhysicsMaterial)
 
+        physx::PxMaterial* _material = nullptr;
+
     public:
         explicit cPhysicsMaterial(cContext* context, physx::PxMaterial* material) : iObject(context), _material(material) {}
         ~cPhysicsMaterial() = default;
 
         inline physx::PxMaterial* GetMaterial() const { return _material; }
-
-    private:
-        physx::PxMaterial* _material = nullptr;
     };
 
     class cPhysicsControllerBackend
@@ -116,21 +114,24 @@ namespace triton
     {
         TRITON_OBJECT(cPhysicsController)
 
+        cPhysicsControllerBackend* _controllerBackend = nullptr;
+        types::f32 _eyeHeight = 0.0f;
+
     public:
         explicit cPhysicsController(cContext* context, cPhysicsControllerBackend* controller, types::f32 eyeHeight);
         ~cPhysicsController() = default;
 
         inline cPhysicsControllerBackend* GetController() const { return _controllerBackend; }
         inline types::f32 GetEyeHeight() const { return _eyeHeight; }
-
-    private:
-        cPhysicsControllerBackend* _controllerBackend = nullptr;
-        types::f32 _eyeHeight = 0.0f;
     };
 
     class cPhysicsActor : public iObject
     {
         TRITON_OBJECT(cPhysicsActor)
+
+        cGameObject* _gameObject = nullptr;
+        physx::PxActor* _actor = nullptr;
+        eCategory _type = eCategory::PHYSICS_ACTOR_DYNAMIC;
 
     public:
         explicit cPhysicsActor(cContext* context, cGameObject* gameObject, physx::PxActor* actor, eCategory actorType) : iObject(context), _gameObject(gameObject), _actor(actor), _type(actorType) {}
@@ -139,16 +140,19 @@ namespace triton
         inline cGameObject* GetGameObject() const { return _gameObject; }
         inline physx::PxActor* GetActor() const { return _actor; }
         inline eCategory GetActorType() const { return _type; }
-
-    private:
-        cGameObject* _gameObject = nullptr;
-        physx::PxActor* _actor = nullptr;
-        eCategory _type = eCategory::PHYSICS_ACTOR_DYNAMIC;
     };
 
     class cPhysics : public iObject
     {
         TRITON_OBJECT(cPhysics)
+
+        cPhysicsAllocator* _allocator = nullptr;
+        cPhysicsError* _error = nullptr;
+        cPhysicsCPUDispatcher* _cpuDispatcher = nullptr;
+        cPhysicsSimulationEvent* _simulationEvent = nullptr;
+        physx::PxFoundation* _foundation = nullptr;
+        physx::PxPhysics* _physics = nullptr;
+        std::mutex _mutex;
 
     public:
         explicit cPhysics(cContext* context);
@@ -165,14 +169,5 @@ namespace triton
 
         // TODO: New physics actor simulation
         //void Simulate();
-
-    private:
-        cPhysicsAllocator* _allocator = nullptr;
-        cPhysicsError* _error = nullptr;
-        cPhysicsCPUDispatcher* _cpuDispatcher = nullptr;
-        cPhysicsSimulationEvent* _simulationEvent = nullptr;
-        physx::PxFoundation* _foundation = nullptr;
-        physx::PxPhysics* _physics = nullptr;
-        std::mutex _mutex;
     };
 }

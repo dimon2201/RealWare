@@ -19,6 +19,9 @@ namespace triton
 	{
 		TRITON_OBJECT(cEngine)
 
+		iApplication* _app = nullptr;
+		const sCapabilities* _caps = nullptr;
+
 	public:
 		explicit cEngine(cContext* context, iApplication* app);
 		virtual ~cEngine() override final;
@@ -29,9 +32,5 @@ namespace triton
 
 		inline iApplication* GetApplication() const { return _app; }
 		inline const sCapabilities* GetCapabilities() const { return _caps; }
-
-	private:
-		iApplication* _app = nullptr;
-		const sCapabilities* _caps = nullptr;
 	};
 }

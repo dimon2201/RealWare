@@ -45,6 +45,13 @@ namespace triton
 		friend class cFactory;
 		friend class cMemoryAllocator;
 
+	protected:
+		cContext* _context = nullptr;
+		types::boolean _occupied = types::K_FALSE;
+		types::s64 _allocatorIndex = 0;
+		types::boolean _allocatedUsingMemAllocator = types::K_FALSE;
+		cTag _id;
+
 	public:
 		explicit iObject(cContext* context) : _context(context) {}
 		virtual ~iObject() = default;
@@ -62,12 +69,5 @@ namespace triton
 
 		inline cContext* GetContext() const { return _context; }
 		inline const cTag& GetID() const { return _id; }
-
-	protected:
-		cContext* _context = nullptr;
-		types::boolean _occupied = types::K_FALSE;
-		types::s64 _allocatorIndex = 0;
-		types::boolean _allocatedUsingMemAllocator = types::K_FALSE;
-		cTag _id;
 	};
 }

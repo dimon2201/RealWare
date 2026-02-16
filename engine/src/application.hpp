@@ -20,6 +20,11 @@ namespace triton
     {
         TRITON_OBJECT(iApplication)
 
+    protected:
+        const sCapabilities* _caps = nullptr;
+        cPlatform* _platform = nullptr;
+        cEngine* _engine = nullptr;
+
     public:
         enum class eMouseButton
         {
@@ -39,10 +44,5 @@ namespace triton
         inline const sCapabilities* GetCapabilities() const { return _caps; }
         inline cPlatform* GetPlatform() const { return _platform; }
         inline cEngine* GetEngine() const { return _engine; }
-
-    protected:
-        const sCapabilities* _caps = nullptr;
-        cPlatform* _platform = nullptr;
-        cEngine* _engine = nullptr;
     };
 }

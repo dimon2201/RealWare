@@ -20,6 +20,9 @@ namespace triton
 
     class cTask
     {
+        cBuffer* _data = nullptr;
+        std::shared_ptr<TaskFunction> _function;
+
     public:
         cTask() = default;
         explicit cTask(cBuffer* data, TaskFunction&& function);
@@ -28,15 +31,18 @@ namespace triton
         void Run();
         inline cBuffer* GetData() const { return _data; }
         inline std::shared_ptr<TaskFunction> GetFunction() const { return _function; }
-
-    private:
-        cBuffer* _data = nullptr;
-        std::shared_ptr<TaskFunction> _function;
     };
 
     class cThread : public iObject
     {
         TRITON_OBJECT(cThread)
+
+        std::vector<std::thread> _threads = {};
+        std::queue<cTask> _tasks = {};
+        std::mutex _mtx;
+        std::condition_variable _cv;
+        std::atomic<types::boolean> _pause = types::K_FALSE;
+        types::boolean _stop = types::K_FALSE;
 
     public:
         explicit cThread(cContext* context, types::usize threadCount = std::thread::hardware_concurrency());
@@ -46,13 +52,5 @@ namespace triton
         void Pause();
         void Resume();
         void Stop();
-
-    private:
-        std::vector<std::thread> _threads = {};
-        std::queue<cTask> _tasks = {};
-        std::mutex _mtx;
-        std::condition_variable _cv;
-        std::atomic<types::boolean> _pause = types::K_FALSE;
-        types::boolean _stop = types::K_FALSE;
     };
 }

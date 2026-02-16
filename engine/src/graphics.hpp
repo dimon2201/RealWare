@@ -80,6 +80,11 @@ namespace triton
     {
         TRITON_OBJECT(cMaterial)
 
+        cShader* _customShader = nullptr;
+        cTextureAtlasTexture* _diffuseTexture = nullptr;
+        glm::vec4 _diffuseColor = glm::vec4(1.0f);
+        glm::vec4 _highlightColor = glm::vec4(1.0f);
+
     public:
         explicit cMaterial(cContext* context, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, cShader* customShader) : iObject(context), _diffuseTexture(diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor), _customShader(customShader) {}
         ~cMaterial() = default;
@@ -88,12 +93,6 @@ namespace triton
         inline cTextureAtlasTexture* GetDiffuseTexture() const { return _diffuseTexture; }
         inline const glm::vec4& GetDiffuseColor() const { return _diffuseColor; }
         inline const glm::vec4& GetHighlightColor() const { return _highlightColor; }
-
-    private:
-        cShader* _customShader = nullptr;
-        cTextureAtlasTexture* _diffuseTexture = nullptr;
-        glm::vec4 _diffuseColor = glm::vec4(1.0f);
-        glm::vec4 _highlightColor = glm::vec4(1.0f);
     };
 
     struct sRenderInstance
@@ -144,6 +143,9 @@ namespace triton
 
         friend class cOGLGraphicsBackend;
 
+        sRenderPassDescriptor _desc = {};
+        cRenderPassGPU* _renderPass = nullptr;
+
     public:
         explicit cRenderPass(cContext* context, const sRenderPassDescriptor& desc, cRenderPassGPU* renderPass);
         virtual ~cRenderPass() override final = default;
@@ -164,25 +166,74 @@ namespace triton
         inline const sDepthMode& GetDepthMode() const { return _desc.depthMode; }
         inline cRenderPassGPU* GetRenderPassGPU() const { return _renderPass; }
         inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc.inputTextures[textureIndex] = texture; }
-
-    private:
-        sRenderPassDescriptor _desc = {};
-        cRenderPassGPU* _renderPass = nullptr;
     };
 
 	class cGraphics : public iObject
 	{
         TRITON_OBJECT(cGraphics)
 
-	public:
-		enum class eAPI
-		{
-			NONE = 0,
-			OGL,
-			D3D11
-		};
+        types::usize _maxOpaqueInstanceBufferByteSize = 0;
+        types::usize _maxTransparentInstanceBufferByteSize = 0;
+        types::usize _maxTextInstanceBufferByteSize = 0;
+        types::usize _maxMaterialBufferByteSize = 0;
+        types::usize _maxLightBufferByteSize = 0;
+        types::usize _maxTextureAtlasTexturesBufferByteSize = 0;
+        cBuffer* _vertexBuffer = nullptr;
+        cBuffer* _indexBuffer = nullptr;
+        cBuffer* _opaqueInstanceBuffer = nullptr;
+        cBuffer* _transparentInstanceBuffer = nullptr;
+        cBuffer* _textInstanceBuffer = nullptr;
+        cBuffer* _opaqueMaterialBuffer = nullptr;
+        cBuffer* _transparentMaterialBuffer = nullptr;
+        cBuffer* _textMaterialBuffer = nullptr;
+        cBuffer* _lightBuffer = nullptr;
+        cBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
+        cBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
+        cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
+        types::usize _opaqueInstanceCount = 0;
+        types::usize _transparentInstanceCount = 0;
+        void* _vertices = nullptr;
+        types::usize _verticesByteSize = 0;
+        void* _indices = nullptr;
+        types::usize _indicesByteSize = 0;
+        void* _opaqueInstances = nullptr;
+        types::usize _opaqueInstancesByteSize = 0;
+        void* _transparentInstances = nullptr;
+        types::usize _transparentInstancesByteSize = 0;
+        void* _textInstances = nullptr;
+        types::usize _textInstancesByteSize = 0;
+        void* _opaqueMaterials = nullptr;
+        types::usize _opaqueMaterialsByteSize = 0;
+        void* _transparentMaterials = nullptr;
+        types::usize _transparentMaterialsByteSize = 0;
+        void* _textMaterials = nullptr;
+        types::usize _textMaterialsByteSize = 0;
+        void* _lights = nullptr;
+        types::usize _lightsByteSize = 0;
+        void* _opaqueTextureAtlasTextures = nullptr;
+        types::usize _opaqueTextureAtlasTexturesByteSize = 0;
+        void* _transparentTextureAtlasTextures = nullptr;
+        types::usize _transparentTextureAtlasTexturesByteSize = 0;
+        void* _textTextureAtlasTextures = nullptr;
+        types::usize _textTextureAtlasTexturesByteSize = 0;
+        std::unordered_map<cMaterial*, types::s32>* _materialsMap = {};
+        cRenderPass* _opaque = nullptr;
+        cRenderPass* _transparent = nullptr;
+        cRenderPass* _text = nullptr;
+        cRenderPass* _compositeTransparent = nullptr;
+        cRenderPass* _compositeFinal = nullptr;
+        cRenderTarget* _opaqueRenderTarget = nullptr;
+        cRenderTarget* _transparentRenderTarget = nullptr;
+        types::usize _materialCountCPU = 0;
 
 	public:
+        enum class eAPI
+        {
+            NONE = 0,
+            OGL,
+            D3D11
+        };
+
 		explicit cGraphics(cContext* context);
 		virtual ~cGraphics() override final = default;
 
@@ -247,60 +298,5 @@ namespace triton
         inline cRenderPass* GetCompositeFinalRenderPass() const { return _compositeFinal; }
         inline cRenderTarget* GetOpaqueRenderTarget() const { return _opaqueRenderTarget; }
         inline cRenderTarget* GetTransparentRenderTarget() const { return _transparentRenderTarget; }
-
-	private:
-        types::usize _maxOpaqueInstanceBufferByteSize = 0;
-        types::usize _maxTransparentInstanceBufferByteSize = 0;
-        types::usize _maxTextInstanceBufferByteSize = 0;
-        types::usize _maxMaterialBufferByteSize = 0;
-        types::usize _maxLightBufferByteSize = 0;
-        types::usize _maxTextureAtlasTexturesBufferByteSize = 0;
-        cBuffer* _vertexBuffer = nullptr;
-        cBuffer* _indexBuffer = nullptr;
-        cBuffer* _opaqueInstanceBuffer = nullptr;
-        cBuffer* _transparentInstanceBuffer = nullptr;
-        cBuffer* _textInstanceBuffer = nullptr;
-        cBuffer* _opaqueMaterialBuffer = nullptr;
-        cBuffer* _transparentMaterialBuffer = nullptr;
-        cBuffer* _textMaterialBuffer = nullptr;
-        cBuffer* _lightBuffer = nullptr;
-        cBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
-        cBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
-        cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
-        types::usize _opaqueInstanceCount = 0;
-        types::usize _transparentInstanceCount = 0;
-        void* _vertices = nullptr;
-        types::usize _verticesByteSize = 0;
-        void* _indices = nullptr;
-        types::usize _indicesByteSize = 0;
-        void* _opaqueInstances = nullptr;
-        types::usize _opaqueInstancesByteSize = 0;
-        void* _transparentInstances = nullptr;
-        types::usize _transparentInstancesByteSize = 0;
-        void* _textInstances = nullptr;
-        types::usize _textInstancesByteSize = 0;
-        void* _opaqueMaterials = nullptr;
-        types::usize _opaqueMaterialsByteSize = 0;
-        void* _transparentMaterials = nullptr;
-        types::usize _transparentMaterialsByteSize = 0;
-        void* _textMaterials = nullptr;
-        types::usize _textMaterialsByteSize = 0;
-        void* _lights = nullptr;
-        types::usize _lightsByteSize = 0;
-        void* _opaqueTextureAtlasTextures = nullptr;
-        types::usize _opaqueTextureAtlasTexturesByteSize = 0;
-        void* _transparentTextureAtlasTextures = nullptr;
-        types::usize _transparentTextureAtlasTexturesByteSize = 0;
-        void* _textTextureAtlasTextures = nullptr;
-        types::usize _textTextureAtlasTexturesByteSize = 0;
-        std::unordered_map<cMaterial*, types::s32>* _materialsMap = {};
-        cRenderPass* _opaque = nullptr;
-        cRenderPass* _transparent = nullptr;
-        cRenderPass* _text = nullptr;
-        cRenderPass* _compositeTransparent = nullptr;
-        cRenderPass* _compositeFinal = nullptr;
-        cRenderTarget* _opaqueRenderTarget = nullptr;
-        cRenderTarget* _transparentRenderTarget = nullptr;
-        types::usize _materialCountCPU = 0;
 	};
 }

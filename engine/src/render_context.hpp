@@ -23,12 +23,12 @@ namespace triton
     {
         TRITON_OBJECT(cGPUResource)
 
-    public:
-        explicit cGPUResource(cContext* context) : iObject(context) {} // TODO: Temporary solution
-
     protected:
         mutable types::u32 _instance = 0;
         types::u32 _viewInstance = 0;
+
+    public:
+        explicit cGPUResource(cContext* context) : iObject(context) {} // TODO: Temporary solution
     };
 
     class cBuffer : public cGPUResource
@@ -47,16 +47,17 @@ namespace triton
             LARGE = 4
         };
 
+    private:
+        eType _type = eType::NONE;
+        types::usize _byteSize = 0;
+        types::s32 _slot = -1;
+
+    public:
         explicit cBuffer(cContext* context) : cGPUResource(context) {}
 
         inline eType GetBufferType() const { return _type; }
         inline types::usize GetByteSize() const { return _byteSize; }
         inline types::s32 GetSlot() const { return _slot; }
-
-    private:
-        eType _type = eType::NONE;
-        types::usize _byteSize = 0;
-        types::s32 _slot = -1;
     };
 
     class cVertexArray : public cGPUResource
@@ -75,6 +76,9 @@ namespace triton
 
         friend class cOGLGraphicsBackend;
 
+        std::string _vertex = "";
+        std::string _fragment = "";
+
     public:
         struct sDefinePair
         {
@@ -86,10 +90,6 @@ namespace triton
         };
 
         explicit cShader(cContext* context) : cGPUResource(context) {}
-
-    private:
-        std::string _vertex = "";
-        std::string _fragment = "";
     };
 
     class cTexture : public cGPUResource
@@ -118,6 +118,15 @@ namespace triton
             RGBA8_MIPS = 7
         };
 
+    private:
+        types::usize _width = 0;
+        types::usize _height = 0;
+        types::usize _depth = 0;
+        eDimension _dimension = eDimension::NONE;
+        eFormat _format = eFormat::NONE;
+        types::s32 _slot = -1;
+
+    public:
         explicit cTexture(cContext* context) : cGPUResource(context) {}
 
         inline types::usize GetWidth() const { return _width; }
@@ -127,14 +136,6 @@ namespace triton
         inline eFormat GetFormat() const { return _format; }
         inline types::s32 GetSlot() const { return _slot; }
         inline void SetSlot(types::s32 slot) { _slot = slot; }
-
-    private:
-        types::usize _width = 0;
-        types::usize _height = 0;
-        types::usize _depth = 0;
-        eDimension _dimension = eDimension::NONE;
-        eFormat _format = eFormat::NONE;
-        types::s32 _slot = -1;
     };
 
     class cRenderTarget : public cGPUResource
@@ -143,16 +144,15 @@ namespace triton
 
         friend class cOGLGraphicsBackend;
 
+        mutable std::vector<cTexture*> _colorAttachments = {};
+        cTexture* _depthAttachment = nullptr;
+
         inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
         inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
         inline void SetDepthAttachment(cTexture* attachment) { _depthAttachment = attachment; }
 
     public:
         explicit cRenderTarget(cContext* context) : cGPUResource(context) {}
-
-    private:
-        mutable std::vector<cTexture*> _colorAttachments = {};
-        cTexture* _depthAttachment = nullptr;
     };
 
     struct sDepthMode
@@ -209,16 +209,15 @@ namespace triton
 
         friend class cOGLGraphicsBackend;
 
+        cVertexArray* _vertexArray = nullptr;
+        cShader* _shader = nullptr;
+
     public:
         explicit cRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader);
         virtual ~cRenderPassGPU() override final = default;
         
         inline cVertexArray* GetVertexArray() const { return _vertexArray; }
         inline cShader* GetShader() const { return _shader; }
-
-    private:
-        cVertexArray* _vertexArray = nullptr;
-        cShader* _shader = nullptr;
     };
 
     class iGraphicsBackend : public iBackend
