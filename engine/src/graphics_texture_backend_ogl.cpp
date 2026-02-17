@@ -1,15 +1,15 @@
-// graphics_ogl_texture_backend.cpp
+// graphics_texture_backend_ogl.cpp
 
 #include <GL/glew.h>
 #include <lodepng.h> // TODO: move lodepng stuff to separate backend
-#include "graphics_ogl_texture_backend.hpp"
+#include "graphics_texture_backend_ogl.hpp"
 #include "context.hpp"
 
 using namespace types;
 
-triton::cGraphicsOGLTextureBackend::cGraphicsOGLTextureBackend(cContext* context) : iGraphicsTextureBackend(context) {}
+triton::cGraphicsTextureBackendOGL::cGraphicsTextureBackendOGL(cContext* context) : iGraphicsTextureBackend(context) {}
 
-triton::cTexture* triton::cGraphicsOGLTextureBackend::CreateTexture(
+triton::cTexture* triton::cGraphicsTextureBackendOGL::CreateTexture(
     const cVector3& size,
     cTexture::eDimension dimension,
     cTexture::eFormat format,
@@ -111,7 +111,7 @@ triton::cTexture* triton::cGraphicsOGLTextureBackend::CreateTexture(
     return texture;
 }
 
-triton::cTexture* triton::cGraphicsOGLTextureBackend::ResizeTexture(cTexture* texture, const cVector2& size)
+triton::cTexture* triton::cGraphicsTextureBackendOGL::ResizeTexture(cTexture* texture, const cVector2& size)
 {
     cTexture* newTexture = CreateTexture(
         cVector3(size.GetX(), size.GetY(), texture->GetDepth()),
@@ -125,7 +125,7 @@ triton::cTexture* triton::cGraphicsOGLTextureBackend::ResizeTexture(cTexture* te
     return newTexture;
 }
 
-void triton::cGraphicsOGLTextureBackend::BindTexture(const cTexture* texture)
+void triton::cGraphicsTextureBackendOGL::BindTexture(const cTexture* texture)
 {
     if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D)
     {
@@ -159,13 +159,13 @@ void triton::cGraphicsOGLTextureBackend::BindTexture(const cTexture* texture)
     }*/
 }
 
-void triton::cGraphicsOGLTextureBackend::UnbindTexture(const cTexture* texture)
+void triton::cGraphicsTextureBackendOGL::UnbindTexture(const cTexture* texture)
 {
     if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D_ARRAY)
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-void triton::cGraphicsOGLTextureBackend::WriteTexture(
+void triton::cGraphicsTextureBackendOGL::WriteTexture(
     const cTexture* texture,
     const cVector3& offset,
     const cVector2& size,
@@ -259,7 +259,7 @@ void triton::cGraphicsOGLTextureBackend::WriteTexture(
     }
 }
 
-void triton::cGraphicsOGLTextureBackend::WriteTextureToFile(const cTexture* texture, const std::string& filename)
+void triton::cGraphicsTextureBackendOGL::WriteTextureToFile(const cTexture* texture, const std::string& filename)
 {
     if (texture->GetFormat() != cTexture::eFormat::RGBA8)
         return;
@@ -292,7 +292,7 @@ void triton::cGraphicsOGLTextureBackend::WriteTextureToFile(const cTexture* text
     }
 }
 
-void triton::cGraphicsOGLTextureBackend::GenerateTextureMips(const cTexture* texture)
+void triton::cGraphicsTextureBackendOGL::GenerateTextureMips(const cTexture* texture)
 {
     if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D)
     {
@@ -308,7 +308,7 @@ void triton::cGraphicsOGLTextureBackend::GenerateTextureMips(const cTexture* tex
     }
 }
 
-void triton::cGraphicsOGLTextureBackend::DestroyTexture(cTexture* texture)
+void triton::cGraphicsTextureBackendOGL::DestroyTexture(cTexture* texture)
 {
     if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D)
         glBindTexture(GL_TEXTURE_2D, 0);

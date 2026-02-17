@@ -1,4 +1,4 @@
-// graphics_ogl_texture_backend.hpp
+// graphics_texture_backend_ogl.hpp
 
 #pragma once
 
@@ -9,13 +9,13 @@ namespace triton
 {
     class cContext;
 
-    class cGraphicsOGLTextureBackend final : public iGraphicsTextureBackend
+    class cGraphicsTextureBackendOGL final : public iGraphicsTextureBackend
     {
-        TRITON_OBJECT(cGraphicsOGLTextureBackend)
+        TRITON_OBJECT(cGraphicsTextureBackendOGL)
 
     public:
-        explicit cGraphicsOGLTextureBackend(cContext* context);
-        virtual ~cGraphicsOGLTextureBackend() override final = default;
+        explicit cGraphicsTextureBackendOGL(cContext* context);
+        virtual ~cGraphicsTextureBackendOGL() override final = default;
 
         virtual cTexture* CreateTexture(
             const cVector3& size,
