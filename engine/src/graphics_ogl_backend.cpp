@@ -46,9 +46,8 @@ std::string CleanShaderSource(const std::string& src)
     return out;
 }
 
-triton::cGraphicsOGLBackend::cGraphicsOGLBackend(cContext* context) : iGraphicsBackend(context) {}
-
-triton::cGraphicsOGLBackend::~cGraphicsOGLBackend() {}
+/*triton::cGraphicsOGLBackend::cGraphicsOGLBackend(cContext* context, iGraphicsBufferBackend* bufferBackend)
+    : iGraphicsBackend(context), _buffer(bufferBackend) {}
 
 void triton::cGraphicsOGLBackend::BindWindowContext(void* nativeWindow)
 {
@@ -72,120 +71,6 @@ void triton::cGraphicsOGLBackend::CreateGraphicsContext()
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(GLDebugCallback, nullptr);
-}
-
-triton::cBuffer* triton::cGraphicsOGLBackend::CreateBuffer(usize byteSize, cBuffer::eType type, s32 slot, const void* data)
-{
-    cBuffer* buffer = _context->Create<cBuffer>(_context);
-    buffer->_byteSize = byteSize;
-    buffer->_type = type;
-    buffer->_slot = slot;
-
-    glGenBuffers(1, (GLuint*)&buffer->_instance);
-
-    if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->_instance);
-        glBufferData(GL_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-    else if (buffer->GetBufferType() == cBuffer::eType::INDEX)
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->_instance);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-    else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
-    {
-        glBindBuffer(GL_UNIFORM_BUFFER, (GLuint)buffer->_instance);
-        glBufferData(GL_UNIFORM_BUFFER, byteSize, data, GL_STATIC_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    }
-    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
-    {
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, (GLuint)buffer->_instance);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, byteSize, data, GL_STATIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    }
-
-    return buffer;
-}
-
-void triton::cGraphicsOGLBackend::BindBuffer(const cBuffer* buffer)
-{
-    if (buffer->_type == cBuffer::eType::VERTEX)
-        glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->_instance);
-    else if (buffer->_type == cBuffer::eType::INDEX)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->_instance);
-    else if (buffer->_type == cBuffer::eType::UNIFORM)
-        glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, (GLuint)buffer->_instance);
-    else if (buffer->_type == cBuffer::eType::LARGE)
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, buffer->_instance);
-}
-		
-void triton::cGraphicsOGLBackend::BindBufferNotVAO(const cBuffer* buffer)
-{
-    if (buffer->_type == cBuffer::eType::UNIFORM)
-        glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, (GLuint)buffer->_instance);
-    else if (buffer->_type == cBuffer::eType::LARGE)
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, buffer->_instance);
-}
-
-void triton::cGraphicsOGLBackend::UnbindBuffer(const cBuffer* buffer)
-{
-    if (buffer->_type == cBuffer::eType::VERTEX)
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    else if (buffer->_type == cBuffer::eType::INDEX)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    else if (buffer->_type == cBuffer::eType::UNIFORM)
-        glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, 0);
-    else if (buffer->_type == cBuffer::eType::LARGE)
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, 0);
-}
-
-void triton::cGraphicsOGLBackend::WriteBuffer(const cBuffer* buffer, usize offset, usize byteSize, const void* data)
-{
-    if (buffer->_type == cBuffer::eType::VERTEX)
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, buffer->_instance);
-        glBufferSubData(GL_ARRAY_BUFFER, offset, byteSize, data);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-    else if (buffer->_type == cBuffer::eType::INDEX)
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->_instance);
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, byteSize, data);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-    else if (buffer->_type == cBuffer::eType::UNIFORM)
-    {
-        glBindBuffer(GL_UNIFORM_BUFFER, buffer->_instance);
-        glBufferSubData(GL_UNIFORM_BUFFER, offset, byteSize, data);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    }
-    else if (buffer->_type == cBuffer::eType::LARGE)
-    {
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->_instance);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, byteSize, data);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    }
-}
-
-void triton::cGraphicsOGLBackend::DestroyBuffer(cBuffer* buffer)
-{
-    if (buffer->_type == cBuffer::eType::VERTEX)
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    else if (buffer->_type == cBuffer::eType::INDEX)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    else if (buffer->_type == cBuffer::eType::UNIFORM)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    else if (buffer->_type == cBuffer::eType::LARGE)
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    glDeleteBuffers(1, (GLuint*)&buffer->_instance);
-
-    if (buffer != nullptr)
-        _context->Destroy<cBuffer>(buffer);
 }
 
 triton::cVertexArray* triton::cGraphicsOGLBackend::CreateVertexArray()
@@ -212,7 +97,7 @@ void triton::cGraphicsOGLBackend::BindDefaultVertexArray(const std::vector<cBuff
 
         BindVertexArray(vertexArray);
         for (auto buffer : buffersToBind)
-            BindBuffer(buffer);
+            _buffer->BindBuffer(buffer);
         BindDefaultInputLayout();
         UnbindVertexArray();
     }
@@ -845,12 +730,12 @@ triton::cRenderPassGPU* triton::cGraphicsOGLBackend::CreateRenderPass(const sRen
     if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
     {
         for (auto buffer : desc.inputBuffers)
-            BindBuffer(buffer);
+            _buffer->BindBuffer(buffer);
     }
     else if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
     {
         for (auto buffer : desc.inputBuffers)
-            BindBuffer(buffer);
+            _buffer->BindBuffer(buffer);
 
         BindDefaultInputLayout();
     }
@@ -876,7 +761,7 @@ void triton::cGraphicsOGLBackend::BindRenderPass(const cRenderPass* renderPass, 
         UnbindRenderTarget();
     Viewport(renderPass->GetViewport());
     for (auto buffer : renderPass->GetInputBuffers())
-        BindBufferNotVAO(buffer);
+        _buffer->BindBufferNotVAO(buffer);
     BindDepthMode(renderPass->GetDepthMode());
     BindBlendMode(renderPass->GetBlendMode());
     for (usize i = 0; i < renderPass->GetInputTextures().size(); i++)
@@ -889,7 +774,7 @@ void triton::cGraphicsOGLBackend::UnbindRenderPass(const cRenderPass* renderPass
     if (renderPass->GetRenderTarget() != nullptr)
         UnbindRenderTarget();
     for (auto buffer : renderPass->GetInputBuffers())
-        UnbindBuffer(buffer);
+        _buffer->UnbindBuffer(buffer);
     for (auto texture : renderPass->GetInputTextures())
         UnbindTexture(texture);
 }
@@ -1004,4 +889,4 @@ void triton::cGraphicsOGLBackend::DrawQuad()
 void triton::cGraphicsOGLBackend::DrawQuads(usize count)
 {
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, count);
-}
+}*/

@@ -2,28 +2,22 @@
 
 #pragma once
 
-#include "graphics_backend.hpp"
+#include "graphics_buffer_backend.hpp"
 
 namespace triton
 {
-    class cContext;
+    /*class cContext;
 
-    class cGraphicsOGLBackend : public iGraphicsBackend
+    class cGraphicsOGLBackend final : public iGraphicsBackend
     {
         TRITON_OBJECT(cGraphicsOGLBackend)
 
     public:
-        explicit cGraphicsOGLBackend(cContext* context);
-        virtual ~cGraphicsOGLBackend() override final;
+        explicit cGraphicsOGLBackend(cContext* context, iGraphicsBufferBackend* bufferBackend);
+        virtual ~cGraphicsOGLBackend() override final = default;
 
         virtual void BindWindowContext(void* nativeWindow) override final;
         virtual void CreateGraphicsContext() override final;
-        virtual cBuffer* CreateBuffer(types::usize byteSize, cBuffer::eType type, types::s32 slot, const void* data) override final;
-        virtual void BindBuffer(const cBuffer* buffer) override final;
-        virtual void BindBufferNotVAO(const cBuffer* buffer) override final;
-        virtual void UnbindBuffer(const cBuffer* buffer) override final;
-        virtual void WriteBuffer(const cBuffer* buffer, types::usize offset, types::usize byteSize, const void* data) override final;
-        virtual void DestroyBuffer(cBuffer* buffer) override final;
         virtual cVertexArray* CreateVertexArray() override final;
         virtual void BindVertexArray(const cVertexArray* vertexArray) override final;
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) override final;
@@ -67,5 +61,5 @@ namespace triton
         virtual void Draw(types::usize indexCount, types::usize vertexOffset, types::usize indexOffset, types::usize instanceCount) override final;
         virtual void DrawQuad() override final;
         virtual void DrawQuads(types::usize count) override final;
-    };
+    };*/
 }
