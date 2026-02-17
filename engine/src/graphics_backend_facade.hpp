@@ -20,6 +20,7 @@ namespace triton
     class cTextureAtlasTexture;
     class cRenderPass;
     class cRenderTarget;
+    class cTexture;
 
     class cVertexArray : public cGPUResource
     {
@@ -51,52 +52,6 @@ namespace triton
         };
 
         explicit cShader(cContext* context);
-    };
-
-    class cTexture : public cGPUResource
-    {
-        TRITON_OBJECT(cTexture)
-
-        friend class cGraphicsOGLBackend;
-
-    public:
-        enum class eDimension
-        {
-            NONE = 0,
-            TEXTURE_2D = 1,
-            TEXTURE_2D_ARRAY = 2
-        };
-
-        enum class eFormat
-        {
-            NONE = 0,
-            R8 = 1,
-            R8F = 2,
-            RGBA8 = 3,
-            RGB16F = 4,
-            RGBA16F = 5,
-            DEPTH_STENCIL = 6,
-            RGBA8_MIPS = 7
-        };
-
-    private:
-        types::usize _width = 0;
-        types::usize _height = 0;
-        types::usize _depth = 0;
-        eDimension _dimension = eDimension::NONE;
-        eFormat _format = eFormat::NONE;
-        types::s32 _slot = -1;
-
-    public:
-        explicit cTexture(cContext* context);
-
-        inline types::usize GetWidth() const { return _width; }
-        inline types::usize GetHeight() const { return _height; }
-        inline types::usize GetDepth() const { return _depth; }
-        inline eDimension GetDimension() const { return _dimension; }
-        inline eFormat GetFormat() const { return _format; }
-        inline types::s32 GetSlot() const { return _slot; }
-        inline void SetSlot(types::s32 slot) { _slot = slot; }
     };
 
     class cRenderTarget : public cGPUResource
@@ -208,14 +163,6 @@ namespace triton
         virtual void DestroyShader(cShader* shader) = 0;
         virtual void SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix) = 0;
         virtual void SetShaderUniform(const cShader* shader, const std::string& name, types::usize count, const types::f32* values) = 0;
-        virtual cTexture* CreateTexture(types::usize width, types::usize height, types::usize depth, cTexture::eDimension dimension, cTexture::eFormat format, const void* data) = 0;
-        virtual cTexture* ResizeTexture(cTexture* texture, const glm::vec2& size) = 0;
-        virtual void BindTexture(const cShader* shader, const std::string& name, const cTexture* texture, types::s32 slot) = 0;
-        virtual void UnbindTexture(const cTexture* texture) = 0;
-        virtual void WriteTexture(const cTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data) = 0;
-        virtual void WriteTextureToFile(const cTexture* texture, const std::string& filename) = 0;
-        virtual void GenerateTextureMips(const cTexture* texture) = 0;
-        virtual void DestroyTexture(cTexture* texture) = 0;
         virtual cRenderTarget* CreateRenderTarget(const std::vector<cTexture*>& colorAttachments, cTexture* depthAttachment) = 0;
         virtual void ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
         virtual void ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size) = 0;

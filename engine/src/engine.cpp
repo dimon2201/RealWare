@@ -20,6 +20,7 @@
 #include "ecs.hpp"
 #include "input_glfw_backend.hpp"
 #include "graphics_ogl_buffer_backend.hpp"
+#include "graphics_ogl_texture_backend.hpp"
 #include "audio_oal_backend.hpp"
 
 using namespace triton::ecs;
