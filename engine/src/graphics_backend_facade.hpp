@@ -21,6 +21,7 @@ namespace triton
     class cRenderPass;
     class cRenderTarget;
     class cTexture;
+    class cShader;
 
     class cVertexArray : public cGPUResource
     {
@@ -30,28 +31,6 @@ namespace triton
 
     public:
         explicit cVertexArray(cContext* context);
-    };
-
-    class cShader : public cGPUResource
-    {
-        TRITON_OBJECT(cShader)
-
-        friend class cGraphicsOGLBackend;
-
-        std::string _vertex = "";
-        std::string _fragment = "";
-
-    public:
-        struct sDefinePair
-        {
-            sDefinePair(const std::string& name, types::usize index) : _name(name), _index(index) {}
-            ~sDefinePair() = default;
-
-            std::string _name = "";
-            types::usize _index = 0;
-        };
-
-        explicit cShader(cContext* context);
     };
 
     class cRenderTarget : public cGPUResource

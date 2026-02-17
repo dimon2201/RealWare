@@ -17,6 +17,7 @@ namespace triton
     class cGameObject;
     class cTextureAtlasTexture;
     class cContext;
+    class cShader;
     struct sBuffer;
     struct sVertexArray;
     struct sRenderTarget;
@@ -232,6 +233,16 @@ namespace triton
             NONE = 0,
             OGL,
             D3D11
+        };
+
+        enum class eRenderPath
+        {
+            NONE = 0,
+            OPAQUE_PATH,
+            TRANSPARENT_PATH,
+            TEXT_PATH,
+            TRANSPARENT_COMPOSITE_PATH,
+            QUAD_PATH
         };
 
 		explicit cGraphics(cContext* context);
