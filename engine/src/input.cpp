@@ -3,7 +3,7 @@
 #include "input.hpp"
 #include "context.hpp"
 #include "input_backend.hpp"
-#include "graphics_backend.hpp"
+#include "graphics_backend_facade.hpp"
 
 using namespace types;
 
@@ -78,11 +78,13 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
 )
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    
+    // FIXME: uncomment when iGraphicsContextBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
     sInputBackendWindow ibw = input->CreatePlatformWindow(title, size, fullscreen);
-    gfx->BindWindowContext((void*)ibw.instance);
+    //gfx->BindWindowContext((void*)ibw.instance);
     input->SetWindowSwapInterval(1);
-    gfx->CreateGraphicsContext();
+    //gfx->CreateGraphicsContext();
 
     cInputWindow* window = _context->Create<cInputWindow>(_context, ibw);
 

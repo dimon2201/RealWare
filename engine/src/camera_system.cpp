@@ -3,7 +3,7 @@
 #include "camera_system.hpp"
 #include "physics_manager.hpp"
 #include "graphics.hpp"
-#include "graphics_backend.hpp"
+#include "graphics_backend_facade.hpp"
 #include "application.hpp"
 #include "gameobject_manager.hpp"
 #include "context.hpp"

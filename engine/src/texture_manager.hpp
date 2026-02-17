@@ -43,7 +43,8 @@ namespace triton
         TRITON_OBJECT(cTextureAtlas)
 
     protected:
-        iGraphicsBackend* _gfx = nullptr;
+        // FIXME: uncomment when proper graphics backend is added
+        //iGraphicsBackend* _gfx = nullptr;
         cTexture* _atlas = nullptr;
 
     public:

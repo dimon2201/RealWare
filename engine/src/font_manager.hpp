@@ -85,7 +85,8 @@ namespace triton
         TRITON_OBJECT(cFont)
 
         types::boolean _initialized = types::K_FALSE;
-        iGraphicsBackend* _gfx = nullptr;
+        // FIXME: uncomment when proper graphics backend is added
+        //iGraphicsBackend* _gfx = nullptr;
         FT_Library _lib = {};
 
     public:

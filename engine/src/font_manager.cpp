@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "font_manager.hpp"
-#include "graphics_backend.hpp"
+#include "graphics_backend_facade.hpp"
 #include "application.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"
@@ -56,13 +56,15 @@ triton::cFontFace::cFontFace(cContext* context) : iObject(context) {}
 triton::cFontFace::~cFontFace()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsTextureBackend is added
+    // iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
     for (const auto& glyph : _alphabet)
         memoryAllocator->Deallocate(glyph.second._bitmapData);
     _alphabet.clear();
 
-    gfx->DestroyTexture(_atlas);
+    // FIXME: uncomment when iGraphicsTextureBackend is added
+    // gfx->DestroyTexture(_atlas);
 
     FT_Done_Face(_font);
 }
@@ -127,7 +129,8 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
 {
     const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsTextureBackend is added
+    // iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
     usize maxGlyphHeight = 0;
 
@@ -168,14 +171,15 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         }
     }
 
-    _atlas = gfx->CreateTexture(
-        atlasWidth,
-        atlasHeight,
-        0,
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::R8,
-        atlasPixels
-    );
+    // FIXME: uncomment when iGraphicsTextureBackend is added
+    //_atlas = gfx->CreateTexture(
+    //    atlasWidth,
+    //    atlasHeight,
+    //    0,
+    //    cTexture::eDimension::TEXTURE_2D,
+    //    cTexture::eFormat::R8,
+    //    atlasPixels
+    //);
 
     memoryAllocator->Deallocate(atlasPixels);
 }
@@ -184,16 +188,17 @@ triton::cText::cText(cContext* context) : iObject(context) {}
 
 triton::cText::~cText() {}
 
-triton::cFont::cFont(cContext* context) : iObject(context), _gfx(_context->GetBackend<iGraphicsBackend>())
-{
-    if (FT_Init_FreeType(&_lib))
-    {
-        Print("Failed to initialize FreeType library!");
-        return;
-    }
-
-    _initialized = K_TRUE;
-}
+// FIXME: uncomment when proper graphics backend is added
+//triton::cFont::cFont(cContext* context) : iObject(context), _gfx(_context->GetBackend<iGraphicsBackend>())
+//{
+//    if (FT_Init_FreeType(&_lib))
+//    {
+//        Print("Failed to initialize FreeType library!");
+//        return;
+//    }
+//
+//    _initialized = K_TRUE;
+//}
 
 triton::cFont::~cFont()
 {
@@ -204,7 +209,8 @@ triton::cFont::~cFont()
 triton::cFontFace* triton::cFont::CreateFontTTF(const std::string& filename, usize glyphSize)
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when proper graphics backend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
     cFontFace* font = _context->Create<cFontFace>(_context);
 
     FT_Face ftFont = font->GetFont();

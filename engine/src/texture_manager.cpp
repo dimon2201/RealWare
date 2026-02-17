@@ -4,7 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../thirdparty/stb-master/stb_image.h"
 #include "application.hpp"
-#include "graphics_backend.hpp"
+#include "graphics_backend_facade.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
@@ -27,26 +27,31 @@ triton::cTextureAtlasTexture::cTextureAtlasTexture(cContext* context, types::boo
     }
 }
 
-triton::cTextureAtlas::cTextureAtlas(cContext* context) 
-    : iObject(context), _gfx(_context->GetBackend<iGraphicsBackend>()) {}
+// FIXME: uncomment when proper graphics backend is added
+//triton::cTextureAtlas::cTextureAtlas(cContext* context) 
+//    : iObject(context), _gfx(_context->GetBackend<iGraphicsBackend>()) {}
+// FIXME: delete this code when proper cTextureAtlas constructor will be created
+triton::cTextureAtlas::cTextureAtlas(cContext* context) : iObject(context) {}
 
 void triton::cTextureAtlas::Initialize(const cVector3& size)
 {
-    _atlas = _gfx->CreateTexture(
-        size.GetX(),
-        size.GetY(),
-        size.GetZ(),
-        cTexture::eDimension::TEXTURE_2D_ARRAY,
-        cTexture::eFormat::RGBA8_MIPS,
-        nullptr
-    );
-    _atlas->SetSlot(0);
+    // FIXME: uncomment when proper graphics backend is added
+    //_atlas = _gfx->CreateTexture(
+    //    size.GetX(),
+    //    size.GetY(),
+    //    size.GetZ(),
+    //    cTexture::eDimension::TEXTURE_2D_ARRAY,
+    //    cTexture::eFormat::RGBA8_MIPS,
+    //    nullptr
+    //);
+    //_atlas->SetSlot(0);
 }
 
 void triton::cTextureAtlas::Shutdown()
 {
-    if (_atlas)
-        _gfx->DestroyTexture(_atlas);
+    // FIXME: uncomment when proper graphics backend is added
+    //if (_atlas)
+    //    _gfx->DestroyTexture(_atlas);
 }
 
 // TODO: New implementation of texture creation

@@ -14,12 +14,12 @@
 #include "event_manager.hpp"
 #include "gameobject_manager.hpp"
 #include "thread_manager.hpp"
-#include "graphics_backend.hpp"
+#include "graphics_backend_facade.hpp"
 #include "audio.hpp"
 #include "math.hpp"
 #include "ecs.hpp"
 #include "input_glfw_backend.hpp"
-#include "graphics_ogl_backend.hpp"
+#include "graphics_ogl_buffer_backend.hpp"
 #include "audio_oal_backend.hpp"
 
 using namespace triton::ecs;
@@ -61,7 +61,7 @@ void triton::cEngine::Initialize()
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
-	_context->RegisterBackend<iGraphicsBackend>(new cGraphicsOGLBackend(_context));
+	_context->RegisterBackend<iGraphicsBufferBackend>(new cGraphicsOGLBufferBackend(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioOALBackend(_context));
 
 	// Register subsystems
@@ -71,6 +71,10 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new cAudio(_context));
 	_context->RegisterSubsystem(new cTextureAtlas(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
+	_context->RegisterSubsystem(new cGraphicsBackendFacade(
+		_context,
+		_context->GetBackend<iGraphicsBufferBackend>()
+	));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));

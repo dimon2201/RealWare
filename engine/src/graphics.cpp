@@ -11,7 +11,7 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "engine.hpp"
-#include "graphics_backend.hpp"
+#include "graphics_backend_facade.hpp"
 #include "texture_manager.hpp"
 #include "gameobject_manager.hpp"
 #include "font_manager.hpp"
@@ -77,15 +77,18 @@ void triton::cRenderPass::ResizeViewport(const glm::vec2& size)
 
 void triton::cRenderPass::ResizeColorAttachments(const glm::vec2& size)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
-    gfx->ResizeRenderTargetColors(GetRenderTarget(), size);
+    // FIXME: uncomment when iGraphicsRenderTargetBackend is added
+    // iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderTargetBackend is added
+    //gfx->ResizeRenderTargetColors(GetRenderTarget(), size);
 }
 
 void triton::cRenderPass::ResizeDepthAttachment(const glm::vec2& size)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderTargetBackend is added
+    // iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
     cRenderTarget* renderTarget = GetRenderTarget();
-    renderTarget->SetDepthAttachment(gfx->ResizeTexture(renderTarget->GetDepthAttachment(), size));
+    // renderTarget->SetDepthAttachment(gfx->ResizeTexture(renderTarget->GetDepthAttachment(), size));
 }
     
 triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
@@ -93,7 +96,7 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
 void triton::cGraphics::Initialize()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    iGraphicsBufferBackend* gfxBuffer = _context->GetBackend<iGraphicsBufferBackend>();
     iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
     const cVector2 windowSize = cVector2(640, 480); // TODO: temporary window size
@@ -106,17 +109,17 @@ void triton::cGraphics::Initialize()
     _maxLightBufferByteSize = caps->maxRenderLightCount * sizeof(sLightInstance);
     _maxTextureAtlasTexturesBufferByteSize = caps->maxRenderTextureAtlasTextureCount * sizeof(sTextureAtlasTextureGPU);
 
-    _vertexBuffer = gfx->CreateBuffer(caps->vertexBufferSize, cBuffer::eType::VERTEX, 0, nullptr);
-    _indexBuffer = gfx->CreateBuffer(caps->indexBufferSize, cBuffer::eType::INDEX, 0, nullptr);
-    _opaqueInstanceBuffer = gfx->CreateBuffer(_maxOpaqueInstanceBufferByteSize, cBuffer::eType::LARGE, 0, nullptr);
-    _transparentInstanceBuffer = gfx->CreateBuffer(_maxTransparentInstanceBufferByteSize, cBuffer::eType::LARGE, 0, nullptr);
-    _textInstanceBuffer = gfx->CreateBuffer(_maxTextInstanceBufferByteSize, cBuffer::eType::LARGE, 0, nullptr);
-    _opaqueMaterialBuffer = gfx->CreateBuffer(_maxMaterialBufferByteSize, cBuffer::eType::LARGE, 1, nullptr);
-    _textMaterialBuffer = gfx->CreateBuffer(_maxMaterialBufferByteSize, cBuffer::eType::LARGE, 1, nullptr);
-    _transparentMaterialBuffer = gfx->CreateBuffer(_maxMaterialBufferByteSize, cBuffer::eType::LARGE, 1, nullptr);
-    _lightBuffer = gfx->CreateBuffer(_maxLightBufferByteSize, cBuffer::eType::LARGE, 2, nullptr);
-    _opaqueTextureAtlasTexturesBuffer = gfx->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, cBuffer::eType::LARGE, 3, nullptr);
-    _transparentTextureAtlasTexturesBuffer = gfx->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, cBuffer::eType::LARGE, 3, nullptr);
+    _vertexBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::VERTEX, nullptr, caps->vertexBufferSize, 0);
+    _indexBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::INDEX, nullptr, caps->indexBufferSize, 0);
+    _opaqueInstanceBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxOpaqueInstanceBufferByteSize, 0);
+    _transparentInstanceBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTransparentInstanceBufferByteSize, 0);
+    _textInstanceBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextInstanceBufferByteSize, 0);
+    _opaqueMaterialBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
+    _textMaterialBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
+    _transparentMaterialBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
+    _lightBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxLightBufferByteSize, 2);
+    _opaqueTextureAtlasTexturesBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextureAtlasTexturesBufferByteSize, 3);
+    _transparentTextureAtlasTexturesBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextureAtlasTexturesBufferByteSize, 3);
 
     _vertices = memoryAllocator->Allocate(caps->vertexBufferSize, caps->memoryAlignment);
     _verticesByteSize = 0;
@@ -142,13 +145,15 @@ void triton::cGraphics::Initialize()
     _transparentTextureAtlasTexturesByteSize = 0;
     _materialsMap = new std::unordered_map<cMaterial*, s32>(); // TODO: replace std::unordered_map with cHashTable
 
-    cTexture* color = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::RGBA8, nullptr);
-    cTexture* accumulation = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::RGBA16F, nullptr);
-    cTexture* revealage = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::R8F, nullptr);
-    cTexture* depth = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::DEPTH_STENCIL, nullptr);
+    // FIXME: uncomment when iGraphicsTextureBackend is added
+    // cTexture* color = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::RGBA8, nullptr);
+    // cTexture* accumulation = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::RGBA16F, nullptr);
+    // cTexture* revealage = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::R8F, nullptr);
+    // cTexture* depth = gfx->CreateTexture(windowSize.GetX(), windowSize.GetY(), 0, cTexture::eDimension::TEXTURE_2D, cTexture::eFormat::DEPTH_STENCIL, nullptr);
 
-    _opaqueRenderTarget = gfx->CreateRenderTarget({ color }, depth);
-    _transparentRenderTarget = gfx->CreateRenderTarget({ accumulation, revealage }, depth);
+    // FIXME: uncomment when iGraphicsRenderTargetBackend is added
+    // _opaqueRenderTarget = gfx->CreateRenderTarget({ color }, depth);
+    // _transparentRenderTarget = gfx->CreateRenderTarget({ accumulation, revealage }, depth);
 
     cTextureAtlas* textureAtlas = _context->GetSubsystem<cTextureAtlas>();
 
@@ -259,7 +264,7 @@ void triton::cGraphics::Initialize()
 void triton::cGraphics::Shutdown()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    iGraphicsBufferBackend* gfxBuffer = _context->GetBackend<iGraphicsBufferBackend>();
 
     DestroyRenderPass(_compositeFinal);
     DestroyRenderPass(_compositeTransparent);
@@ -267,13 +272,15 @@ void triton::cGraphics::Shutdown()
     DestroyRenderPass(_transparent);
     DestroyRenderPass(_opaque);
 
-    gfx->DestroyRenderTarget(_transparentRenderTarget);
-    gfx->DestroyRenderTarget(_opaqueRenderTarget);
+    // FIXME: uncomment when iGraphicsRenderTargetBackend is added
+    // gfx->DestroyRenderTarget(_transparentRenderTarget);
+    // gfx->DestroyRenderTarget(_opaqueRenderTarget);
 
-    gfx->DestroyTexture(_transparentRenderTarget->GetColorAttachments()[0]);
-    gfx->DestroyTexture(_transparentRenderTarget->GetColorAttachments()[1]);
-    gfx->DestroyTexture(_opaqueRenderTarget->GetColorAttachments()[0]);
-    gfx->DestroyTexture(_opaqueRenderTarget->GetDepthAttachment());
+    // FIXME: uncomment when iGraphicsTextureBackend is added
+    // gfx->DestroyTexture(_transparentRenderTarget->GetColorAttachments()[0]);
+    // gfx->DestroyTexture(_transparentRenderTarget->GetColorAttachments()[1]);
+    // gfx->DestroyTexture(_opaqueRenderTarget->GetColorAttachments()[0]);
+    // gfx->DestroyTexture(_opaqueRenderTarget->GetDepthAttachment());
 
     delete _materialsMap; // TODO: Temporary solution
 
@@ -289,17 +296,17 @@ void triton::cGraphics::Shutdown()
     memoryAllocator->Deallocate(_indices);
     memoryAllocator->Deallocate(_vertices);
 
-    gfx->DestroyBuffer(_transparentTextureAtlasTexturesBuffer);
-    gfx->DestroyBuffer(_opaqueTextureAtlasTexturesBuffer);
-    gfx->DestroyBuffer(_lightBuffer);
-    gfx->DestroyBuffer(_transparentMaterialBuffer);
-    gfx->DestroyBuffer(_textMaterialBuffer);
-    gfx->DestroyBuffer(_opaqueMaterialBuffer);
-    gfx->DestroyBuffer(_textInstanceBuffer);
-    gfx->DestroyBuffer(_transparentInstanceBuffer);
-    gfx->DestroyBuffer(_opaqueInstanceBuffer);
-    gfx->DestroyBuffer(_indexBuffer);
-    gfx->DestroyBuffer(_vertexBuffer);
+    gfxBuffer->DestroyBuffer(_transparentTextureAtlasTexturesBuffer);
+    gfxBuffer->DestroyBuffer(_opaqueTextureAtlasTexturesBuffer);
+    gfxBuffer->DestroyBuffer(_lightBuffer);
+    gfxBuffer->DestroyBuffer(_transparentMaterialBuffer);
+    gfxBuffer->DestroyBuffer(_textMaterialBuffer);
+    gfxBuffer->DestroyBuffer(_opaqueMaterialBuffer);
+    gfxBuffer->DestroyBuffer(_textInstanceBuffer);
+    gfxBuffer->DestroyBuffer(_transparentInstanceBuffer);
+    gfxBuffer->DestroyBuffer(_opaqueInstanceBuffer);
+    gfxBuffer->DestroyBuffer(_indexBuffer);
+    gfxBuffer->DestroyBuffer(_vertexBuffer);
 }
 
 // TODO: Remove material creation from cGraphics
@@ -323,29 +330,37 @@ void triton::cGraphics::Shutdown()
 
 triton::cVertexArray* triton::cGraphics::CreateDefaultVertexArray()
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
-    cVertexArray* vertexArray = gfx->CreateVertexArray();
+    // FIXME: uncomment when iGraphicsVertexArrayBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    //cVertexArray* vertexArray = gfx->CreateVertexArray();
     std::vector<cBuffer*> buffersToBind = { _vertexBuffer, _indexBuffer };
 
-    gfx->BindVertexArray(vertexArray);
-    for (auto buffer : buffersToBind)
-        gfx->BindBuffer(buffer);
-    gfx->BindDefaultInputLayout();
-    gfx->UnbindVertexArray();
+    //gfx->BindVertexArray(vertexArray);
+    //for (auto buffer : buffersToBind)
+    //    gfx->BindBuffer(buffer);
+    //gfx->BindDefaultInputLayout();
+    //gfx->UnbindVertexArray();
 
-    return vertexArray;
+    //return vertexArray;
+    return nullptr;
 }
 
-triton::sVertexBufferGeometry* triton::cGraphics::CreateGeometry(eCategory format, usize verticesByteSize, const void* vertices, usize indicesByteSize, const void* indices)
+triton::sVertexBufferGeometry* triton::cGraphics::CreateGeometry(
+    eCategory format,
+    usize verticesByteSize,
+    const u8* vertices,
+    usize indicesByteSize,
+    const u8* indices
+)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    iGraphicsBufferBackend* gfxBuffer = _context->GetBackend<iGraphicsBufferBackend>();
     sVertexBufferGeometry* geometry = _context->Create<sVertexBufferGeometry>(_context);
 
     memcpy((void*)((usize)_vertices + _verticesByteSize), vertices, verticesByteSize);
     memcpy((void*)((usize)_indices + _indicesByteSize), indices, indicesByteSize);
 
-    gfx->WriteBuffer(_vertexBuffer, _verticesByteSize, verticesByteSize, vertices);
-    gfx->WriteBuffer(_indexBuffer, _indicesByteSize, indicesByteSize, indices);
+    gfxBuffer->WriteBuffer(_vertexBuffer, _verticesByteSize, verticesByteSize, vertices);
+    gfxBuffer->WriteBuffer(_indexBuffer, _indicesByteSize, indicesByteSize, indices);
 
     usize vertexCount = verticesByteSize;
     usize vertexOffset = _verticesByteSize;
@@ -377,10 +392,12 @@ triton::sVertexBufferGeometry* triton::cGraphics::CreateGeometry(eCategory forma
 
 triton::cRenderPass* triton::cGraphics::CreateRenderPass(const sRenderPassDescriptor& desc)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
-    cRenderPassGPU* renderPass = gfx->CreateRenderPass(desc);
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    //cRenderPassGPU* renderPass = gfx->CreateRenderPass(desc);
 
-    return _context->Create<cRenderPass>(_context, desc, renderPass);
+    //return _context->Create<cRenderPass>(_context, desc, renderPass);
+    return nullptr;
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
@@ -533,8 +550,9 @@ void triton::cGraphics::DestroyGeometry(sVertexBufferGeometry* geometry)
 
 void triton::cGraphics::DestroyRenderPass(cRenderPass* renderPass)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
-    gfx->DestroyRenderPass(renderPass->GetRenderPassGPU());
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    //gfx->DestroyRenderPass(renderPass->GetRenderPassGPU());
     _context->Destroy<cRenderPass>(renderPass);
 }
 
@@ -557,38 +575,42 @@ void triton::cGraphics::ClearGeometryBuffer()
 
 void triton::cGraphics::ClearRenderPass(const cRenderPass* renderPass, types::boolean clearColor, usize bufferIndex, const glm::vec4& color, types::boolean clearDepth, f32 depth)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderTargetBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
-    gfx->BindRenderPass(renderPass);
-    if (clearColor == K_TRUE)
-        gfx->ClearFramebufferColor(bufferIndex, color);
-    if (clearDepth == K_TRUE)
-        gfx->ClearFramebufferDepth(depth);
-    gfx->UnbindRenderPass(renderPass);
+    //gfx->BindRenderPass(renderPass);
+    //if (clearColor == K_TRUE)
+    //    gfx->ClearFramebufferColor(bufferIndex, color);
+    //if (clearDepth == K_TRUE)
+    //    gfx->ClearFramebufferDepth(depth);
+    //gfx->UnbindRenderPass(renderPass);
 }
 
 void triton::cGraphics::ClearRenderPasses(const glm::vec4& clearColor, f32 clearDepth)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
-    gfx->BindRenderPass(_opaque);
-    gfx->ClearFramebufferColor(0, clearColor);
-    gfx->ClearFramebufferDepth(clearDepth);
+    //gfx->BindRenderPass(_opaque);
+    //gfx->ClearFramebufferColor(0, clearColor);
+    //gfx->ClearFramebufferDepth(clearDepth);
 
-    gfx->BindRenderPass(_transparent);
-    gfx->ClearFramebufferColor(0, glm::vec4(0.0f));
-    gfx->ClearFramebufferColor(1, glm::vec4(1.0f));
+    //gfx->BindRenderPass(_transparent);
+    //gfx->ClearFramebufferColor(0, glm::vec4(0.0f));
+    //gfx->ClearFramebufferColor(1, glm::vec4(1.0f));
 
-    gfx->BindRenderPass(_text);
-    gfx->ClearFramebufferColor(0, clearColor);
+    //gfx->BindRenderPass(_text);
+    //gfx->ClearFramebufferColor(0, clearColor);
 }
 
 void triton::cGraphics::ResizeRenderTargets(const glm::vec2& size)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    // FIXME: uncomment when iGraphicsRenderTargetBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
-    gfx->UnbindRenderPass(_opaque);
-    gfx->UnbindRenderPass(_transparent);
+    //gfx->UnbindRenderPass(_opaque);
+    //gfx->UnbindRenderPass(_transparent);
 
     _opaque->ResizeViewport(size);
     _opaque->ResizeColorAttachments(size);
@@ -601,8 +623,8 @@ void triton::cGraphics::ResizeRenderTargets(const glm::vec2& size)
 
     _text->ResizeViewport(size);
 
-    gfx->UpdateRenderTargetBuffers(_opaque->GetRenderTarget());
-    gfx->UpdateRenderTargetBuffers(_transparent->GetRenderTarget());
+    //gfx->UpdateRenderTargetBuffers(_opaque->GetRenderTarget());
+    //gfx->UpdateRenderTargetBuffers(_transparent->GetRenderTarget());
 
     _compositeTransparent->ResizeViewport(size);
     auto& transparentColorAttachments = _transparent->GetRenderTarget()->GetColorAttachments();
@@ -804,102 +826,112 @@ void cGraphics::WriteObjectsToTransparentBuffers(cIdVector<cGameObject>& objects
 
 void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, cRenderPass* renderPass)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    // FIXME: uncomment when iGraphicsDrawCallBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
     if (renderPass == nullptr)
     {
-        gfx->BindRenderPass(_opaque);
-        gfx->SetShaderUniform(_opaque->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
+        //gfx->BindRenderPass(_opaque);
+        //gfx->SetShaderUniform(_opaque->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
     }
     else
     {
-        gfx->BindRenderPass(renderPass);
-        gfx->SetShaderUniform(renderPass->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
+        //gfx->BindRenderPass(renderPass);
+        //gfx->SetShaderUniform(renderPass->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
     }
 
-    gfx->Draw(
-        geometry->_indexCount,
-        geometry->_offsetVertex,
-        geometry->_offsetIndex,
-        _opaqueInstanceCount
-    );
+    //gfx->Draw(
+    //    geometry->_indexCount,
+    //    geometry->_offsetVertex,
+    //    geometry->_offsetIndex,
+    //    _opaqueInstanceCount
+    //);
 
-    if (renderPass == nullptr)
-        gfx->UnbindRenderPass(_opaque);
-    else
-        gfx->UnbindRenderPass(renderPass);
+    //if (renderPass == nullptr)
+    //    gfx->UnbindRenderPass(_opaque);
+    //else
+    //    gfx->UnbindRenderPass(renderPass);
 }
 
 void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, cShader* singleShader)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsDrawCallBackend is added
+    // FIXME: uncomment when iGraphicsUniformBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
-    gfx->BindRenderPass(_opaque, singleShader);
+    //gfx->BindRenderPass(_opaque, singleShader);
 
-    if (singleShader == nullptr)
-        gfx->SetShaderUniform(_opaque->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
-    else
-        gfx->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+    //if (singleShader == nullptr)
+    //    gfx->SetShaderUniform(_opaque->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
+    //else
+    //    gfx->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
 
-    gfx->Draw(
-        geometry->_indexCount,
-        geometry->_offsetVertex,
-        geometry->_offsetIndex,
-        _opaqueInstanceCount
-    );
+    //gfx->Draw(
+    //    geometry->_indexCount,
+    //    geometry->_offsetVertex,
+    //    geometry->_offsetIndex,
+    //    _opaqueInstanceCount
+    //);
 
-    gfx->UnbindRenderPass(_opaque);
+    //gfx->UnbindRenderPass(_opaque);
 }
 
 void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const std::vector<cGameObject>& objects, const cGameObject* cameraObject, cRenderPass* renderPass)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    // FIXME: uncomment when iGraphicsUniformBackend is added
+    // FIXME: uncomment when iGraphicsDrawCallBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
     if (renderPass == nullptr)
     {
-        gfx->BindRenderPass(_transparent);
-        gfx->SetShaderUniform(_transparent->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
+        //gfx->BindRenderPass(_transparent);
+        //gfx->SetShaderUniform(_transparent->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
     }
     else
     {
-        gfx->BindRenderPass(renderPass);
-        gfx->SetShaderUniform(renderPass->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
+        //gfx->BindRenderPass(renderPass);
+        //gfx->SetShaderUniform(renderPass->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
     }
 
-    gfx->Draw(
-        geometry->_indexCount,
-        geometry->_offsetVertex,
-        geometry->_offsetIndex,
-        _transparentInstanceCount
-    );
+    //gfx->Draw(
+    //    geometry->_indexCount,
+    //    geometry->_offsetVertex,
+    //    geometry->_offsetIndex,
+    //    _transparentInstanceCount
+    //);
 
-    if (renderPass == nullptr)
-        gfx->UnbindRenderPass(_transparent);
-    else
-        gfx->UnbindRenderPass(renderPass);
+    //if (renderPass == nullptr)
+    //    gfx->UnbindRenderPass(_transparent);
+    //else
+    //    gfx->UnbindRenderPass(renderPass);
 
     CompositeTransparent();
 }
 
 void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, cShader* singleShader)
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    // FIXME: uncomment when iGraphicsUniformBackend is added
+    // FIXME: uncomment when iGraphicsDrawCallBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
-    gfx->BindRenderPass(_transparent, singleShader);
+    //gfx->BindRenderPass(_transparent, singleShader);
 
-    if (singleShader != nullptr)
-        gfx->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
-    else
-        gfx->SetShaderUniform(_transparent->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
+    //if (singleShader != nullptr)
+    //    gfx->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+    //else
+    //    gfx->SetShaderUniform(_transparent->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
 
-    gfx->Draw(
-        geometry->_indexCount,
-        geometry->_offsetVertex,
-        geometry->_offsetIndex,
-        _transparentInstanceCount
-    );
+    //gfx->Draw(
+    //    geometry->_indexCount,
+    //    geometry->_offsetVertex,
+    //    geometry->_offsetIndex,
+    //    _transparentInstanceCount
+    //);
 
-    gfx->UnbindRenderPass(_transparent);
+    //gfx->UnbindRenderPass(_transparent);
 }
 
 // TODO: Implement new text drawing approach
@@ -992,20 +1024,24 @@ void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geo
 
 void triton::cGraphics::CompositeTransparent()
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    // FIXME: uncomment when iGraphicsDrawCallBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
-    gfx->BindRenderPass(_compositeTransparent);
-    gfx->DrawQuad();
-    gfx->UnbindRenderPass(_compositeTransparent);
+    //gfx->BindRenderPass(_compositeTransparent);
+    //gfx->DrawQuad();
+    //gfx->UnbindRenderPass(_compositeTransparent);
 }
 
 void triton::cGraphics::CompositeFinal()
 {
-    iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    // FIXME: uncomment when iGraphicsRenderPassBackend is added
+    // FIXME: uncomment when iGraphicsDrawCallBackend is added
+    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
 
-    gfx->BindRenderPass(_compositeFinal);
-    gfx->DrawQuad();
-    gfx->UnbindRenderPass(_compositeFinal);
+    //gfx->BindRenderPass(_compositeFinal);
+    //gfx->DrawQuad();
+    //gfx->UnbindRenderPass(_compositeFinal);
 
-    gfx->UnbindShader();
+    //gfx->UnbindShader();
 }
