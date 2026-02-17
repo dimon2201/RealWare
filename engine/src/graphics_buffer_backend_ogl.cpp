@@ -1,14 +1,14 @@
-// graphics_ogl_buffer_backend.cpp
+// graphics_buffer_backend_ogl.cpp
 
 #include <GL/glew.h>
-#include "graphics_ogl_buffer_backend.hpp"
+#include "graphics_buffer_backend_ogl.hpp"
 #include "context.hpp"
 
 using namespace types;
 
-triton::cGraphicsOGLBufferBackend::cGraphicsOGLBufferBackend(cContext* context) : iGraphicsBufferBackend(context) {}
+triton::cGraphicsBufferBackendOGL::cGraphicsBufferBackendOGL(cContext* context) : iGraphicsBufferBackend(context) {}
 
-triton::cBuffer* triton::cGraphicsOGLBufferBackend::CreateBuffer(
+triton::cBuffer* triton::cGraphicsBufferBackendOGL::CreateBuffer(
     cBuffer::eType type,
     const u8* data,
     usize byteSize,
@@ -49,7 +49,7 @@ triton::cBuffer* triton::cGraphicsOGLBufferBackend::CreateBuffer(
     return buffer;
 }
 
-void triton::cGraphicsOGLBufferBackend::BindBuffer(const cBuffer* buffer)
+void triton::cGraphicsBufferBackendOGL::BindBuffer(const cBuffer* buffer)
 {
     if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->GetInstance());
@@ -61,7 +61,7 @@ void triton::cGraphicsOGLBufferBackend::BindBuffer(const cBuffer* buffer)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), buffer->GetInstance());
 }
 
-void triton::cGraphicsOGLBufferBackend::BindBufferNotVAO(const cBuffer* buffer)
+void triton::cGraphicsBufferBackendOGL::BindBufferNotVAO(const cBuffer* buffer)
 {
     if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
         glBindBufferBase(GL_UNIFORM_BUFFER, buffer->GetSlot(), (GLuint)buffer->GetInstance());
@@ -69,7 +69,7 @@ void triton::cGraphicsOGLBufferBackend::BindBufferNotVAO(const cBuffer* buffer)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), buffer->GetInstance());
 }
 
-void triton::cGraphicsOGLBufferBackend::UnbindBuffer(const cBuffer* buffer)
+void triton::cGraphicsBufferBackendOGL::UnbindBuffer(const cBuffer* buffer)
 {
     if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -81,7 +81,7 @@ void triton::cGraphicsOGLBufferBackend::UnbindBuffer(const cBuffer* buffer)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), 0);
 }
 
-void triton::cGraphicsOGLBufferBackend::WriteBuffer(
+void triton::cGraphicsBufferBackendOGL::WriteBuffer(
     const cBuffer* buffer,
     usize offset,
     usize byteSize,
@@ -114,7 +114,7 @@ void triton::cGraphicsOGLBufferBackend::WriteBuffer(
     }
 }
 
-void triton::cGraphicsOGLBufferBackend::DestroyBuffer(cBuffer* buffer)
+void triton::cGraphicsBufferBackendOGL::DestroyBuffer(cBuffer* buffer)
 {
     if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
         glBindBuffer(GL_ARRAY_BUFFER, 0);

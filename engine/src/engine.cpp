@@ -19,7 +19,7 @@
 #include "math.hpp"
 #include "ecs.hpp"
 #include "input_glfw_backend.hpp"
-#include "graphics_ogl_buffer_backend.hpp"
+#include "graphics_buffer_backend_ogl.hpp"
 #include "graphics_ogl_texture_backend.hpp"
 #include "audio_oal_backend.hpp"
 
@@ -62,7 +62,7 @@ void triton::cEngine::Initialize()
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
-	_context->RegisterBackend<iGraphicsBufferBackend>(new cGraphicsOGLBufferBackend(_context));
+	_context->RegisterBackend<iGraphicsBufferBackend>(new cGraphicsBufferBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioOALBackend(_context));
 
 	// Register subsystems

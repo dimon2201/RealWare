@@ -1,4 +1,4 @@
-// graphics_ogl_buffer_backend.hpp
+// graphics_buffer_backend_ogl.hpp
 
 #pragma once
 
@@ -9,13 +9,13 @@ namespace triton
 {
     class cContext;
 
-    class cGraphicsOGLBufferBackend final : public iGraphicsBufferBackend
+    class cGraphicsBufferBackendOGL final : public iGraphicsBufferBackend
     {
-        TRITON_OBJECT(cGraphicsOGLBufferBackend)
+        TRITON_OBJECT(cGraphicsBufferBackendOGL)
 
     public:
-        explicit cGraphicsOGLBufferBackend(cContext* context);
-        virtual ~cGraphicsOGLBufferBackend() override final = default;
+        explicit cGraphicsBufferBackendOGL(cContext* context);
+        virtual ~cGraphicsBufferBackendOGL() override final = default;
 
         virtual cBuffer* CreateBuffer(
             cBuffer::eType type,
