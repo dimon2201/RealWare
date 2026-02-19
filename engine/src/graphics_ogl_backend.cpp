@@ -71,49 +71,4 @@ void triton::cGraphicsOGLBackend::CreateGraphicsContext()
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(GLDebugCallback, nullptr);
-}
-
-void triton::cGraphicsOGLBackend::ClearColor(const glm::vec4& color)
-{
-    glClearColor(color.x, color.y, color.z, color.w);
-    glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void triton::cGraphicsOGLBackend::ClearDepth(const f32 depth)
-{
-    glClearDepth(depth);
-    glClear(GL_DEPTH_BUFFER_BIT);
-}
-
-void triton::cGraphicsOGLBackend::ClearFramebufferColor(usize bufferIndex, const glm::vec4& color)
-{
-    glClearBufferfv(GL_COLOR, bufferIndex, &color.x);
-}
-
-void triton::cGraphicsOGLBackend::ClearFramebufferDepth(f32 depth)
-{
-    glClearDepth(depth);
-    glClear(GL_DEPTH_BUFFER_BIT);
-}
-
-void triton::cGraphicsOGLBackend::Draw(usize indexCount, usize vertexOffset, usize indexOffset, usize instanceCount)
-{
-    glDrawElementsInstancedBaseVertex(
-        GL_TRIANGLES,
-        indexCount,
-        GL_UNSIGNED_INT,
-        (const void*)indexOffset,
-        instanceCount,
-        vertexOffset
-    );
-}
-
-void triton::cGraphicsOGLBackend::DrawQuad()
-{
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-}
-
-void triton::cGraphicsOGLBackend::DrawQuads(usize count)
-{
-    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, count);
 }*/

@@ -7,3 +7,54 @@ using namespace types;
 
 triton::cGraphicsDrawcallBackendOGL::cGraphicsDrawcallBackendOGL(cContext* context)
 	: iGraphicsDrawcallBackend(context) {}
+
+void triton::cGraphicsDrawcallBackendOGL::ClearColor(const cVector4& color)
+{
+    glClearColor(color.GetX(), color.GetY(), color.GetZ(), color.GetW());
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void triton::cGraphicsDrawcallBackendOGL::ClearDepth(const f32 depth)
+{
+    glClearDepth(depth);
+    glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void triton::cGraphicsDrawcallBackendOGL::ClearFramebufferColor(usize bufferIndex, const cVector4& color)
+{
+    GLfloat buff[] = { color.GetX(), color.GetY(), color.GetZ(), color.GetW() };
+    glClearBufferfv(GL_COLOR, bufferIndex, &buff[0]);
+}
+
+void triton::cGraphicsDrawcallBackendOGL::ClearFramebufferDepth(f32 depth)
+{
+    glClearDepth(depth);
+    glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void triton::cGraphicsDrawcallBackendOGL::Draw(
+    usize indexCount,
+    usize vertexOffset,
+    usize indexOffset,
+    usize instanceCount
+)
+{
+    glDrawElementsInstancedBaseVertex(
+        GL_TRIANGLES,
+        indexCount,
+        GL_UNSIGNED_INT,
+        (const void*)indexOffset,
+        instanceCount,
+        vertexOffset
+    );
+}
+
+void triton::cGraphicsDrawcallBackendOGL::DrawQuad()
+{
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void triton::cGraphicsDrawcallBackendOGL::DrawQuads(usize count)
+{
+    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, count);
+}
