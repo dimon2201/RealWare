@@ -31,8 +31,5 @@ namespace triton
         virtual ~cGraphicsBackendFacade() override = default;
 
         inline iGraphicsResourceBackend* GetResourceBackend() const { return _resource; }
-
-        /*virtual void BindWindowContext(void* nativeWindow) = 0;
-        virtual void CreateGraphicsContext() = 0;*/
     };
 }
