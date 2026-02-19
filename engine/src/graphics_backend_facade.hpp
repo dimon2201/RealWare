@@ -33,15 +33,6 @@ namespace triton
         inline iGraphicsResourceBackend* GetResourceBackend() const { return _resource; }
 
         /*virtual void BindWindowContext(void* nativeWindow) = 0;
-        virtual void CreateGraphicsContext() = 0;
-
-        // iGraphicsDrawCallBackend
-        virtual void ClearColor(const glm::vec4& color) = 0;
-        virtual void ClearDepth(types::f32 depth) = 0;
-        virtual void ClearFramebufferColor(types::usize bufferIndex, const glm::vec4& color) = 0;
-        virtual void ClearFramebufferDepth(types::f32 depth) = 0;
-        virtual void Draw(types::usize indexCount, types::usize vertexOffset, types::usize indexOffset, types::usize instanceCount) = 0;
-        virtual void DrawQuad() = 0;
-        virtual void DrawQuads(types::usize count) = 0;*/
+        virtual void CreateGraphicsContext() = 0;*/
     };
 }
