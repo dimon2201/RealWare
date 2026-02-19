@@ -13,7 +13,6 @@ struct GLFWwindow;
 
 namespace triton
 {
-    class cPlatform;
     class cEngine;
 
     class iApplication : public iObject
@@ -22,7 +21,6 @@ namespace triton
 
     protected:
         const sCapabilities* _caps = nullptr;
-        cPlatform* _platform = nullptr;
         cEngine* _engine = nullptr;
 
     public:
@@ -42,7 +40,6 @@ namespace triton
         void Run();
 
         inline const sCapabilities* GetCapabilities() const { return _caps; }
-        inline cPlatform* GetPlatform() const { return _platform; }
         inline cEngine* GetEngine() const { return _engine; }
     };
 }
