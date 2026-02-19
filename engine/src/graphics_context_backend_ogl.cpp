@@ -23,11 +23,6 @@ namespace triton
 triton::cGraphicsContextBackendOGL::cGraphicsContextBackendOGL(cContext* context)
 	: iGraphicsContextBackend(context) {}
 
-void triton::cGraphicsContextBackendOGL::BindWindowContext(void* nativeWindow)
-{
-    //glfwMakeContextCurrent((GLFWwindow*)nativeWindow);
-}
-
 void triton::cGraphicsContextBackendOGL::CreateGraphicsContext()
 {
     if (glewInit() != GLEW_OK)

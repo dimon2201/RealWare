@@ -16,7 +16,6 @@ namespace triton
         explicit cGraphicsContextBackendOGL(cContext* context);
         virtual ~cGraphicsContextBackendOGL() override final = default;
 
-        virtual void BindWindowContext(void* nativeWindow) override final;
         virtual void CreateGraphicsContext() override final;
     };
 }

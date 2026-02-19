@@ -61,6 +61,11 @@ triton::sInputBackendWindow triton::cInputGLFWBackend::CreatePlatformWindow(
     return ibw;
 }
 
+void triton::cInputGLFWBackend::BindWindowContext(sInputBackendWindow& window)
+{
+    glfwMakeContextCurrent((GLFWwindow*)window.instance);
+}
+
 void triton::cInputGLFWBackend::DestroyWindow(sInputBackendWindow& window)
 {
     if (window.instance == 0)

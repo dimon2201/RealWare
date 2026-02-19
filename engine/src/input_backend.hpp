@@ -28,6 +28,7 @@ namespace triton
             const cVector2& size,
             types::boolean fullscreen
         ) = 0;
+        virtual void BindWindowContext(sInputBackendWindow& window) = 0;
         virtual void DestroyWindow(sInputBackendWindow& window) = 0;
         virtual void ResizeWindow(sInputBackendWindow& window, const cVector2& size) = 0;
         virtual void SwapWindowBuffers(sInputBackendWindow& window) = 0;

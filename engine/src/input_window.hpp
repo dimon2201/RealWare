@@ -14,7 +14,7 @@ namespace triton
 
         friend class cInput;
 
-        sInputBackendWindow _backendWindow = {};
+        mutable sInputBackendWindow _backendWindow = {};
 
     public:
         enum class eRunState
@@ -31,5 +31,6 @@ namespace triton
         eRunState GetRunState();
 
         const cVector2& GetSize() const;
+        inline sInputBackendWindow& GetBackendWindow() const { return _backendWindow; }
     };
 }

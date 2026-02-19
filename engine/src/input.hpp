@@ -33,6 +33,7 @@ namespace triton
             const cVector2& size,
             types::boolean fullscreen
         );
+        void BindWindowContext(cInputWindow* window);
         void DestroyWindow(cInputWindow* window);
 
         cVector2 GetMonitorSize() const;

@@ -91,6 +91,12 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
     return window;
 }
 
+void triton::cInput::BindWindowContext(cInputWindow* window)
+{
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
+    input->BindWindowContext(window->GetBackendWindow());
+}
+
 void triton::cInput::DestroyWindow(cInputWindow* window)
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
