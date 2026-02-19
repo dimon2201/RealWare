@@ -10,7 +10,7 @@
 #include "backend.hpp"
 #include "math.hpp"
 #include "gpu_resource.hpp"
-#include "graphics_buffer_backend.hpp"
+#include "graphics_resource_backend.hpp"
 #include "graphics_pipeline_backend.hpp"
 #include "types.hpp"
 
@@ -24,13 +24,13 @@ namespace triton
     {
         TRITON_OBJECT(cGraphicsBackendFacade)
 
-        iGraphicsBufferBackend* _buffer = nullptr;
+        iGraphicsResourceBackend* _resource = nullptr;
 
     public:
-        explicit cGraphicsBackendFacade(cContext* context, iGraphicsBufferBackend* bufferBackend);
+        explicit cGraphicsBackendFacade(cContext* context, iGraphicsResourceBackend* resourceBackend);
         virtual ~cGraphicsBackendFacade() override = default;
 
-        inline iGraphicsBufferBackend* GetBufferBackend() const { return _buffer; }
+        inline iGraphicsResourceBackend* GetResourceBackend() const { return _resource; }
 
         /*virtual void BindWindowContext(void* nativeWindow) = 0;
         virtual void CreateGraphicsContext() = 0;

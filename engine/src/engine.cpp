@@ -19,8 +19,7 @@
 #include "math.hpp"
 #include "ecs.hpp"
 #include "input_glfw_backend.hpp"
-#include "graphics_buffer_backend_ogl.hpp"
-#include "graphics_texture_backend_ogl.hpp"
+#include "graphics_resource_backend_ogl.hpp"
 #include "graphics_pipeline_backend_ogl.hpp"
 #include "audio_oal_backend.hpp"
 
@@ -63,7 +62,7 @@ void triton::cEngine::Initialize()
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
-	_context->RegisterBackend<iGraphicsBufferBackend>(new cGraphicsBufferBackendOGL(_context));
+	_context->RegisterBackend<iGraphicsResourceBackend>(new cGraphicsResourceBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioOALBackend(_context));
 
 	// Register subsystems
@@ -75,7 +74,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	_context->RegisterSubsystem(new cGraphicsBackendFacade(
 		_context,
-		_context->GetBackend<iGraphicsBufferBackend>()
+		_context->GetBackend<iGraphicsResourceBackend>()
 	));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));

@@ -5,7 +5,6 @@
 #include "../../thirdparty/stb-master/stb_image.h"
 #include "application.hpp"
 #include "graphics_backend_facade.hpp"
-#include "graphics_texture_backend.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"
 #include "graphics.hpp"

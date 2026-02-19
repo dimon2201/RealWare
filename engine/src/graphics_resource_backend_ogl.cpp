@@ -1,15 +1,140 @@
-// graphics_texture_backend_ogl.cpp
+// graphics_resource_backend_ogl.cpp
 
 #include <GL/glew.h>
-#include <lodepng.h> // TODO: move lodepng stuff to separate backend
-#include "graphics_texture_backend_ogl.hpp"
+#include <lodepng.h>
+#include "graphics_resource_backend_ogl.hpp"
 #include "context.hpp"
 
 using namespace types;
 
-triton::cGraphicsTextureBackendOGL::cGraphicsTextureBackendOGL(cContext* context) : iGraphicsTextureBackend(context) {}
+triton::cGraphicsResourceBackendOGL::cGraphicsResourceBackendOGL(cContext* context)
+    : iGraphicsResourceBackend(context) {}
 
-triton::cTexture* triton::cGraphicsTextureBackendOGL::CreateTexture(
+triton::cBuffer* triton::cGraphicsResourceBackendOGL::CreateBuffer(
+    cBuffer::eType type,
+    const u8* data,
+    usize byteSize,
+    s32 slot
+)
+{
+    GLuint instance = 0;
+
+    glGenBuffers(1, (GLuint*)&instance);
+
+    if (type == cBuffer::eType::VERTEX)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, instance);
+        glBufferData(GL_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+    else if (type == cBuffer::eType::INDEX)
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    else if (type == cBuffer::eType::UNIFORM)
+    {
+        glBindBuffer(GL_UNIFORM_BUFFER, instance);
+        glBufferData(GL_UNIFORM_BUFFER, byteSize, data, GL_STATIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+    else if (type == cBuffer::eType::LARGE)
+    {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, instance);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, byteSize, data, GL_STATIC_DRAW);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
+    cBuffer* buffer = _context->Create<cBuffer>(_context, instance, type, byteSize, slot);
+
+    return buffer;
+}
+
+void triton::cGraphicsResourceBackendOGL::BindBuffer(const cBuffer* buffer)
+{
+    if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
+        glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->GetInstance());
+    else if (buffer->GetBufferType() == cBuffer::eType::INDEX)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->GetInstance());
+    else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
+        glBindBufferBase(GL_UNIFORM_BUFFER, buffer->GetSlot(), (GLuint)buffer->GetInstance());
+    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), buffer->GetInstance());
+}
+
+void triton::cGraphicsResourceBackendOGL::BindBufferNotVAO(const cBuffer* buffer)
+{
+    if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
+        glBindBufferBase(GL_UNIFORM_BUFFER, buffer->GetSlot(), (GLuint)buffer->GetInstance());
+    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), buffer->GetInstance());
+}
+
+void triton::cGraphicsResourceBackendOGL::UnbindBuffer(const cBuffer* buffer)
+{
+    if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    else if (buffer->GetBufferType() == cBuffer::eType::INDEX)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
+        glBindBufferBase(GL_UNIFORM_BUFFER, buffer->GetSlot(), 0);
+    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), 0);
+}
+
+void triton::cGraphicsResourceBackendOGL::WriteBuffer(
+    const cBuffer* buffer,
+    usize offset,
+    usize byteSize,
+    const types::u8* data
+)
+{
+    if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, buffer->GetInstance());
+        glBufferSubData(GL_ARRAY_BUFFER, offset, byteSize, data);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+    else if (buffer->GetBufferType() == cBuffer::eType::INDEX)
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->GetInstance());
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, byteSize, data);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
+    {
+        glBindBuffer(GL_UNIFORM_BUFFER, buffer->GetInstance());
+        glBufferSubData(GL_UNIFORM_BUFFER, offset, byteSize, data);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+    {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->GetInstance());
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, byteSize, data);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+}
+
+void triton::cGraphicsResourceBackendOGL::DestroyBuffer(cBuffer* buffer)
+{
+    if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    else if (buffer->GetBufferType() == cBuffer::eType::INDEX)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    GLuint instance = buffer->GetInstance();
+    glDeleteBuffers(1, &instance);
+
+    if (buffer != nullptr)
+        _context->Destroy<cBuffer>(buffer);
+}
+
+triton::cTexture* triton::cGraphicsResourceBackendOGL::CreateTexture(
     const cVector3& size,
     cTexture::eDimension dimension,
     cTexture::eFormat format,
@@ -111,7 +236,7 @@ triton::cTexture* triton::cGraphicsTextureBackendOGL::CreateTexture(
     return texture;
 }
 
-triton::cTexture* triton::cGraphicsTextureBackendOGL::ResizeTexture(cTexture* texture, const cVector2& size)
+triton::cTexture* triton::cGraphicsResourceBackendOGL::ResizeTexture(cTexture* texture, const cVector2& size)
 {
     cTexture* newTexture = CreateTexture(
         cVector3(size.GetX(), size.GetY(), texture->GetDepth()),
@@ -125,7 +250,7 @@ triton::cTexture* triton::cGraphicsTextureBackendOGL::ResizeTexture(cTexture* te
     return newTexture;
 }
 
-void triton::cGraphicsTextureBackendOGL::BindTexture(const cTexture* texture)
+void triton::cGraphicsResourceBackendOGL::BindTexture(const cTexture* texture)
 {
     if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D)
     {
@@ -140,6 +265,10 @@ void triton::cGraphicsTextureBackendOGL::BindTexture(const cTexture* texture)
         glActiveTexture(GL_TEXTURE0);
     }
 
+    // FIXME: figure out what's going on here
+    // ||||||||||||||||||||||||||||||||||||||
+    // ||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
     /*if (slot == -1)
         slot = texture->_slot;
 
@@ -159,13 +288,13 @@ void triton::cGraphicsTextureBackendOGL::BindTexture(const cTexture* texture)
     }*/
 }
 
-void triton::cGraphicsTextureBackendOGL::UnbindTexture(const cTexture* texture)
+void triton::cGraphicsResourceBackendOGL::UnbindTexture(const cTexture* texture)
 {
     if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D_ARRAY)
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-void triton::cGraphicsTextureBackendOGL::WriteTexture(
+void triton::cGraphicsResourceBackendOGL::WriteTexture(
     const cTexture* texture,
     const cVector3& offset,
     const cVector2& size,
@@ -191,7 +320,7 @@ void triton::cGraphicsTextureBackendOGL::WriteTexture(
     else if (
         texture->GetFormat() == cTexture::eFormat::RGBA8 ||
         texture->GetFormat() == cTexture::eFormat::RGBA8_MIPS
-    )
+        )
     {
         formatGL = GL_RGBA8;
         channelsGL = GL_RGBA;
@@ -238,7 +367,7 @@ void triton::cGraphicsTextureBackendOGL::WriteTexture(
             offset.GetX() + size.GetX() <= texture->GetWidth() &&
             offset.GetY() + size.GetY() <= texture->GetHeight() &&
             offset.GetZ() < texture->GetDepth()
-        )
+            )
         {
             glBindTexture(GL_TEXTURE_2D_ARRAY, texture->GetInstance());
             glTexSubImage3D(
@@ -259,7 +388,7 @@ void triton::cGraphicsTextureBackendOGL::WriteTexture(
     }
 }
 
-void triton::cGraphicsTextureBackendOGL::WriteTextureToFile(const cTexture* texture, const std::string& filename)
+void triton::cGraphicsResourceBackendOGL::WriteTextureToFile(const cTexture* texture, const std::string& filename)
 {
     if (texture->GetFormat() != cTexture::eFormat::RGBA8)
         return;
@@ -292,7 +421,7 @@ void triton::cGraphicsTextureBackendOGL::WriteTextureToFile(const cTexture* text
     }
 }
 
-void triton::cGraphicsTextureBackendOGL::GenerateTextureMips(const cTexture* texture)
+void triton::cGraphicsResourceBackendOGL::GenerateTextureMips(const cTexture* texture)
 {
     if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D)
     {
@@ -308,7 +437,7 @@ void triton::cGraphicsTextureBackendOGL::GenerateTextureMips(const cTexture* tex
     }
 }
 
-void triton::cGraphicsTextureBackendOGL::DestroyTexture(cTexture* texture)
+void triton::cGraphicsResourceBackendOGL::DestroyTexture(cTexture* texture)
 {
     if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D)
         glBindTexture(GL_TEXTURE_2D, 0);

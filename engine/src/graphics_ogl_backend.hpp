@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "graphics_buffer_backend.hpp"
+#include "graphics_resource_backend.hpp"
 
 namespace triton
 {

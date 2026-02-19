@@ -3,8 +3,7 @@
 #include <GL/glew.h>
 #include <lodepng.h> // TODO: move lodepng stuff to separate backend
 #include "graphics_pipeline_backend_ogl.hpp"
-#include "graphics_buffer_backend.hpp"
-#include "graphics_texture_backend.hpp"
+#include "graphics_resource_backend.hpp"
 #include "context.hpp"
 #include "filesystem_manager.hpp"
 
@@ -276,7 +275,7 @@ void triton::cGraphicsPipelineBackendOGL::BindVertexArray(const cVertexArray* ve
 
 void triton::cGraphicsPipelineBackendOGL::BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind)
 {
-    iGraphicsBufferBackend* bufferBackend = _context->GetBackend<iGraphicsBufferBackend>();
+    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
     static cVertexArray* vertexArray = nullptr;
 
@@ -286,7 +285,7 @@ void triton::cGraphicsPipelineBackendOGL::BindDefaultVertexArray(const std::vect
 
         BindVertexArray(vertexArray);
         for (auto buffer : buffersToBind)
-            bufferBackend->BindBuffer(buffer);
+            resourceBackend->BindBuffer(buffer);
         BindDefaultInputLayout();
         UnbindVertexArray();
     }
@@ -310,6 +309,8 @@ void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(cVertexArray* verte
 
 triton::cRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(const sRenderPassDescriptor& desc)
 {
+    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+
     std::vector<cShader::sDefinePair> definePairs = {};
     cVertexArray* vertexArray = nullptr;
     cShader* shader = nullptr;
@@ -345,19 +346,17 @@ triton::cRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
         );
     }
 
-    iGraphicsBufferBackend* bufferBackend = _context->GetBackend<iGraphicsBufferBackend>();
-
     vertexArray = CreateVertexArray();
     BindVertexArray(vertexArray);
     if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
     {
         for (auto buffer : desc.inputBuffers)
-            bufferBackend->BindBuffer(buffer);
+            resourceBackend->BindBuffer(buffer);
     }
     else if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
     {
         for (auto buffer : desc.inputBuffers)
-            bufferBackend->BindBuffer(buffer);
+            resourceBackend->BindBuffer(buffer);
 
         BindDefaultInputLayout();
     }
@@ -369,15 +368,14 @@ triton::cRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
 
 void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* renderPass, cShader* customShader)
 {
+    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+
     cShader* shader = nullptr;
     if (customShader == nullptr)
         shader = renderPass->GetRenderPassGPU()->GetShader();
     else
         shader = customShader;
-
-    iGraphicsBufferBackend* bufferBackend = _context->GetBackend<iGraphicsBufferBackend>();
-    iGraphicsTextureBackend* textureBackend = _context->GetBackend<iGraphicsTextureBackend>();
-
+    
     BindShader(shader);
     BindVertexArray(renderPass->GetRenderPassGPU()->GetVertexArray());
     if (renderPass->GetRenderTarget() != nullptr)
@@ -386,7 +384,7 @@ void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* rend
         UnbindRenderTarget();
     Viewport(renderPass->GetViewport());
     for (auto buffer : renderPass->GetInputBuffers())
-        bufferBackend->BindBufferNotVAO(buffer);
+        resourceBackend->BindBufferNotVAO(buffer);
     BindDepthMode(renderPass->GetDepthMode());
     BindBlendMode(renderPass->GetBlendMode());
     // FIXME: find what to do with this function
@@ -404,16 +402,15 @@ void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* rend
 
 void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const cRenderPass* renderPass)
 {
-    iGraphicsBufferBackend* bufferBackend = _context->GetBackend<iGraphicsBufferBackend>();
-    iGraphicsTextureBackend* textureBackend = _context->GetBackend<iGraphicsTextureBackend>();
+    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
     UnbindVertexArray();
     if (renderPass->GetRenderTarget() != nullptr)
         UnbindRenderTarget();
     for (auto buffer : renderPass->GetInputBuffers())
-        bufferBackend->UnbindBuffer(buffer);
+        resourceBackend->UnbindBuffer(buffer);
     for (auto texture : renderPass->GetInputTextures())
-        textureBackend->UnbindTexture(texture);
+        resourceBackend->UnbindTexture(texture);
 }
 
 void triton::cGraphicsPipelineBackendOGL::DestroyRenderPass(cRenderPassGPU* renderPass)
@@ -533,13 +530,13 @@ void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetColors(
     const glm::vec2& size
 )
 {
-    iGraphicsTextureBackend* textureBackend = _context->GetBackend<iGraphicsTextureBackend>();
+    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
     std::vector<cTexture*> newColorAttachments;
     for (auto attachment : renderTarget->_colorAttachments)
     {
         newColorAttachments.emplace_back(
-            textureBackend->CreateTexture(
+            resourceBackend->CreateTexture(
                 cVector3(size.x, size.y, attachment->GetDepth()),
                 attachment->GetDimension(),
                 attachment->GetFormat(),
@@ -547,7 +544,7 @@ void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetColors(
                 0
             )
         );
-        textureBackend->DestroyTexture(attachment);
+        resourceBackend->DestroyTexture(attachment);
     }
     renderTarget->GetColorAttachments().clear();
     renderTarget->SetColorAttachments(newColorAttachments);
@@ -574,16 +571,16 @@ void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetDepth(
     const glm::vec2& size
 )
 {
-    iGraphicsTextureBackend* textureBackend = _context->GetBackend<iGraphicsTextureBackend>();
+    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
-    cTexture* newDepthAttachment = textureBackend->CreateTexture(
+    cTexture* newDepthAttachment = resourceBackend->CreateTexture(
         cVector3(size.x, size.y, renderTarget->GetDepthAttachment()->GetDepth()),
         renderTarget->GetDepthAttachment()->GetDimension(),
         renderTarget->GetDepthAttachment()->GetFormat(),
         nullptr,
         0
     );
-    textureBackend->DestroyTexture(renderTarget->GetDepthAttachment());
+    resourceBackend->DestroyTexture(renderTarget->GetDepthAttachment());
     renderTarget->SetDepthAttachment(newDepthAttachment);
 
     GLenum buffs[16] = {};

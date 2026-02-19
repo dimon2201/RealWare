@@ -1,22 +1,38 @@
-// graphics_texture_backend_ogl.hpp
+// graphics_resource_backend_ogl.hpp
 
 #pragma once
 
-#include "graphics_texture_backend.hpp"
+#include "graphics_resource_backend.hpp"
 #include "types.hpp"
 
 namespace triton
 {
     class cContext;
 
-    class cGraphicsTextureBackendOGL final : public iGraphicsTextureBackend
+    class cGraphicsResourceBackendOGL final : public iGraphicsResourceBackend
     {
-        TRITON_OBJECT(cGraphicsTextureBackendOGL)
+        TRITON_OBJECT(cGraphicsResourceBackendOGL)
 
     public:
-        explicit cGraphicsTextureBackendOGL(cContext* context);
-        virtual ~cGraphicsTextureBackendOGL() override final = default;
+        explicit cGraphicsResourceBackendOGL(cContext* context);
+        virtual ~cGraphicsResourceBackendOGL() override final = default;
 
+        virtual cBuffer* CreateBuffer(
+            cBuffer::eType type,
+            const types::u8* data,
+            types::usize byteSize,
+            types::s32 slot
+        ) override final;
+        virtual void BindBuffer(const cBuffer* buffer) override final;
+		virtual void BindBufferNotVAO(const cBuffer* buffer) override final;
+        virtual void UnbindBuffer(const cBuffer* buffer) override final;
+        virtual void WriteBuffer(
+            const cBuffer* buffer,
+            types::usize offset,
+            types::usize byteSize,
+            const types::u8* data
+        ) override final;
+        virtual void DestroyBuffer(cBuffer* buffer) override final;
         virtual cTexture* CreateTexture(
             const cVector3& size,
             cTexture::eDimension dimension,

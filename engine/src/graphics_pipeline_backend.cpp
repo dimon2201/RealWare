@@ -1,7 +1,7 @@
 // graphics_pipeline_backend.cpp
 
+#include "graphics_resource_backend.hpp"
 #include "graphics_pipeline_backend.hpp"
-#include "graphics_texture_backend.hpp"
 #include "context.hpp"
 
 using namespace types;

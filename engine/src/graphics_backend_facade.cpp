@@ -3,5 +3,8 @@
 #include "graphics_backend_facade.hpp"
 #include "context.hpp"
 
-triton::cGraphicsBackendFacade::cGraphicsBackendFacade(cContext* context, iGraphicsBufferBackend* bufferBackend)
-	: iObject(context), _buffer(bufferBackend) {}
+triton::cGraphicsBackendFacade::cGraphicsBackendFacade(
+	cContext* context,
+	iGraphicsResourceBackend* resourceBackend
+)
+: iObject(context), _resource(resourceBackend) {}

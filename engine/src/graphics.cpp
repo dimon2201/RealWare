@@ -96,7 +96,7 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
 void triton::cGraphics::Initialize()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBufferBackend* gfxBuffer = _context->GetBackend<iGraphicsBufferBackend>();
+    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
     const cVector2 windowSize = cVector2(640, 480); // TODO: temporary window size
@@ -109,17 +109,17 @@ void triton::cGraphics::Initialize()
     _maxLightBufferByteSize = caps->maxRenderLightCount * sizeof(sLightInstance);
     _maxTextureAtlasTexturesBufferByteSize = caps->maxRenderTextureAtlasTextureCount * sizeof(sTextureAtlasTextureGPU);
 
-    _vertexBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::VERTEX, nullptr, caps->vertexBufferSize, 0);
-    _indexBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::INDEX, nullptr, caps->indexBufferSize, 0);
-    _opaqueInstanceBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxOpaqueInstanceBufferByteSize, 0);
-    _transparentInstanceBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTransparentInstanceBufferByteSize, 0);
-    _textInstanceBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextInstanceBufferByteSize, 0);
-    _opaqueMaterialBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
-    _textMaterialBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
-    _transparentMaterialBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
-    _lightBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxLightBufferByteSize, 2);
-    _opaqueTextureAtlasTexturesBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextureAtlasTexturesBufferByteSize, 3);
-    _transparentTextureAtlasTexturesBuffer = gfxBuffer->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextureAtlasTexturesBufferByteSize, 3);
+    _vertexBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::VERTEX, nullptr, caps->vertexBufferSize, 0);
+    _indexBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::INDEX, nullptr, caps->indexBufferSize, 0);
+    _opaqueInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxOpaqueInstanceBufferByteSize, 0);
+    _transparentInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTransparentInstanceBufferByteSize, 0);
+    _textInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextInstanceBufferByteSize, 0);
+    _opaqueMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
+    _textMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
+    _transparentMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
+    _lightBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxLightBufferByteSize, 2);
+    _opaqueTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextureAtlasTexturesBufferByteSize, 3);
+    _transparentTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextureAtlasTexturesBufferByteSize, 3);
 
     _vertices = memoryAllocator->Allocate(caps->vertexBufferSize, caps->memoryAlignment);
     _verticesByteSize = 0;
@@ -264,7 +264,7 @@ void triton::cGraphics::Initialize()
 void triton::cGraphics::Shutdown()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsBufferBackend* gfxBuffer = _context->GetBackend<iGraphicsBufferBackend>();
+    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
     DestroyRenderPass(_compositeFinal);
     DestroyRenderPass(_compositeTransparent);
@@ -296,17 +296,17 @@ void triton::cGraphics::Shutdown()
     memoryAllocator->Deallocate(_indices);
     memoryAllocator->Deallocate(_vertices);
 
-    gfxBuffer->DestroyBuffer(_transparentTextureAtlasTexturesBuffer);
-    gfxBuffer->DestroyBuffer(_opaqueTextureAtlasTexturesBuffer);
-    gfxBuffer->DestroyBuffer(_lightBuffer);
-    gfxBuffer->DestroyBuffer(_transparentMaterialBuffer);
-    gfxBuffer->DestroyBuffer(_textMaterialBuffer);
-    gfxBuffer->DestroyBuffer(_opaqueMaterialBuffer);
-    gfxBuffer->DestroyBuffer(_textInstanceBuffer);
-    gfxBuffer->DestroyBuffer(_transparentInstanceBuffer);
-    gfxBuffer->DestroyBuffer(_opaqueInstanceBuffer);
-    gfxBuffer->DestroyBuffer(_indexBuffer);
-    gfxBuffer->DestroyBuffer(_vertexBuffer);
+    gfxResourceBackend->DestroyBuffer(_transparentTextureAtlasTexturesBuffer);
+    gfxResourceBackend->DestroyBuffer(_opaqueTextureAtlasTexturesBuffer);
+    gfxResourceBackend->DestroyBuffer(_lightBuffer);
+    gfxResourceBackend->DestroyBuffer(_transparentMaterialBuffer);
+    gfxResourceBackend->DestroyBuffer(_textMaterialBuffer);
+    gfxResourceBackend->DestroyBuffer(_opaqueMaterialBuffer);
+    gfxResourceBackend->DestroyBuffer(_textInstanceBuffer);
+    gfxResourceBackend->DestroyBuffer(_transparentInstanceBuffer);
+    gfxResourceBackend->DestroyBuffer(_opaqueInstanceBuffer);
+    gfxResourceBackend->DestroyBuffer(_indexBuffer);
+    gfxResourceBackend->DestroyBuffer(_vertexBuffer);
 }
 
 // TODO: Remove material creation from cGraphics
@@ -353,14 +353,14 @@ triton::sVertexBufferGeometry* triton::cGraphics::CreateGeometry(
     const u8* indices
 )
 {
-    iGraphicsBufferBackend* gfxBuffer = _context->GetBackend<iGraphicsBufferBackend>();
+    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     sVertexBufferGeometry* geometry = _context->Create<sVertexBufferGeometry>(_context);
 
     memcpy((void*)((usize)_vertices + _verticesByteSize), vertices, verticesByteSize);
     memcpy((void*)((usize)_indices + _indicesByteSize), indices, indicesByteSize);
 
-    gfxBuffer->WriteBuffer(_vertexBuffer, _verticesByteSize, verticesByteSize, vertices);
-    gfxBuffer->WriteBuffer(_indexBuffer, _indicesByteSize, indicesByteSize, indices);
+    gfxResourceBackend->WriteBuffer(_vertexBuffer, _verticesByteSize, verticesByteSize, vertices);
+    gfxResourceBackend->WriteBuffer(_indexBuffer, _indicesByteSize, indicesByteSize, indices);
 
     usize vertexCount = verticesByteSize;
     usize vertexOffset = _verticesByteSize;
