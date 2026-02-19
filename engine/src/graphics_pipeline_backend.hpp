@@ -5,13 +5,15 @@
 #include "gpu_resource.hpp"
 #include "backend.hpp"
 #include "math.hpp"
-#include "graphics_pipeline_state.hpp"
+#include "category.hpp"
 #include "types.hpp"
 
 namespace triton
 {
     class cContext;
+    class cBuffer;
     class cTexture;
+    class cTextureAtlasTexture;
 
     class cVertexArray : public cGPUResource
     {
@@ -49,6 +51,94 @@ namespace triton
 
         inline const std::string& GetVertexStr() const { return _vertex; }
         inline const std::string& GetFragmentStr() const { return _fragment; }
+    };
+
+    struct sDepthMode
+    {
+        types::boolean useDepthTest = types::K_TRUE;
+        types::boolean useDepthWrite = types::K_TRUE;
+    };
+
+    struct sBlendMode
+    {
+        enum class eBlendFactor
+        {
+            ZERO = 0,
+            ONE = 1,
+            SRC_COLOR = 2,
+            INV_SRC_COLOR = 3,
+            SRC_ALPHA = 4,
+            INV_SRC_ALPHA = 5
+        };
+
+        types::usize factorCount = 0;
+        eBlendFactor srcFactors[8] = { eBlendFactor::ZERO };
+        eBlendFactor dstFactors[8] = { eBlendFactor::ZERO };
+    };
+
+    struct sViewport
+    {
+        cVector4 rect = cVector4(0.0f);
+    };
+
+    class cRenderTarget : public cGPUResource
+    {
+        TRITON_OBJECT(cRenderTarget)
+
+        mutable std::vector<cTexture*> _colorAttachments = {};
+        cTexture* _depthAttachment = nullptr;
+
+    public:
+        explicit cRenderTarget(
+            cContext* context,
+            types::qword instance,
+            const std::vector<cTexture*>& colorAttachments,
+            cTexture* depthAttachment
+        );
+        virtual ~cRenderTarget() override = default;
+
+        inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
+        inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
+        inline void SetColorAttachments(
+            const std::vector<cTexture*>& newColorAttachments
+        ) {
+            _colorAttachments = newColorAttachments;
+        }
+        inline void SetDepthAttachment(
+            cTexture* newDepthAttachment
+        ) {
+            _depthAttachment = newDepthAttachment;
+        }
+    };
+
+    struct sRenderPassDescriptor
+    {
+        enum class eRenderPath
+        {
+            NONE = 0,
+            OPAQUE_PATH,
+            TRANSPARENT_PATH,
+            TEXT_PATH,
+            TRANSPARENT_COMPOSITE_PATH,
+            QUAD_PATH
+        };
+
+        eCategory inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+        std::vector<cBuffer*> inputBuffers = {};
+        std::vector<cTexture*> inputTextures = {};
+        std::vector<std::string> inputTextureNames = {};
+        std::vector<cTextureAtlasTexture*> inputTextureAtlasTextures = {};
+        std::vector<std::string> inputTextureAtlasTextureNames = {};
+        eRenderPath shaderRenderPath = eRenderPath::NONE;
+        std::string shaderVertexPath = "";
+        std::string shaderFragmentPath = "";
+        std::string shaderVertexFunc = "";
+        std::string shaderFragmentFunc = "";
+        cShader* shaderBase = nullptr;
+        sDepthMode depthMode = {};
+        sBlendMode blendMode = {};
+        sViewport viewport = {};
+        cRenderTarget* renderTarget = nullptr;
     };
 
     class cRenderPassGPU : public iObject
@@ -93,32 +183,6 @@ namespace triton
         inline const sDepthMode& GetDepthMode() const { return _desc.depthMode; }
         inline cRenderPassGPU* GetRenderPassGPU() const { return _renderPass; }
         inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc.inputTextures[textureIndex] = texture; }
-    };
-
-    class cRenderTarget : public cGPUResource
-    {
-        TRITON_OBJECT(cRenderTarget)
-
-        mutable std::vector<cTexture*> _colorAttachments = {};
-        cTexture* _depthAttachment = nullptr;
-
-    public:
-        explicit cRenderTarget(
-            cContext* context, 
-            types::qword instance,
-            const std::vector<cTexture*>& colorAttachments,
-            cTexture* depthAttachment
-        );
-        virtual ~cRenderTarget() override = default;
-
-        inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
-        inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
-        inline void SetColorAttachments(
-            const std::vector<cTexture*>& newColorAttachments
-        ) { _colorAttachments = newColorAttachments; }
-        inline void SetDepthAttachment(
-            cTexture* newDepthAttachment
-        ) { _depthAttachment = newDepthAttachment; }
     };
 
     class iGraphicsPipelineBackend : public iBackend
