@@ -1,18 +1,18 @@
-// input_backend.hpp
+// input_backend_glfw.hpp
 
 #pragma once
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
-#include "input_glfw_backend.hpp"
+#include "input_backend_glfw.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
 #include "types.hpp"
 
 using namespace types;
 
-triton::cInputGLFWBackend::cInputGLFWBackend(cContext* context) : iInputBackend(context)
+triton::cInputBackendGLFW::cInputBackendGLFW(cContext* context) : iInputBackend(context)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -21,7 +21,7 @@ triton::cInputGLFWBackend::cInputGLFWBackend(cContext* context) : iInputBackend(
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
-triton::sInputBackendWindow triton::cInputGLFWBackend::CreatePlatformWindow(
+triton::sInputBackendWindow triton::cInputBackendGLFW::CreatePlatformWindow(
     const std::string& title,
     const cVector2& size,
     types::boolean fullscreen
@@ -61,12 +61,12 @@ triton::sInputBackendWindow triton::cInputGLFWBackend::CreatePlatformWindow(
     return ibw;
 }
 
-void triton::cInputGLFWBackend::BindWindowContext(sInputBackendWindow& window)
+void triton::cInputBackendGLFW::BindWindowContext(sInputBackendWindow& window)
 {
     glfwMakeContextCurrent((GLFWwindow*)window.instance);
 }
 
-void triton::cInputGLFWBackend::DestroyWindow(sInputBackendWindow& window)
+void triton::cInputBackendGLFW::DestroyWindow(sInputBackendWindow& window)
 {
     if (window.instance == 0)
         return;
@@ -74,7 +74,7 @@ void triton::cInputGLFWBackend::DestroyWindow(sInputBackendWindow& window)
     glfwDestroyWindow((GLFWwindow*)window.instance);
 }
 
-void triton::cInputGLFWBackend::ResizeWindow(sInputBackendWindow& window, const cVector2& newSize)
+void triton::cInputBackendGLFW::ResizeWindow(sInputBackendWindow& window, const cVector2& newSize)
 {
     if (window.instance == 0)
         return;
@@ -82,7 +82,7 @@ void triton::cInputGLFWBackend::ResizeWindow(sInputBackendWindow& window, const 
     window.size = cVector2(newSize.GetX(), newSize.GetY());
 }
 
-void triton::cInputGLFWBackend::SwapWindowBuffers(sInputBackendWindow& window)
+void triton::cInputBackendGLFW::SwapWindowBuffers(sInputBackendWindow& window)
 {
     if (window.instance == 0)
         return;
@@ -90,12 +90,12 @@ void triton::cInputGLFWBackend::SwapWindowBuffers(sInputBackendWindow& window)
     glfwSwapBuffers((GLFWwindow*)window.instance);
 }
     
-void triton::cInputGLFWBackend::PollEvents()
+void triton::cInputBackendGLFW::PollEvents()
 {
     glfwPollEvents();
 }
 
-void* triton::cInputGLFWBackend::GetWindowWin32Handle(sInputBackendWindow& window)
+void* triton::cInputBackendGLFW::GetWindowWin32Handle(sInputBackendWindow& window)
 {
     if (window.instance == 0)
         return nullptr;
@@ -103,7 +103,7 @@ void* triton::cInputGLFWBackend::GetWindowWin32Handle(sInputBackendWindow& windo
     return (void*)glfwGetWin32Window((GLFWwindow*)window.instance);
 }
 
-triton::cInputWindow::eRunState triton::cInputGLFWBackend::GetWindowRunState(sInputBackendWindow& window)
+triton::cInputWindow::eRunState triton::cInputBackendGLFW::GetWindowRunState(sInputBackendWindow& window)
 {
     cInputWindow::eRunState runState = cInputWindow::eRunState::OPENED;
 
@@ -114,52 +114,52 @@ triton::cInputWindow::eRunState triton::cInputGLFWBackend::GetWindowRunState(sIn
     return runState;
 }
 
-types::boolean triton::cInputGLFWBackend::GetKeyPressed(qword keyCode)
+types::boolean triton::cInputBackendGLFW::GetKeyPressed(qword keyCode)
 {
     return _keys[keyCode];
 }
 
-types::boolean triton::cInputGLFWBackend::GetMouseKeyPressed(qword keyCode)
+types::boolean triton::cInputBackendGLFW::GetMouseKeyPressed(qword keyCode)
 {
     return _mouseKeys[keyCode];
 }
 
-void triton::cInputGLFWBackend::SetKeyPressed(qword keyCode, types::boolean isPressed)
+void triton::cInputBackendGLFW::SetKeyPressed(qword keyCode, types::boolean isPressed)
 {
     _keys[keyCode] = isPressed;
 }
 
-void triton::cInputGLFWBackend::SetMouseKeyPressed(qword keyCode, types::boolean isPressed)
+void triton::cInputBackendGLFW::SetMouseKeyPressed(qword keyCode, types::boolean isPressed)
 {
     _mouseKeys[keyCode] = isPressed;
 }
 
-void triton::cInputGLFWBackend::SetWindowFocus(types::boolean isFocused)
+void triton::cInputBackendGLFW::SetWindowFocus(types::boolean isFocused)
 {
     _isFocused = isFocused;
 }
 
-void triton::cInputGLFWBackend::SetWindowCursorPosition(const cVector2& cursorPosition)
+void triton::cInputBackendGLFW::SetWindowCursorPosition(const cVector2& cursorPosition)
 {
     _cursorPosition = cursorPosition;
 }
 
-void triton::cInputGLFWBackend::SetWindowSwapInterval(types::usize interval)
+void triton::cInputBackendGLFW::SetWindowSwapInterval(types::usize interval)
 {
     glfwSwapInterval(interval);
 }
 
-triton::cVector2 triton::cInputGLFWBackend::GetMonitorSize()
+triton::cVector2 triton::cInputBackendGLFW::GetMonitorSize()
 {
     return cVector2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 }
 
-types::boolean triton::cInputGLFWBackend::IsWindowFocused()
+types::boolean triton::cInputBackendGLFW::IsWindowFocused()
 {
     return _isFocused;
 }
 
-void triton::cInputGLFWBackend::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void triton::cInputBackendGLFW::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     const cpuword keyBufferMask = 0xFF;
     key &= keyBufferMask;
@@ -173,7 +173,7 @@ void triton::cInputGLFWBackend::KeyCallback(GLFWwindow* window, int key, int sca
         input->SetKeyPressed(key, K_FALSE);
 }
 
-void triton::cInputGLFWBackend::WindowFocusCallback(GLFWwindow* window, int focused)
+void triton::cInputBackendGLFW::WindowFocusCallback(GLFWwindow* window, int focused)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
     iInputBackend* input = context->GetBackend<iInputBackend>();
@@ -189,19 +189,19 @@ void triton::cInputGLFWBackend::WindowFocusCallback(GLFWwindow* window, int focu
     }
 }
 
-void triton::cInputGLFWBackend::WindowSizeCallback(GLFWwindow* window, int width, int height)
+void triton::cInputBackendGLFW::WindowSizeCallback(GLFWwindow* window, int width, int height)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
     iInputBackend* input = context->GetBackend<iInputBackend>();
     cGraphics* gfx = context->GetSubsystem<cGraphics>();
 
-    // TODO: resize specific cInputWindow based on GLFWwindow
+    // FIXME: resize specific cInputWindow based on GLFWwindow
     // input->ResizeWindow(ibw, cVector2(width, height));
 
     gfx->ResizeRenderTargets(glm::vec2(width, height));
 }
 
-void triton::cInputGLFWBackend::CursorCallback(GLFWwindow* window, double xpos, double ypos)
+void triton::cInputBackendGLFW::CursorCallback(GLFWwindow* window, double xpos, double ypos)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
     iInputBackend* input = context->GetBackend<iInputBackend>();
@@ -209,7 +209,7 @@ void triton::cInputGLFWBackend::CursorCallback(GLFWwindow* window, double xpos, 
     input->SetWindowCursorPosition(cVector2(xpos, ypos));
 }
 
-void triton::cInputGLFWBackend::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void triton::cInputBackendGLFW::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
     iInputBackend* input = context->GetBackend<iInputBackend>();

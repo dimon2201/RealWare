@@ -1,4 +1,4 @@
-// input_backend.hpp
+// input_backend_glfw.hpp
 
 #pragma once
 
@@ -11,9 +11,9 @@ namespace triton
 {
 	class cContext;
     
-	class cInputGLFWBackend final : public iInputBackend
+	class cInputBackendGLFW final : public iInputBackend
 	{
-        TRITON_OBJECT(cInputGLFWBackend)
+        TRITON_OBJECT(cInputBackendGLFW)
 
         static constexpr types::usize kMaxKeyboardKeyCount = 256;
         static constexpr types::usize kMaxMouseKeyCount = 256;
@@ -29,8 +29,8 @@ namespace triton
         static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 	public:
-		explicit cInputGLFWBackend(cContext* context);
-		virtual ~cInputGLFWBackend() override final = default;
+		explicit cInputBackendGLFW(cContext* context);
+		virtual ~cInputBackendGLFW() override final = default;
 
         virtual sInputBackendWindow CreatePlatformWindow(
             const std::string& title,
