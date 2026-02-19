@@ -1,24 +1,24 @@
-// audio_oal_backend.cpp
+// audio_backend_oal.cpp
 
-#include "audio_oal_backend.hpp"
+#include "audio_backend_oal.hpp"
 
 using namespace types;
 
-triton::cAudioOALBackend::cAudioOALBackend(cContext* context) : iAudioBackend(context)
+triton::cAudioBackendOAL::cAudioBackendOAL(cContext* context) : iAudioBackend(context)
 {
     _alDevice = alcOpenDevice(nullptr);
     _alContext = alcCreateContext(_alDevice, nullptr);
     alcMakeContextCurrent(_alContext);
 }
 
-triton::cAudioOALBackend::~cAudioOALBackend()
+triton::cAudioBackendOAL::~cAudioBackendOAL()
 {
     alcMakeContextCurrent(nullptr);
     alcDestroyContext(_alContext);
     alcCloseDevice(_alDevice);
 }
 
-triton::sAudioBackendSound triton::cAudioOALBackend::CreateSound(
+triton::sAudioBackendSound triton::cAudioBackendOAL::CreateSound(
     cAudio::eDataFormat dataFormat,
     const u8* data,
     usize dataByteSize,
@@ -50,43 +50,43 @@ triton::sAudioBackendSound triton::cAudioOALBackend::CreateSound(
     return abs;
 }
 
-void triton::cAudioOALBackend::DestroySound(sAudioBackendSound& sound)
+void triton::cAudioBackendOAL::DestroySound(sAudioBackendSound& sound)
 {
     alDeleteBuffers(1, (ALuint*)&sound.buffer);
     alDeleteSources(1, (ALuint*)&sound.source);
 }
 
-void triton::cAudioOALBackend::PlaySound(sAudioBackendSound& sound)
+void triton::cAudioBackendOAL::PlaySound(sAudioBackendSound& sound)
 {
     alSourcePlay(sound.source);
 }
 
-void triton::cAudioOALBackend::StopSound(sAudioBackendSound& sound)
+void triton::cAudioBackendOAL::StopSound(sAudioBackendSound& sound)
 {
     alSourceStop(sound.source);
 }
 
-void triton::cAudioOALBackend::SetSoundPosition(sAudioBackendSound& sound, const cVector3& position)
+void triton::cAudioBackendOAL::SetSoundPosition(sAudioBackendSound& sound, const cVector3& position)
 {
     alSource3f(sound.source, AL_POSITION, position.GetX(), position.GetY(), position.GetZ());
 }
 
-void triton::cAudioOALBackend::SetSoundVelocity(sAudioBackendSound& sound, const cVector3& velocity)
+void triton::cAudioBackendOAL::SetSoundVelocity(sAudioBackendSound& sound, const cVector3& velocity)
 {
     alSource3f(sound.source, AL_VELOCITY, velocity.GetX(), velocity.GetY(), velocity.GetZ());
 }
 
-void triton::cAudioOALBackend::SetListenerPosition(const cVector3& position)
+void triton::cAudioBackendOAL::SetListenerPosition(const cVector3& position)
 {
     alListener3f(AL_POSITION, position.GetX(), position.GetY(), position.GetZ());
 }
 
-void triton::cAudioOALBackend::SetListenerVelocity(const cVector3& velocity)
+void triton::cAudioBackendOAL::SetListenerVelocity(const cVector3& velocity)
 {
     alListener3f(AL_VELOCITY, velocity.GetX(), velocity.GetY(), velocity.GetZ());
 }
 
-void triton::cAudioOALBackend::SetListenerOrientation(const cVector3& at, const cVector3& up)
+void triton::cAudioBackendOAL::SetListenerOrientation(const cVector3& at, const cVector3& up)
 {
     ALfloat values[] = { at.GetX(), at.GetY(), at.GetZ(), up.GetX(), up.GetY(), up.GetZ() };
     alListenerfv(AL_ORIENTATION, &values[0]);

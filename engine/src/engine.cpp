@@ -21,7 +21,7 @@
 #include "input_glfw_backend.hpp"
 #include "graphics_resource_backend_ogl.hpp"
 #include "graphics_pipeline_backend_ogl.hpp"
-#include "audio_oal_backend.hpp"
+#include "audio_backend_oal.hpp"
 
 using namespace triton::ecs;
 using namespace types;
@@ -63,7 +63,7 @@ void triton::cEngine::Initialize()
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputGLFWBackend(_context));
 	_context->RegisterBackend<iGraphicsResourceBackend>(new cGraphicsResourceBackendOGL(_context));
-	_context->RegisterBackend<iAudioBackend>(new cAudioOALBackend(_context));
+	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 
 	// Register subsystems
 	_context->RegisterSubsystem(this);

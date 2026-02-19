@@ -1,4 +1,4 @@
-// audio_oal_backend.hpp
+// audio_backend_oal.hpp
 
 #pragma once
 
@@ -10,16 +10,16 @@ namespace triton
 {
     class cContext;
 
-    class cAudioOALBackend : public iAudioBackend
+    class cAudioBackendOAL final : public iAudioBackend
     {
-        TRITON_OBJECT(cAudioOALBackend)
+        TRITON_OBJECT(cAudioBackendOAL)
 
         ALCdevice* _alDevice = nullptr;
         ALCcontext* _alContext = nullptr;
 
     public:
-        explicit cAudioOALBackend(cContext* context);
-        virtual ~cAudioOALBackend() override final;
+        explicit cAudioBackendOAL(cContext* context);
+        virtual ~cAudioBackendOAL() override final;
 
         virtual sAudioBackendSound CreateSound(
             cAudio::eDataFormat dataFormat,
