@@ -12,6 +12,7 @@
 #include "gpu_resource.hpp"
 #include "graphics_resource_backend.hpp"
 #include "graphics_pipeline_backend.hpp"
+#include "graphics_drawcall_backend.hpp"
 #include "types.hpp"
 
 namespace triton
