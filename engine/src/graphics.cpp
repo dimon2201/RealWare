@@ -648,12 +648,12 @@ void triton::cGraphics::ResizeRenderTargets(const glm::vec2& size)
 
     _text->ResizeViewport(size);
 
-    // FIXME: figure out how to change _opaque, _transparent render targets
-    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-    //gfxPipelineBackend->UpdateRenderTargetBuffers(_opaque->GetRenderTarget());
-    //gfxPipelineBackend->UpdateRenderTargetBuffers(_transparent->GetRenderTarget());
+    cRenderTarget* newOpaqueRenderTarget = _opaque->GetRenderTarget();
+    cRenderTarget* newTransparentRenderTarget = _opaque->GetRenderTarget();
+    gfxPipelineBackend->UpdateRenderTargetBuffers(newOpaqueRenderTarget);
+    gfxPipelineBackend->UpdateRenderTargetBuffers(newTransparentRenderTarget);
+    _opaque->SetRenderTarget(newOpaqueRenderTarget);
+    _transparent->SetRenderTarget(newTransparentRenderTarget);
 
     _compositeTransparent->ResizeViewport(size);
     auto& transparentColorAttachments = _transparent->GetRenderTarget()->GetColorAttachments();

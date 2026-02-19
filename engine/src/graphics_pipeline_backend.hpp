@@ -183,6 +183,7 @@ namespace triton
         inline const sDepthMode& GetDepthMode() const { return _desc.depthMode; }
         inline cRenderPassGPU* GetRenderPassGPU() const { return _renderPass; }
         inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc.inputTextures[textureIndex] = texture; }
+        inline void SetRenderTarget(cRenderTarget* newRenderTarget) { _desc.renderTarget = newRenderTarget; }
     };
 
     class iGraphicsPipelineBackend : public iBackend
