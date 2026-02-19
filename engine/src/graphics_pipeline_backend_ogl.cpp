@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <lodepng.h> // TODO: move lodepng stuff to separate backend
 #include "graphics_pipeline_backend_ogl.hpp"
+#include "graphics_texture_backend.hpp"
 #include "context.hpp"
 #include "filesystem_manager.hpp"
 
@@ -387,8 +388,17 @@ void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* rend
         bufferBackend->BindBufferNotVAO(buffer);
     BindDepthMode(renderPass->GetDepthMode());
     BindBlendMode(renderPass->GetBlendMode());
-    for (usize i = 0; i < renderPass->GetInputTextures().size(); i++)
-        textureBackend->BindTexture(shader, renderPass->GetInputTextureNames()[i].c_str(), renderPass->GetInputTextures()[i], i);
+    // FIXME: find what to do with this function
+    // |||||||||||||||||||||||||||||||||||||||||
+    // |||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    //for (usize i = 0; i < renderPass->GetInputTextures().size(); i++)
+    //    textureBackend->BindTexture(
+    //        shader,
+    //        renderPass->GetInputTextureNames()[i].c_str(),
+    //        renderPass->GetInputTextures()[i],
+    //        i
+    //    );
 }
 
 void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const cRenderPass* renderPass)
@@ -470,4 +480,174 @@ void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const sBlendMode& blendM
 void triton::cGraphicsPipelineBackendOGL::Viewport(const sViewport& viewport)
 {
     glViewport(viewport.rect.GetX(), viewport.rect.GetY(), viewport.rect.GetZ(), viewport.rect.GetW());
+}
+
+triton::cRenderTarget* triton::cGraphicsPipelineBackendOGL::CreateRenderTarget(
+    const std::vector<cTexture*>& colorAttachments,
+    cTexture* depthAttachment
+)
+{
+    GLuint instance = 0;
+
+    GLenum buffs[16] = {};
+    glGenFramebuffers(1, (GLuint*)&instance);
+    glBindFramebuffer(GL_FRAMEBUFFER, instance);
+    for (usize i = 0; i < colorAttachments.size(); i++)
+    {
+        buffs[i] = GL_COLOR_ATTACHMENT0 + i;
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0 + i,
+            GL_TEXTURE_2D,
+            colorAttachments[i]->GetInstance(),
+            0
+        );
+    }
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_TEXTURE_2D,
+        depthAttachment->GetInstance(),
+        0
+    );
+    glDrawBuffers(colorAttachments.size(), &buffs[0]);
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+        Print("Error: incomplete framebuffer!");
+
+    cRenderTarget* renderTarget = _context->Create<cRenderTarget>(
+        _context,
+        instance,
+        colorAttachments,
+        depthAttachment
+    );
+
+    return renderTarget;
+}
+
+void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetColors(
+    cRenderTarget* renderTarget,
+    const glm::vec2& size
+)
+{
+    iGraphicsTextureBackend* textureBackend = _context->GetBackend<iGraphicsTextureBackend>();
+
+    std::vector<cTexture*> newColorAttachments;
+    for (auto attachment : renderTarget->_colorAttachments)
+    {
+        newColorAttachments.emplace_back(
+            textureBackend->CreateTexture(
+                cVector3(size.x, size.y, attachment->GetDepth()),
+                attachment->GetDimension(),
+                attachment->GetFormat(),
+                nullptr,
+                0
+            )
+        );
+        textureBackend->DestroyTexture(attachment);
+    }
+    renderTarget->GetColorAttachments().clear();
+    renderTarget->SetColorAttachments(newColorAttachments);
+
+    GLenum buffs[16] = {};
+    glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)renderTarget->GetInstance());
+    for (usize i = 0; i < renderTarget->_colorAttachments.size(); i++)
+    {
+        buffs[i] = GL_COLOR_ATTACHMENT0 + i;
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0 + i,
+            GL_TEXTURE_2D,
+            (GLuint)renderTarget->GetColorAttachments()[i]->GetInstance(),
+            0
+        );
+    }
+    glDrawBuffers(renderTarget->GetColorAttachments().size(), &buffs[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetDepth(
+    cRenderTarget* renderTarget,
+    const glm::vec2& size
+)
+{
+    iGraphicsTextureBackend* textureBackend = _context->GetBackend<iGraphicsTextureBackend>();
+
+    cTexture* newDepthAttachment = textureBackend->CreateTexture(
+        cVector3(size.x, size.y, renderTarget->GetDepthAttachment()->GetDepth()),
+        renderTarget->GetDepthAttachment()->GetDimension(),
+        renderTarget->GetDepthAttachment()->GetFormat(),
+        nullptr,
+        0
+    );
+    textureBackend->DestroyTexture(renderTarget->GetDepthAttachment());
+    renderTarget->SetDepthAttachment(newDepthAttachment);
+
+    GLenum buffs[16] = {};
+    glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)renderTarget->GetInstance());
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_TEXTURE_2D,
+        renderTarget->GetDepthAttachment()->GetInstance(),
+        0
+    );
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void triton::cGraphicsPipelineBackendOGL::UpdateRenderTargetBuffers(cRenderTarget*& renderTarget)
+{
+    GLuint instance = 0;
+
+    GLenum buffs[16] = {};
+    glGenFramebuffers(1, &instance);
+    glBindFramebuffer(GL_FRAMEBUFFER, instance);
+    for (usize i = 0; i < renderTarget->GetColorAttachments().size(); i++)
+    {
+        buffs[i] = GL_COLOR_ATTACHMENT0 + i;
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0 + i,
+            GL_TEXTURE_2D,
+            (GLuint)renderTarget->GetColorAttachments()[i]->GetInstance(),
+            0
+        );
+    }
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_TEXTURE_2D,
+        (GLuint)renderTarget->GetDepthAttachment()->GetInstance(),
+        0
+    );
+    glDrawBuffers(renderTarget->GetColorAttachments().size(), &buffs[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    const std::vector<cTexture*> colorAttachments = renderTarget->GetColorAttachments();
+    cTexture* depthAttachments = renderTarget->GetDepthAttachment();
+    _context->Destroy<cRenderTarget>(renderTarget);
+    _context->Create<cRenderTarget>(_context, instance, colorAttachments, depthAttachments);
+}
+
+void triton::cGraphicsPipelineBackendOGL::BindRenderTarget(const cRenderTarget* renderTarget)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)renderTarget->GetInstance());
+}
+
+void triton::cGraphicsPipelineBackendOGL::UnbindRenderTarget()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void triton::cGraphicsPipelineBackendOGL::DestroyRenderTarget(cRenderTarget* renderTarget)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    GLuint instance = renderTarget->GetInstance();
+    glDeleteFramebuffers(1, &instance);
+
+    if (renderTarget != nullptr)
+        _context->Destroy<cRenderTarget>(renderTarget);
 }

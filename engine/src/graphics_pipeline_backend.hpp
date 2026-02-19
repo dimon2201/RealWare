@@ -50,6 +50,12 @@ namespace triton
         inline const std::string& GetFragmentStr() const { return _fragment; }
     };
 
+    struct sDepthMode
+    {
+        types::boolean useDepthTest = types::K_TRUE;
+        types::boolean useDepthWrite = types::K_TRUE;
+    };
+
     struct sBlendMode
     {
         types::usize factorCount = 0;
@@ -97,6 +103,32 @@ namespace triton
         inline cShader* GetShader() const { return _shader; }
     };
 
+    class cRenderTarget : public cGPUResource
+    {
+        TRITON_OBJECT(cRenderTarget)
+
+        mutable std::vector<cTexture*> _colorAttachments = {};
+        cTexture* _depthAttachment = nullptr;
+
+    public:
+        explicit cRenderTarget(
+            cContext* context, 
+            types::qword instance,
+            const std::vector<cTexture*>& colorAttachments,
+            cTexture* depthAttachment
+        );
+        virtual ~cRenderTarget() override = default;
+
+        inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
+        inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
+        inline void SetColorAttachments(
+            const std::vector<cTexture*>& newColorAttachments
+        ) { _colorAttachments = newColorAttachments; }
+        inline void SetDepthAttachment(
+            cTexture* newDepthAttachment
+        ) { _depthAttachment = newDepthAttachment; }
+    };
+
     class iGraphicsPipelineBackend : public iBackend
     {
         TRITON_OBJECT(iGraphicsPipelineBackend)
@@ -140,5 +172,15 @@ namespace triton
         virtual void BindDepthMode(const sDepthMode& blendMode) = 0;
         virtual void BindBlendMode(const sBlendMode& blendMode) = 0;
         virtual void Viewport(const sViewport& viewport) = 0;
+        virtual cRenderTarget* CreateRenderTarget(
+            const std::vector<cTexture*>& colorAttachments,
+            cTexture* depthAttachment
+        ) = 0;
+        virtual void ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
+        virtual void ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
+        virtual void UpdateRenderTargetBuffers(cRenderTarget*& renderTarget) = 0;
+        virtual void BindRenderTarget(const cRenderTarget* renderTarget) = 0;
+        virtual void UnbindRenderTarget() = 0;
+        virtual void DestroyRenderTarget(cRenderTarget* renderTarget) = 0;
     };
 }

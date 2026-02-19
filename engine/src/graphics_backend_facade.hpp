@@ -23,29 +23,6 @@ namespace triton
     class cTexture;
     class cShader;
 
-    class cRenderTarget : public cGPUResource
-    {
-        TRITON_OBJECT(cRenderTarget)
-
-        friend class cGraphicsOGLBackend;
-
-        mutable std::vector<cTexture*> _colorAttachments = {};
-        cTexture* _depthAttachment = nullptr;
-
-        inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
-        inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
-        inline void SetDepthAttachment(cTexture* attachment) { _depthAttachment = attachment; }
-
-    public:
-        explicit cRenderTarget(cContext* context);
-    };
-
-    struct sDepthMode
-    {
-        types::boolean useDepthTest = types::K_TRUE;
-        types::boolean useDepthWrite = types::K_TRUE;
-    };
-
     class cGraphicsBackendFacade : public iObject
     {
         TRITON_OBJECT(cGraphicsBackendFacade)
@@ -61,15 +38,6 @@ namespace triton
         /*virtual void BindWindowContext(void* nativeWindow) = 0;
         virtual void CreateGraphicsContext() = 0;
 
-        // iGraphicsRenderTargetBackend
-        virtual cRenderTarget* CreateRenderTarget(const std::vector<cTexture*>& colorAttachments, cTexture* depthAttachment) = 0;
-        virtual void ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
-        virtual void ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
-        virtual void UpdateRenderTargetBuffers(cRenderTarget* renderTarget) = 0;
-        virtual void BindRenderTarget(const cRenderTarget* renderTarget) = 0;
-        virtual void UnbindRenderTarget() = 0;
-        virtual void DestroyRenderTarget(cRenderTarget* renderTarget) = 0;
-        
         // iGraphicsDrawCallBackend
         virtual void ClearColor(const glm::vec4& color) = 0;
         virtual void ClearDepth(types::f32 depth) = 0;

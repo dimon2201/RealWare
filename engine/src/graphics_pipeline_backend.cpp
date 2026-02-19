@@ -17,4 +17,12 @@ triton::cShader::cShader(
 
 triton::cVertexArray::cVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}
 
+triton::cRenderTarget::cRenderTarget(
+	cContext* context,
+	qword instance,
+	const std::vector<cTexture*>& colorAttachments,
+	cTexture* depthAttachment
+)
+: cGPUResource(context, instance, 0), _colorAttachments(colorAttachments), _depthAttachment(depthAttachment) {}
+
 triton::iGraphicsPipelineBackend::iGraphicsPipelineBackend(cContext* context) : iBackend(context) {}
