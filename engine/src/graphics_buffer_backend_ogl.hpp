@@ -32,6 +32,5 @@ namespace triton
             types::usize byteSize,
             const types::u8* data
         ) override final;
-        virtual void DestroyBuffer(cBuffer* buffer) override final;
     };
 }

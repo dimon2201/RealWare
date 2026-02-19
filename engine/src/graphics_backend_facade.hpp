@@ -23,16 +23,6 @@ namespace triton
     class cTexture;
     class cShader;
 
-    class cVertexArray : public cGPUResource
-    {
-        TRITON_OBJECT(cVertexArray)
-
-        friend class cGraphicsOGLBackend;
-
-    public:
-        explicit cVertexArray(cContext* context);
-    };
-
     class cRenderTarget : public cGPUResource
     {
         TRITON_OBJECT(cRenderTarget)
@@ -56,65 +46,6 @@ namespace triton
         types::boolean useDepthWrite = types::K_TRUE;
     };
 
-    struct sBlendMode
-    {
-        enum class eFactor
-        {
-            ZERO = 0,
-            ONE = 1,
-            SRC_COLOR = 2,
-            INV_SRC_COLOR = 3,
-            SRC_ALPHA = 4,
-            INV_SRC_ALPHA = 5
-        };
-
-        types::usize factorCount = 0;
-        eFactor srcFactors[8] = { eFactor::ZERO };
-        eFactor dstFactors[8] = { eFactor::ZERO };
-    };
-
-    struct sViewport
-    {
-        cVector4 rect = cVector4(0.0f);
-    };
-
-    struct sRenderPassDescriptor
-    {
-        eCategory inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-        std::vector<cBuffer*> inputBuffers = {};
-        std::vector<cTexture*> inputTextures = {};
-        std::vector<std::string> inputTextureNames = {};
-        std::vector<cTextureAtlasTexture*> inputTextureAtlasTextures = {};
-        std::vector<std::string> inputTextureAtlasTextureNames = {};
-        eCategory shaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
-        std::string shaderVertexPath = "";
-        std::string shaderFragmentPath = "";
-        std::string shaderVertexFunc = "";
-        std::string shaderFragmentFunc = "";
-        cShader* shaderBase = nullptr;
-        sDepthMode depthMode = {};
-        sBlendMode blendMode = {};
-        sViewport viewport = {};
-        cRenderTarget* renderTarget = nullptr;
-    };
-
-    class cRenderPassGPU : public iObject
-    {
-        TRITON_OBJECT(cRenderPassGPU)
-
-        friend class cGraphicsOGLBackend;
-
-        cVertexArray* _vertexArray = nullptr;
-        cShader* _shader = nullptr;
-
-    public:
-        explicit cRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader);
-        virtual ~cRenderPassGPU() override final = default;
-        
-        inline cVertexArray* GetVertexArray() const { return _vertexArray; }
-        inline cShader* GetShader() const { return _shader; }
-    };
-
     class cGraphicsBackendFacade : public iObject
     {
         TRITON_OBJECT(cGraphicsBackendFacade)
@@ -129,21 +60,6 @@ namespace triton
 
         /*virtual void BindWindowContext(void* nativeWindow) = 0;
         virtual void CreateGraphicsContext() = 0;
-
-        // iGraphicsPipelineBackend
-        virtual cVertexArray* CreateVertexArray() = 0;
-        virtual void BindVertexArray(const cVertexArray* vertexArray) = 0;
-        virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) = 0;
-        virtual void UnbindVertexArray() = 0;
-        virtual void DestroyVertexArray(cVertexArray* vertexArray) = 0;
-        virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor& desc) = 0;
-        virtual void BindRenderPass(const cRenderPass* renderPass, cShader* customShader = nullptr) = 0;
-        virtual void UnbindRenderPass(const cRenderPass* renderPass) = 0;
-        virtual void DestroyRenderPass(cRenderPassGPU* renderPass) = 0;
-        virtual void BindDefaultInputLayout() = 0;
-        virtual void BindDepthMode(const sDepthMode& blendMode) = 0;
-        virtual void BindBlendMode(const sBlendMode& blendMode) = 0;
-        virtual void Viewport(const sViewport& viewport) = 0;
 
         // iGraphicsRenderTargetBackend
         virtual cRenderTarget* CreateRenderTarget(const std::vector<cTexture*>& colorAttachments, cTexture* depthAttachment) = 0;

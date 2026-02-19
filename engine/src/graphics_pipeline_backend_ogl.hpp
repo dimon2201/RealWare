@@ -39,5 +39,18 @@ namespace triton
             types::usize count,
             const types::f32* values
         ) override final;
+        virtual cVertexArray* CreateVertexArray() override final;
+        virtual void BindVertexArray(const cVertexArray* vertexArray) override final;
+        virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) override final;
+        virtual void UnbindVertexArray() override final;
+        virtual void DestroyVertexArray(cVertexArray* vertexArray) override final;
+        virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor& desc) override final;
+        virtual void BindRenderPass(const cRenderPass* renderPass, cShader* customShader = nullptr) override final;
+        virtual void UnbindRenderPass(const cRenderPass* renderPass) override final;
+        virtual void DestroyRenderPass(cRenderPassGPU* renderPass) override final;
+        virtual void BindDefaultInputLayout() override final;
+        virtual void BindDepthMode(const sDepthMode& blendMode) override final;
+        virtual void BindBlendMode(const sBlendMode& blendMode) override final;
+        virtual void Viewport(const sViewport& viewport) override final;
     };
 }
