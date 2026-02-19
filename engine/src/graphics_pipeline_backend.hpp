@@ -41,13 +41,13 @@ namespace triton
         inline const std::string& GetFragmentStr() const { return _fragment; }
     };
 
-    class iGraphicsShaderBackend : public iBackend
+    class iGraphicsPipelineBackend : public iBackend
     {
-        TRITON_OBJECT(iGraphicsShaderBackend)
+        TRITON_OBJECT(iGraphicsPipelineBackend)
 
     public:
-        explicit iGraphicsShaderBackend(cContext* context);
-        virtual ~iGraphicsShaderBackend() override = default;
+        explicit iGraphicsPipelineBackend(cContext* context);
+        virtual ~iGraphicsPipelineBackend() override = default;
 
         virtual void BindShader(const cShader* shader) = 0;
         virtual void UnbindShader() = 0;

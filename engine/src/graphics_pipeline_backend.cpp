@@ -15,4 +15,4 @@ triton::cShader::cShader(
 )
 : cGPUResource(context, instance, 0), _vertex(vertexShaderStr), _fragment(fragmentShaderStr) {}
 
-triton::iGraphicsShaderBackend::iGraphicsShaderBackend(cContext* context) : iBackend(context) {}
+triton::iGraphicsPipelineBackend::iGraphicsPipelineBackend(cContext* context) : iBackend(context) {}

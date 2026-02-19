@@ -9,13 +9,13 @@ namespace triton
 {
     class cContext;
 
-    class cGraphicsShaderBackendOGL final : public iGraphicsShaderBackend
+    class cGraphicsPipelineBackendOGL final : public iGraphicsPipelineBackend
     {
-        TRITON_OBJECT(cGraphicsShaderBackendOGL)
+        TRITON_OBJECT(cGraphicsPipelineBackendOGL)
 
     public:
-        explicit cGraphicsShaderBackendOGL(cContext* context);
-        virtual ~cGraphicsShaderBackendOGL() override final = default;
+        explicit cGraphicsPipelineBackendOGL(cContext* context);
+        virtual ~cGraphicsPipelineBackendOGL() override final = default;
 
         virtual void BindShader(const cShader* shader) override final;
         virtual void UnbindShader() override final;
