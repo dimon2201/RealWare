@@ -39,6 +39,12 @@ namespace triton
             types::usize count,
             const types::f32* values
         ) override final;
+        virtual void BindTextureNamed(
+            cShader* shader,
+            cTexture* texture,
+            const std::string& textureName,
+            types::u32 slot
+        ) override final;
         virtual cVertexArray* CreateVertexArray() override final;
         virtual void BindVertexArray(const cVertexArray* vertexArray) override final;
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) override final;

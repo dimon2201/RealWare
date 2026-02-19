@@ -264,28 +264,6 @@ void triton::cGraphicsResourceBackendOGL::BindTexture(const cTexture* texture)
         glBindTexture(GL_TEXTURE_2D_ARRAY, texture->GetInstance());
         glActiveTexture(GL_TEXTURE0);
     }
-
-    // FIXME: figure out what's going on here
-    // ||||||||||||||||||||||||||||||||||||||
-    // ||||||||||||||||||||||||||||||||||||||
-    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-    /*if (slot == -1)
-        slot = texture->_slot;
-
-    if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D)
-    {
-        glUniform1i(glGetUniformLocation(shader->_instance, name.c_str()), slot);
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_2D, texture->_instance);
-        glActiveTexture(GL_TEXTURE0);
-    }
-    else if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D_ARRAY)
-    {
-        glUniform1i(glGetUniformLocation(shader->_instance, name.c_str()), slot);
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, texture->_instance);
-        glActiveTexture(GL_TEXTURE0);
-    }*/
 }
 
 void triton::cGraphicsResourceBackendOGL::UnbindTexture(const cTexture* texture)

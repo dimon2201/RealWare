@@ -257,6 +257,32 @@ void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const cShader* shader
     glUniform4fv(glGetUniformLocation(shader->GetInstance(), name.c_str()), count, &values[0]);
 }
 
+void triton::cGraphicsPipelineBackendOGL::BindTextureNamed(
+    cShader* shader,
+    cTexture* texture,
+    const std::string& textureName,
+    types::u32 slot
+)
+{
+    if (slot == -1)
+        slot = texture->GetSlot();
+
+    if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D)
+    {
+        glUniform1i(glGetUniformLocation((GLuint)shader->GetInstance(), textureName.c_str()), slot);
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(GL_TEXTURE_2D, (GLuint)texture->GetInstance());
+        glActiveTexture(GL_TEXTURE0);
+    }
+    else if (texture->GetDimension() == cTexture::eDimension::TEXTURE_2D_ARRAY)
+    {
+        glUniform1i(glGetUniformLocation((GLuint)shader->GetInstance(), textureName.c_str()), slot);
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, (GLuint)texture->GetInstance());
+        glActiveTexture(GL_TEXTURE0);
+    }
+}
+
 triton::cVertexArray* triton::cGraphicsPipelineBackendOGL::CreateVertexArray()
 {
     GLuint instance = 0;
@@ -369,6 +395,7 @@ triton::cRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
 void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* renderPass, cShader* customShader)
 {
     iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    iGraphicsPipelineBackend* pipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 
     cShader* shader = nullptr;
     if (customShader == nullptr)
@@ -387,17 +414,13 @@ void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* rend
         resourceBackend->BindBufferNotVAO(buffer);
     BindDepthMode(renderPass->GetDepthMode());
     BindBlendMode(renderPass->GetBlendMode());
-    // FIXME: find what to do with this STRANGE function
-    // |||||||||||||||||||||||||||||||||||||||||
-    // |||||||||||||||||||||||||||||||||||||||||
-    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-    //for (usize i = 0; i < renderPass->GetInputTextures().size(); i++)
-    //    textureBackend->BindTexture(
-    //        shader,
-    //        renderPass->GetInputTextureNames()[i].c_str(),
-    //        renderPass->GetInputTextures()[i],
-    //        i
-    //    );
+    for (usize i = 0; i < renderPass->GetInputTextures().size(); i++)
+        pipelineBackend->BindTextureNamed(
+            shader,
+            renderPass->GetInputTextures()[i],
+            renderPass->GetInputTextureNames()[i],
+            i
+        );
 }
 
 void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const cRenderPass* renderPass)

@@ -215,6 +215,12 @@ namespace triton
             types::usize count,
             const types::f32* values
         ) = 0;
+        virtual void BindTextureNamed(
+            cShader* shader,
+            cTexture* texture,
+            const std::string& textureName,
+            types::u32 slot
+        ) = 0;
         virtual cVertexArray* CreateVertexArray() = 0;
         virtual void BindVertexArray(const cVertexArray* vertexArray) = 0;
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) = 0;
