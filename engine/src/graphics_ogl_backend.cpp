@@ -47,28 +47,4 @@ std::string CleanShaderSource(const std::string& src)
 }
 
 /*triton::cGraphicsOGLBackend::cGraphicsOGLBackend(cContext* context, iGraphicsBufferBackend* bufferBackend)
-    : iGraphicsBackend(context), _buffer(bufferBackend) {}
-
-void triton::cGraphicsOGLBackend::BindWindowContext(void* nativeWindow)
-{
-    glfwMakeContextCurrent((GLFWwindow*)nativeWindow);
-}
-
-void triton::cGraphicsOGLBackend::CreateGraphicsContext()
-{
-    if (glewInit() != GLEW_OK)
-    {
-        Print("Error: can't initialize GL context!");
-        return;
-    }
-
-    glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glDepthFunc(GL_LESS);
-    //glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(GLDebugCallback, nullptr);
-}*/
+    : iGraphicsBackend(context), _buffer(bufferBackend) {}*/
