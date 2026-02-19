@@ -129,26 +129,13 @@ namespace triton
 
         /*virtual void BindWindowContext(void* nativeWindow) = 0;
         virtual void CreateGraphicsContext() = 0;
+
+        // iGraphicsPipelineBackend
         virtual cVertexArray* CreateVertexArray() = 0;
         virtual void BindVertexArray(const cVertexArray* vertexArray) = 0;
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) = 0;
         virtual void UnbindVertexArray() = 0;
         virtual void DestroyVertexArray(cVertexArray* vertexArray) = 0;
-        virtual void BindShader(const cShader* shader) = 0;
-        virtual void UnbindShader() = 0;
-        virtual cShader* CreateShader(eCategory renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<cShader::sDefinePair>& definePairs = {}) = 0;
-        virtual cShader* CreateShader(const cShader* baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<cShader::sDefinePair>& definePairs = {}) = 0;
-        virtual void DefineInShader(cShader* shader, const std::vector<cShader::sDefinePair>& definePairs) = 0;
-        virtual void DestroyShader(cShader* shader) = 0;
-        virtual void SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix) = 0;
-        virtual void SetShaderUniform(const cShader* shader, const std::string& name, types::usize count, const types::f32* values) = 0;
-        virtual cRenderTarget* CreateRenderTarget(const std::vector<cTexture*>& colorAttachments, cTexture* depthAttachment) = 0;
-        virtual void ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
-        virtual void ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
-        virtual void UpdateRenderTargetBuffers(cRenderTarget* renderTarget) = 0;
-        virtual void BindRenderTarget(const cRenderTarget* renderTarget) = 0;
-        virtual void UnbindRenderTarget() = 0;
-        virtual void DestroyRenderTarget(cRenderTarget* renderTarget) = 0;
         virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor& desc) = 0;
         virtual void BindRenderPass(const cRenderPass* renderPass, cShader* customShader = nullptr) = 0;
         virtual void UnbindRenderPass(const cRenderPass* renderPass) = 0;
@@ -157,6 +144,17 @@ namespace triton
         virtual void BindDepthMode(const sDepthMode& blendMode) = 0;
         virtual void BindBlendMode(const sBlendMode& blendMode) = 0;
         virtual void Viewport(const sViewport& viewport) = 0;
+
+        // iGraphicsRenderTargetBackend
+        virtual cRenderTarget* CreateRenderTarget(const std::vector<cTexture*>& colorAttachments, cTexture* depthAttachment) = 0;
+        virtual void ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
+        virtual void ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
+        virtual void UpdateRenderTargetBuffers(cRenderTarget* renderTarget) = 0;
+        virtual void BindRenderTarget(const cRenderTarget* renderTarget) = 0;
+        virtual void UnbindRenderTarget() = 0;
+        virtual void DestroyRenderTarget(cRenderTarget* renderTarget) = 0;
+        
+        // iGraphicsDrawCallBackend
         virtual void ClearColor(const glm::vec4& color) = 0;
         virtual void ClearDepth(types::f32 depth) = 0;
         virtual void ClearFramebufferColor(types::usize bufferIndex, const glm::vec4& color) = 0;

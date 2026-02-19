@@ -1,8 +1,8 @@
-// graphics_shader_backend.hpp
+// graphics_pipeline_backend.hpp
 
 #pragma once
 
-#include "graphics_shader_backend.hpp"
+#include "graphics_pipeline_backend.hpp"
 #include "types.hpp"
 
 namespace triton

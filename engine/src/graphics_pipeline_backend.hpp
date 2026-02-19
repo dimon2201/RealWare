@@ -1,4 +1,4 @@
-// graphics_shader_backend.hpp
+// graphics_pipeline_backend.hpp
 
 #pragma once
 

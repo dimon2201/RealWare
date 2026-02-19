@@ -1,6 +1,6 @@
-// graphics_shader_backend.cpp
+// graphics_pipeline_backend.cpp
 
-#include "graphics_shader_backend.hpp"
+#include "graphics_pipeline_backend.hpp"
 #include "context.hpp"
 
 using namespace types;

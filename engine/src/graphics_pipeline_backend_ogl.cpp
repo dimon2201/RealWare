@@ -1,8 +1,8 @@
-// graphics_shader_backend_ogl.cpp
+// graphics_pipeline_backend_ogl.cpp
 
 #include <GL/glew.h>
 #include <lodepng.h> // TODO: move lodepng stuff to separate backend
-#include "graphics_shader_backend_ogl.hpp"
+#include "graphics_pipeline_backend_ogl.hpp"
 #include "context.hpp"
 #include "filesystem_manager.hpp"
 
