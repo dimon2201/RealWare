@@ -387,7 +387,7 @@ void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* rend
         resourceBackend->BindBufferNotVAO(buffer);
     BindDepthMode(renderPass->GetDepthMode());
     BindBlendMode(renderPass->GetBlendMode());
-    // FIXME: find what to do with this function
+    // FIXME: find what to do with this STRANGE function
     // |||||||||||||||||||||||||||||||||||||||||
     // |||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV

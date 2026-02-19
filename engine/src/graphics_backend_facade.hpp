@@ -10,6 +10,7 @@
 #include "backend.hpp"
 #include "math.hpp"
 #include "gpu_resource.hpp"
+#include "graphics_context_backend.hpp"
 #include "graphics_resource_backend.hpp"
 #include "graphics_pipeline_backend.hpp"
 #include "graphics_drawcall_backend.hpp"

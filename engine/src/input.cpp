@@ -79,12 +79,11 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
     
-    // FIXME: uncomment when iGraphicsContextBackend is added
-    //iGraphicsBackend* gfx = _context->GetBackend<iGraphicsBackend>();
+    iGraphicsContextBackend* gfxContextBackend = _context->GetBackend<iGraphicsContextBackend>();
     sInputBackendWindow ibw = input->CreatePlatformWindow(title, size, fullscreen);
-    //gfx->BindWindowContext((void*)ibw.instance);
+    input->BindWindowContext(ibw);
     input->SetWindowSwapInterval(1);
-    //gfx->CreateGraphicsContext();
+    gfxContextBackend->CreateGraphicsContext();
 
     cInputWindow* window = _context->Create<cInputWindow>(_context, ibw);
 
