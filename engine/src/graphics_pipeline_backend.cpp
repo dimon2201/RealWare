@@ -1,6 +1,7 @@
 // graphics_pipeline_backend.cpp
 
 #include "graphics_pipeline_backend.hpp"
+#include "graphics_texture_backend.hpp"
 #include "context.hpp"
 
 using namespace types;
@@ -16,6 +17,9 @@ triton::cShader::cShader(
 : cGPUResource(context, instance, 0), _vertex(vertexShaderStr), _fragment(fragmentShaderStr) {}
 
 triton::cVertexArray::cVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}
+
+triton::cRenderPassGPU::cRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader)
+	: iObject(context), _vertexArray(vertexArray), _shader(shader) {}
 
 triton::cRenderTarget::cRenderTarget(
 	cContext* context,

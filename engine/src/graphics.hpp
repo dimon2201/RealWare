@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "graphics_backend_facade.hpp"
+#include "graphics_pipeline_state.hpp"
 #include "category.hpp"
 #include "types.hpp"
 
@@ -18,6 +19,10 @@ namespace triton
     class cTextureAtlasTexture;
     class cContext;
     class cShader;
+    class cVertexArray;
+    class cRenderTarget;
+    class cRenderPass;
+    class cRenderPassGPU;
     struct sBuffer;
     struct sVertexArray;
     struct sRenderTarget;
@@ -138,37 +143,6 @@ namespace triton
         cVector4 _attenuation = cVector4(0.0f);
     };
 
-    class cRenderPass : public iObject
-    {
-        TRITON_OBJECT(cRenderPass)
-
-        friend class cOGLGraphicsBackend;
-
-        sRenderPassDescriptor _desc = {};
-        cRenderPassGPU* _renderPass = nullptr;
-
-    public:
-        explicit cRenderPass(cContext* context, const sRenderPassDescriptor& desc, cRenderPassGPU* renderPass);
-        virtual ~cRenderPass() override final = default;
-
-        void ResizeViewport(const glm::vec2& size);
-        void ResizeColorAttachments(const glm::vec2& size);
-        void ResizeDepthAttachment(const glm::vec2& size);
-
-        inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc.inputTextureAtlasTextures; }
-        inline cVertexArray* GetVertexArray() const { return _renderPass->GetVertexArray(); }
-        inline cShader* GetShader() const { return _renderPass->GetShader(); }
-        inline cRenderTarget* GetRenderTarget() const { return _desc.renderTarget; }
-        inline const sViewport& GetViewport() const { return _desc.viewport; }
-        inline const std::vector<cBuffer*>& GetInputBuffers() const { return _desc.inputBuffers; }
-        inline const std::vector<cTexture*>& GetInputTextures() const { return _desc.inputTextures; }
-        inline const std::vector<std::string>& GetInputTextureNames() const { return _desc.inputTextureNames; }
-        inline const sBlendMode& GetBlendMode() const { return _desc.blendMode; }
-        inline const sDepthMode& GetDepthMode() const { return _desc.depthMode; }
-        inline cRenderPassGPU* GetRenderPassGPU() const { return _renderPass; }
-        inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc.inputTextures[textureIndex] = texture; }
-    };
-
 	class cGraphics : public iObject
 	{
         TRITON_OBJECT(cGraphics)
@@ -233,26 +207,6 @@ namespace triton
             NONE = 0,
             OGL,
             D3D11
-        };
-
-        enum class eRenderPath
-        {
-            NONE = 0,
-            OPAQUE_PATH,
-            TRANSPARENT_PATH,
-            TEXT_PATH,
-            TRANSPARENT_COMPOSITE_PATH,
-            QUAD_PATH
-        };
-
-        enum class eBlendFactor
-        {
-            ZERO = 0,
-            ONE = 1,
-            SRC_COLOR = 2,
-            INV_SRC_COLOR = 3,
-            SRC_ALPHA = 4,
-            INV_SRC_ALPHA = 5
         };
 
 		explicit cGraphics(cContext* context);

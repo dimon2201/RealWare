@@ -5,12 +5,13 @@
 #include "gpu_resource.hpp"
 #include "backend.hpp"
 #include "math.hpp"
-#include "graphics.hpp"
+#include "graphics_pipeline_state.hpp"
 #include "types.hpp"
 
 namespace triton
 {
     class cContext;
+    class cTexture;
 
     class cVertexArray : public cGPUResource
     {
@@ -50,44 +51,6 @@ namespace triton
         inline const std::string& GetFragmentStr() const { return _fragment; }
     };
 
-    struct sDepthMode
-    {
-        types::boolean useDepthTest = types::K_TRUE;
-        types::boolean useDepthWrite = types::K_TRUE;
-    };
-
-    struct sBlendMode
-    {
-        types::usize factorCount = 0;
-        cGraphics::eBlendFactor srcFactors[8] = { cGraphics::eBlendFactor::ZERO };
-        cGraphics::eBlendFactor dstFactors[8] = { cGraphics::eBlendFactor::ZERO };
-    };
-
-    struct sViewport
-    {
-        cVector4 rect = cVector4(0.0f);
-    };
-
-    struct sRenderPassDescriptor
-    {
-        eCategory inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-        std::vector<cBuffer*> inputBuffers = {};
-        std::vector<cTexture*> inputTextures = {};
-        std::vector<std::string> inputTextureNames = {};
-        std::vector<cTextureAtlasTexture*> inputTextureAtlasTextures = {};
-        std::vector<std::string> inputTextureAtlasTextureNames = {};
-        cGraphics::eRenderPath shaderRenderPath = cGraphics::eRenderPath::NONE;
-        std::string shaderVertexPath = "";
-        std::string shaderFragmentPath = "";
-        std::string shaderVertexFunc = "";
-        std::string shaderFragmentFunc = "";
-        cShader* shaderBase = nullptr;
-        sDepthMode depthMode = {};
-        sBlendMode blendMode = {};
-        sViewport viewport = {};
-        cRenderTarget* renderTarget = nullptr;
-    };
-
     class cRenderPassGPU : public iObject
     {
         TRITON_OBJECT(cRenderPassGPU)
@@ -101,6 +64,35 @@ namespace triton
 
         inline cVertexArray* GetVertexArray() const { return _vertexArray; }
         inline cShader* GetShader() const { return _shader; }
+    };
+
+    class cRenderPass : public iObject
+    {
+        TRITON_OBJECT(cRenderPass)
+
+        sRenderPassDescriptor _desc = {};
+        cRenderPassGPU* _renderPass = nullptr;
+
+    public:
+        explicit cRenderPass(cContext* context, const sRenderPassDescriptor& desc, cRenderPassGPU* renderPass);
+        virtual ~cRenderPass() override final = default;
+
+        void ResizeViewport(const glm::vec2& size);
+        void ResizeColorAttachments(const glm::vec2& size);
+        void ResizeDepthAttachment(const glm::vec2& size);
+
+        inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc.inputTextureAtlasTextures; }
+        inline cVertexArray* GetVertexArray() const { return _renderPass->GetVertexArray(); }
+        inline cShader* GetShader() const { return _renderPass->GetShader(); }
+        inline cRenderTarget* GetRenderTarget() const { return _desc.renderTarget; }
+        inline const sViewport& GetViewport() const { return _desc.viewport; }
+        inline const std::vector<cBuffer*>& GetInputBuffers() const { return _desc.inputBuffers; }
+        inline const std::vector<cTexture*>& GetInputTextures() const { return _desc.inputTextures; }
+        inline const std::vector<std::string>& GetInputTextureNames() const { return _desc.inputTextureNames; }
+        inline const sBlendMode& GetBlendMode() const { return _desc.blendMode; }
+        inline const sDepthMode& GetDepthMode() const { return _desc.depthMode; }
+        inline cRenderPassGPU* GetRenderPassGPU() const { return _renderPass; }
+        inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc.inputTextures[textureIndex] = texture; }
     };
 
     class cRenderTarget : public cGPUResource
@@ -140,7 +132,7 @@ namespace triton
         virtual void BindShader(const cShader* shader) = 0;
         virtual void UnbindShader() = 0;
         virtual cShader* CreateShader(
-            cGraphics::eRenderPath renderPath,
+            sRenderPassDescriptor::eRenderPath renderPath,
             const std::string& vertexPath,
             const std::string& fragmentPath,
             const std::vector<cShader::sDefinePair>& definePairs = {}

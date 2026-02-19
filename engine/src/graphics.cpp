@@ -168,7 +168,7 @@ void triton::cGraphics::Initialize()
     opaqueRenderPassDesc.inputTextures.emplace_back(textureAtlas->GetAtlas());
     opaqueRenderPassDesc.inputTextureNames.emplace_back("TextureAtlas");
     opaqueRenderPassDesc.shaderBase = nullptr;
-    opaqueRenderPassDesc.shaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
+    opaqueRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::OPAQUE_PATH;
     opaqueRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     opaqueRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     // TODO: Overload constructors for cVector4
@@ -176,8 +176,8 @@ void triton::cGraphics::Initialize()
     opaqueRenderPassDesc.depthMode.useDepthTest = K_TRUE;
     opaqueRenderPassDesc.depthMode.useDepthWrite = K_TRUE;
     opaqueRenderPassDesc.blendMode.factorCount = 1;
-    opaqueRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eFactor::ONE;
-    opaqueRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eFactor::ZERO;
+    opaqueRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eBlendFactor::ONE;
+    opaqueRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eBlendFactor::ZERO;
     opaqueRenderPassDesc.renderTarget = _opaqueRenderTarget;
     _opaque = CreateRenderPass(opaqueRenderPassDesc);
 
@@ -190,7 +190,7 @@ void triton::cGraphics::Initialize()
     transparentRenderPassDesc.inputTextures.emplace_back(textureAtlas->GetAtlas());
     transparentRenderPassDesc.inputTextureNames.emplace_back("TextureAtlas");
     transparentRenderPassDesc.shaderBase = nullptr;
-    transparentRenderPassDesc.shaderRenderPath = eCategory::RENDER_PATH_TRANSPARENT;
+    transparentRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::TRANSPARENT_PATH;
     transparentRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     transparentRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     // TODO: Overload constructors for cVector4
@@ -198,10 +198,10 @@ void triton::cGraphics::Initialize()
     transparentRenderPassDesc.depthMode.useDepthTest = K_TRUE;
     transparentRenderPassDesc.depthMode.useDepthWrite = K_FALSE;
     transparentRenderPassDesc.blendMode.factorCount = 2;
-    transparentRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eFactor::ONE;
-    transparentRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eFactor::ONE;
-    transparentRenderPassDesc.blendMode.srcFactors[1] = sBlendMode::eFactor::ZERO;
-    transparentRenderPassDesc.blendMode.dstFactors[1] = sBlendMode::eFactor::INV_SRC_COLOR;
+    transparentRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eBlendFactor::ONE;
+    transparentRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eBlendFactor::ONE;
+    transparentRenderPassDesc.blendMode.srcFactors[1] = sBlendMode::eBlendFactor::ZERO;
+    transparentRenderPassDesc.blendMode.dstFactors[1] = sBlendMode::eBlendFactor::INV_SRC_COLOR;
     transparentRenderPassDesc.renderTarget = _transparentRenderTarget;
     _transparent = CreateRenderPass(transparentRenderPassDesc);
 
@@ -210,7 +210,7 @@ void triton::cGraphics::Initialize()
     textRenderPassDesc.inputBuffers.emplace_back(cGraphics::GetTextInstanceBuffer());
     textRenderPassDesc.inputBuffers.emplace_back(cGraphics::GetTextMaterialBuffer());
     textRenderPassDesc.shaderBase = nullptr;
-    textRenderPassDesc.shaderRenderPath = eCategory::RENDER_PATH_TEXT;
+    textRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::TEXT_PATH;
     textRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     textRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     // TODO: Overload constructors for cVector4
@@ -228,7 +228,7 @@ void triton::cGraphics::Initialize()
     compositeTransparentRenderPassDesc.inputTextures.emplace_back(transparentColorAttachments[1]);
     compositeTransparentRenderPassDesc.inputTextureNames.emplace_back("RevealageTexture");
     compositeTransparentRenderPassDesc.shaderBase = nullptr;
-    compositeTransparentRenderPassDesc.shaderRenderPath = eCategory::RENDER_PATH_TRANSPARENT_COMPOSITE;
+    compositeTransparentRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::TRANSPARENT_COMPOSITE_PATH;
     compositeTransparentRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     compositeTransparentRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     // TODO: Overload constructors for cVector4
@@ -236,8 +236,8 @@ void triton::cGraphics::Initialize()
     compositeTransparentRenderPassDesc.depthMode.useDepthTest = K_FALSE;
     compositeTransparentRenderPassDesc.depthMode.useDepthWrite = K_FALSE;
     compositeTransparentRenderPassDesc.blendMode.factorCount = 1;
-    compositeTransparentRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eFactor::SRC_ALPHA;
-    compositeTransparentRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eFactor::INV_SRC_ALPHA;
+    compositeTransparentRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eBlendFactor::SRC_ALPHA;
+    compositeTransparentRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eBlendFactor::INV_SRC_ALPHA;
     compositeTransparentRenderPassDesc.renderTarget = _opaqueRenderTarget;
     _compositeTransparent = CreateRenderPass(compositeTransparentRenderPassDesc);
 
@@ -247,7 +247,7 @@ void triton::cGraphics::Initialize()
     compositeFinalRenderPassDesc.inputTextures.emplace_back(opaqueColorAttachments[0]);
     compositeFinalRenderPassDesc.inputTextureNames.emplace_back("ColorTexture");
     compositeFinalRenderPassDesc.shaderBase = nullptr;
-    compositeFinalRenderPassDesc.shaderRenderPath = eCategory::RENDER_PATH_QUAD;
+    compositeFinalRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::QUAD_PATH;
     compositeFinalRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     compositeFinalRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     // TODO: Overload constructors for cVector4
@@ -255,8 +255,8 @@ void triton::cGraphics::Initialize()
     compositeFinalRenderPassDesc.depthMode.useDepthTest = K_FALSE;
     compositeFinalRenderPassDesc.depthMode.useDepthWrite = K_FALSE;
     compositeFinalRenderPassDesc.blendMode.factorCount = 1;
-    compositeFinalRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eFactor::ONE;
-    compositeFinalRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eFactor::ZERO;
+    compositeFinalRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eBlendFactor::ONE;
+    compositeFinalRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eBlendFactor::ZERO;
     compositeFinalRenderPassDesc.renderTarget = nullptr;
     _compositeFinal = CreateRenderPass(compositeFinalRenderPassDesc);
 }

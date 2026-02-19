@@ -11,6 +11,7 @@
 #include "math.hpp"
 #include "gpu_resource.hpp"
 #include "graphics_buffer_backend.hpp"
+#include "graphics_pipeline_backend.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -18,10 +19,6 @@ namespace triton
     struct sInputBackendWindow;
     class cApplication;
     class cTextureAtlasTexture;
-    class cRenderPass;
-    class cRenderTarget;
-    class cTexture;
-    class cShader;
 
     class cGraphicsBackendFacade : public iObject
     {

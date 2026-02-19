@@ -20,7 +20,7 @@ namespace triton
         virtual void BindShader(const cShader* shader) override final;
         virtual void UnbindShader() override final;
         virtual cShader* CreateShader(
-            cGraphics::eRenderPath renderPath,
+            sRenderPassDescriptor::eRenderPath renderPath,
             const std::string& vertexPath,
             const std::string& fragmentPath,
             const std::vector<cShader::sDefinePair>& definePairs = {}

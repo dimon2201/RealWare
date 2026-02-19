@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <lodepng.h> // TODO: move lodepng stuff to separate backend
 #include "graphics_pipeline_backend_ogl.hpp"
+#include "graphics_buffer_backend.hpp"
 #include "graphics_texture_backend.hpp"
 #include "context.hpp"
 #include "filesystem_manager.hpp"
@@ -52,7 +53,7 @@ void triton::cGraphicsPipelineBackendOGL::UnbindShader()
 }
 
 triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
-    cGraphics::eRenderPath renderPath,
+    sRenderPassDescriptor::eRenderPath renderPath,
     const std::string& vertexPath,
     const std::string& fragmentPath,
     const std::vector<cShader::sDefinePair>& definePairs
@@ -61,27 +62,27 @@ triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
     std::string header = "";
     switch (renderPath)
     {
-    case cGraphics::eRenderPath::NONE:
+    case sRenderPassDescriptor::eRenderPath::NONE:
         Print("Error: invalid 'RENDER_PATH_NONE' for shaders '" + vertexPath + "' and '" + fragmentPath + "'!");
         return nullptr;
 
-    case cGraphics::eRenderPath::OPAQUE_PATH:
+    case sRenderPassDescriptor::eRenderPath::OPAQUE_PATH:
         header = "RENDER_PATH_OPAQUE";
         break;
 
-    case cGraphics::eRenderPath::TRANSPARENT_PATH:
+    case sRenderPassDescriptor::eRenderPath::TRANSPARENT_PATH:
         header = "RENDER_PATH_TRANSPARENT";
         break;
 
-    case cGraphics::eRenderPath::TEXT_PATH:
+    case sRenderPassDescriptor::eRenderPath::TEXT_PATH:
         header = "RENDER_PATH_TEXT";
         break;
 
-    case cGraphics::eRenderPath::TRANSPARENT_COMPOSITE_PATH:
+    case sRenderPassDescriptor::eRenderPath::TRANSPARENT_COMPOSITE_PATH:
         header = "RENDER_PATH_TRANSPARENT_COMPOSITE";
         break;
 
-    case cGraphics::eRenderPath::QUAD_PATH:
+    case sRenderPassDescriptor::eRenderPath::QUAD_PATH:
         header = "RENDER_PATH_QUAD";
         break;
     }
@@ -457,20 +458,20 @@ void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const sBlendMode& blendM
 
         switch (blendMode.srcFactors[i])
         {
-            case cGraphics::eBlendFactor::ONE: srcFactor = GL_ONE; break;
-            case cGraphics::eBlendFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
-            case cGraphics::eBlendFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
-            case cGraphics::eBlendFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
-            case cGraphics::eBlendFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+            case sBlendMode::eBlendFactor::ONE: srcFactor = GL_ONE; break;
+            case sBlendMode::eBlendFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
+            case sBlendMode::eBlendFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
+            case sBlendMode::eBlendFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
+            case sBlendMode::eBlendFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
         }
 
         switch (blendMode.dstFactors[i])
         {
-            case cGraphics::eBlendFactor::ONE: dstFactor = GL_ONE; break;
-            case cGraphics::eBlendFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
-            case cGraphics::eBlendFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
-            case cGraphics::eBlendFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
-            case cGraphics::eBlendFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+            case sBlendMode::eBlendFactor::ONE: dstFactor = GL_ONE; break;
+            case sBlendMode::eBlendFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
+            case sBlendMode::eBlendFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
+            case sBlendMode::eBlendFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
+            case sBlendMode::eBlendFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
         }
 
         glBlendFunci(i, srcFactor, dstFactor);
