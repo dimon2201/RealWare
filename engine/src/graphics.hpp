@@ -245,6 +245,16 @@ namespace triton
             QUAD_PATH
         };
 
+        enum class eBlendFactor
+        {
+            ZERO = 0,
+            ONE = 1,
+            SRC_COLOR = 2,
+            INV_SRC_COLOR = 3,
+            SRC_ALPHA = 4,
+            INV_SRC_ALPHA = 5
+        };
+
 		explicit cGraphics(cContext* context);
 		virtual ~cGraphics() override final = default;
 

@@ -17,7 +17,8 @@ namespace triton
         TRITON_OBJECT(cVertexArray)
 
     public:
-        explicit cVertexArray(cContext* context);
+        explicit cVertexArray(cContext* context, types::qword instance);
+        virtual ~cVertexArray() override = default;
     };
 
     class cShader : public cGPUResource
@@ -51,19 +52,9 @@ namespace triton
 
     struct sBlendMode
     {
-        enum class eFactor
-        {
-            ZERO = 0,
-            ONE = 1,
-            SRC_COLOR = 2,
-            INV_SRC_COLOR = 3,
-            SRC_ALPHA = 4,
-            INV_SRC_ALPHA = 5
-        };
-
         types::usize factorCount = 0;
-        eFactor srcFactors[8] = { eFactor::ZERO };
-        eFactor dstFactors[8] = { eFactor::ZERO };
+        cGraphics::eBlendFactor srcFactors[8] = { cGraphics::eBlendFactor::ZERO };
+        cGraphics::eBlendFactor dstFactors[8] = { cGraphics::eBlendFactor::ZERO };
     };
 
     struct sViewport
@@ -79,7 +70,7 @@ namespace triton
         std::vector<std::string> inputTextureNames = {};
         std::vector<cTextureAtlasTexture*> inputTextureAtlasTextures = {};
         std::vector<std::string> inputTextureAtlasTextureNames = {};
-        eCategory shaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
+        cGraphics::eRenderPath shaderRenderPath = cGraphics::eRenderPath::NONE;
         std::string shaderVertexPath = "";
         std::string shaderFragmentPath = "";
         std::string shaderVertexFunc = "";

@@ -255,3 +255,219 @@ void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const cShader* shader
 {
     glUniform4fv(glGetUniformLocation(shader->GetInstance(), name.c_str()), count, &values[0]);
 }
+
+triton::cVertexArray* triton::cGraphicsPipelineBackendOGL::CreateVertexArray()
+{
+    GLuint instance = 0;
+
+    glGenVertexArrays(1, (GLuint*)&instance);
+
+    cVertexArray* vertexArray = _context->Create<cVertexArray>(_context, instance);
+
+    return vertexArray;
+}
+
+void triton::cGraphicsPipelineBackendOGL::BindVertexArray(const cVertexArray* vertexArray)
+{
+    glBindVertexArray((GLuint)vertexArray->GetInstance());
+}
+
+void triton::cGraphicsPipelineBackendOGL::BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind)
+{
+    iGraphicsBufferBackend* bufferBackend = _context->GetBackend<iGraphicsBufferBackend>();
+
+    static cVertexArray* vertexArray = nullptr;
+
+    if (vertexArray == nullptr)
+    {
+        vertexArray = CreateVertexArray();
+
+        BindVertexArray(vertexArray);
+        for (auto buffer : buffersToBind)
+            bufferBackend->BindBuffer(buffer);
+        BindDefaultInputLayout();
+        UnbindVertexArray();
+    }
+
+    BindVertexArray(vertexArray);
+}
+
+void triton::cGraphicsPipelineBackendOGL::UnbindVertexArray()
+{
+    glBindVertexArray(0);
+}
+
+void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(cVertexArray* vertexArray)
+{
+    GLuint instance = vertexArray->GetInstance();
+    glDeleteVertexArrays(1, (GLuint*)&instance);
+
+    if (vertexArray != nullptr)
+        _context->Destroy<cVertexArray>(vertexArray);
+}
+
+triton::cRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(const sRenderPassDescriptor& desc)
+{
+    std::vector<cShader::sDefinePair> definePairs = {};
+    cVertexArray* vertexArray = nullptr;
+    cShader* shader = nullptr;
+
+    if (desc.inputTextureAtlasTextures.size() != desc.inputTextureAtlasTextureNames.size())
+    {
+        Print("Error: mismatch of render pass input texture atlas texture array and input texture atlas texture name array!");
+        return nullptr;
+    }
+    for (usize i = 0; i < desc.inputTextureAtlasTextures.size(); i++)
+    {
+        const usize textureAtlasTextureIndex = i;
+        const std::string& textureAtlasTextureName = desc.inputTextureAtlasTextureNames[i];
+        definePairs.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
+    }
+
+    if (desc.shaderBase == nullptr)
+    {
+        shader = CreateShader(
+            desc.shaderRenderPath,
+            desc.shaderVertexPath,
+            desc.shaderFragmentPath,
+            definePairs
+        );
+    }
+    else
+    {
+        shader = CreateShader(
+            desc.shaderBase,
+            desc.shaderVertexFunc,
+            desc.shaderFragmentFunc,
+            definePairs
+        );
+    }
+
+    iGraphicsBufferBackend* bufferBackend = _context->GetBackend<iGraphicsBufferBackend>();
+
+    vertexArray = CreateVertexArray();
+    BindVertexArray(vertexArray);
+    if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
+    {
+        for (auto buffer : desc.inputBuffers)
+            bufferBackend->BindBuffer(buffer);
+    }
+    else if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
+    {
+        for (auto buffer : desc.inputBuffers)
+            bufferBackend->BindBuffer(buffer);
+
+        BindDefaultInputLayout();
+    }
+
+    UnbindVertexArray();
+
+    return _context->Create<cRenderPassGPU>(_context, vertexArray, shader);
+}
+
+void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* renderPass, cShader* customShader)
+{
+    cShader* shader = nullptr;
+    if (customShader == nullptr)
+        shader = renderPass->GetRenderPassGPU()->GetShader();
+    else
+        shader = customShader;
+
+    iGraphicsBufferBackend* bufferBackend = _context->GetBackend<iGraphicsBufferBackend>();
+    iGraphicsTextureBackend* textureBackend = _context->GetBackend<iGraphicsTextureBackend>();
+
+    BindShader(shader);
+    BindVertexArray(renderPass->GetRenderPassGPU()->GetVertexArray());
+    if (renderPass->GetRenderTarget() != nullptr)
+        BindRenderTarget(renderPass->GetRenderTarget());
+    else
+        UnbindRenderTarget();
+    Viewport(renderPass->GetViewport());
+    for (auto buffer : renderPass->GetInputBuffers())
+        bufferBackend->BindBufferNotVAO(buffer);
+    BindDepthMode(renderPass->GetDepthMode());
+    BindBlendMode(renderPass->GetBlendMode());
+    for (usize i = 0; i < renderPass->GetInputTextures().size(); i++)
+        textureBackend->BindTexture(shader, renderPass->GetInputTextureNames()[i].c_str(), renderPass->GetInputTextures()[i], i);
+}
+
+void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const cRenderPass* renderPass)
+{
+    iGraphicsBufferBackend* bufferBackend = _context->GetBackend<iGraphicsBufferBackend>();
+    iGraphicsTextureBackend* textureBackend = _context->GetBackend<iGraphicsTextureBackend>();
+
+    UnbindVertexArray();
+    if (renderPass->GetRenderTarget() != nullptr)
+        UnbindRenderTarget();
+    for (auto buffer : renderPass->GetInputBuffers())
+        bufferBackend->UnbindBuffer(buffer);
+    for (auto texture : renderPass->GetInputTextures())
+        textureBackend->UnbindTexture(texture);
+}
+
+void triton::cGraphicsPipelineBackendOGL::DestroyRenderPass(cRenderPassGPU* renderPass)
+{
+    glBindVertexArray(0);
+    DestroyVertexArray(renderPass->GetVertexArray());
+
+    DestroyShader(renderPass->GetShader());
+
+    _context->Destroy<cRenderPassGPU>(renderPass);
+}
+
+void triton::cGraphicsPipelineBackendOGL::BindDefaultInputLayout()
+{
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 32, (void*)12);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 32, (void*)20);
+}
+
+void triton::cGraphicsPipelineBackendOGL::BindDepthMode(const sDepthMode& blendMode)
+{
+    if (blendMode.useDepthTest == K_TRUE)
+        glEnable(GL_DEPTH_TEST);
+    else
+        glDisable(GL_DEPTH_TEST);
+
+    if (blendMode.useDepthWrite == K_TRUE)
+        glDepthMask(GL_TRUE);
+    else
+        glDepthMask(GL_FALSE);
+}
+
+void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const sBlendMode& blendMode)
+{
+    for (usize i = 0; i < blendMode.factorCount; i++)
+    {
+        GLuint srcFactor = GL_ZERO;
+        GLuint dstFactor = GL_ZERO;
+
+        switch (blendMode.srcFactors[i])
+        {
+            case cGraphics::eBlendFactor::ONE: srcFactor = GL_ONE; break;
+            case cGraphics::eBlendFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
+            case cGraphics::eBlendFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
+            case cGraphics::eBlendFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
+            case cGraphics::eBlendFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+        }
+
+        switch (blendMode.dstFactors[i])
+        {
+            case cGraphics::eBlendFactor::ONE: dstFactor = GL_ONE; break;
+            case cGraphics::eBlendFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
+            case cGraphics::eBlendFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
+            case cGraphics::eBlendFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
+            case cGraphics::eBlendFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+        }
+
+        glBlendFunci(i, srcFactor, dstFactor);
+    }
+}
+
+void triton::cGraphicsPipelineBackendOGL::Viewport(const sViewport& viewport)
+{
+    glViewport(viewport.rect.GetX(), viewport.rect.GetY(), viewport.rect.GetZ(), viewport.rect.GetW());
+}
