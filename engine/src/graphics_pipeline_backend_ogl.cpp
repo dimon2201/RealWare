@@ -649,7 +649,7 @@ void triton::cGraphicsPipelineBackendOGL::UpdateRenderTargetBuffers(cRenderTarge
     const std::vector<cTexture*> colorAttachments = renderTarget->GetColorAttachments();
     cTexture* depthAttachments = renderTarget->GetDepthAttachment();
     _context->Destroy<cRenderTarget>(renderTarget);
-    _context->Create<cRenderTarget>(_context, instance, colorAttachments, depthAttachments);
+    renderTarget = _context->Create<cRenderTarget>(_context, instance, colorAttachments, depthAttachments);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindRenderTarget(const cRenderTarget* renderTarget)

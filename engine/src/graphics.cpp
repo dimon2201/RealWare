@@ -640,7 +640,6 @@ void triton::cGraphics::ResizeRenderTargets(const glm::vec2& size)
     _opaque->ResizeViewport(size);
     _opaque->ResizeColorAttachments(size);
     _opaque->ResizeDepthAttachment(size);
-
     _transparent->ResizeViewport(size);
     _transparent->ResizeColorAttachments(size);
     cTexture* opaqueDepthAttachment = _opaque->GetRenderTarget()->GetDepthAttachment();
@@ -649,7 +648,7 @@ void triton::cGraphics::ResizeRenderTargets(const glm::vec2& size)
     _text->ResizeViewport(size);
 
     cRenderTarget* newOpaqueRenderTarget = _opaque->GetRenderTarget();
-    cRenderTarget* newTransparentRenderTarget = _opaque->GetRenderTarget();
+    cRenderTarget* newTransparentRenderTarget = _transparent->GetRenderTarget();
     gfxPipelineBackend->UpdateRenderTargetBuffers(newOpaqueRenderTarget);
     gfxPipelineBackend->UpdateRenderTargetBuffers(newTransparentRenderTarget);
     _opaque->SetRenderTarget(newOpaqueRenderTarget);
