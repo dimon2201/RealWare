@@ -14,7 +14,7 @@ Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 - PhysX 5.3 physics
 - OpenGL 4.3 rendering
 - OpenAL 1.1 sound
-- Assimp model loading
+- Assimp 3D model loading
 - Weighted blended order-independent transparency (WBOIT)
 - Single atlas for textures
 - User-defined GLSL shaders
