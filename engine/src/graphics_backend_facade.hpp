@@ -27,11 +27,23 @@ namespace triton
         TRITON_OBJECT(cGraphicsBackendFacade)
 
         iGraphicsResourceBackend* _resource = nullptr;
+        iGraphicsPipelineBackend* _pipeline = nullptr;
+        iGraphicsContextBackend* _context = nullptr;
+        iGraphicsDrawcallBackend* _drawcall = nullptr;
 
     public:
-        explicit cGraphicsBackendFacade(cContext* context, iGraphicsResourceBackend* resourceBackend);
+        explicit cGraphicsBackendFacade(
+            cContext* context,
+            iGraphicsResourceBackend* resourceBackend,
+            iGraphicsPipelineBackend* pipelineBackend,
+            iGraphicsContextBackend* contextBackend,
+            iGraphicsDrawcallBackend* drawcallBackend
+        );
         virtual ~cGraphicsBackendFacade() override = default;
 
         inline iGraphicsResourceBackend* GetResourceBackend() const { return _resource; }
+        inline iGraphicsPipelineBackend* GetPipelineBackend() const { return _pipeline; }
+        inline iGraphicsContextBackend* GetContextBackend() const { return _context; }
+        inline iGraphicsDrawcallBackend* GetDrawcallBackend() const { return _drawcall; }
     };
 }

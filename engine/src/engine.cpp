@@ -22,6 +22,7 @@
 #include "graphics_resource_backend_ogl.hpp"
 #include "graphics_pipeline_backend_ogl.hpp"
 #include "graphics_context_backend_ogl.hpp"
+#include "graphics_drawcall_backend_ogl.hpp"
 #include "audio_backend_oal.hpp"
 
 using namespace triton::ecs;
@@ -66,6 +67,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterBackend<iGraphicsResourceBackend>(new cGraphicsResourceBackendOGL(_context));
 	_context->RegisterBackend<iGraphicsPipelineBackend>(new cGraphicsPipelineBackendOGL(_context));
 	_context->RegisterBackend<iGraphicsContextBackend>(new cGraphicsContextBackendOGL(_context));
+	_context->RegisterBackend<iGraphicsDrawcallBackend>(new cGraphicsDrawcallBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 
 	// Register subsystems
@@ -77,7 +79,10 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	_context->RegisterSubsystem(new cGraphicsBackendFacade(
 		_context,
-		_context->GetBackend<iGraphicsResourceBackend>()
+		_context->GetBackend<iGraphicsResourceBackend>(),
+		_context->GetBackend<iGraphicsPipelineBackend>(),
+		_context->GetBackend<iGraphicsContextBackend>(),
+		_context->GetBackend<iGraphicsDrawcallBackend>()
 	));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
