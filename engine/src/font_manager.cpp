@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "font_manager.hpp"
-#include "graphics_backend_facade.hpp"
 #include "application.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"
@@ -10,6 +9,7 @@
 #include "input.hpp"
 #include "engine.hpp"
 #include "log.hpp"
+#include "graphics_resource_backend.hpp"
 
 using namespace types;
 

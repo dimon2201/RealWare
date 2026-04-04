@@ -4,10 +4,11 @@
 
 #include <unordered_map>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "graphics_backend_facade.hpp"
-#include "graphics_pipeline_backend.hpp"
 #include "category.hpp"
 #include "types.hpp"
+#include "graphics_resource_backend.hpp"
+#include "graphics_pipeline_backend.hpp"
+#include "graphics_drawcall_backend.hpp"
 
 namespace triton
 {
@@ -23,6 +24,7 @@ namespace triton
     class cRenderTarget;
     class cRenderPass;
     class cRenderPassGPU;
+    class cBuffer;
     struct sBuffer;
     struct sVertexArray;
     struct sRenderTarget;

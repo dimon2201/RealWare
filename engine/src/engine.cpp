@@ -14,7 +14,6 @@
 #include "event_manager.hpp"
 #include "gameobject_manager.hpp"
 #include "thread_manager.hpp"
-#include "graphics_backend_facade.hpp"
 #include "audio.hpp"
 #include "math.hpp"
 #include "ecs.hpp"
@@ -75,13 +74,6 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new cAudio(_context));
 	_context->RegisterSubsystem(new cTextureAtlas(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
-	_context->RegisterSubsystem(new cGraphicsBackendFacade(
-		_context,
-		_context->GetBackend<iGraphicsResourceBackend>(),
-		_context->GetBackend<iGraphicsPipelineBackend>(),
-		_context->GetBackend<iGraphicsContextBackend>(),
-		_context->GetBackend<iGraphicsDrawcallBackend>()
-	));
 	_context->RegisterSubsystem(new cTime(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
