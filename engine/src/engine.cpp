@@ -49,7 +49,6 @@ void triton::cEngine::Initialize()
 	// Register factories
 	_context->RegisterFactory<cInputWindow>();
 	_context->RegisterFactory<cStack<cInputWindow>>();
-
 	_context->RegisterFactory<cBuffer>();
 	_context->RegisterFactory<cTexture>();
 	_context->RegisterFactory<cRenderTarget>();
@@ -58,7 +57,6 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cRenderTarget>();
 	_context->RegisterFactory<cRenderPass>();
 	_context->RegisterFactory<cRenderPassGPU>();
-
 	_context->RegisterFactory<cDataBuffer>();
 	_context->RegisterFactory<cDataFile>();
 
@@ -84,6 +82,7 @@ void triton::cEngine::Initialize()
 		_context->GetBackend<iGraphicsContextBackend>(),
 		_context->GetBackend<iGraphicsDrawcallBackend>()
 	));
+	_context->RegisterSubsystem(new cTime(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
@@ -132,27 +131,12 @@ void triton::cEngine::Run()
 
 	_app->Setup();
 
-	//auto gfx = _context->GetSubsystem<cGraphics>();
-	//auto input = _context->GetSubsystem<cInput>();
+	auto gfx = _context->GetSubsystem<cGraphics>();
 	//auto camera = _context->GetSubsystem<cCameraSystem>();
-	//auto time = _context->GetSubsystem<cTime>();
+	auto time = _context->GetSubsystem<cTime>();
 	//auto physics = _context->GetSubsystem<cPhysics>();
 
-	//cInputWindow* window = _app->GetWindow();
-
-	//time->BeginFrame();
-
-	//while (window->GetRunState() == K_FALSE)
-	//{
-	//	time->Update();
-		// physics->Simulate(); TODO: physics simulation
-		// camera->OnFrameUpdate(); TODO: camera system per frame update
-	//	gfx->CompositeFinal();
-	//	window->SwapBuffers();
-	//	window->PollEvents();
-	//}
-
-	//time->EndFrame();
+	time->BeginFrame();
 
 	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
 	cInput* input = _context->GetSubsystem<cInput>();
@@ -169,6 +153,8 @@ void triton::cEngine::Run()
 			cInputWindow* window = windows->At(i);
 			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
 			{
+				// Window frame
+				gfx->CompositeFinal();
 				window->SwapBuffers();
 			}
 			else
@@ -181,6 +167,8 @@ void triton::cEngine::Run()
 
 		inputBackend->PollEvents();
 	}
+
+	time->EndFrame();
 
 	_app->Stop();
 }
