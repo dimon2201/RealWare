@@ -181,6 +181,9 @@ void triton::cGraphics::Initialize()
 
     cTextureAtlas* textureAtlas = _context->GetSubsystem<cTextureAtlas>();
 
+    sViewport viewport;
+    viewport.rect = cVector4(0.0f, 0.0f, windowSize.GetX(), windowSize.GetY());
+
     sRenderPassDescriptor opaqueRenderPassDesc;
     opaqueRenderPassDesc.inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
     opaqueRenderPassDesc.inputBuffers.emplace_back(cGraphics::GetVertexBuffer());
@@ -195,8 +198,7 @@ void triton::cGraphics::Initialize()
     opaqueRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::OPAQUE_PATH;
     opaqueRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     opaqueRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
-    // TODO: Overload constructors for cVector4
-    //opaqueRenderPassDesc.viewport = cVector4(0.0f, 0.0f, windowSize);
+    opaqueRenderPassDesc.viewport = viewport;
     opaqueRenderPassDesc.depthMode.useDepthTest = K_TRUE;
     opaqueRenderPassDesc.depthMode.useDepthWrite = K_TRUE;
     opaqueRenderPassDesc.blendMode.factorCount = 1;
@@ -217,8 +219,7 @@ void triton::cGraphics::Initialize()
     transparentRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::TRANSPARENT_PATH;
     transparentRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     transparentRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
-    // TODO: Overload constructors for cVector4
-    //transparentRenderPassDesc.viewport = cVector4(0.0f, 0.0f, windowSize);
+    transparentRenderPassDesc.viewport = viewport;
     transparentRenderPassDesc.depthMode.useDepthTest = K_TRUE;
     transparentRenderPassDesc.depthMode.useDepthWrite = K_FALSE;
     transparentRenderPassDesc.blendMode.factorCount = 2;
@@ -237,8 +238,7 @@ void triton::cGraphics::Initialize()
     textRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::TEXT_PATH;
     textRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     textRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
-    // TODO: Overload constructors for cVector4
-    //textRenderPassDesc.viewport = cVector4(0.0f, 0.0f, windowSize);
+    textRenderPassDesc.viewport = viewport;
     textRenderPassDesc.depthMode.useDepthTest = K_FALSE;
     textRenderPassDesc.depthMode.useDepthWrite = K_FALSE;
     textRenderPassDesc.renderTarget = _opaqueRenderTarget;
@@ -255,8 +255,7 @@ void triton::cGraphics::Initialize()
     compositeTransparentRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::TRANSPARENT_COMPOSITE_PATH;
     compositeTransparentRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     compositeTransparentRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
-    // TODO: Overload constructors for cVector4
-    //compositeTransparentRenderPassDesc.viewport = cVector4(0.0f, 0.0f, windowSize);
+    compositeTransparentRenderPassDesc.viewport = viewport;
     compositeTransparentRenderPassDesc.depthMode.useDepthTest = K_FALSE;
     compositeTransparentRenderPassDesc.depthMode.useDepthWrite = K_FALSE;
     compositeTransparentRenderPassDesc.blendMode.factorCount = 1;
@@ -274,8 +273,7 @@ void triton::cGraphics::Initialize()
     compositeFinalRenderPassDesc.shaderRenderPath = sRenderPassDescriptor::eRenderPath::QUAD_PATH;
     compositeFinalRenderPassDesc.shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
     compositeFinalRenderPassDesc.shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
-    // TODO: Overload constructors for cVector4
-    //compositeFinalRenderPassDesc.viewport = cVector4(0.0f, 0.0f, windowSize);
+    compositeFinalRenderPassDesc.viewport = viewport;
     compositeFinalRenderPassDesc.depthMode.useDepthTest = K_FALSE;
     compositeFinalRenderPassDesc.depthMode.useDepthWrite = K_FALSE;
     compositeFinalRenderPassDesc.blendMode.factorCount = 1;
