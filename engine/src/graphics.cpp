@@ -592,7 +592,7 @@ void triton::cGraphics::ClearGeometryBuffer()
     _indicesByteSize = 0;
 }
 
-void triton::cGraphics::ClearRenderPass(
+void triton::cGraphics::ClearRenderTarget(
     const cRenderPass* renderPass,
     types::boolean clearColor,
     usize bufferIndex,
@@ -612,7 +612,7 @@ void triton::cGraphics::ClearRenderPass(
     gfxPipelineBackend->UnbindRenderPass(renderPass);
 }
 
-void triton::cGraphics::ClearRenderPasses(const glm::vec4& clearColor, f32 clearDepth)
+void triton::cGraphics::ClearRenderTargets(const glm::vec4& clearColor, f32 clearDepth)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();

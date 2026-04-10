@@ -243,8 +243,8 @@ namespace triton
         void DestroyModel(sModel* model);
         
         void ClearGeometryBuffer();
-        void ClearRenderPass(const cRenderPass* renderPass, types::boolean clearColor, types::usize bufferIndex, const glm::vec4& color, types::boolean clearDepth, types::f32 depth);
-        void ClearRenderPasses(const glm::vec4& clearColor, types::f32 clearDepth);
+        void ClearRenderTarget(const cRenderPass* renderPass, types::boolean clearColor, types::usize bufferIndex, const glm::vec4& color, types::boolean clearDepth, types::f32 depth);
+        void ClearRenderTargets(const glm::vec4& clearColor, types::f32 clearDepth);
         void ResizeRenderTargets(const glm::vec2& size);
         void LoadShaderFiles(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc);
         void UpdateLights();
