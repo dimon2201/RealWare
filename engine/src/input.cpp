@@ -104,6 +104,14 @@ void triton::cInput::DestroyWindow(cInputWindow* window)
     _context->Destroy<cInputWindow>(window);
 }
 
+void triton::cInput::ResizeWindows(const cVector2& newSize)
+{
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
+
+    for (usize i = 0; i < _windows->GetSize(); i++)
+        input->ResizeWindow(_windows->At(i)->GetBackendWindow(), newSize);
+}
+
 triton::cVector2 triton::cInput::GetMonitorSize() const
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();

@@ -6,6 +6,7 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include "input_backend_glfw.hpp"
+#include "input.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
 #include "types.hpp"
@@ -192,11 +193,10 @@ void triton::cInputBackendGLFW::WindowFocusCallback(GLFWwindow* window, int focu
 void triton::cInputBackendGLFW::WindowSizeCallback(GLFWwindow* window, int width, int height)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-    iInputBackend* input = context->GetBackend<iInputBackend>();
     cGraphics* gfx = context->GetSubsystem<cGraphics>();
+    cInput* input = context->GetSubsystem<cInput>();
 
-    // FIXME: resize specific cInputWindow based on GLFWwindow
-    // input->ResizeWindow(ibw, cVector2(width, height));
+    input->ResizeWindows(cVector2(width, height));
 
     gfx->ResizeRenderTargets(glm::vec2(width, height));
 }

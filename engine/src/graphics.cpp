@@ -71,7 +71,7 @@ triton::cRenderPass::cRenderPass(cContext* context, const sRenderPassDescriptor&
 void triton::cRenderPass::ResizeViewport(const glm::vec2& size)
 {
     _desc.viewport.rect.SetZ(size.x);
-    _desc.viewport.rect.SetZ(size.y);
+    _desc.viewport.rect.SetW(size.y);
 }
 
 void triton::cRenderPass::ResizeColorAttachments(const glm::vec2& size)
@@ -101,8 +101,7 @@ void triton::cGraphics::Initialize()
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
     iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-    const cVector2 windowSize = cVector2(640, 480); // TODO: temporary window size
-    //app->GetWindows()->At(0)->GetSize();
+    const cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0)->GetSize();
 
     _maxOpaqueInstanceBufferByteSize = caps->maxRenderOpaqueInstanceCount * sizeof(sRenderInstance);
     _maxTransparentInstanceBufferByteSize = caps->maxRenderTransparentInstanceCount * sizeof(sRenderInstance);

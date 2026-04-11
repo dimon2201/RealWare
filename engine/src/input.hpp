@@ -35,6 +35,7 @@ namespace triton
         );
         void BindWindowContext(cInputWindow* window);
         void DestroyWindow(cInputWindow* window);
+        void ResizeWindows(const cVector2& newSize);
 
         cVector2 GetMonitorSize() const;
         inline types::boolean GetKeyPressed(types::qword keyCode) const;
