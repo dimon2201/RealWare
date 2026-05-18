@@ -26,7 +26,6 @@ namespace triton
     public:
         cWork() = default;
         explicit cWork(cBuffer* data, WorkFunction&& function);
-        ~cWork() = default;
 
         void Run();
         inline cBuffer* GetData() const { return _data; }
