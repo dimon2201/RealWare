@@ -13,7 +13,7 @@
 #include "time.hpp"
 #include "event_manager.hpp"
 #include "gameobject_manager.hpp"
-#include "thread_manager.hpp"
+#include "thread_subsystem.hpp"
 #include "audio.hpp"
 #include "math.hpp"
 #include "ecs.hpp"

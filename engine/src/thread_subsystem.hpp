@@ -33,7 +33,7 @@ namespace triton
         inline std::shared_ptr<TaskFunction> GetFunction() const { return _function; }
     };
 
-    class cThread : public iObject
+    class cThreadSubsystem : public iObject
     {
         TRITON_OBJECT(cThread)
 
@@ -45,8 +45,11 @@ namespace triton
         types::boolean _stop = types::K_FALSE;
 
     public:
-        explicit cThread(cContext* context, types::usize threadCount = std::thread::hardware_concurrency());
-        ~cThread();
+        explicit cThreadSubsystem(
+            cContext* context,
+            types::usize threadCount = std::thread::hardware_concurrency()
+        );
+        ~cThreadSubsystem();
         
         void Submit(cTask& task);
         void Pause();

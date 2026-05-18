@@ -15,7 +15,7 @@
 #include "texture_manager.hpp"
 #include "memory_pool.hpp"
 #include "event_manager.hpp"
-#include "thread_manager.hpp"
+#include "thread_subsystem.hpp"
 #include "input.hpp"
 #include "time.hpp"
 #include "log.hpp"

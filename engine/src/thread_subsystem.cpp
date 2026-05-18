@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include "application.hpp"
-#include "thread_manager.hpp"
+#include "thread_subsystem.hpp"
 #include "buffer.hpp"
 
 using namespace types;
@@ -19,7 +19,7 @@ void triton::cTask::Run()
         _function->operator()(_data);
 }
 
-triton::cThread::cThread(cContext* context, usize threadCount) : iObject(context), _stop(K_FALSE)
+triton::cThreadSubsystem::cThreadSubsystem(cContext* context, usize threadCount) : iObject(context), _stop(K_FALSE)
 {
     for (usize i = 0; i < threadCount; ++i)
     {
@@ -46,7 +46,7 @@ triton::cThread::cThread(cContext* context, usize threadCount) : iObject(context
     }
 }
 
-triton::cThread::~cThread()
+triton::cThreadSubsystem::~cThreadSubsystem()
 {
     Stop();
 
@@ -56,17 +56,17 @@ triton::cThread::~cThread()
         thread.join();
 }
 
-void triton::cThread::Pause()
+void triton::cThreadSubsystem::Pause()
 {
     _pause.store(K_TRUE);
 }
 
-void triton::cThread::Resume()
+void triton::cThreadSubsystem::Resume()
 {
     _pause.store(K_FALSE);
 }
 
-void triton::cThread::Submit(cTask& task)
+void triton::cThreadSubsystem::Submit(cTask& task)
 {
     {
         std::unique_lock<std::mutex> lock(_mtx);
@@ -76,7 +76,7 @@ void triton::cThread::Submit(cTask& task)
     _cv.notify_one();
 }
 
-void triton::cThread::Stop()
+void triton::cThreadSubsystem::Stop()
 {
     std::unique_lock<std::mutex> lock(_mtx);
     _stop = K_TRUE;
