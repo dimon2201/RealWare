@@ -35,7 +35,7 @@ namespace triton
 
     class cThreadSubsystem : public iObject
     {
-        TRITON_OBJECT(cThread)
+        TRITON_OBJECT(cThreadSubsystem)
 
         std::vector<std::thread> _threads = {};
         std::queue<cTask> _tasks = {};
