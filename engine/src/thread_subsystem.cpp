@@ -9,11 +9,14 @@
 
 using namespace types;
 
-triton::cTask::cTask(cBuffer* data, TaskFunction&& function) : _data(data), _function(std::make_shared<TaskFunction>(std::move(function)))
+triton::cWork::cWork(cBuffer* data, WorkFunction&& function)
+    :
+    _data(data),
+    _function(std::make_shared<WorkFunction>(std::move(function)))
 {
 }
 
-void triton::cTask::Run()
+void triton::cWork::Run()
 {
     if (_function)
         _function->operator()(_data);
@@ -31,7 +34,7 @@ triton::cThread::cThread(cThread::eType type) : _type(type)
                     if (_pause.load() == K_TRUE)
                         continue;
 
-                    cTask task;
+                    cWork task;
                     {
                         std::unique_lock<std::mutex> lock(_mtx);
                         _cv.wait(lock, [this] {
@@ -55,7 +58,7 @@ triton::cThread::~cThread()
     _thread.join();
 }
 
-void triton::cThread::SubmitWork(cTask& task)
+void triton::cThread::SubmitWork(cWork& task)
 {
     _tasks.emplace(task);
     _cv.notify_one();
@@ -75,7 +78,7 @@ triton::cThreadSubsystem::~cThreadSubsystem()
         _threads.at(i).Stop();
 }
 
-void triton::cThreadSubsystem::SubmitWork(cTask& task)
+void triton::cThreadSubsystem::SubmitWork(cWork& task)
 {
     _threads.at(_lastWorkThreadID).SubmitWork(task);
     _lastWorkThreadID = (_lastWorkThreadID + 1) % _threadCount;

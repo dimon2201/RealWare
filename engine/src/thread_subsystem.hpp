@@ -16,21 +16,21 @@ namespace triton
     class cApplication;
     class cBuffer;
 
-    using TaskFunction = std::function<void(cBuffer* const data)>;
+    using WorkFunction = std::function<void(cBuffer* const data)>;
 
-    class cTask
+    class cWork
     {
         cBuffer* _data = nullptr;
-        std::shared_ptr<TaskFunction> _function;
+        std::shared_ptr<WorkFunction> _function;
 
     public:
-        cTask() = default;
-        explicit cTask(cBuffer* data, TaskFunction&& function);
-        ~cTask() = default;
+        cWork() = default;
+        explicit cWork(cBuffer* data, WorkFunction&& function);
+        ~cWork() = default;
 
         void Run();
         inline cBuffer* GetData() const { return _data; }
-        inline std::shared_ptr<TaskFunction> GetFunction() const { return _function; }
+        inline std::shared_ptr<WorkFunction> GetFunction() const { return _function; }
     };
 
     class cThread
@@ -48,7 +48,7 @@ namespace triton
         std::thread _thread;
         std::atomic<types::boolean> _pause = types::K_FALSE;
         std::atomic<types::boolean> _stop = types::K_FALSE;
-        std::queue<cTask> _tasks = {};
+        std::queue<cWork> _tasks = {};
         static std::mutex _mtx;
         static std::condition_variable _cv;
 
@@ -63,7 +63,7 @@ namespace triton
         explicit cThread(cThread::eType type);
         ~cThread();
 
-        void SubmitWork(cTask& task);
+        void SubmitWork(cWork& task);
         inline void Pause() { _pause.store(types::K_TRUE); }
         inline void Resume() { _pause.store(types::K_FALSE); }
         inline void Stop()
@@ -88,6 +88,6 @@ namespace triton
         );
         ~cThreadSubsystem();
         
-        void SubmitWork(cTask& task);
+        void SubmitWork(cWork& task);
     };
 }
