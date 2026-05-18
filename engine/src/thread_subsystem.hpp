@@ -33,16 +33,36 @@ namespace triton
         inline std::shared_ptr<TaskFunction> GetFunction() const { return _function; }
     };
 
+    class cThread
+    {
+        enum class eType
+        {
+            NONE = 0,
+            RENDER,
+            WORKER
+        };
+
+        eType _type = eType::NONE;
+        std::thread _thread;
+        std::atomic<types::boolean> _pause = types::K_FALSE;
+        std::atomic<types::boolean> _stop = types::K_FALSE;
+        std::queue<cTask> _tasks = {};
+        static std::mutex _mtx;
+        static std::condition_variable _cv;
+
+        explicit cThread(cThread::eType type);
+        ~cThread();
+
+        inline void Pause() { _pause.store(types::K_TRUE); }
+        inline void Resume() { _pause.store(types::K_FALSE); }
+        inline void Stop() { _stop.store(types::K_TRUE); }
+    };
+
     class cThreadSubsystem : public iObject
     {
         TRITON_OBJECT(cThreadSubsystem)
 
         std::vector<std::thread> _threads = {};
-        std::queue<cTask> _tasks = {};
-        std::mutex _mtx;
-        std::condition_variable _cv;
-        std::atomic<types::boolean> _pause = types::K_FALSE;
-        types::boolean _stop = types::K_FALSE;
 
     public:
         explicit cThreadSubsystem(

@@ -19,6 +19,43 @@ void triton::cTask::Run()
         _function->operator()(_data);
 }
 
+triton::cThread::cThread(cThread::eType type) : _type(type)
+{
+    if (_type == eType::WORKER)
+    {
+        _thread = std::thread(
+            [this]
+            {
+                while (K_TRUE)
+                {
+                    if (_pause.load() == K_TRUE)
+                        continue;
+
+                    cTask task;
+                    {
+                        std::unique_lock<std::mutex> lock(_mtx);
+                        _cv.wait(lock, [this] {
+                            return !_tasks.empty() || _stop.load();
+                        });
+                        if (_stop.load() && _tasks.empty())
+                            return;
+                        task = _tasks.front();
+                        _tasks.pop();
+                    }
+                    task.Run();
+                }
+            }
+        );
+    }
+}
+
+triton::cThread::~cThread()
+{
+    Stop();
+    _cv.notify_all();
+    _thread.join();
+}
+
 triton::cThreadSubsystem::cThreadSubsystem(cContext* context, usize threadCount) : iObject(context), _stop(K_FALSE)
 {
     for (usize i = 0; i < threadCount; ++i)
