@@ -35,6 +35,7 @@ namespace triton
 
     class cThread
     {
+    public:
         enum class eType
         {
             NONE = 0,
@@ -42,6 +43,7 @@ namespace triton
             WORKER
         };
 
+    private:
         eType _type = eType::NONE;
         std::thread _thread;
         std::atomic<types::boolean> _pause = types::K_FALSE;
@@ -50,19 +52,34 @@ namespace triton
         static std::mutex _mtx;
         static std::condition_variable _cv;
 
+    public:
+        enum class eType
+        {
+            NONE = 0,
+            RENDER,
+            WORKER
+        };
+
         explicit cThread(cThread::eType type);
         ~cThread();
 
+        void SubmitWork(cTask& task);
         inline void Pause() { _pause.store(types::K_TRUE); }
         inline void Resume() { _pause.store(types::K_FALSE); }
-        inline void Stop() { _stop.store(types::K_TRUE); }
+        inline void Stop()
+        {
+            _stop.store(types::K_TRUE);
+            _cv.notify_all();
+        }
     };
 
     class cThreadSubsystem : public iObject
     {
         TRITON_OBJECT(cThreadSubsystem)
 
-        std::vector<std::thread> _threads = {};
+        std::vector<cThread> _threads = {};
+        types::usize _threadCount = 0;
+        types::usize _lastWorkThreadID = 0;
 
     public:
         explicit cThreadSubsystem(
@@ -71,9 +88,6 @@ namespace triton
         );
         ~cThreadSubsystem();
         
-        void Submit(cTask& task);
-        void Pause();
-        void Resume();
-        void Stop();
+        void SubmitWork(cTask& task);
     };
 }

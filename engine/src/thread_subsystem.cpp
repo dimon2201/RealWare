@@ -52,69 +52,31 @@ triton::cThread::cThread(cThread::eType type) : _type(type)
 triton::cThread::~cThread()
 {
     Stop();
-    _cv.notify_all();
     _thread.join();
 }
 
-triton::cThreadSubsystem::cThreadSubsystem(cContext* context, usize threadCount) : iObject(context), _stop(K_FALSE)
+void triton::cThread::SubmitWork(cTask& task)
 {
-    for (usize i = 0; i < threadCount; ++i)
-    {
-        _threads.emplace_back([this] {
-            while (K_TRUE)
-            {
-                if (_pause.load() == K_TRUE)
-                    continue;
+    _tasks.emplace(task);
+    _cv.notify_one();
+}
 
-                cTask task;
-                {
-                    std::unique_lock<std::mutex> lock(_mtx);
-                    _cv.wait(lock, [this] {
-                        return !_tasks.empty() || _stop;
-                    });
-                    if (_stop && _tasks.empty())
-                        return;
-                    task = _tasks.front();
-                    _tasks.pop();
-                }
-                task.Run();
-            }
-        });
-    }
+triton::cThreadSubsystem::cThreadSubsystem(cContext* context, usize threadCount)
+    : iObject(context),
+    _threadCount(threadCount)
+{
+    for (usize i = 0; i < _threadCount; ++i)
+        _threads.emplace_back(cThread(cThread::eType::WORKER));
 }
 
 triton::cThreadSubsystem::~cThreadSubsystem()
 {
-    Stop();
-
-    _cv.notify_all();
-
-    for (auto& thread : _threads)
-        thread.join();
+    for (usize i = 0; i < _threadCount; ++i)
+        _threads.at(i).Stop();
 }
 
-void triton::cThreadSubsystem::Pause()
+void triton::cThreadSubsystem::SubmitWork(cTask& task)
 {
-    _pause.store(K_TRUE);
-}
-
-void triton::cThreadSubsystem::Resume()
-{
-    _pause.store(K_FALSE);
-}
-
-void triton::cThreadSubsystem::Submit(cTask& task)
-{
-    {
-        std::unique_lock<std::mutex> lock(_mtx);
-        _tasks.emplace(task);
-    }
-
-    _cv.notify_one();
-}
-
-void triton::cThreadSubsystem::Stop()
-{
-    std::unique_lock<std::mutex> lock(_mtx);
-    _stop = K_TRUE;
+    _threads.at(_lastWorkThreadID).SubmitWork(task);
+    _lastWorkThreadID = (_lastWorkThreadID + 1) % _threadCount;
 }
