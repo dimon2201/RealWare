@@ -68,18 +68,20 @@ triton::cThreadSubsystem::cThreadSubsystem(cContext* context, usize threadCount)
     : iObject(context),
     _threadCount(threadCount)
 {
+    _pThreads = (cThread*)malloc(threadCount * sizeof(cThread));
     for (usize i = 0; i < _threadCount; ++i)
-        _threads.emplace_back(cThread(cThread::eType::WORKER));
+        new (&_pThreads[i]) cThread(cThread::eType::WORKER);
 }
 
 triton::cThreadSubsystem::~cThreadSubsystem()
 {
     for (usize i = 0; i < _threadCount; ++i)
-        _threads.at(i).Stop();
+        _pThreads[i].~cThread();
+    free(_pThreads);
 }
 
 void triton::cThreadSubsystem::SubmitWork(cWork& task)
 {
-    _threads.at(_lastWorkThreadID).SubmitWork(task);
+    _pThreads[_lastWorkThreadID].SubmitWork(task);
     _lastWorkThreadID = (_lastWorkThreadID + 1) % _threadCount;
 }

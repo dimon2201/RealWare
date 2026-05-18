@@ -53,13 +53,6 @@ namespace triton
         static std::condition_variable _cv;
 
     public:
-        enum class eType
-        {
-            NONE = 0,
-            RENDER,
-            WORKER
-        };
-
         explicit cThread(cThread::eType type);
         ~cThread();
 
@@ -77,7 +70,7 @@ namespace triton
     {
         TRITON_OBJECT(cThreadSubsystem)
 
-        std::vector<cThread> _threads = {};
+        cThread* _pThreads = nullptr;
         types::usize _threadCount = 0;
         types::usize _lastWorkThreadID = 0;
 
