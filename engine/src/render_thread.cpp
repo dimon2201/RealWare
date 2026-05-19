@@ -67,8 +67,7 @@ void triton::cRenderThread::ThreadFunction()
         }
 
         const cRenderThreadState& renderThreadState = _execution->GetRenderThreadStateBuffer()[frontIndex];
-		//gfx->CompositeFinal();
-		//window->SwapBuffers();
+		ExecuteFrameCommands(renderThreadState);
 	}
 
 	// Initialize graphics-related subsystems
@@ -80,4 +79,8 @@ void triton::cRenderThread::ThreadFunction()
 void triton::cRenderThread::NotifyThread()
 {
 	_cv.notify_one();
+}
+
+void triton::cRenderThread::ExecuteFrameCommands(const cRenderThreadState& renderThreadState)
+{
 }

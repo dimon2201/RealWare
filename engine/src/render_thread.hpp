@@ -40,6 +40,8 @@ namespace triton
 
 	class cRenderThread final : public cThread
 	{
+		TRITON_OBJECT(cRenderThread)
+
 		CEngineMultithreadedExecution* _execution = nullptr;
 		std::atomic<types::boolean> _initialized = types::K_FALSE;
 		std::mutex _threadMutex;
@@ -50,9 +52,12 @@ namespace triton
 		virtual ~cRenderThread() = default;
 
 		virtual void ThreadFunction() override;
-
 		void NotifyThread();
+		void ExecuteFrameCommands(const cRenderThreadState& renderThreadState);
 
-		inline types::boolean IsInitialized() const { return _initialized.load(); }
+		inline types::boolean IsInitialized() const
+		{
+			return _initialized.load();
+		}
 	};
 }
