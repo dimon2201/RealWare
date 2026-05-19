@@ -3,6 +3,8 @@
 #pragma once
 
 #include <unordered_map>
+#include <mutex>
+#include <condition_variable>
 #include "object.hpp"
 #include "input_window.hpp"
 #include "types.hpp"
@@ -14,7 +16,7 @@ namespace triton
 	class iApplication;
 	template <typename T>
 	class cStack;
-	class cThread;
+	class cRenderThread;
 
 	class cEngine final : public iObject
 	{
@@ -22,7 +24,9 @@ namespace triton
 
 		iApplication* _app = nullptr;
 		const sCapabilities* _caps = nullptr;
-		cThread* _renderThread = nullptr;
+		cRenderThread* _renderThread = nullptr;
+		std::mutex _threadMutex;
+		std::condition_variable _cv;
 
 	public:
 		explicit cEngine(cContext* context, iApplication* app);
@@ -31,6 +35,7 @@ namespace triton
 		void Initialize();
 		void Shutdown();
 		void Run();
+		void NotifyThread();
 
 		inline iApplication* GetApplication() const { return _app; }
 		inline const sCapabilities* GetCapabilities() const { return _caps; }

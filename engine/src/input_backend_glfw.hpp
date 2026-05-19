@@ -37,10 +37,8 @@ namespace triton
             const cVector2& size,
             types::boolean fullscreen
         ) override final;
-        virtual void BindWindowContext(sInputBackendWindow& window) override final;
         virtual void DestroyWindow(sInputBackendWindow& window) override final;
         virtual void ResizeWindow(sInputBackendWindow& window, const cVector2& size) override final;
-        virtual void SwapWindowBuffers(sInputBackendWindow& window) override final;
         virtual void PollEvents() override final;
         virtual void* GetWindowWin32Handle(sInputBackendWindow& window) override final;
         virtual triton::cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) override final;

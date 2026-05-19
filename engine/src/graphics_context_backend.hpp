@@ -3,6 +3,7 @@
 #pragma once
 
 #include "backend.hpp"
+#include "input_backend_window.hpp"
 
 namespace triton
 {
@@ -17,5 +18,7 @@ namespace triton
         virtual ~iGraphicsContextBackend() override = default;
 
         virtual void CreateGraphicsContext() = 0;
+        virtual void MakeWindowGraphicsContextCurrent(sInputBackendWindow& window) = 0;
+        virtual void SwapWindowBuffers(sInputBackendWindow& window) = 0;
     };
 }

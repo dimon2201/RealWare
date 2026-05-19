@@ -62,11 +62,6 @@ triton::sInputBackendWindow triton::cInputBackendGLFW::CreatePlatformWindow(
     return ibw;
 }
 
-void triton::cInputBackendGLFW::BindWindowContext(sInputBackendWindow& window)
-{
-    glfwMakeContextCurrent((GLFWwindow*)window.instance);
-}
-
 void triton::cInputBackendGLFW::DestroyWindow(sInputBackendWindow& window)
 {
     if (window.instance == 0)
@@ -83,14 +78,6 @@ void triton::cInputBackendGLFW::ResizeWindow(sInputBackendWindow& window, const 
     window.size = cVector2(newSize.GetX(), newSize.GetY());
 }
 
-void triton::cInputBackendGLFW::SwapWindowBuffers(sInputBackendWindow& window)
-{
-    if (window.instance == 0)
-        return;
-
-    glfwSwapBuffers((GLFWwindow*)window.instance);
-}
-    
 void triton::cInputBackendGLFW::PollEvents()
 {
     glfwPollEvents();

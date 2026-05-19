@@ -85,8 +85,36 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cMath(_context));
 	//_context->RegisterSubsystem(new cECSSystem(_context));
 
-	// Create render thread
-	_renderThread = _context->Create<cRenderThread>(_context);
+	// Initialize subsystems
+	_context->GetSubsystem<cInput>()->Initialize();
+
+	/*
+	// _renderThread->Run()
+	void triton::cRenderThread::ThreadFunction()
+{
+	// Create graphics contexts for windows
+	cInput* inputSubsystem = _context->GetSubsystem<cInput>();
+	cStack<cInputWindow>* windows = inputSubsystem->GetWindows();
+	iGraphicsContextBackend* gfxContextBackend = _context->GetBackend<iGraphicsContextBackend>();
+	for (usize i = 0; i < windows->GetSize(); i++)
+	{
+		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->At(i)->GetBackendWindow());
+		gfxContextBackend->CreateGraphicsContext();
+	}
+
+	// Initialize graphics-related subsystems
+	// NOTE: order matters
+	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(2048, 2048, 16));
+	_context->GetSubsystem<cGraphics>()->Initialize();
+}
+	*/
+	cInput* inputSubsystem = _context->GetSubsystem<cInput>();
+	cStack<cInputWindow>* windows = inputSubsystem->GetWindows();
+	for (usize i = 0; i < windows->GetSize(); i++)
+	{
+		windows->At(i)->GetBackendWindow().fullscreen = 1;
+	}
+
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);
@@ -124,6 +152,16 @@ void triton::cEngine::Run()
 
 	_app->Setup();
 
+	// Create render thread
+	{
+		std::unique_lock<std::mutex> lock(_threadMutex);
+		_renderThread = _context->Create<cRenderThread>(_context, this);
+		_renderThread->Run();
+
+		// Wait until render thread gets initialized to continue main thread
+		_cv.wait(lock, [this] { return _renderThread->IsInitialized(); });
+	}
+
 	auto gfx = _context->GetSubsystem<cGraphics>();
 	//auto camera = _context->GetSubsystem<cCameraSystem>();
 	auto time = _context->GetSubsystem<cTime>();
@@ -133,10 +171,12 @@ void triton::cEngine::Run()
 
 	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
 	cInput* input = _context->GetSubsystem<cInput>();
-	cStack<cInputWindow>* windows = _context->GetSubsystem<cInput>()->GetWindows();
+	cStack<cInputWindow>* windows = input->GetWindows();
 	s32 windowCount = windows->GetSize();
 	for (;;)
 	{
+		inputBackend->PollEvents();
+
 		s32 windowCount = windows->GetSize();
 		if (windowCount == 0)
 			break;
@@ -144,24 +184,23 @@ void triton::cEngine::Run()
 		for (s32 i = windowCount - 1; i > -1; i--)
 		{
 			cInputWindow* window = windows->At(i);
-			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
-			{
-				// Window frame
-				gfx->CompositeFinal();
-				window->SwapBuffers();
-			}
-			else
+			if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
 			{
 				input->DestroyWindow(window);
-
 				windows->Erase(i);
 			}
 		}
-
-		inputBackend->PollEvents();
 	}
 
 	time->EndFrame();
 
+	// Stop render thread
+	_renderThread->Stop();
+
 	_app->Stop();
+}
+
+void triton::cEngine::NotifyThread()
+{
+	_cv.notify_one();
 }

@@ -17,5 +17,7 @@ namespace triton
         virtual ~cGraphicsContextBackendOGL() override final = default;
 
         virtual void CreateGraphicsContext() override final;
+        virtual void MakeWindowGraphicsContextCurrent(sInputBackendWindow& window) override final;
+        virtual void SwapWindowBuffers(sInputBackendWindow& window) override final;
     };
 }

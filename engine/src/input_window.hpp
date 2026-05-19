@@ -26,7 +26,6 @@ namespace triton
         explicit cInputWindow(cContext* context, const sInputBackendWindow& backendWindow);
         virtual ~cInputWindow() override final = default;
 
-        void SwapBuffers();
         types::boolean IsWindowFocused() const;
         eRunState GetRunState();
 

@@ -1,6 +1,7 @@
 // graphics_context_backend_ogl.cpp
 
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include "graphics_context_backend_ogl.hpp"
 #include "log.hpp"
 
@@ -40,4 +41,14 @@ void triton::cGraphicsContextBackendOGL::CreateGraphicsContext()
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(triton::GLDebugCallback, nullptr);
+}
+
+void triton::cGraphicsContextBackendOGL::MakeWindowGraphicsContextCurrent(sInputBackendWindow& window)
+{
+    glfwMakeContextCurrent((GLFWwindow*)window.instance);
+}
+
+void triton::cGraphicsContextBackendOGL::SwapWindowBuffers(sInputBackendWindow& window)
+{
+    glfwSwapBuffers((GLFWwindow*)window.instance);
 }

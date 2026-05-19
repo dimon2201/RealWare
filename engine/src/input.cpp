@@ -10,13 +10,6 @@ using namespace types;
 triton::cInputWindow::cInputWindow(cContext* context, const sInputBackendWindow& backendWindow)
     : iObject(context), _backendWindow(backendWindow) {}
     
-void triton::cInputWindow::SwapBuffers()
-{
-    iInputBackend* input = _context->GetBackend<iInputBackend>();
-
-    return input->SwapWindowBuffers(_backendWindow);
-}
-
 types::boolean triton::cInputWindow::IsWindowFocused() const
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
@@ -78,22 +71,12 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
 )
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
-    
-    iGraphicsContextBackend* gfxContextBackend = _context->GetBackend<iGraphicsContextBackend>();
     sInputBackendWindow ibw = input->CreatePlatformWindow(title, size, fullscreen);
-    input->BindWindowContext(ibw);
     input->SetWindowSwapInterval(1);
-    gfxContextBackend->CreateGraphicsContext();
 
     cInputWindow* window = _context->Create<cInputWindow>(_context, ibw);
 
     return window;
-}
-
-void triton::cInput::BindWindowContext(cInputWindow* window)
-{
-    iInputBackend* input = _context->GetBackend<iInputBackend>();
-    input->BindWindowContext(window->GetBackendWindow());
 }
 
 void triton::cInput::DestroyWindow(cInputWindow* window)
