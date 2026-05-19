@@ -23,6 +23,7 @@
 #include "graphics_context_backend_ogl.hpp"
 #include "graphics_drawcall_backend_ogl.hpp"
 #include "audio_backend_oal.hpp"
+#include "render_thread.hpp"
 
 using namespace triton::ecs;
 using namespace types;
@@ -75,6 +76,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new cTextureAtlas(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	_context->RegisterSubsystem(new cTime(_context));
+	_context->RegisterSubsystem(new cThreadSubsystem(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
@@ -83,11 +85,8 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cMath(_context));
 	//_context->RegisterSubsystem(new cECSSystem(_context));
 
-	// Initialize subsystems
-	// NOTE: order matters
-	_context->GetSubsystem<cInput>()->Initialize();
-	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(2048, 2048, 16));
-	_context->GetSubsystem<cGraphics>()->Initialize();
+	// Create render thread
+	_renderThread = _context->Create<cRenderThread>(_context);
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);
@@ -114,6 +113,8 @@ void triton::cEngine::Shutdown()
 	_context->GetSubsystem<cGraphics>()->Shutdown();
 	_context->GetSubsystem<cTextureAtlas>()->Shutdown();
 	_context->GetSubsystem<cInput>()->Shutdown();
+
+	_context->Destroy<cThread>(_renderThread);
 }
 
 void triton::cEngine::Run()

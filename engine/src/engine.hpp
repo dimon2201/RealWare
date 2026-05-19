@@ -14,6 +14,7 @@ namespace triton
 	class iApplication;
 	template <typename T>
 	class cStack;
+	class cThread;
 
 	class cEngine final : public iObject
 	{
@@ -21,6 +22,7 @@ namespace triton
 
 		iApplication* _app = nullptr;
 		const sCapabilities* _caps = nullptr;
+		cThread* _renderThread = nullptr;
 
 	public:
 		explicit cEngine(cContext* context, iApplication* app);

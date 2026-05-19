@@ -4,84 +4,113 @@
 
 #include <iostream>
 #include "application.hpp"
+#include "context.hpp"
+#include "graphics_context_backend.hpp"
 #include "thread_subsystem.hpp"
 #include "buffer.hpp"
 
 using namespace types;
 
-triton::cWork::cWork(cBuffer* data, WorkFunction&& function)
+triton::cWorkItem::cWorkItem(cDataBuffer* data, WorkFunction&& function)
     :
     _data(data),
     _function(std::make_shared<WorkFunction>(std::move(function)))
 {
 }
 
-void triton::cWork::Run()
+void triton::cWorkItem::Execute()
 {
     if (_function)
         _function->operator()(_data);
 }
 
-triton::cThread::cThread(cThread::eType type) : _type(type)
+triton::cWorkQueue::cWorkQueue(cContext* context, types::usize threadCount) : iObject(context), _threadCount(threadCount)
 {
-    if (_type == eType::WORKER)
-    {
-        _thread = std::thread(
-            [this]
-            {
-                while (K_TRUE)
-                {
-                    if (_pause.load() == K_TRUE)
-                        continue;
+}
 
-                    cWork task;
-                    {
-                        std::unique_lock<std::mutex> lock(_mtx);
-                        _cv.wait(lock, [this] {
-                            return !_tasks.empty() || _stop.load();
-                        });
-                        if (_stop.load() && _tasks.empty())
-                            return;
-                        task = _tasks.front();
-                        _tasks.pop();
-                    }
-                    task.Run();
-                }
-            }
-        );
+void triton::cWorkQueue::SubmitWorkItem(cWorkItem&& task)
+{
+    std::lock_guard<std::mutex> lock(_queueMutex);
+    _queue.emplace(std::move(task));
+}
+
+void triton::cWorkQueue::ProcessWorkItems()
+{
+    while (K_TRUE)
+    {
+        cWorkItem task;
+        {
+            std::unique_lock<std::mutex> lock(_queueMutex);
+            _cv.wait(lock, [this] {
+                return (!_queue.empty() && !_pause.load()) || _stop.load();
+            });
+            if (_stop.load() && _queue.empty())
+                return;
+            task = _queue.front();
+            _queue.pop();
+        }
+        task.Execute();
     }
+}
+
+triton::cThread::cThread(cContext* context) : iObject(context)
+{
 }
 
 triton::cThread::~cThread()
 {
     Stop();
-    _thread.join();
 }
 
-void triton::cThread::SubmitWork(cWork& task)
+types::boolean triton::cThread::Run()
 {
-    _tasks.emplace(task);
-    _cv.notify_one();
+    if (_handle.joinable())
+        return K_FALSE;
+
+    _handle = std::thread([this](){ ThreadFunction(); });
+    if (_handle.joinable())
+        return K_TRUE;
+    else
+        return K_FALSE;
+}
+
+void triton::cThread::Stop()
+{
+    if (_handle.joinable())
+        _handle.join();
+}
+
+triton::cWorkerThread::cWorkerThread(cContext* context, cWorkQueue* owner) : cThread(context), _owner(owner)
+{
+}
+
+void triton::cWorkerThread::ThreadFunction()
+{
+    _owner->ProcessWorkItems();
 }
 
 triton::cThreadSubsystem::cThreadSubsystem(cContext* context, usize threadCount)
-    : iObject(context),
-    _threadCount(threadCount)
+    : iObject(context)
 {
-    _pThreads = (cThread*)malloc(threadCount * sizeof(cThread));
-    for (usize i = 0; i < _threadCount; ++i)
-        new (&_pThreads[i]) cThread(cThread::eType::WORKER);
+    _workQueue = _context->Create<cWorkQueue>(_context, threadCount);
+    for (usize i = 0; i < threadCount; i++)
+        _workerThreads.push_back(_context->Create<cWorkerThread>(_context, _workQueue));
 }
 
 triton::cThreadSubsystem::~cThreadSubsystem()
 {
-    for (usize i = 0; i < _threadCount; ++i)
-        _pThreads[i].~cThread();
-    free(_pThreads);
+    for (usize i = 0; i < _workerThreads.size(); i++)
+        _context->Destroy<cWorkerThread>(_workerThreads.at(i));
+    _context->Destroy<cWorkQueue>(_workQueue);
 }
 
-void triton::cThreadSubsystem::SubmitWork(cWork& task)
+void triton::cThreadSubsystem::SubmitWorkItem(cWorkItem&& task)
 {
-    _pThreads[_lastWorkThreadID].SubmitWork(task);
-    _lastWorkThreadID = (_lastWorkThreadID + 1) % _threadCount;
+    _workQueue->SubmitWorkItem(std::move(task));
+}
+
+void triton::cThreadSubsystem::ExecuteWorkItems()
+{
+    for (usize i = 0; i < _workerThreads.size(); i++)
+        _workerThreads.at(i)->Run();
 }

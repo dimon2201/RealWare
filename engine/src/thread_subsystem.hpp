@@ -14,72 +14,90 @@
 namespace triton
 {
     class cApplication;
-    class cBuffer;
+    class cDataBuffer;
 
-    using WorkFunction = std::function<void(cBuffer* const data)>;
+    using WorkFunction = std::function<void(cDataBuffer* const data)>;
 
-    class cWork
+    class cWorkItem
     {
-        cBuffer* _data = nullptr;
+        cDataBuffer* _data = nullptr;
         std::shared_ptr<WorkFunction> _function;
 
     public:
-        cWork() = default;
-        explicit cWork(cBuffer* data, WorkFunction&& function);
+        cWorkItem() = default;
+        explicit cWorkItem(cDataBuffer* data, WorkFunction&& function);
 
-        void Run();
-        inline cBuffer* GetData() const { return _data; }
+        void Execute();
+        inline cDataBuffer* GetData() const { return _data; }
         inline std::shared_ptr<WorkFunction> GetFunction() const { return _function; }
     };
 
-    class cThread
+    class cWorkQueue final : public iObject
     {
+        TRITON_OBJECT(cWorkQueue)
+
+        types::usize _threadCount = 0;
+        std::queue<cWorkItem> _queue;
+        std::mutex _queueMutex;
+        std::condition_variable _cv;
+        std::atomic<types::boolean> _pause;
+        std::atomic<types::boolean> _stop;
+            
     public:
-        enum class eType
-        {
-            NONE = 0,
-            RENDER,
-            WORKER
-        };
+        explicit cWorkQueue(
+            cContext* context,
+            types::usize threadCount = std::thread::hardware_concurrency()
+        );
 
-    private:
-        eType _type = eType::NONE;
-        std::thread _thread;
-        std::atomic<types::boolean> _pause = types::K_FALSE;
-        std::atomic<types::boolean> _stop = types::K_FALSE;
-        std::queue<cWork> _tasks = {};
-        static std::mutex _mtx;
-        static std::condition_variable _cv;
+        void SubmitWorkItem(cWorkItem&& task);
+        void ProcessWorkItems();
+    };
+
+    class cThread : public iObject
+    {
+        TRITON_OBJECT(cThread)
+
+        std::thread _handle;
 
     public:
-        explicit cThread(cThread::eType type);
-        ~cThread();
+        explicit cThread(cContext* context);
+        virtual ~cThread();
 
-        void SubmitWork(cWork& task);
-        inline void Pause() { _pause.store(types::K_TRUE); }
-        inline void Resume() { _pause.store(types::K_FALSE); }
-        inline void Stop()
-        {
-            _stop.store(types::K_TRUE);
-            _cv.notify_all();
-        }
+        virtual void ThreadFunction() = 0;
+
+        types::boolean Run();
+        void Stop();
+    };
+
+    class cWorkerThread : public cThread
+    {
+        TRITON_OBJECT(cWorkerThread)
+
+        cWorkQueue* _owner = nullptr;
+
+    public:
+        explicit cWorkerThread(cContext* context, cWorkQueue* owner);
+
+        virtual void ThreadFunction() override;
     };
 
     class cThreadSubsystem : public iObject
     {
         TRITON_OBJECT(cThreadSubsystem)
 
-        cThread* _pThreads = nullptr;
-        types::usize _threadCount = 0;
-        types::usize _lastWorkThreadID = 0;
+        cWorkQueue* _workQueue = nullptr;
+        std::vector<cWorkerThread*> _workerThreads = {};
 
     public:
         explicit cThreadSubsystem(
             cContext* context,
             types::usize threadCount = std::thread::hardware_concurrency()
         );
-        ~cThreadSubsystem();
+        virtual ~cThreadSubsystem();
         
-        void SubmitWork(cWork& task);
+        void SubmitWorkItem(cWorkItem&& task);
+        void ExecuteWorkItems();
+
+        inline cWorkQueue* GetWorkQueue() const { return _workQueue; }
     };
 }
