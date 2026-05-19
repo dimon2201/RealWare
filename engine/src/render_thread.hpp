@@ -7,8 +7,8 @@
 
 namespace triton
 {
+	class XFrameRenderSubsystem;
 	class cInputWindow;
-	class CEngineMultithreadedExecution;
 	
 	enum class eRenderCommand
 	{
@@ -42,13 +42,13 @@ namespace triton
 	{
 		TRITON_OBJECT(cRenderThread)
 
-		CEngineMultithreadedExecution* _execution = nullptr;
+		XFrameRenderSubsystem* _frameRenderSubsystem = nullptr;
 		std::atomic<types::boolean> _initialized = types::K_FALSE;
 		std::mutex _threadMutex;
 		std::condition_variable _cv;
 
 	public:
-		explicit cRenderThread(cContext* context, CEngineMultithreadedExecution* execution);
+		explicit cRenderThread(cContext* context, XFrameRenderSubsystem* frameRenderSubsystem);
 		virtual ~cRenderThread() = default;
 
 		virtual void ThreadFunction() override;

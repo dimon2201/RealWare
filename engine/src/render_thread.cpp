@@ -7,6 +7,7 @@
 #include "texture_manager.hpp"
 #include "graphics.hpp"
 #include "graphics_context_backend.hpp"
+#include "frame_render_subsystem.hpp"
 
 using namespace types;
 
@@ -29,7 +30,7 @@ void triton::cRenderThreadState::PushCommand(eRenderCommand command, sRenderComm
 	_commandCount += 1;
 }
 
-triton::cRenderThread::cRenderThread(cContext* context, CEngineMultithreadedExecution* execution) : cThread(context), _execution(execution)
+triton::cRenderThread::cRenderThread(cContext* context, XFrameRenderSubsystem* frameRenderSubsystem) : cThread(context), _frameRenderSubsystem(frameRenderSubsystem)
 {
 	_initialized.store(K_FALSE);
 }
@@ -47,7 +48,7 @@ void triton::cRenderThread::ThreadFunction()
 	}
 
 	_initialized.store(K_TRUE);
-	_execution->NotifyMainThread();
+	_frameRenderSubsystem->NotifyMainThread();
 
 	// Initialize subsystems
 	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
@@ -60,13 +61,13 @@ void triton::cRenderThread::ThreadFunction()
         {
             std::unique_lock<std::mutex> lock(_threadMutex);
             _cv.wait(lock, [this] {
-                return _execution->IsFrameReady();
+                return _frameRenderSubsystem->IsFrameReady();
             });
-            frontIndex = _execution->GetFrontIndex();
-			_execution->MarkFrameReady(K_FALSE);
+            frontIndex = _frameRenderSubsystem->GetFrontIndex();
+			_frameRenderSubsystem->MarkFrameReady(K_FALSE);
         }
 
-        const cRenderThreadState& renderThreadState = _execution->GetRenderThreadStateBuffer()[frontIndex];
+        const cRenderThreadState& renderThreadState = _frameRenderSubsystem->GetRenderThreadStateBuffer()[frontIndex];
 		ExecuteFrameCommands(renderThreadState);
 	}
 

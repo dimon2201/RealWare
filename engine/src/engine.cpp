@@ -24,103 +24,10 @@
 #include "graphics_drawcall_backend_ogl.hpp"
 #include "audio_backend_oal.hpp"
 #include "render_thread.hpp"
+#include "frame_render_subsystem.hpp"
 
 using namespace triton::ecs;
 using namespace types;
-
-triton::CEngineMultithreadedExecution::CEngineMultithreadedExecution(cContext* context) : iObject(context)
-{
-	_frontIndex = 0; // render thread reads it
-	_backIndex = 1; // main thread writes it
-	_frameReady.store(K_FALSE);
-
-	// Create render thread
-	_renderThreadStateBuffer = (cRenderThreadState*)_context->GetMemoryAllocator()->Allocate(sizeof(cRenderThreadState) * 2, 64);
-	{
-		std::unique_lock<std::mutex> lock(_threadMutex);
-		_renderThread = _context->Create<cRenderThread>(_context, this);
-		_renderThread->Run();
-
-		// Wait until render thread gets initialized to continue main thread
-		_cv.wait(lock, [this] { return _renderThread->IsInitialized(); });
-	}
-}
-
-triton::CEngineMultithreadedExecution::~CEngineMultithreadedExecution()
-{
-	_context->GetMemoryAllocator()->Deallocate(_renderThreadStateBuffer);
-	_context->Destroy<cRenderThread>(_renderThread);
-}
-
-void triton::CEngineMultithreadedExecution::Run(IApplication* app)
-{
-	if (app == nullptr)
-		return;
-
-	app->Setup();
-
-	auto gfx = _context->GetSubsystem<cGraphics>();
-	//auto camera = _context->GetSubsystem<cCameraSystem>();
-	auto time = _context->GetSubsystem<cTime>();
-	//auto physics = _context->GetSubsystem<cPhysics>();
-
-	time->BeginFrame();
-
-	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
-	cInput* input = _context->GetSubsystem<cInput>();
-	cStack<cInputWindow>* windows = input->GetWindows();
-	s32 windowCount = windows->GetSize();
-	while (K_TRUE)
-	{
-		inputBackend->PollEvents();
-
-		s32 windowCount = windows->GetSize();
-		if (windowCount == 0)
-			break;
-
-		cRenderThreadState& renderThreadState = _renderThreadStateBuffer[_backIndex];
-		renderThreadState.Reset();
-
-		// Prepare frame for render thread
-		for (s32 i = windowCount - 1; i > -1; i--)
-		{
-			cInputWindow* window = windows->At(i);
-			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
-			{
-				// Fill render commands for render thread
-				renderThreadState.PushWindow(window);
-				sRenderCommandArgs args;
-				renderThreadState.PushCommand(eRenderCommand::CLEAR_SCREEN, std::move(args));
-			}
-			// Destroy window if needed
-			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
-			{
-				input->DestroyWindow(window);
-				windows->Erase(i);
-			}
-		}
-
-		// Publish frame
-		{
-			std::lock_guard<std::mutex> lock(_threadMutex);
-			std::swap(_frontIndex, _backIndex);
-			_frameReady.store(K_TRUE);
-		}
-		_renderThread->NotifyThread();
-	}
-
-	time->EndFrame();
-
-	// Stop render thread
-	_renderThread->Stop();
-
-	app->Stop();
-}
-
-void triton::CEngineMultithreadedExecution::NotifyMainThread()
-{
-	_cv.notify_one();
-}
 
 triton::cEngine::cEngine(cContext* context, IApplication* app) : iObject(context), _app(app)
 {
@@ -153,7 +60,6 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cRenderPassGPU>();
 	_context->RegisterFactory<cDataBuffer>();
 	_context->RegisterFactory<cDataFile>();
-	_context->RegisterFactory<CEngineMultithreadedExecution>();
 	_context->RegisterFactory<cRenderThread>();
 
 	// Register backends
@@ -166,6 +72,7 @@ void triton::cEngine::Initialize()
 
 	// Register subsystems
 	_context->RegisterSubsystem(this);
+	_context->RegisterSubsystem(new XFrameRenderSubsystem(_context));
 	_context->RegisterSubsystem(new cInput(_context));
 	_context->RegisterSubsystem(new cGraphics(_context));
 	_context->RegisterSubsystem(new cAudio(_context));
@@ -182,6 +89,7 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cECSSystem(_context));
 
 	// Initialize subsystems
+	_context->GetSubsystem<XFrameRenderSubsystem>()->Initialize();
 	_context->GetSubsystem<cInput>()->Initialize();
 
 	// Create systems
@@ -202,20 +110,17 @@ void triton::cEngine::Initialize()
 
 	// Create sound context
 	//cAudio* audio = _context->GetSubsystem<cAudio>();
-
-	_execution = _context->Create<CEngineMultithreadedExecution>(_context);
 }
 
 void triton::cEngine::Shutdown()
 {
-	_context->Destroy<CEngineMultithreadedExecution>(_execution);
-
 	_context->GetSubsystem<cGraphics>()->Shutdown();
 	_context->GetSubsystem<cTextureAtlas>()->Shutdown();
 	_context->GetSubsystem<cInput>()->Shutdown();
+	_context->GetSubsystem<XFrameRenderSubsystem>()->Shutdown();
 }
 
 void triton::cEngine::Run()
 {
-	_execution->Run(_app);
+	_context->GetSubsystem<XFrameRenderSubsystem>()->MainThreadFunction(_app);
 }
