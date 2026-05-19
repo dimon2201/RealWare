@@ -99,7 +99,7 @@ void triton::cGraphics::Initialize()
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
     const cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0)->GetSize();
 
@@ -971,7 +971,7 @@ void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geo
 
         const cTransform transform(&it);
 
-        iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+        IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
         const glm::vec2 windowSize = app->GetWindow()->GetSize();
         const glm::vec2 textPosition = glm::vec2((transform._position.x * 2.0f) - 1.0f, (transform._position.y * 2.0f) - 1.0f);
         const glm::vec2 textScale = glm::vec2(

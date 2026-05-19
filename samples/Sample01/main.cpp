@@ -7,10 +7,10 @@
 using namespace triton;
 using namespace types;
 
-class cMyApplication final : public iApplication
+class cMyApplication final : public IApplication
 {
 public:
-    cMyApplication(cContext* context, const sCapabilities* caps) : iApplication(context, caps)
+    cMyApplication(cContext* context, const sCapabilities* caps) : IApplication(context, caps)
     {
     }
 

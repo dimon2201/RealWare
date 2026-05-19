@@ -15,9 +15,9 @@ namespace triton
 {
     class cEngine;
 
-    class iApplication : public iObject
+    class IApplication : public iObject
     {
-        TRITON_OBJECT(iApplication)
+        TRITON_OBJECT(IApplication)
 
     protected:
         const sCapabilities* _caps = nullptr;
@@ -31,8 +31,8 @@ namespace triton
             MIDDLE
         };
 
-        explicit iApplication(cContext* context, const sCapabilities* caps);
-        virtual ~iApplication() override;
+        explicit IApplication(cContext* context, const sCapabilities* caps);
+        virtual ~IApplication() override;
 
         virtual void Setup() = 0;
         virtual void Stop() = 0;

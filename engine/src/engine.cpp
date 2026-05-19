@@ -52,7 +52,7 @@ triton::CEngineMultithreadedExecution::~CEngineMultithreadedExecution()
 	_context->Destroy<cRenderThread>(_renderThread);
 }
 
-void triton::CEngineMultithreadedExecution::Run(iApplication* app)
+void triton::CEngineMultithreadedExecution::Run(IApplication* app)
 {
 	if (app == nullptr)
 		return;
@@ -122,7 +122,7 @@ void triton::CEngineMultithreadedExecution::NotifyMainThread()
 	_cv.notify_one();
 }
 
-triton::cEngine::cEngine(cContext* context, iApplication* app) : iObject(context), _app(app)
+triton::cEngine::cEngine(cContext* context, IApplication* app) : iObject(context), _app(app)
 {
 	if (_app != nullptr)
 		_caps = _app->GetCapabilities();

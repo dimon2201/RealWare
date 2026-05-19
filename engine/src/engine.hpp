@@ -13,7 +13,7 @@ namespace triton
 {
 	struct sCapabilities;
 	class cContext;
-	class iApplication;
+	class IApplication;
 	template <typename T>
 	class cStack;
 	class cRenderThread;
@@ -35,7 +35,7 @@ namespace triton
 		explicit CEngineMultithreadedExecution(cContext* context);
 		virtual ~CEngineMultithreadedExecution();
 
-		void Run(iApplication* app);
+		void Run(IApplication* app);
 		void NotifyMainThread();
 
 		inline types::boolean IsFrameReady() const
@@ -68,19 +68,19 @@ namespace triton
 	{
 		TRITON_OBJECT(cEngine)
 
-		iApplication* _app = nullptr;
+		IApplication* _app = nullptr;
 		const sCapabilities* _caps = nullptr;
 		CEngineMultithreadedExecution* _execution = nullptr;
 
 	public:
-		explicit cEngine(cContext* context, iApplication* app);
+		explicit cEngine(cContext* context, IApplication* app);
 		virtual ~cEngine() override final;
 
 		void Initialize();
 		void Shutdown();
 		void Run();
 
-		inline iApplication* GetApplication() const { return _app; }
+		inline IApplication* GetApplication() const { return _app; }
 		inline const sCapabilities* GetCapabilities() const { return _caps; }
 	};
 }

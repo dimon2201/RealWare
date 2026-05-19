@@ -22,17 +22,17 @@
 
 using namespace types;
 
-triton::iApplication::iApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
+triton::IApplication::IApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
 {
     _engine = new cEngine(_context, this);
 }
 
-triton::iApplication::~iApplication()
+triton::IApplication::~IApplication()
 {
     delete _engine;
 }
 
-void triton::iApplication::Run()
+void triton::IApplication::Run()
 {
     _engine->Run();
 }

@@ -22,7 +22,7 @@ void triton::cCameraSystem::OnFrameUpdate() {}
     const cInput* input = _context->GetSubsystem<cInput>();
     const cTime* time = _context->GetSubsystem<cTime>();
     const cMath* math = _context->GetSubsystem<cMath>();
-    const iApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    const IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
 
     const f32 deltaTime = time->GetDeltaTime();
     const cWindow* window = app->GetWindow();
