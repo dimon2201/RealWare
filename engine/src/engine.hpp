@@ -17,6 +17,52 @@ namespace triton
 	template <typename T>
 	class cStack;
 	class cRenderThread;
+	class cRenderThreadState;
+
+	class CEngineMultithreadedExecution : public iObject
+	{
+		TRITON_OBJECT(CEngineMultithreadedExecution)
+
+		cRenderThreadState* _renderThreadStateBuffer = nullptr;
+		types::u32 _frontIndex = 0;
+		types::u32 _backIndex = 0;
+		std::atomic<types::boolean> _frameReady;
+		cRenderThread* _renderThread = nullptr;
+		std::mutex _threadMutex;
+		std::condition_variable _cv;
+
+	public:
+		explicit CEngineMultithreadedExecution(cContext* context);
+		virtual ~CEngineMultithreadedExecution();
+
+		void Run(iApplication* app);
+		void NotifyMainThread();
+
+		inline types::boolean IsFrameReady() const
+		{
+			return _frameReady.load();
+		}
+
+		inline types::u32 GetFrontIndex() const
+		{
+			return _frontIndex;
+		}
+
+		inline types::u32 GetBackIndex() const
+		{
+			return _backIndex;
+		}
+
+		inline void MarkFrameReady(types::boolean value)
+		{
+			_frameReady.store(value);
+		}
+		
+		inline cRenderThreadState* GetRenderThreadStateBuffer() const
+		{
+			return _renderThreadStateBuffer;
+		}
+	};
 
 	class cEngine final : public iObject
 	{
@@ -24,9 +70,7 @@ namespace triton
 
 		iApplication* _app = nullptr;
 		const sCapabilities* _caps = nullptr;
-		cRenderThread* _renderThread = nullptr;
-		std::mutex _threadMutex;
-		std::condition_variable _cv;
+		CEngineMultithreadedExecution* _execution = nullptr;
 
 	public:
 		explicit cEngine(cContext* context, iApplication* app);
@@ -35,7 +79,6 @@ namespace triton
 		void Initialize();
 		void Shutdown();
 		void Run();
-		void NotifyThread();
 
 		inline iApplication* GetApplication() const { return _app; }
 		inline const sCapabilities* GetCapabilities() const { return _caps; }

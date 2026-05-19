@@ -2,6 +2,7 @@
 
 #include "render_thread.hpp"
 #include "context.hpp"
+#include "engine.hpp"
 #include "input.hpp"
 #include "texture_manager.hpp"
 #include "graphics.hpp"
@@ -9,7 +10,26 @@
 
 using namespace types;
 
-triton::cRenderThread::cRenderThread(cContext* context, cEngine* engine) : cThread(context), _engine(engine)
+void triton::cRenderThreadState::Reset()
+{
+	_windowCount = 0;
+	_commandCount = 0;
+}
+
+void triton::cRenderThreadState::PushWindow(cInputWindow* window)
+{
+	_windows[_windowCount] = window;
+	_windowCount += 1;
+}
+
+void triton::cRenderThreadState::PushCommand(eRenderCommand command, sRenderCommandArgs&& args)
+{
+	_commands[_commandCount] = command;
+	_commandArgs[_commandCount] = args;
+	_commandCount += 1;
+}
+
+triton::cRenderThread::cRenderThread(cContext* context, CEngineMultithreadedExecution* execution) : cThread(context), _execution(execution)
 {
 	_initialized.store(K_FALSE);
 }
@@ -27,11 +47,26 @@ void triton::cRenderThread::ThreadFunction()
 	}
 
 	_initialized.store(K_TRUE);
+	_execution->NotifyMainThread();
 
-	_engine->NotifyThread();
+	// Initialize subsystems
+	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
+	_context->GetSubsystem<cGraphics>()->Initialize();
 
 	while (K_TRUE)
 	{
+        u32 frontIndex;
+
+        {
+            std::unique_lock<std::mutex> lock(_threadMutex);
+            _cv.wait(lock, [this] {
+                return _execution->IsFrameReady();
+            });
+            frontIndex = _execution->GetFrontIndex();
+			_execution->MarkFrameReady(K_FALSE);
+        }
+
+        const cRenderThreadState& renderThreadState = _execution->GetRenderThreadStateBuffer()[frontIndex];
 		//gfx->CompositeFinal();
 		//window->SwapBuffers();
 	}
@@ -40,4 +75,9 @@ void triton::cRenderThread::ThreadFunction()
 	// NOTE: order matters
 	//_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(2048, 2048, 16));
 	//_context->GetSubsystem<cGraphics>()->Initialize();
+}
+
+void triton::cRenderThread::NotifyThread()
+{
+	_cv.notify_one();
 }
