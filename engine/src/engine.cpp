@@ -89,8 +89,9 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cECSSystem(_context));
 
 	// Initialize subsystems
-	_context->GetSubsystem<XFrameRenderSubsystem>()->Initialize();
+	// NOTE: order matters
 	_context->GetSubsystem<cInput>()->Initialize();
+	_context->GetSubsystem<XFrameRenderSubsystem>()->Initialize();
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);
