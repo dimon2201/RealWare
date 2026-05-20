@@ -38,6 +38,8 @@ void triton::cRenderThread::ThreadFunction()
 	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
 	_context->GetSubsystem<cGraphics>()->Initialize();
 
+	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
+
 	while (K_TRUE)
 	{
         u32 frontIndex;
@@ -51,8 +53,11 @@ void triton::cRenderThread::ThreadFunction()
 			_renderSubsystem->MarkFrameReady(K_FALSE);
         }
 
-        const CRenderFrame& renderFrame = _renderSubsystem->GetRenderFrameBuffer()[frontIndex];
-		ExecuteRenderCommands(renderFrame);
+        CRenderFrame& renderFrame = _renderSubsystem->GetRenderFrameBuffer()[frontIndex];
+
+		MakeContextCurrent(renderFrame, gfxContextBackend);
+		ExecuteCommands(renderFrame, gfxDrawcallBackend);
+		Present(renderFrame, gfxContextBackend);
 	}
 
 	// Initialize graphics-related subsystems
@@ -66,6 +71,30 @@ void triton::cRenderThread::NotifyThread()
 	_cv.notify_one();
 }
 
-void triton::cRenderThread::ExecuteRenderCommands(const CRenderFrame& renderFrame)
+void triton::cRenderThread::MakeContextCurrent(const CRenderFrame& renderFrame, iGraphicsContextBackend* contextBackend)
 {
+	contextBackend->MakeWindowGraphicsContextCurrent(renderFrame.GetWindow()->GetBackendWindow());
+}
+
+void triton::cRenderThread::ExecuteCommands(CRenderFrame& renderFrame, iGraphicsDrawcallBackend* drawcallBackend)
+{
+	while (auto command = renderFrame.Pop())
+	{
+		switch (command->_command)
+		{
+		case ERenderCommand::CLEAR:
+			drawcallBackend->ClearColor(cVector4(
+				command->_args._argA,
+				command->_args._argB,
+				command->_args._argC,
+				command->_args._argD
+			));
+			break;
+		}
+	}
+}
+
+void triton::cRenderThread::Present(const CRenderFrame& renderFrame, iGraphicsContextBackend* contextBackend)
+{
+	contextBackend->SwapWindowBuffers(renderFrame.GetWindow()->GetBackendWindow());
 }

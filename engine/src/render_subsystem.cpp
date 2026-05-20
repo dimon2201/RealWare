@@ -33,8 +33,9 @@ void triton::XRenderSubsystem::Initialize(usize maxFrameCount)
 	// Create render thread
 	_frameBuffer = (CRenderFrame*)_context->GetMemoryAllocator()->Allocate(sizeof(CRenderFrame) * _maxFrameCount, 64);
 	
+	cInputWindow* window = _context->GetSubsystem<cInput>()->GetWindows()->At(0);
 	for (usize i = 0; i < _maxFrameCount; i++)
-		new (&_frameBuffer[i]) CRenderFrame();
+		new (&_frameBuffer[i]) CRenderFrame(window);
 	
 	{
 		std::unique_lock<std::mutex> lock(_threadMutex);
@@ -92,11 +93,6 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
 			{
 				// Fill frame
-				renderFrame.PushWindow(window);
-				SRenderCommand command;
-				command._command = ERenderCommand::CLEAR;
-				command._args = SRenderCommandArgs();
-				renderFrame.PushCommand(command);
 			}
 			// Destroy window if needed
 			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)

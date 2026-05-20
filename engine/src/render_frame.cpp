@@ -4,18 +4,22 @@
 
 void triton::CRenderFrame::Reset()
 {
-	while (!_windows.empty())
-		_windows.pop();
 	while (!_commands.empty())
 		_commands.pop();
-}
-
-void triton::CRenderFrame::PushWindow(cInputWindow* window)
-{
-	_windows.push(window);
 }
 
 void triton::CRenderFrame::PushCommand(const SRenderCommand& command)
 {
 	_commands.push(command);
+}
+
+std::optional<triton::SRenderCommand> triton::CRenderFrame::Pop()
+{
+	if (_commands.empty())
+		return std::nullopt;
+
+	SRenderCommand command = _commands.front();
+	_commands.pop();
+
+	return command;
 }

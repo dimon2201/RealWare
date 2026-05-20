@@ -3,6 +3,7 @@
 #pragma once
 
 #include <queue>
+#include <optional>
 #include "types.hpp"
 
 namespace triton
@@ -33,12 +34,19 @@ namespace triton
 
 	class CRenderFrame final
 	{
-		std::queue<cInputWindow*> _windows;
+		cInputWindow* _window = nullptr;
 		std::queue<SRenderCommand> _commands;
 
 	public:
+		explicit CRenderFrame(cInputWindow* window) : _window(window) {}
+
 		void Reset();
-		void PushWindow(cInputWindow* window);
 		void PushCommand(const SRenderCommand& command);
+		std::optional<SRenderCommand> Pop();
+
+		inline cInputWindow* GetWindow() const
+		{
+			return _window;
+		}
 	};
 }
