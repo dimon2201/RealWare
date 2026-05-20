@@ -5,7 +5,7 @@
 #include "object.hpp"
 #include "types.hpp"
 #include "render_frame.hpp"
-#include "assert_thread.hpp"
+#include "thread_guard.hpp"
 
 namespace triton
 {
@@ -17,6 +17,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XRenderSubsystem)
 
+		types::usize _frameCount = 0;
 		CRenderFrame* _frameBuffer = nullptr;
 		cRenderThread* _renderThread = nullptr;
 		types::u32 _frontIndex = 0;
@@ -30,7 +31,7 @@ namespace triton
 		explicit XRenderSubsystem(cContext* context);
 		virtual ~XRenderSubsystem() = default;
 
-		void Initialize();
+		void Initialize(types::usize frameCount);
 		void Shutdown();
 		void MainThreadFunction(IApplication* app);
 		void NotifyMainThread();

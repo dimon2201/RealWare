@@ -1,5 +1,7 @@
 // thread_guard.hpp
 
+#pragma once
+
 #include <thread>
 #include <atomic>
 #include <cassert>
