@@ -19,6 +19,12 @@ namespace triton
 		CRenderFrame _frames[2] = { CRenderFrame(nullptr),  CRenderFrame(nullptr) };
 	};
 
+	enum class EState
+	{
+		READY = 0,
+		CONSUMED
+	};
+
 	class XRenderSubsystem final : public iObject
 	{
 		TRITON_OBJECT(XRenderSubsystem)
@@ -27,8 +33,7 @@ namespace triton
 		cRenderThread* _renderThread = nullptr;
 		types::u32 _frontIndex = 0;
 		types::u32 _backIndex = 0;
-		types::boolean _frameReady;
-		types::boolean _frameConsumed;
+		EState _state = EState::CONSUMED;
 		std::mutex _threadMutex;
 		std::condition_variable _cv;
 		std::queue<SRenderCommand> _externalCommands;
@@ -43,17 +48,17 @@ namespace triton
 		void NotifyMainThread();
 		void PushCommand(const SRenderCommand& command);
 
-		inline types::boolean IsFrameReady()
+		inline EState GetState()
 		{
 			CThreadGuard::AssertRender();
 
-			types::boolean isReady;
+			EState state;
 			{
 				std::lock_guard<std::mutex> lock(_threadMutex);
-				isReady = _frameReady;
+				state = _state;
 			}
 
-			return isReady;
+			return state;
 		}
 
 		inline types::u32 GetFrontIndex() const
@@ -70,25 +75,23 @@ namespace triton
 			return _backIndex;
 		}
 
-		inline void PublishFrame()
+		inline void MarkFrameReady()
 		{
 			CThreadGuard::AssertMain();
 
 			{
 				std::lock_guard<std::mutex> lock(_threadMutex);
-				_frameReady = types::K_TRUE;
-				_frameConsumed = types::K_FALSE;
+				_state = EState::READY;
 			}
 		}
 
-		inline void ConsumeFrame()
+		inline void MarkFrameConsumed()
 		{
 			CThreadGuard::AssertRender();
 
 			{
 				std::lock_guard<std::mutex> lock(_threadMutex);
-				_frameReady = types::K_FALSE;
-				_frameConsumed = types::K_TRUE;
+				_state = EState::CONSUMED;
 			}
 		}
 

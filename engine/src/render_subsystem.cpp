@@ -18,8 +18,6 @@ triton::XRenderSubsystem::XRenderSubsystem(cContext* context) : iObject(context)
 
 	_frontIndex = 0; // render thread reads it
 	_backIndex = 1; // main thread writes it
-	_frameReady = K_FALSE;
-	_frameConsumed = K_TRUE;
 }
 
 void triton::XRenderSubsystem::Initialize()
@@ -81,14 +79,14 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 
 		{
 			std::unique_lock<std::mutex> lock(_threadMutex);
-			_cv.wait(lock, [this] { return _frameConsumed; });
+			_cv.wait(lock, [this] { return _state == EState::CONSUMED; });
 		}
 
 		CRenderFrame& renderFrame = _frameSwapChain._frames[_backIndex];
-		renderFrame.Reset();
+		//renderFrame.Reset();
 
 		// Prepare frame for render thread
-		for (s32 i = windowCount - 1; i > -1; i--)
+		/*for (s32 i = windowCount - 1; i > -1; i--)
 		{
 			cInputWindow* window = windows->At(i);
 			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
@@ -105,14 +103,14 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 				input->DestroyWindow(window);
 				windows->Erase(i);
 			}
-		}
+		}*/
 
 		// Publish frame
 		{
 			std::lock_guard<std::mutex> lock(_threadMutex);
 			std::swap(_frontIndex, _backIndex);
 		}
-		PublishFrame();
+		MarkFrameReady();
 		_renderThread->NotifyThread();
 	}
 

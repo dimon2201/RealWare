@@ -47,25 +47,21 @@ void triton::cRenderThread::ThreadFunction()
         {
             std::unique_lock<std::mutex> lock(_threadMutex);
             _cv.wait(lock, [this] {
-                return _renderSubsystem->IsFrameReady();
+                return _renderSubsystem->GetState() == EState::READY;
             });
             frontIndex = _renderSubsystem->GetFrontIndex();
         }
 
         CRenderFrame& renderFrame = _renderSubsystem->GetFrameSwapChain()->_frames[frontIndex];
 
-		MakeContextCurrent(renderFrame, gfxContextBackend);
-		ExecuteCommands(renderFrame, gfxDrawcallBackend);
-		Present(renderFrame, gfxContextBackend);
+		//MakeContextCurrent(renderFrame, gfxContextBackend);
+		//ExecuteCommands(renderFrame, gfxDrawcallBackend);
+		//Present(renderFrame, gfxContextBackend);
 
-		_renderSubsystem->ConsumeFrame();
+		_renderSubsystem->MarkFrameConsumed();
+
 		_renderSubsystem->NotifyMainThread();
 	}
-
-	// Initialize graphics-related subsystems
-	// NOTE: order matters
-	//_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(2048, 2048, 16));
-	//_context->GetSubsystem<cGraphics>()->Initialize();
 }
 
 void triton::cRenderThread::NotifyThread()
