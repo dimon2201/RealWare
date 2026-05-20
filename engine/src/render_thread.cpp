@@ -11,7 +11,7 @@
 
 using namespace types;
 
-triton::cRenderThread::cRenderThread(cContext* context, XRenderSubsystem* frameRenderSubsystem) : cThread(context), _renderSubsystem(frameRenderSubsystem)
+triton::cRenderThread::cRenderThread(cContext* context, XRenderSubsystem* renderSubsystem) : cThread(context), _renderSubsystem(renderSubsystem)
 {
 	_initialized.store(K_FALSE);
 }

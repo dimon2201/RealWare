@@ -21,7 +21,7 @@ namespace triton
 		std::condition_variable _cv;
 
 	public:
-		explicit cRenderThread(cContext* context, XRenderSubsystem* frameRenderSubsystem);
+		explicit cRenderThread(cContext* context, XRenderSubsystem* renderSubsystem);
 		virtual ~cRenderThread() = default;
 
 		virtual void ThreadFunction() override;
