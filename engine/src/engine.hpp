@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <thread>
 #include <unordered_map>
 #include <mutex>
 #include <condition_variable>
@@ -16,6 +17,8 @@ namespace triton
 	class IApplication;
 	template <typename T>
 	class cStack;
+
+	inline std::thread::id gMainThreadId = std::this_thread::get_id();
 
 	class cEngine final : public iObject
 	{

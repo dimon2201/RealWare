@@ -4,19 +4,18 @@
 
 void triton::CRenderFrame::Reset()
 {
-	_windowCount = 0;
-	_commandCount = 0;
+	while (!_windows.empty())
+		_windows.pop();
+	while (!_commands.empty())
+		_commands.pop();
 }
 
 void triton::CRenderFrame::PushWindow(cInputWindow* window)
 {
-	_windows[_windowCount] = window;
-	_windowCount += 1;
+	_windows.push(window);
 }
 
-void triton::CRenderFrame::PushCommand(ERenderCommand command, SRenderCommandArgs&& args)
+void triton::CRenderFrame::PushCommand(const SRenderCommand& command)
 {
-	_commands[_commandCount] = command;
-	_commandArgs[_commandCount] = args;
-	_commandCount += 1;
+	_commands.push(command);
 }

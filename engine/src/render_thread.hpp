@@ -3,6 +3,8 @@
 #pragma once
 
 #include <atomic>
+#include <cassert>
+#include <thread>
 #include "thread_subsystem.hpp"
 #include "render_frame.hpp"
 
@@ -10,7 +12,9 @@ namespace triton
 {
 	class XRenderSubsystem;
 	class cInputWindow;
-	
+
+	inline std::thread::id gRenderThreadId;
+
 	class cRenderThread final : public cThread
 	{
 		TRITON_OBJECT(cRenderThread)

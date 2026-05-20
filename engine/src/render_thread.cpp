@@ -8,6 +8,7 @@
 #include "graphics.hpp"
 #include "graphics_context_backend.hpp"
 #include "render_subsystem.hpp"
+#include "thread_guard.hpp"
 
 using namespace types;
 
@@ -18,6 +19,8 @@ triton::cRenderThread::cRenderThread(cContext* context, XRenderSubsystem* render
 
 void triton::cRenderThread::ThreadFunction()
 {
+	CThreadGuard::CaptureRenderThreadId();
+
 	// Create graphics contexts for windows
 	cInput* inputSubsystem = _context->GetSubsystem<cInput>();
 	cStack<cInputWindow>* windows = inputSubsystem->GetWindows();

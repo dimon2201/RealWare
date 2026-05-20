@@ -8,11 +8,14 @@
 #include "application.hpp"
 #include "input_backend.hpp"
 #include "input.hpp"
+#include "thread_guard.hpp"
 
 using namespace types;
 
 triton::XRenderSubsystem::XRenderSubsystem(cContext* context) : iObject(context)
 {
+	CThreadGuard::AssertMain();
+
 	_frontIndex = 0; // render thread reads it
 	_backIndex = 1; // main thread writes it
 	_frameReady.store(K_FALSE);
@@ -20,12 +23,14 @@ triton::XRenderSubsystem::XRenderSubsystem(cContext* context) : iObject(context)
 
 void triton::XRenderSubsystem::Initialize()
 {
+	CThreadGuard::AssertMain();
+
 	_frontIndex = 0; // render thread reads it
 	_backIndex = 1; // main thread writes it
 	_frameReady.store(K_FALSE);
 
 	// Create render thread
-	_renderFrameBuffer = (CRenderFrame*)_context->GetMemoryAllocator()->Allocate(sizeof(CRenderFrame) * 2, 64);
+	_frameBuffer = (CRenderFrame*)_context->GetMemoryAllocator()->Allocate(sizeof(CRenderFrame) * 2, 64);
 	{
 		std::unique_lock<std::mutex> lock(_threadMutex);
 		_renderThread = _context->Create<cRenderThread>(_context, this);
@@ -38,12 +43,16 @@ void triton::XRenderSubsystem::Initialize()
 
 void triton::XRenderSubsystem::Shutdown()
 {
-	_context->GetMemoryAllocator()->Deallocate(_renderFrameBuffer);
+	CThreadGuard::AssertMain();
+
+	_context->GetMemoryAllocator()->Deallocate(_frameBuffer);
 	_context->Destroy<cRenderThread>(_renderThread);
 }
 
 void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 {
+	CThreadGuard::AssertMain();
+
 	if (app == nullptr)
 		return;
 
@@ -68,7 +77,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		if (windowCount == 0)
 			break;
 
-		CRenderFrame& renderFrame = _renderFrameBuffer[_backIndex];
+		CRenderFrame& renderFrame = _frameBuffer[_backIndex];
 		renderFrame.Reset();
 
 		// Prepare frame for render thread
@@ -77,10 +86,12 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			cInputWindow* window = windows->At(i);
 			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
 			{
-				// Fill render commands for render thread
+				// Fill frame
 				renderFrame.PushWindow(window);
-				SRenderCommandArgs args;
-				renderFrame.PushCommand(ERenderCommand::CLEAR, std::move(args));
+				SRenderCommand command;
+				command._command = ERenderCommand::CLEAR;
+				command._args = SRenderCommandArgs();
+				renderFrame.PushCommand(command);
 			}
 			// Destroy window if needed
 			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
@@ -109,5 +120,14 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 
 void triton::XRenderSubsystem::NotifyMainThread()
 {
+	CThreadGuard::AssertRender();
+
 	_cv.notify_one();
+}
+
+void triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
+{
+	CThreadGuard::AssertMain();
+
+	_externalCommands.push(command);
 }

@@ -25,6 +25,7 @@
 #include "audio_backend_oal.hpp"
 #include "render_thread.hpp"
 #include "render_subsystem.hpp"
+#include "thread_guard.hpp"
 
 using namespace triton::ecs;
 using namespace types;
@@ -44,6 +45,8 @@ triton::cEngine::~cEngine()
 
 void triton::cEngine::Initialize()
 {
+	CThreadGuard::CaptureMainThreadId();
+
 	// Create memory allocator
 	_context->CreateMemoryAllocator();
 

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <queue>
 #include "types.hpp"
 
 namespace triton
@@ -23,17 +24,21 @@ namespace triton
 		types::cpuword _argD = 0;
 	};
 
+	class SRenderCommand
+	{
+	public:
+		ERenderCommand _command = ERenderCommand::NONE;
+		SRenderCommandArgs _args = {};
+	};
+
 	class CRenderFrame final
 	{
-		types::usize _windowCount = 0;
-		cInputWindow* _windows[8] = {};
-		types::usize _commandCount = 0;
-		ERenderCommand _commands[512] = {};
-		SRenderCommandArgs _commandArgs[512] = {};
+		std::queue<cInputWindow*> _windows;
+		std::queue<SRenderCommand> _commands;
 
 	public:
 		void Reset();
 		void PushWindow(cInputWindow* window);
-		void PushCommand(ERenderCommand command, SRenderCommandArgs&& args);
+		void PushCommand(const SRenderCommand& command);
 	};
 }
