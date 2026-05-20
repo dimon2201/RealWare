@@ -25,6 +25,7 @@ using namespace types;
 triton::IApplication::IApplication(cContext* context, const sCapabilities* caps) : iObject(context), _caps(caps)
 {
     _engine = new cEngine(_context, this);
+    _engine->Initialize();
 }
 
 triton::IApplication::~IApplication()

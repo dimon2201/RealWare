@@ -34,8 +34,6 @@ triton::cEngine::cEngine(cContext* context, IApplication* app) : iObject(context
 {
 	if (_app != nullptr)
 		_caps = _app->GetCapabilities();
-
-	Initialize();
 }
 
 triton::cEngine::~cEngine()
