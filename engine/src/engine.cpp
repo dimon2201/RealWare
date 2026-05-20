@@ -92,7 +92,7 @@ void triton::cEngine::Initialize()
 	// Initialize subsystems
 	// NOTE: order matters
 	_context->GetSubsystem<cInput>()->Initialize();
-	_context->GetSubsystem<XRenderSubsystem>()->Initialize(2);
+	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);

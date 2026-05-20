@@ -32,7 +32,7 @@ namespace triton
 		SRenderCommandArgs _args = {};
 	};
 
-	class CRenderFrame final
+	class alignas(64) CRenderFrame final
 	{
 		cInputWindow* _window = nullptr;
 		std::queue<SRenderCommand> _commands;
@@ -40,7 +40,7 @@ namespace triton
 	public:
 		explicit CRenderFrame(cInputWindow* window) : _window(window) {}
 
-		void Reset();
+		void Reset(cInputWindow* window = nullptr);
 		void PushCommand(const SRenderCommand& command);
 		std::optional<SRenderCommand> Pop();
 

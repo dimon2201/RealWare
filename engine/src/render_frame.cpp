@@ -2,8 +2,10 @@
 
 #include "render_frame.hpp"
 
-void triton::CRenderFrame::Reset()
+void triton::CRenderFrame::Reset(cInputWindow* window)
 {
+	if (window != nullptr)
+		_window = window;
 	while (!_commands.empty())
 		_commands.pop();
 }

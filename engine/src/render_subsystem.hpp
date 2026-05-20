@@ -13,16 +13,22 @@ namespace triton
 	class cRenderThread;
 	class CRenderFrame;
 
+	class SFrameSwapChain
+	{
+	public:
+		CRenderFrame _frames[2] = { CRenderFrame(nullptr),  CRenderFrame(nullptr) };
+	};
+
 	class XRenderSubsystem final : public iObject
 	{
 		TRITON_OBJECT(XRenderSubsystem)
 
-		types::usize _maxFrameCount = 0;
-		CRenderFrame* _frameBuffer = nullptr;
+		SFrameSwapChain _frameSwapChain = {};
 		cRenderThread* _renderThread = nullptr;
 		types::u32 _frontIndex = 0;
 		types::u32 _backIndex = 0;
-		std::atomic<types::boolean> _frameReady;
+		types::boolean _frameReady;
+		types::boolean _frameConsumed;
 		std::mutex _threadMutex;
 		std::condition_variable _cv;
 		std::queue<SRenderCommand> _externalCommands;
@@ -31,17 +37,23 @@ namespace triton
 		explicit XRenderSubsystem(cContext* context);
 		virtual ~XRenderSubsystem() = default;
 
-		void Initialize(types::usize maxFrameCount);
+		void Initialize();
 		void Shutdown();
 		void MainThreadFunction(IApplication* app);
 		void NotifyMainThread();
 		void PushCommand(const SRenderCommand& command);
 
-		inline types::boolean IsFrameReady() const
+		inline types::boolean IsFrameReady()
 		{
 			CThreadGuard::AssertRender();
 
-			return _frameReady.load();
+			types::boolean isReady;
+			{
+				std::lock_guard<std::mutex> lock(_threadMutex);
+				isReady = _frameReady;
+			}
+
+			return isReady;
 		}
 
 		inline types::u32 GetFrontIndex() const
@@ -58,18 +70,33 @@ namespace triton
 			return _backIndex;
 		}
 
-		inline void MarkFrameReady(types::boolean value)
+		inline void PublishFrame()
 		{
-			CThreadGuard::AssertRender();
+			CThreadGuard::AssertMain();
 
-			_frameReady.store(value);
+			{
+				std::lock_guard<std::mutex> lock(_threadMutex);
+				_frameReady = types::K_TRUE;
+				_frameConsumed = types::K_FALSE;
+			}
 		}
 
-		inline CRenderFrame* GetRenderFrameBuffer() const
+		inline void ConsumeFrame()
 		{
 			CThreadGuard::AssertRender();
 
-			return _frameBuffer;
+			{
+				std::lock_guard<std::mutex> lock(_threadMutex);
+				_frameReady = types::K_FALSE;
+				_frameConsumed = types::K_TRUE;
+			}
+		}
+
+		inline SFrameSwapChain* GetFrameSwapChain()
+		{
+			CThreadGuard::AssertRender();
+
+			return &_frameSwapChain;
 		}
 	};
 }

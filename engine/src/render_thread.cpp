@@ -50,14 +50,16 @@ void triton::cRenderThread::ThreadFunction()
                 return _renderSubsystem->IsFrameReady();
             });
             frontIndex = _renderSubsystem->GetFrontIndex();
-			_renderSubsystem->MarkFrameReady(K_FALSE);
         }
 
-        CRenderFrame& renderFrame = _renderSubsystem->GetRenderFrameBuffer()[frontIndex];
+        CRenderFrame& renderFrame = _renderSubsystem->GetFrameSwapChain()->_frames[frontIndex];
 
 		MakeContextCurrent(renderFrame, gfxContextBackend);
 		ExecuteCommands(renderFrame, gfxDrawcallBackend);
 		Present(renderFrame, gfxContextBackend);
+
+		_renderSubsystem->ConsumeFrame();
+		_renderSubsystem->NotifyMainThread();
 	}
 
 	// Initialize graphics-related subsystems
