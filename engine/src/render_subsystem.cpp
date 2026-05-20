@@ -21,19 +21,19 @@ triton::XRenderSubsystem::XRenderSubsystem(cContext* context) : iObject(context)
 	_frameReady.store(K_FALSE);
 }
 
-void triton::XRenderSubsystem::Initialize(usize frameCount)
+void triton::XRenderSubsystem::Initialize(usize maxFrameCount)
 {
 	CThreadGuard::AssertMain();
 
-	_frameCount = frameCount; // swapchain frame count
+	_maxFrameCount = maxFrameCount; // swapchain frame count
 	_frontIndex = 0; // render thread reads it
 	_backIndex = 1; // main thread writes it
 	_frameReady.store(K_FALSE);
 
 	// Create render thread
-	_frameBuffer = (CRenderFrame*)_context->GetMemoryAllocator()->Allocate(sizeof(CRenderFrame) * _frameCount, 64);
+	_frameBuffer = (CRenderFrame*)_context->GetMemoryAllocator()->Allocate(sizeof(CRenderFrame) * _maxFrameCount, 64);
 	
-	for (usize i = 0; i < _frameCount; i++)
+	for (usize i = 0; i < _maxFrameCount; i++)
 		new (&_frameBuffer[i]) CRenderFrame();
 	
 	{
