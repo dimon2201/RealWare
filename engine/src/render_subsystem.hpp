@@ -1,4 +1,4 @@
-// frame_render_susbsytem.hpp
+// render_susbsytem.hpp
 
 #include <mutex>
 #include <condition_variable>
@@ -9,13 +9,13 @@ namespace triton
 {
 	class IApplication;
 	class cRenderThread;
-	class cRenderThreadState;
+	class CRenderFrame;
 
-	class XFrameRenderSubsystem final : public iObject
+	class XRenderSubsystem final : public iObject
 	{
-		TRITON_OBJECT(XFrameRenderSubsystem)
+		TRITON_OBJECT(XRenderSubsystem)
 
-		cRenderThreadState* _renderThreadStateBuffer = nullptr;
+		CRenderFrame* _renderFrameBuffer = nullptr;
 		cRenderThread* _renderThread = nullptr;
 		types::u32 _frontIndex = 0;
 		types::u32 _backIndex = 0;
@@ -24,13 +24,14 @@ namespace triton
 		std::condition_variable _cv;
 
 	public:
-		explicit XFrameRenderSubsystem(cContext* context);
-		virtual ~XFrameRenderSubsystem() = default;
+		explicit XRenderSubsystem(cContext* context);
+		virtual ~XRenderSubsystem() = default;
 
 		void Initialize();
 		void Shutdown();
 		void MainThreadFunction(IApplication* app);
 		void NotifyMainThread();
+		void PushCommand();
 
 		inline types::boolean IsFrameReady() const
 		{
@@ -52,9 +53,9 @@ namespace triton
 			_frameReady.store(value);
 		}
 
-		inline cRenderThreadState* GetRenderThreadStateBuffer() const
+		inline CRenderFrame* GetRenderFrameBuffer() const
 		{
-			return _renderThreadStateBuffer;
+			return _renderFrameBuffer;
 		}
 	};
 }

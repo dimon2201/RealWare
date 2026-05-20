@@ -24,7 +24,7 @@
 #include "graphics_drawcall_backend_ogl.hpp"
 #include "audio_backend_oal.hpp"
 #include "render_thread.hpp"
-#include "frame_render_subsystem.hpp"
+#include "render_subsystem.hpp"
 
 using namespace triton::ecs;
 using namespace types;
@@ -72,7 +72,7 @@ void triton::cEngine::Initialize()
 
 	// Register subsystems
 	_context->RegisterSubsystem(this);
-	_context->RegisterSubsystem(new XFrameRenderSubsystem(_context));
+	_context->RegisterSubsystem(new XRenderSubsystem(_context));
 	_context->RegisterSubsystem(new cInput(_context));
 	_context->RegisterSubsystem(new cGraphics(_context));
 	_context->RegisterSubsystem(new cAudio(_context));
@@ -91,7 +91,7 @@ void triton::cEngine::Initialize()
 	// Initialize subsystems
 	// NOTE: order matters
 	_context->GetSubsystem<cInput>()->Initialize();
-	_context->GetSubsystem<XFrameRenderSubsystem>()->Initialize();
+	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);
@@ -118,10 +118,10 @@ void triton::cEngine::Shutdown()
 	_context->GetSubsystem<cGraphics>()->Shutdown();
 	_context->GetSubsystem<cTextureAtlas>()->Shutdown();
 	_context->GetSubsystem<cInput>()->Shutdown();
-	_context->GetSubsystem<XFrameRenderSubsystem>()->Shutdown();
+	_context->GetSubsystem<XRenderSubsystem>()->Shutdown();
 }
 
 void triton::cEngine::Run()
 {
-	_context->GetSubsystem<XFrameRenderSubsystem>()->MainThreadFunction(_app);
+	_context->GetSubsystem<XRenderSubsystem>()->MainThreadFunction(_app);
 }

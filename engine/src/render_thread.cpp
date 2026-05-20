@@ -7,30 +7,11 @@
 #include "texture_manager.hpp"
 #include "graphics.hpp"
 #include "graphics_context_backend.hpp"
-#include "frame_render_subsystem.hpp"
+#include "render_subsystem.hpp"
 
 using namespace types;
 
-void triton::cRenderThreadState::Reset()
-{
-	_windowCount = 0;
-	_commandCount = 0;
-}
-
-void triton::cRenderThreadState::PushWindow(cInputWindow* window)
-{
-	_windows[_windowCount] = window;
-	_windowCount += 1;
-}
-
-void triton::cRenderThreadState::PushCommand(eRenderCommand command, sRenderCommandArgs&& args)
-{
-	_commands[_commandCount] = command;
-	_commandArgs[_commandCount] = args;
-	_commandCount += 1;
-}
-
-triton::cRenderThread::cRenderThread(cContext* context, XFrameRenderSubsystem* frameRenderSubsystem) : cThread(context), _frameRenderSubsystem(frameRenderSubsystem)
+triton::cRenderThread::cRenderThread(cContext* context, XRenderSubsystem* frameRenderSubsystem) : cThread(context), _renderSubsystem(frameRenderSubsystem)
 {
 	_initialized.store(K_FALSE);
 }
@@ -48,7 +29,7 @@ void triton::cRenderThread::ThreadFunction()
 	}
 
 	_initialized.store(K_TRUE);
-	_frameRenderSubsystem->NotifyMainThread();
+	_renderSubsystem->NotifyMainThread();
 
 	// Initialize subsystems
 	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
@@ -61,14 +42,14 @@ void triton::cRenderThread::ThreadFunction()
         {
             std::unique_lock<std::mutex> lock(_threadMutex);
             _cv.wait(lock, [this] {
-                return _frameRenderSubsystem->IsFrameReady();
+                return _renderSubsystem->IsFrameReady();
             });
-            frontIndex = _frameRenderSubsystem->GetFrontIndex();
-			_frameRenderSubsystem->MarkFrameReady(K_FALSE);
+            frontIndex = _renderSubsystem->GetFrontIndex();
+			_renderSubsystem->MarkFrameReady(K_FALSE);
         }
 
-        const cRenderThreadState& renderThreadState = _frameRenderSubsystem->GetRenderThreadStateBuffer()[frontIndex];
-		ExecuteFrameCommands(renderThreadState);
+        const CRenderFrame& renderFrame = _renderSubsystem->GetRenderFrameBuffer()[frontIndex];
+		ExecuteRenderCommands(renderFrame);
 	}
 
 	// Initialize graphics-related subsystems
@@ -82,6 +63,6 @@ void triton::cRenderThread::NotifyThread()
 	_cv.notify_one();
 }
 
-void triton::cRenderThread::ExecuteFrameCommands(const cRenderThreadState& renderThreadState)
+void triton::cRenderThread::ExecuteRenderCommands(const CRenderFrame& renderFrame)
 {
 }

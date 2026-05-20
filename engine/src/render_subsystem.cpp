@@ -1,6 +1,6 @@
-// frame_render_susbsytem.cpp
+// render_susbsytem.cpp
 
-#include "frame_render_subsystem.hpp"
+#include "render_subsystem.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
 #include "time.hpp"
@@ -11,21 +11,21 @@
 
 using namespace types;
 
-triton::XFrameRenderSubsystem::XFrameRenderSubsystem(cContext* context) : iObject(context)
+triton::XRenderSubsystem::XRenderSubsystem(cContext* context) : iObject(context)
 {
 	_frontIndex = 0; // render thread reads it
 	_backIndex = 1; // main thread writes it
 	_frameReady.store(K_FALSE);
 }
 
-void triton::XFrameRenderSubsystem::Initialize()
+void triton::XRenderSubsystem::Initialize()
 {
 	_frontIndex = 0; // render thread reads it
 	_backIndex = 1; // main thread writes it
 	_frameReady.store(K_FALSE);
 
 	// Create render thread
-	_renderThreadStateBuffer = (cRenderThreadState*)_context->GetMemoryAllocator()->Allocate(sizeof(cRenderThreadState) * 2, 64);
+	_renderFrameBuffer = (CRenderFrame*)_context->GetMemoryAllocator()->Allocate(sizeof(CRenderFrame) * 2, 64);
 	{
 		std::unique_lock<std::mutex> lock(_threadMutex);
 		_renderThread = _context->Create<cRenderThread>(_context, this);
@@ -36,13 +36,13 @@ void triton::XFrameRenderSubsystem::Initialize()
 	}
 }
 
-void triton::XFrameRenderSubsystem::Shutdown()
+void triton::XRenderSubsystem::Shutdown()
 {
-	_context->GetMemoryAllocator()->Deallocate(_renderThreadStateBuffer);
+	_context->GetMemoryAllocator()->Deallocate(_renderFrameBuffer);
 	_context->Destroy<cRenderThread>(_renderThread);
 }
 
-void triton::XFrameRenderSubsystem::MainThreadFunction(IApplication* app)
+void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 {
 	if (app == nullptr)
 		return;
@@ -68,8 +68,8 @@ void triton::XFrameRenderSubsystem::MainThreadFunction(IApplication* app)
 		if (windowCount == 0)
 			break;
 
-		cRenderThreadState& renderThreadState = _renderThreadStateBuffer[_backIndex];
-		renderThreadState.Reset();
+		CRenderFrame& renderFrame = _renderFrameBuffer[_backIndex];
+		renderFrame.Reset();
 
 		// Prepare frame for render thread
 		for (s32 i = windowCount - 1; i > -1; i--)
@@ -78,9 +78,9 @@ void triton::XFrameRenderSubsystem::MainThreadFunction(IApplication* app)
 			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
 			{
 				// Fill render commands for render thread
-				renderThreadState.PushWindow(window);
-				sRenderCommandArgs args;
-				renderThreadState.PushCommand(eRenderCommand::CLEAR_SCREEN, std::move(args));
+				renderFrame.PushWindow(window);
+				SRenderCommandArgs args;
+				renderFrame.PushCommand(ERenderCommand::CLEAR, std::move(args));
 			}
 			// Destroy window if needed
 			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
@@ -107,7 +107,7 @@ void triton::XFrameRenderSubsystem::MainThreadFunction(IApplication* app)
 	app->Stop();
 }
 
-void triton::XFrameRenderSubsystem::NotifyMainThread()
+void triton::XRenderSubsystem::NotifyMainThread()
 {
 	_cv.notify_one();
 }
