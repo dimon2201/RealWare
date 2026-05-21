@@ -14,11 +14,13 @@ namespace triton
 	class iGraphicsContextBackend;
 	class iGraphicsDrawcallBackend;
 	class cInputWindow;
+	class XFrameSync;
 
 	class cRenderThread final : public cThread
 	{
 		TRITON_OBJECT(cRenderThread)
 
+		XFrameSync* _sync = nullptr;
 		XRenderSubsystem* _renderSubsystem = nullptr;
 		std::atomic<types::boolean> _initialized = types::K_FALSE;
 		std::mutex _threadMutex;
@@ -30,7 +32,7 @@ namespace triton
 		void Present(const CRenderFrame& renderFrame, iGraphicsContextBackend* contextBackend);
 
 	public:
-		explicit cRenderThread(cContext* context, XRenderSubsystem* renderSubsystem);
+		explicit cRenderThread(cContext* context, XFrameSync* sync, XRenderSubsystem* renderSubsystem);
 		virtual ~cRenderThread() = default;
 
 		virtual void ThreadFunction() override;

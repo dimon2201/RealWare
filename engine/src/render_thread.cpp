@@ -12,7 +12,7 @@
 
 using namespace types;
 
-triton::cRenderThread::cRenderThread(cContext* context, XRenderSubsystem* renderSubsystem) : cThread(context), _renderSubsystem(renderSubsystem)
+triton::cRenderThread::cRenderThread(cContext* context, XFrameSync* sync, XRenderSubsystem* renderSubsystem) : cThread(context), _sync(sync), _renderSubsystem(renderSubsystem)
 {
 	_initialized.store(K_FALSE);
 }
@@ -45,20 +45,23 @@ void triton::cRenderThread::ThreadFunction()
         u32 frontIndex;
 
         {
-            std::unique_lock<std::mutex> lock(_threadMutex);
+            std::unique_lock<std::mutex> lock(_sync->_mutex);
             _cv.wait(lock, [this] {
-                return _renderSubsystem->GetState() == EState::READY;
+                return _sync->_state == EState::READY;
             });
-            frontIndex = _renderSubsystem->GetFrontIndex();
+            //frontIndex = _renderSubsystem->GetFrontIndex();
         }
 
-        CRenderFrame& renderFrame = _renderSubsystem->GetFrameSwapChain()->_frames[frontIndex];
+        //CRenderFrame& renderFrame = _renderSubsystem->GetFrameSwapChain()->_frames[frontIndex];
 
 		//MakeContextCurrent(renderFrame, gfxContextBackend);
 		//ExecuteCommands(renderFrame, gfxDrawcallBackend);
 		//Present(renderFrame, gfxContextBackend);
 
-		_renderSubsystem->MarkFrameConsumed();
+		{
+			std::lock_guard<std::mutex> lock(_sync->_mutex);
+			_sync->_state = EState::CONSUMED;
+		}
 
 		_renderSubsystem->NotifyMainThread();
 	}

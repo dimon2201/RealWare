@@ -62,6 +62,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cDataBuffer>();
 	_context->RegisterFactory<cDataFile>();
 	_context->RegisterFactory<cRenderThread>();
+	_context->RegisterFactory<XFrameSync>();
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputBackendGLFW(_context));

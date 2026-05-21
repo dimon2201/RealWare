@@ -15,26 +15,25 @@ using namespace types;
 triton::XRenderSubsystem::XRenderSubsystem(cContext* context) : iObject(context)
 {
 	CThreadGuard::AssertMain();
-
-	_frontIndex = 0; // render thread reads it
-	_backIndex = 1; // main thread writes it
 }
 
 void triton::XRenderSubsystem::Initialize()
 {
 	CThreadGuard::AssertMain();
 
-	_frontIndex = 0; // render thread reads it
-	_backIndex = 1; // main thread writes it
+	_sync = _context->Create<XFrameSync>(_context);
+
+	_sync->_frontIndex = 0; // render thread reads it
+	_sync->_backIndex = 1; // main thread writes it
 
 	// Create render thread
 	cInputWindow* window = _context->GetSubsystem<cInput>()->GetWindows()->At(0);
 	for (usize i = 0; i < 2; i++)
-		_frameSwapChain._frames[i].Reset(window);
+		_sync->_frameSwapChain._frames[i].Reset(window);
 	
 	{
-		std::unique_lock<std::mutex> lock(_threadMutex);
-		_renderThread = _context->Create<cRenderThread>(_context, this);
+		std::unique_lock<std::mutex> lock(_sync->_mutex);
+		_renderThread = _context->Create<cRenderThread>(_context, _sync, this);
 		_renderThread->Run();
 
 		// Wait until render thread gets initialized to continue main thread
@@ -47,6 +46,7 @@ void triton::XRenderSubsystem::Shutdown()
 	CThreadGuard::AssertMain();
 
 	_context->Destroy<cRenderThread>(_renderThread);
+	_context->Destroy<XFrameSync>(_sync);
 }
 
 void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
@@ -78,11 +78,11 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			break;
 
 		{
-			std::unique_lock<std::mutex> lock(_threadMutex);
-			_cv.wait(lock, [this] { return _state == EState::CONSUMED; });
+			std::unique_lock<std::mutex> lock(_sync->_mutex);
+			_cv.wait(lock, [this] { return _sync->_state == EState::CONSUMED; });
 		}
 
-		CRenderFrame& renderFrame = _frameSwapChain._frames[_backIndex];
+		//CRenderFrame& renderFrame = _frameSwapChain._frames[_backIndex];
 		//renderFrame.Reset();
 
 		// Prepare frame for render thread
@@ -106,11 +106,16 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		}*/
 
 		// Publish frame
+		//{
+		//	std::lock_guard<std::mutex> lock(_threadMutex);
+		//	std::swap(_frontIndex, _backIndex);
+		//}
+		
 		{
-			std::lock_guard<std::mutex> lock(_threadMutex);
-			std::swap(_frontIndex, _backIndex);
+			std::lock_guard<std::mutex> lock(_sync->_mutex);
+			_sync->_state = EState::READY;
 		}
-		MarkFrameReady();
+
 		_renderThread->NotifyThread();
 	}
 
