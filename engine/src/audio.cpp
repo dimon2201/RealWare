@@ -13,6 +13,24 @@ using namespace types;
 using namespace triton::ecs;
 using namespace triton::ecs::components;
 
+struct sWAVHeader
+{
+	types::u8 _type[5] = {};
+	types::u8 _format[5] = {};
+	types::u8 _subchunk1ID[5] = {};
+	types::u8 _subchunk2ID[5] = {};
+	types::u32 _chunkSize = 0;
+	types::u32 _subchunk1Size = 0;
+	types::u32 _sampleRate = 0;
+	types::u32 _byteRate = 0;
+	types::u32 _subchunk2Size = 0;
+	types::u16 _audioFormat = 0;
+	types::u16 _numChannels = 0;
+	types::u16 _blockAlign = 0;
+	types::u16 _bitsPerSample = 0;
+	types::u32 _numSamples = 0;
+};
+
 triton::cAudio::cAudio(cContext* context) : cSystem(context) {}
 
 void triton::cAudio::OnFrameUpdate() {}
