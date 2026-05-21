@@ -82,11 +82,11 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			_cv.wait(lock, [this] { return _sync->_state == EFrameState::CONSUMED; });
 		}
 
-		//CRenderFrame& renderFrame = _frameSwapChain._frames[_backIndex];
-		//renderFrame.Reset();
+		CRenderFrame& renderFrame = _sync->_frameSwapChain._frames[_sync->_backIndex];
+		renderFrame.Reset();
 
 		// Prepare frame for render thread
-		/*for (s32 i = windowCount - 1; i > -1; i--)
+		for (s32 i = windowCount - 1; i > -1; i--)
 		{
 			cInputWindow* window = windows->At(i);
 			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
@@ -100,19 +100,17 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			// Destroy window if needed
 			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
 			{
+				renderFrame.Reset(nullptr, EFrameOperation::STOP_EXECUTION);
+
 				input->DestroyWindow(window);
 				windows->Erase(i);
 			}
-		}*/
+		}
 
 		// Publish frame
-		//{
-		//	std::lock_guard<std::mutex> lock(_threadMutex);
-		//	std::swap(_frontIndex, _backIndex);
-		//}
-		
 		{
 			std::lock_guard<std::mutex> lock(_sync->_mutex);
+			std::swap(_sync->_frontIndex, _sync->_backIndex);
 			_sync->_state = EFrameState::READY;
 		}
 

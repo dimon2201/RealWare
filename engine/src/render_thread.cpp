@@ -49,14 +49,16 @@ void triton::cRenderThread::ThreadFunction()
             _cv.wait(lock, [this] {
                 return _sync->_state == EFrameState::READY;
             });
-            //frontIndex = _renderSubsystem->GetFrontIndex();
+            frontIndex = _sync->_frontIndex;
         }
 
-        //CRenderFrame& renderFrame = _renderSubsystem->GetFrameSwapChain()->_frames[frontIndex];
+        CRenderFrame& renderFrame = _sync->_frameSwapChain._frames[_sync->_frontIndex];
+		if (renderFrame.GetOperation() == EFrameOperation::STOP_EXECUTION)
+			break;
 
-		//MakeContextCurrent(renderFrame, gfxContextBackend);
-		//ExecuteCommands(renderFrame, gfxDrawcallBackend);
-		//Present(renderFrame, gfxContextBackend);
+		MakeContextCurrent(renderFrame, gfxContextBackend);
+		ExecuteCommands(renderFrame, gfxDrawcallBackend);
+		Present(renderFrame, gfxContextBackend);
 
 		{
 			std::lock_guard<std::mutex> lock(_sync->_mutex);

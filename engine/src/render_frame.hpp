@@ -18,6 +18,18 @@ namespace triton
 		CLEAR
 	};
 
+	enum class EFrameState
+	{
+		READY = 0,
+		CONSUMED
+	};
+
+	enum class EFrameOperation
+	{
+		PROCESS = 0,
+		STOP_EXECUTION
+	};
+
 	class SRenderCommandArgs
 	{
 	public:
@@ -36,15 +48,21 @@ namespace triton
 
 	class alignas(64) CRenderFrame final
 	{
+		EFrameOperation _op = EFrameOperation::PROCESS;
 		cInputWindow* _window = nullptr;
 		std::queue<SRenderCommand> _commands;
 
 	public:
 		explicit CRenderFrame(cInputWindow* window) : _window(window) {}
 
-		void Reset(cInputWindow* window = nullptr);
+		void Reset(cInputWindow* window = nullptr, EFrameOperation op = EFrameOperation::PROCESS);
 		void PushCommand(const SRenderCommand& command);
 		std::optional<SRenderCommand> Pop();
+
+		inline EFrameOperation GetOperation() const
+		{
+			return _op;
+		}
 
 		inline cInputWindow* GetWindow() const
 		{
@@ -56,12 +74,6 @@ namespace triton
 	{
 	public:
 		CRenderFrame _frames[2] = { CRenderFrame(nullptr),  CRenderFrame(nullptr) };
-	};
-
-	enum class EFrameState
-	{
-		READY = 0,
-		CONSUMED
 	};
 
 	class XFrameSync final : public iObject
