@@ -79,10 +79,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		if (windowCount == 0)
 			break;
 
-		{
-			std::unique_lock<std::mutex> lock(_sync->_mutex);
-			_cv.wait(lock, [this] { return _sync->_state == EFrameState::CONSUMED; });
-		}
+		_sync->WaitUntilConsumed(_cv);
 
 		// Prepare frame for render thread
 		for (s32 i = windowCount - 1; i > -1; i--)
@@ -99,7 +96,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			// Destroy window if needed
 			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
 			{
-				_sync->StopFrameExecution();
+				StopFrameExecution();
 
 				input->DestroyWindow(window);
 				windows->Erase(i);
@@ -108,12 +105,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 
 		_sync->CopyFrame();
 
-		// Publish frame
-		{
-			std::lock_guard<std::mutex> lock(_sync->_mutex);
-			std::swap(_sync->_frontIndex, _sync->_backIndex);
-			_sync->_state = EFrameState::READY;
-		}
+		_sync->Publish();
 
 		_renderThread->NotifyThread();
 	}
@@ -138,4 +130,11 @@ void triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
 	CThreadGuard::AssertMain();
 
 	_externalFrame.PushCommand(command);
+}
+
+void triton::XRenderSubsystem::StopFrameExecution()
+{
+	CThreadGuard::AssertMain();
+
+	_externalFrame.Reset(nullptr, EFrameOperation::STOP_EXECUTION);
 }

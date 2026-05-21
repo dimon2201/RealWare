@@ -35,13 +35,6 @@ void triton::XFrameSync::CopyFrame()
 	_frameSwapChain._frames[_backIndex] = _renderSubsystem->GetExternalFrame();
 }
 
-void triton::XFrameSync::StopFrameExecution()
-{
-	CThreadGuard::AssertMain();
-
-	_frameSwapChain._frames[_backIndex].Reset(nullptr, EFrameOperation::STOP_EXECUTION);
-}
-
 types::u32 triton::XFrameSync::WaitUntilReady(std::condition_variable& cv)
 {
 	std::unique_lock<std::mutex> lock(_mutex);
@@ -50,6 +43,12 @@ types::u32 triton::XFrameSync::WaitUntilReady(std::condition_variable& cv)
 	});
 
 	return _frontIndex;
+}
+
+void triton::XFrameSync::WaitUntilConsumed(std::condition_variable& cv)
+{
+	std::unique_lock<std::mutex> lock(_mutex);
+	cv.wait(lock, [this] { return _state == EFrameState::CONSUMED; });
 }
 
 std::optional<const triton::CRenderFrame*> triton::XFrameSync::AcquireFrame()
@@ -65,4 +64,11 @@ void triton::XFrameSync::Consume()
 {
 	std::lock_guard<std::mutex> lock(_mutex);
 	_state = EFrameState::CONSUMED;
+}
+
+void triton::XFrameSync::Publish()
+{
+	std::lock_guard<std::mutex> lock(_mutex);
+	std::swap(_frontIndex, _backIndex);
+	_state = EFrameState::READY;
 }

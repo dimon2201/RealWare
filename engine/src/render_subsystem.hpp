@@ -18,6 +18,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XRenderSubsystem)
 
+	private:
 		XFrameSync* _sync = nullptr;
 		cRenderThread* _renderThread = nullptr;
 		std::condition_variable _cv;
@@ -32,6 +33,7 @@ namespace triton
 		void MainThreadFunction(IApplication* app);
 		void NotifyMainThread();
 		void PushCommand(const SRenderCommand& command);
+		void StopFrameExecution();
 
 		inline CRenderFrame GetExternalFrame() const
 		{

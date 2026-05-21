@@ -95,10 +95,11 @@ namespace triton
 		virtual ~XFrameSync() = default;
 
 		void CopyFrame();
-		void StopFrameExecution();
 
 		types::u32 WaitUntilReady(std::condition_variable& cv);
+		void WaitUntilConsumed(std::condition_variable& cv);
 		std::optional<const CRenderFrame*> AcquireFrame();
 		void Consume();
+		void Publish();
 	};
 }
