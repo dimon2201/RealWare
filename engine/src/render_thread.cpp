@@ -48,11 +48,6 @@ void triton::cRenderThread::ThreadFunction()
 		if (_sync->CheckFrameSwapChain())
 			break;
 
-		{
-			std::lock_guard<std::mutex> lock(_sync->_mutex);
-			std::cout << _sync->_renderThreadSwapChainSnapshot._stopSync << std::endl;
-		}
-
 		const CRenderFrame* renderFrame = _sync->AcquireFrame();
 
 		MakeContextCurrent(renderFrame, gfxContextBackend);
