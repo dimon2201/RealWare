@@ -9,8 +9,6 @@
 #include "math.hpp"
 #include "types.hpp"
 
-struct GLFWwindow;
-
 namespace triton
 {
     class cEngine;
@@ -24,22 +22,21 @@ namespace triton
         cEngine* _engine = nullptr;
 
     public:
-        enum class eMouseButton
-        {
-            LEFT,
-            RIGHT,
-            MIDDLE
-        };
-
         explicit IApplication(cContext* context, const sCapabilities* caps);
         virtual ~IApplication() override;
 
         virtual void Setup() = 0;
         virtual void Stop() = 0;
-
         void Run();
 
-        inline const sCapabilities* GetCapabilities() const { return _caps; }
-        inline cEngine* GetEngine() const { return _engine; }
+        inline const sCapabilities* GetCapabilities() const
+        {
+            return _caps;
+        }
+
+        inline cEngine* GetEngine() const
+        {
+            return _engine;
+        }
     };
 }
