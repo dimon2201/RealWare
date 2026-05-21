@@ -14,33 +14,6 @@ namespace triton
 	class CRenderFrame;
 	class cContext;
 
-	class SFrameSwapChain
-	{
-	public:
-		CRenderFrame _frames[2] = { CRenderFrame(nullptr),  CRenderFrame(nullptr) };
-	};
-
-	enum class EState
-	{
-		READY = 0,
-		CONSUMED
-	};
-
-	class XFrameSync final : public iObject
-	{
-		TRITON_OBJECT(XFrameSync)
-
-	public:
-		SFrameSwapChain _frameSwapChain = {};
-		types::u32 _frontIndex = 0;
-		types::u32 _backIndex = 0;
-		EState _state = EState::CONSUMED;
-		std::mutex _mutex;
-
-		explicit XFrameSync(cContext* context) : iObject(context) {}
-		virtual ~XFrameSync() = default;
-	};
-
 	class XRenderSubsystem final : public iObject
 	{
 		TRITON_OBJECT(XRenderSubsystem)

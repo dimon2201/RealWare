@@ -79,7 +79,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 
 		{
 			std::unique_lock<std::mutex> lock(_sync->_mutex);
-			_cv.wait(lock, [this] { return _sync->_state == EState::CONSUMED; });
+			_cv.wait(lock, [this] { return _sync->_state == EFrameState::CONSUMED; });
 		}
 
 		//CRenderFrame& renderFrame = _frameSwapChain._frames[_backIndex];
@@ -113,7 +113,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		
 		{
 			std::lock_guard<std::mutex> lock(_sync->_mutex);
-			_sync->_state = EState::READY;
+			_sync->_state = EFrameState::READY;
 		}
 
 		_renderThread->NotifyThread();

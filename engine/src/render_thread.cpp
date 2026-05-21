@@ -47,7 +47,7 @@ void triton::cRenderThread::ThreadFunction()
         {
             std::unique_lock<std::mutex> lock(_sync->_mutex);
             _cv.wait(lock, [this] {
-                return _sync->_state == EState::READY;
+                return _sync->_state == EFrameState::READY;
             });
             //frontIndex = _renderSubsystem->GetFrontIndex();
         }
@@ -60,7 +60,7 @@ void triton::cRenderThread::ThreadFunction()
 
 		{
 			std::lock_guard<std::mutex> lock(_sync->_mutex);
-			_sync->_state = EState::CONSUMED;
+			_sync->_state = EFrameState::CONSUMED;
 		}
 
 		_renderSubsystem->NotifyMainThread();
