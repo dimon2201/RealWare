@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <queue>
+#include <vector>
 #include <optional>
 #include <mutex>
 #include "object.hpp"
@@ -11,11 +11,13 @@
 namespace triton
 {
 	class cInputWindow;
+	class XRenderSubsystem;
 
 	enum class ERenderCommand
 	{
 		NONE = 0,
-		CLEAR
+		RESIZE_RENDER_TARGETS,
+		CLEAR,
 	};
 
 	enum class EFrameState
@@ -26,7 +28,7 @@ namespace triton
 
 	enum class EFrameOperation
 	{
-		PROCESS = 0,
+		ACQUIRE = 0,
 		STOP_EXECUTION
 	};
 
@@ -48,16 +50,17 @@ namespace triton
 
 	class alignas(64) CRenderFrame final
 	{
-		EFrameOperation _op = EFrameOperation::PROCESS;
+		EFrameOperation _op = EFrameOperation::ACQUIRE;
 		cInputWindow* _window = nullptr;
-		std::queue<SRenderCommand> _commands;
+		std::vector<SRenderCommand> _commands;
+		mutable types::usize _nextCommandIndex = 0;
 
 	public:
 		explicit CRenderFrame(cInputWindow* window) : _window(window) {}
 
-		void Reset(cInputWindow* window = nullptr, EFrameOperation op = EFrameOperation::PROCESS);
+		void Reset(cInputWindow* window = nullptr, EFrameOperation op = EFrameOperation::ACQUIRE);
 		void PushCommand(const SRenderCommand& command);
-		std::optional<SRenderCommand> Pop();
+		std::optional<const SRenderCommand*> Next() const;
 
 		inline EFrameOperation GetOperation() const
 		{
@@ -80,14 +83,22 @@ namespace triton
 	{
 		TRITON_OBJECT(XFrameSync)
 
-	public:
+		XRenderSubsystem* _renderSubsystem = nullptr;
 		SFrameSwapChain _frameSwapChain = {};
 		types::u32 _frontIndex = 0;
 		types::u32 _backIndex = 0;
 		EFrameState _state = EFrameState::CONSUMED;
 		std::mutex _mutex;
 
-		explicit XFrameSync(cContext* context) : iObject(context) {}
+	public:
+		explicit XFrameSync(cContext* context, XRenderSubsystem* renderSubsystem) : iObject(context), _renderSubsystem(renderSubsystem) {}
 		virtual ~XFrameSync() = default;
+
+		void CopyFrame();
+		void StopFrameExecution();
+
+		types::u32 WaitUntilReady(std::condition_variable& cv);
+		std::optional<const CRenderFrame*> AcquireFrame();
+		void Consume();
 	};
 }

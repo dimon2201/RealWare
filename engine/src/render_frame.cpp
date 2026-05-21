@@ -1,29 +1,68 @@
 // render_frame.cpp
 
 #include "render_frame.hpp"
+#include "render_subsystem.hpp"
+#include "thread_guard.hpp"
 
 void triton::CRenderFrame::Reset(cInputWindow* window, EFrameOperation op)
 {
-	if (op != EFrameOperation::PROCESS)
+	if (op != EFrameOperation::ACQUIRE)
 		_op = op;
 	if (window != nullptr)
 		_window = window;
-	while (!_commands.empty())
-		_commands.pop();
+	_commands.shrink_to_fit();
+	_nextCommandIndex = 0;
 }
 
 void triton::CRenderFrame::PushCommand(const SRenderCommand& command)
 {
-	_commands.push(command);
+	_commands.push_back(command);
 }
 
-std::optional<triton::SRenderCommand> triton::CRenderFrame::Pop()
+std::optional<const triton::SRenderCommand*> triton::CRenderFrame::Next() const
 {
-	if (_commands.empty())
+	if (_nextCommandIndex >= _commands.size())
 		return std::nullopt;
 
-	SRenderCommand command = _commands.front();
-	_commands.pop();
+	return &_commands.data()[_nextCommandIndex++];
+}
 
-	return command;
+void triton::XFrameSync::CopyFrame()
+{
+	CThreadGuard::AssertMain();
+
+	_frameSwapChain._frames[_backIndex].Reset();
+	_frameSwapChain._frames[_backIndex] = _renderSubsystem->GetExternalFrame();
+}
+
+void triton::XFrameSync::StopFrameExecution()
+{
+	CThreadGuard::AssertMain();
+
+	_frameSwapChain._frames[_backIndex].Reset(nullptr, EFrameOperation::STOP_EXECUTION);
+}
+
+types::u32 triton::XFrameSync::WaitUntilReady(std::condition_variable& cv)
+{
+	std::unique_lock<std::mutex> lock(_mutex);
+	cv.wait(lock, [this] {
+		return _state == EFrameState::READY;
+	});
+
+	return _frontIndex;
+}
+
+std::optional<const triton::CRenderFrame*> triton::XFrameSync::AcquireFrame()
+{
+	const CRenderFrame* renderFrame = &_frameSwapChain._frames[_frontIndex];
+	if (renderFrame->GetOperation() == EFrameOperation::STOP_EXECUTION)
+		return std::nullopt;
+
+	return renderFrame;
+}
+
+void triton::XFrameSync::Consume()
+{
+	std::lock_guard<std::mutex> lock(_mutex);
+	_state = EFrameState::CONSUMED;
 }

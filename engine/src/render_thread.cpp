@@ -38,32 +38,25 @@ void triton::cRenderThread::ThreadFunction()
 	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
 	_context->GetSubsystem<cGraphics>()->Initialize();
 
+	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 
 	while (K_TRUE)
 	{
         u32 frontIndex;
 
-        {
-            std::unique_lock<std::mutex> lock(_sync->_mutex);
-            _cv.wait(lock, [this] {
-                return _sync->_state == EFrameState::READY;
-            });
-            frontIndex = _sync->_frontIndex;
-        }
+		_sync->WaitUntilReady(_cv);
 
-        CRenderFrame& renderFrame = _sync->_frameSwapChain._frames[_sync->_frontIndex];
-		if (renderFrame.GetOperation() == EFrameOperation::STOP_EXECUTION)
+		auto result = _sync->AcquireFrame();
+		if (!result)
 			break;
+		const CRenderFrame* renderFrame = *result;
 
 		MakeContextCurrent(renderFrame, gfxContextBackend);
-		ExecuteCommands(renderFrame, gfxDrawcallBackend);
+		ExecuteCommands(renderFrame, gfxDrawcallBackend, gfx);
 		Present(renderFrame, gfxContextBackend);
 
-		{
-			std::lock_guard<std::mutex> lock(_sync->_mutex);
-			_sync->_state = EFrameState::CONSUMED;
-		}
+		_sync->Consume();
 
 		_renderSubsystem->NotifyMainThread();
 	}
@@ -74,30 +67,38 @@ void triton::cRenderThread::NotifyThread()
 	_cv.notify_one();
 }
 
-void triton::cRenderThread::MakeContextCurrent(const CRenderFrame& renderFrame, iGraphicsContextBackend* contextBackend)
+void triton::cRenderThread::MakeContextCurrent(const CRenderFrame* renderFrame, iGraphicsContextBackend* contextBackend)
 {
-	contextBackend->MakeWindowGraphicsContextCurrent(renderFrame.GetWindow()->GetBackendWindow());
+	contextBackend->MakeWindowGraphicsContextCurrent(renderFrame->GetWindow()->GetBackendWindow());
 }
 
-void triton::cRenderThread::ExecuteCommands(CRenderFrame& renderFrame, iGraphicsDrawcallBackend* drawcallBackend)
+void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, cGraphics* gfx)
 {
-	while (auto command = renderFrame.Pop())
+	while (auto result = renderFrame->Next())
 	{
-		switch (command->_command)
+		const SRenderCommand* cmd = *result;
+
+		switch (cmd->_command)
 		{
+		case ERenderCommand::RESIZE_RENDER_TARGETS:
+			gfx->ResizeRenderTargets(glm::vec2(
+				cmd->_args._argA,
+				cmd->_args._argB
+			));
+			break;
 		case ERenderCommand::CLEAR:
 			drawcallBackend->ClearColor(cVector4(
-				command->_args._argA,
-				command->_args._argB,
-				command->_args._argC,
-				command->_args._argD
+				cmd->_args._argA,
+				cmd->_args._argB,
+				cmd->_args._argC,
+				cmd->_args._argD
 			));
 			break;
 		}
 	}
 }
 
-void triton::cRenderThread::Present(const CRenderFrame& renderFrame, iGraphicsContextBackend* contextBackend)
+void triton::cRenderThread::Present(const CRenderFrame* renderFrame, iGraphicsContextBackend* contextBackend)
 {
-	contextBackend->SwapWindowBuffers(renderFrame.GetWindow()->GetBackendWindow());
+	contextBackend->SwapWindowBuffers(renderFrame->GetWindow()->GetBackendWindow());
 }

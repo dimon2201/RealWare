@@ -15,6 +15,7 @@ namespace triton
 	class iGraphicsDrawcallBackend;
 	class cInputWindow;
 	class XFrameSync;
+	class cGraphics;
 
 	class cRenderThread final : public cThread
 	{
@@ -27,9 +28,9 @@ namespace triton
 		std::condition_variable _cv;
 
 		void NotifyThread();
-		void MakeContextCurrent(const CRenderFrame& renderFrame, iGraphicsContextBackend* contextBackend);
-		void ExecuteCommands(CRenderFrame& renderFrame, iGraphicsDrawcallBackend* drawcallBackend);
-		void Present(const CRenderFrame& renderFrame, iGraphicsContextBackend* contextBackend);
+		void MakeContextCurrent(const CRenderFrame* renderFrame, iGraphicsContextBackend* contextBackend);
+		void ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, cGraphics* gfx);
+		void Present(const CRenderFrame* renderFrame, iGraphicsContextBackend* contextBackend);
 
 	public:
 		explicit cRenderThread(cContext* context, XFrameSync* sync, XRenderSubsystem* renderSubsystem);

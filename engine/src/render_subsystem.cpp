@@ -21,11 +21,11 @@ void triton::XRenderSubsystem::Initialize()
 {
 	CThreadGuard::AssertMain();
 
-	_sync = _context->Create<XFrameSync>(_context);
+	_sync = _context->Create<XFrameSync>(_context, this);
 
 	_sync->_frontIndex = 0; // render thread reads it
 	_sync->_backIndex = 1; // main thread writes it
-
+	
 	// Create render thread
 	cInputWindow* window = _context->GetSubsystem<cInput>()->GetWindows()->At(0);
 	for (usize i = 0; i < 2; i++)
@@ -39,6 +39,8 @@ void triton::XRenderSubsystem::Initialize()
 		// Wait until render thread gets initialized to continue main thread
 		_cv.wait(lock, [this] { return _renderThread->IsInitialized(); });
 	}
+
+	_externalFrame.Reset(window);
 }
 
 void triton::XRenderSubsystem::Shutdown()
@@ -82,9 +84,6 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			_cv.wait(lock, [this] { return _sync->_state == EFrameState::CONSUMED; });
 		}
 
-		CRenderFrame& renderFrame = _sync->_frameSwapChain._frames[_sync->_backIndex];
-		renderFrame.Reset();
-
 		// Prepare frame for render thread
 		for (s32 i = windowCount - 1; i > -1; i--)
 		{
@@ -95,17 +94,19 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 				SRenderCommand cmd;
 				cmd._command = ERenderCommand::CLEAR;
 				cmd._args._argA = (cpuword)1.0f;
-				renderFrame.PushCommand(cmd);
+				PushCommand(cmd);
 			}
 			// Destroy window if needed
 			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
 			{
-				renderFrame.Reset(nullptr, EFrameOperation::STOP_EXECUTION);
+				_sync->StopFrameExecution();
 
 				input->DestroyWindow(window);
 				windows->Erase(i);
 			}
 		}
+
+		_sync->CopyFrame();
 
 		// Publish frame
 		{
@@ -136,5 +137,5 @@ void triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
 {
 	CThreadGuard::AssertMain();
 
-	_externalCommands.push(command);
+	_externalFrame.PushCommand(command);
 }

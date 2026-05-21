@@ -9,6 +9,7 @@
 #include "input.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
+#include "render_subsystem.hpp"
 #include "types.hpp"
 
 using namespace types;
@@ -180,12 +181,16 @@ void triton::cInputBackendGLFW::WindowFocusCallback(GLFWwindow* window, int focu
 void triton::cInputBackendGLFW::WindowSizeCallback(GLFWwindow* window, int width, int height)
 {
     cContext* context = (cContext*)glfwGetWindowUserPointer(window);
-    cGraphics* gfx = context->GetSubsystem<cGraphics>();
+    XRenderSubsystem* renderSubsystem = context->GetSubsystem<XRenderSubsystem>();
     cInput* input = context->GetSubsystem<cInput>();
 
     input->ResizeWindows(cVector2(width, height));
 
-    gfx->ResizeRenderTargets(glm::vec2(width, height));
+    SRenderCommand cmd;
+    cmd._command = ERenderCommand::RESIZE_RENDER_TARGETS;
+    cmd._args._argA = width;
+    cmd._args._argB = height;
+    renderSubsystem->PushCommand(cmd);
 }
 
 void triton::cInputBackendGLFW::CursorCallback(GLFWwindow* window, double xpos, double ypos)
