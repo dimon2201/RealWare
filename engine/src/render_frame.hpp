@@ -5,6 +5,7 @@
 #include <vector>
 #include <optional>
 #include <mutex>
+#include <tuple>
 #include "object.hpp"
 #include "types.hpp"
 
@@ -23,13 +24,7 @@ namespace triton
 	enum class EFrameState
 	{
 		READY = 0,
-		CONSUMED
-	};
-
-	enum class EFrameOperation
-	{
-		ACQUIRE = 0,
-		STOP_EXECUTION
+		BUSY
 	};
 
 	class SRenderCommandArgs
@@ -50,21 +45,23 @@ namespace triton
 
 	class alignas(64) CRenderFrame final
 	{
-		EFrameOperation _op = EFrameOperation::ACQUIRE;
+		types::u32 _indexInSwapChain = 0;
 		cInputWindow* _window = nullptr;
 		std::vector<SRenderCommand> _commands;
 		mutable types::usize _nextCommandIndex = 0;
 
 	public:
 		explicit CRenderFrame(cInputWindow* window) : _window(window) {}
+		CRenderFrame& operator=(const CRenderFrame& rhs) = delete;
 
-		void Reset(cInputWindow* window = nullptr, EFrameOperation op = EFrameOperation::ACQUIRE);
+		void Reset(cInputWindow* window = nullptr);
 		void PushCommand(const SRenderCommand& command);
 		std::optional<const SRenderCommand*> Next() const;
+		void CopyScratchFrame(types::u32 indexInSwapChain, CRenderFrame& scratchFrame);
 
-		inline EFrameOperation GetOperation() const
+		inline types::u32 GetIndexInSwapChain() const
 		{
-			return _op;
+			return _indexInSwapChain;
 		}
 
 		inline cInputWindow* GetWindow() const
@@ -73,10 +70,17 @@ namespace triton
 		}
 	};
 
-	class SFrameSwapChain
+	class SFrameDoubleBuffer
 	{
 	public:
-		CRenderFrame _frames[2] = { CRenderFrame(nullptr),  CRenderFrame(nullptr) };
+		CRenderFrame _frames[2] = { CRenderFrame(nullptr), CRenderFrame(nullptr) };
+	};
+
+	class SFrameDoubleBufferSnapshot
+	{
+	public:
+		types::boolean _stopSync = types::K_FALSE;
+		EFrameState _frames[2] = { EFrameState::READY, EFrameState::READY };
 	};
 
 	class XFrameSync final : public iObject
@@ -84,22 +88,21 @@ namespace triton
 		TRITON_OBJECT(XFrameSync)
 
 		XRenderSubsystem* _renderSubsystem = nullptr;
-		SFrameSwapChain _frameSwapChain = {};
-		types::u32 _frontIndex = 0;
-		types::u32 _backIndex = 0;
-		EFrameState _state = EFrameState::CONSUMED;
+		SFrameDoubleBuffer _swapChain = {};
+		SFrameDoubleBufferSnapshot _mainThreadSwapChainSnapshot = {};
+		SFrameDoubleBufferSnapshot _renderThreadSwapChainSnapshot = {};
 		std::mutex _mutex;
 
 	public:
 		explicit XFrameSync(cContext* context, XRenderSubsystem* renderSubsystem) : iObject(context), _renderSubsystem(renderSubsystem) {}
-		virtual ~XFrameSync() = default;
+		virtual ~XFrameSync() override = default;
 
-		void CopyFrame();
-
-		types::u32 WaitUntilReady(std::condition_variable& cv);
-		void WaitUntilConsumed(std::condition_variable& cv);
-		std::optional<const CRenderFrame*> AcquireFrame();
-		void Consume();
-		void Publish();
+		void WriteFrame();
+		void FreeFrame(types::u32 frameIndex);
+		void WaitMainThread(std::condition_variable& cv);
+		void WaitRenderThread(std::condition_variable& cv);
+		types::boolean CheckFrameSwapChain();
+		const triton::CRenderFrame* AcquireFrame();
+		void Stop();
 	};
 }

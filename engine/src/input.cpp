@@ -4,6 +4,7 @@
 #include "context.hpp"
 #include "input_backend.hpp"
 #include "graphics_context_backend.hpp"
+#include "thread_guard.hpp"
 
 using namespace types;
 

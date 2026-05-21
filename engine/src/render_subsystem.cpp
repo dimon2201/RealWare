@@ -23,13 +23,18 @@ void triton::XRenderSubsystem::Initialize()
 
 	_sync = _context->Create<XFrameSync>(_context, this);
 
-	_sync->_frontIndex = 0; // render thread reads it
-	_sync->_backIndex = 1; // main thread writes it
+	for (usize i = 0; i < 2; i++)
+	{
+		_sync->_mainThreadSwapChainSnapshot._frames[i] = EFrameState::READY;
+		_sync->_renderThreadSwapChainSnapshot._frames[i] = EFrameState::READY;
+	}
 	
 	// Create render thread
 	cInputWindow* window = _context->GetSubsystem<cInput>()->GetWindows()->At(0);
 	for (usize i = 0; i < 2; i++)
-		_sync->_frameSwapChain._frames[i].Reset(window);
+		_sync->_swapChain._frames[i].Reset(window);
+
+	_scratchFrame.Reset(window);
 	
 	{
 		std::unique_lock<std::mutex> lock(_sync->_mutex);
@@ -39,8 +44,6 @@ void triton::XRenderSubsystem::Initialize()
 		// Wait until render thread gets initialized to continue main thread
 		_cv.wait(lock, [this] { return _renderThread->IsInitialized(); });
 	}
-
-	_externalFrame.Reset(window);
 }
 
 void triton::XRenderSubsystem::Shutdown()
@@ -70,21 +73,21 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
 	cInput* input = _context->GetSubsystem<cInput>();
 	cStack<cInputWindow>* windows = input->GetWindows();
+	cInputWindow* window = windows->At(0);
 	s32 windowCount = windows->GetSize();
 	while (K_TRUE)
 	{
 		inputBackend->PollEvents();
 
+		_sync->WaitMainThread(_cv);
+
 		s32 windowCount = windows->GetSize();
 		if (windowCount == 0)
 			break;
 
-		_sync->WaitUntilConsumed(_cv);
-
 		// Prepare frame for render thread
 		for (s32 i = windowCount - 1; i > -1; i--)
 		{
-			cInputWindow* window = windows->At(i);
 			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
 			{
 				// Fill frame
@@ -96,19 +99,20 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			// Destroy window if needed
 			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
 			{
-				StopFrameExecution();
-
-				input->DestroyWindow(window);
+				// input->DestroyWindow(window);
 				windows->Erase(i);
+
+				Stop();
+				_renderThread->NotifyThread();
+				break;
 			}
 		}
 
-		_sync->CopyFrame();
-
-		_sync->Publish();
-
+		_sync->WriteFrame();
 		_renderThread->NotifyThread();
 	}
+
+	input->DestroyWindow(window);
 
 	time->EndFrame();
 
@@ -129,12 +133,12 @@ void triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
 {
 	CThreadGuard::AssertMain();
 
-	_externalFrame.PushCommand(command);
+	_scratchFrame.PushCommand(command);
 }
 
-void triton::XRenderSubsystem::StopFrameExecution()
+void triton::XRenderSubsystem::Stop()
 {
 	CThreadGuard::AssertMain();
 
-	_externalFrame.Reset(nullptr, EFrameOperation::STOP_EXECUTION);
+	_sync->Stop();
 }

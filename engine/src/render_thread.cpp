@@ -43,20 +43,23 @@ void triton::cRenderThread::ThreadFunction()
 
 	while (K_TRUE)
 	{
-        u32 frontIndex;
-
-		_sync->WaitUntilReady(_cv);
-
-		auto result = _sync->AcquireFrame();
-		if (!result)
+		_sync->WaitRenderThread(_cv);
+		
+		if (_sync->CheckFrameSwapChain())
 			break;
-		const CRenderFrame* renderFrame = *result;
+
+		{
+			std::lock_guard<std::mutex> lock(_sync->_mutex);
+			std::cout << _sync->_renderThreadSwapChainSnapshot._stopSync << std::endl;
+		}
+
+		const CRenderFrame* renderFrame = _sync->AcquireFrame();
 
 		MakeContextCurrent(renderFrame, gfxContextBackend);
 		ExecuteCommands(renderFrame, gfxDrawcallBackend, gfx);
 		Present(renderFrame, gfxContextBackend);
 
-		_sync->Consume();
+		_sync->FreeFrame(renderFrame->GetIndexInSwapChain());
 
 		_renderSubsystem->NotifyMainThread();
 	}
