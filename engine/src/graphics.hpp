@@ -9,6 +9,8 @@
 #include "graphics_resource_backend.hpp"
 #include "graphics_pipeline_backend.hpp"
 #include "graphics_drawcall_backend.hpp"
+#include "graphics_buffer_formats.hpp"
+#include "geometry_view.hpp"
 
 namespace triton
 {
@@ -30,6 +32,7 @@ namespace triton
     struct sRenderTarget;
     struct sRenderPass;
     struct sShader;
+    class XGeometryStorage;
 
     using index = types::u32;
 
@@ -203,6 +206,8 @@ namespace triton
         cRenderTarget* _transparentRenderTarget = nullptr;
         types::usize _materialCountCPU = 0;
 
+        XGeometryStorage* _geometryStorage = nullptr;
+
 	public:
         enum class eAPI
         {
@@ -220,13 +225,7 @@ namespace triton
         // TODO: Remove material creation from cGraphics
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
         cVertexArray* CreateDefaultVertexArray();
-        sVertexBufferGeometry* CreateGeometry(
-            eCategory format,
-            types::usize verticesByteSize,
-            const types::u8* vertices,
-            types::usize indicesByteSize,
-            const types::u8* indices
-        );
+        SGeometryView CreateGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize);
         cRenderPass* CreateRenderPass(const sRenderPassDescriptor& desc);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);

@@ -20,6 +20,7 @@
 #include "log.hpp"
 #include "graphics.hpp"
 #include "input.hpp"
+#include "geometry_storage.hpp"
 #include "log.hpp"
 
 using namespace types;
@@ -96,31 +97,7 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
 
 void triton::cGraphics::Initialize()
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
-    const sCapabilities* caps = app->GetCapabilities();
-    const cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0)->GetSize();
-
-    _maxOpaqueInstanceBufferByteSize = caps->maxRenderOpaqueInstanceCount * sizeof(sRenderInstance);
-    _maxTransparentInstanceBufferByteSize = caps->maxRenderTransparentInstanceCount * sizeof(sRenderInstance);
-    _maxTextInstanceBufferByteSize = caps->maxRenderTextInstanceCount * sizeof(sRenderInstance);
-    _maxMaterialBufferByteSize = caps->maxRenderMaterialCount * sizeof(cMaterialInstance);
-    _maxLightBufferByteSize = caps->maxRenderLightCount * sizeof(sLightInstance);
-    _maxTextureAtlasTexturesBufferByteSize = caps->maxRenderTextureAtlasTextureCount * sizeof(sTextureAtlasTextureGPU);
-
-    _vertexBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::VERTEX, nullptr, caps->vertexBufferSize, 0);
-    _indexBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::INDEX, nullptr, caps->indexBufferSize, 0);
-    _opaqueInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxOpaqueInstanceBufferByteSize, 0);
-    _transparentInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTransparentInstanceBufferByteSize, 0);
-    _textInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextInstanceBufferByteSize, 0);
-    _opaqueMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
-    _textMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
-    _transparentMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxMaterialBufferByteSize, 1);
-    _lightBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxLightBufferByteSize, 2);
-    _opaqueTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextureAtlasTexturesBufferByteSize, 3);
-    _transparentTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::LARGE, nullptr, _maxTextureAtlasTexturesBufferByteSize, 3);
+    _geometryStorage->Initialize();
 
     _vertices = memoryAllocator->Allocate(caps->vertexBufferSize, caps->memoryAlignment);
     _verticesByteSize = 0;
@@ -284,6 +261,8 @@ void triton::cGraphics::Initialize()
 
 void triton::cGraphics::Shutdown()
 {
+    _geometryStorage->Free();
+
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
@@ -364,49 +343,9 @@ triton::cVertexArray* triton::cGraphics::CreateDefaultVertexArray()
     return vertexArray;
 }
 
-triton::sVertexBufferGeometry* triton::cGraphics::CreateGeometry(
-    eCategory format,
-    usize verticesByteSize,
-    const u8* vertices,
-    usize indicesByteSize,
-    const u8* indices
-)
+triton::SGeometryView triton::cGraphics::CreateGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize)
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    sVertexBufferGeometry* geometry = _context->Create<sVertexBufferGeometry>(_context);
-
-    memcpy((void*)((usize)_vertices + _verticesByteSize), vertices, verticesByteSize);
-    memcpy((void*)((usize)_indices + _indicesByteSize), indices, indicesByteSize);
-
-    gfxResourceBackend->WriteBuffer(_vertexBuffer, _verticesByteSize, verticesByteSize, vertices);
-    gfxResourceBackend->WriteBuffer(_indexBuffer, _indicesByteSize, indicesByteSize, indices);
-
-    usize vertexCount = verticesByteSize;
-    usize vertexOffset = _verticesByteSize;
-    switch (format)
-    {
-    case eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3:
-        vertexCount /= 32;
-        vertexOffset /= 32;
-        break;
-
-    default:
-        Print("Error: unsupported vertex buffer format!");
-        return nullptr;
-    }
-
-    geometry->_vertexCount = vertexCount;
-    geometry->_indexCount = indicesByteSize / sizeof(u32);
-    geometry->_vertexPtr = _vertices;
-    geometry->_indexPtr = _indices;
-    geometry->_offsetVertex = vertexOffset;
-    geometry->_offsetIndex = _indicesByteSize;
-    geometry->_format = format;
-
-    _verticesByteSize += verticesByteSize;
-    _indicesByteSize += indicesByteSize;
-
-    return geometry;
+    return _geometryStorage->CreateGeometry(format, vertices, verticesByteSize, indices, indicesByteSize);
 }
 
 triton::cRenderPass* triton::cGraphics::CreateRenderPass(const sRenderPassDescriptor& desc)

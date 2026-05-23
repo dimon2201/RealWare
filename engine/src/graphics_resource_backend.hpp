@@ -24,7 +24,7 @@ namespace triton
             VERTEX = 1,
             INDEX = 2,
             UNIFORM = 3,
-            LARGE = 4
+            STORAGE = 4
         };
 
     private:

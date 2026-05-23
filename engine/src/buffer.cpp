@@ -10,7 +10,7 @@
 
 using namespace types;
 
-triton::cDataBuffer::cDataBuffer(cContext* context, usize byteSize) : iObject(context)
+triton::XDataBuffer::XDataBuffer(cContext* context, usize byteSize) : iObject(context)
 {
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
 	auto memoryAllocator = _context->GetMemoryAllocator();
@@ -20,7 +20,7 @@ triton::cDataBuffer::cDataBuffer(cContext* context, usize byteSize) : iObject(co
 	memset(_data, 0, _byteSize);
 }
 
-triton::cDataBuffer::~cDataBuffer()
+triton::XDataBuffer::~XDataBuffer()
 {
 	if (_data != nullptr)
 	{
@@ -29,4 +29,14 @@ triton::cDataBuffer::~cDataBuffer()
 
 		memoryAllocator->Deallocate(_data);
 	}
+}
+
+void triton::XDataBuffer::Write(const u8* data, usize byteSize, usize byteOffset)
+{
+	if (data == nullptr || byteSize >= _byteSize || byteOffset >= _byteSize)
+	{
+		return;
+	}
+
+	memcpy(&_data[byteOffset], data, byteSize);
 }

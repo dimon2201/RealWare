@@ -7,7 +7,7 @@
 
 namespace triton
 {
-    class cDataBuffer : public iObject
+    class XDataBuffer : public iObject
     {
         TRITON_OBJECT(cDataBuffer)
 
@@ -15,10 +15,19 @@ namespace triton
         types::usize _byteSize = 0;
 
     public:
-        explicit cDataBuffer(cContext* context, types::usize byteSize);
-        virtual ~cDataBuffer() override;
+        explicit XDataBuffer(cContext* context, types::usize byteSize);
+        virtual ~XDataBuffer() override;
 
-        inline types::u8* GetData() const { return _data; }
-        inline types::usize GetByteSize() const { return _byteSize; }
+        void Write(const types::u8* data, types::usize byteSize, types::usize byteOffset);
+
+        inline types::u8* GetData() const
+        {
+            return _data;
+        }
+
+        inline types::usize GetByteSize() const
+        {
+            return _byteSize;
+        }
     };
 }
