@@ -14,7 +14,7 @@
 namespace triton
 {
 	class cContext;
-	class cDataBuffer;
+	class XDataBuffer;
 	class cGameObject;
 
 	using ClassType = ::std::string;
@@ -65,7 +65,7 @@ namespace triton
 		void Subscribe(eEventType type, EventFunction&& function);
 		void Unsubscribe(eEventType type);
 		void Send(eEventType type);
-		void Send(eEventType type, cDataBuffer* data);
+		void Send(eEventType type, XDataBuffer* data);
 
 		inline cContext* GetContext() const { return _context; }
 		inline const cTag& GetID() const { return _id; }

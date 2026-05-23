@@ -11,7 +11,7 @@
 
 using namespace types;
 
-triton::cWorkItem::cWorkItem(cDataBuffer* data, WorkFunction&& function)
+triton::cWorkItem::cWorkItem(XDataBuffer* data, WorkFunction&& function)
     :
     _data(data),
     _function(std::make_shared<WorkFunction>(std::move(function)))

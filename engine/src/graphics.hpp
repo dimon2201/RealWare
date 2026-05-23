@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <optional>
 #include <unordered_map>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "category.hpp"
@@ -225,7 +226,7 @@ namespace triton
         // TODO: Remove material creation from cGraphics
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
         cVertexArray* CreateDefaultVertexArray();
-        SGeometryView CreateGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize);
+        std::optional<triton::SGeometryView> CreateGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
         cRenderPass* CreateRenderPass(const sRenderPassDescriptor& desc);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);

@@ -12,14 +12,14 @@ namespace triton
     {
         TRITON_OBJECT(cDataFile)
 
-        cDataBuffer* _data = nullptr;
+        XDataBuffer* _data = nullptr;
 
     public:
         explicit cDataFile(cContext* context, const std::string& path, types::boolean isText);
         virtual ~cDataFile() override final;
 
         inline void* GetData() const;
-        inline cDataBuffer* GetBuffer() const { return _data; }
+        inline XDataBuffer* GetBuffer() const { return _data; }
     };
 
     class cFileSystem : public iObject

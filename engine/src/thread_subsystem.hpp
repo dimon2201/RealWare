@@ -14,21 +14,21 @@
 namespace triton
 {
     class cApplication;
-    class cDataBuffer;
+    class XDataBuffer;
 
-    using WorkFunction = std::function<void(cDataBuffer* const data)>;
+    using WorkFunction = std::function<void(XDataBuffer* const data)>;
 
     class cWorkItem
     {
-        cDataBuffer* _data = nullptr;
+        XDataBuffer* _data = nullptr;
         std::shared_ptr<WorkFunction> _function;
 
     public:
         cWorkItem() = default;
-        explicit cWorkItem(cDataBuffer* data, WorkFunction&& function);
+        explicit cWorkItem(XDataBuffer* data, WorkFunction&& function);
 
         void Execute();
-        inline cDataBuffer* GetData() const { return _data; }
+        inline XDataBuffer* GetData() const { return _data; }
         inline std::shared_ptr<WorkFunction> GetFunction() const { return _function; }
     };
 

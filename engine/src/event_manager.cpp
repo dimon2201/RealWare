@@ -14,7 +14,7 @@ using namespace types;
 triton::cEventHandler::cEventHandler(cContext* context, iObject* receiver, eEventType type, EventFunction&& function)
     : iObject(context), _receiver(receiver), _type(type), _function(std::make_shared<EventFunction>(std::move(function))) {}
 
-void triton::cEventHandler::Invoke(iObject* self, cDataBuffer* data)
+void triton::cEventHandler::Invoke(iObject* self, XDataBuffer* data)
 {
     _function->operator()(self, _context, data);
 }
@@ -78,12 +78,12 @@ void triton::cEventDispatcher::Unsubscribe(iObject* receiver, eEventType type)
 
 void triton::cEventDispatcher::Send(eEventType type)
 {
-    cDataBuffer data(_context, 64); // TODO: decide byte size for cDataBuffer
+    XDataBuffer data(_context, 64); // TODO: decide byte size for XDataBuffer
 
     Send(type, &data);
 }
 
-void triton::cEventDispatcher::Send(eEventType type, cDataBuffer* data)
+void triton::cEventDispatcher::Send(eEventType type, XDataBuffer* data)
 {
     cStack<cEventHandler>* listener = _listeners->Find(type);
     if (listener == nullptr)

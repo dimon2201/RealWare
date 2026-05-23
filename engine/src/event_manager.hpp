@@ -10,7 +10,7 @@
 
 namespace triton
 {
-    class cDataBuffer;
+    class XDataBuffer;
     class cContext;
     
     class cEventHandler : public iObject
@@ -27,7 +27,7 @@ namespace triton
         explicit cEventHandler(cContext* context, iObject* receiver, eEventType type, EventFunction&& function);
         virtual ~cEventHandler() override final = default;
 
-        void Invoke(iObject* self, cDataBuffer* data);
+        void Invoke(iObject* self, XDataBuffer* data);
         inline iObject* GetReceiver() const { return _receiver; }
         inline eEventType GetEventType() const { return _type; }
         inline std::shared_ptr<EventFunction> GetFunction() const { return _function; }
@@ -46,6 +46,6 @@ namespace triton
         void Subscribe(iObject* receiver, eEventType type, EventFunction&& function);
         void Unsubscribe(iObject* receiver, eEventType type);
         void Send(eEventType type);
-        void Send(eEventType type, cDataBuffer* data);
+        void Send(eEventType type, XDataBuffer* data);
     };
 }

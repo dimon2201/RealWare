@@ -29,7 +29,7 @@ triton::cDataFile::cDataFile(cContext* context, const std::string& path, types::
     inputFile.seekg(0, std::ios::beg);
     const usize dataByteSize = byteSize + (isText == K_TRUE ? 1 : 0);
 
-    _data = _context->Create<cDataBuffer>(_context, dataByteSize);
+    _data = _context->Create<XDataBuffer>(_context, dataByteSize);
     inputFile.read((char*)_data->GetData(), _data->GetByteSize());
 
     inputFile.close();
@@ -38,7 +38,7 @@ triton::cDataFile::cDataFile(cContext* context, const std::string& path, types::
 triton::cDataFile::~cDataFile()
 {
     if (_data)
-        _context->Destroy<cDataBuffer>(_data);
+        _context->Destroy<XDataBuffer>(_data);
 }
 
 triton::cFileSystem::cFileSystem(cContext* context) : iObject(context) {}

@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include <optional>
 #include "object.hpp"
-#include "geometry.hpp"
 #include "geometry_view.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "types.hpp"
@@ -12,7 +12,7 @@ namespace triton
 {
     class cEngine;
     class cBuffer;
-    class cDataBuffer;
+    class XDataBuffer;
 
     class XGeometryStorage : public iObject
     {
@@ -30,8 +30,10 @@ namespace triton
         cBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
         cBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
         cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
-        cDataBuffer* _vertexBufferCPU = nullptr;
-        cDataBuffer* _indexBufferCPU = nullptr;
+        XDataBuffer* _vertexBufferCPU = nullptr;
+        XDataBuffer* _indexBufferCPU = nullptr;
+        types::usize _vertexBufferPointer = 0;
+        types::usize _indexBufferPointer = 0;
 
     public:
         explicit XGeometryStorage(cContext* context) : iObject(context) {}
@@ -39,6 +41,6 @@ namespace triton
 
         void Initialize();
         void Free();
-        SGeometryView CreateGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
+        std::optional<triton::SGeometryView> CreateGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
     };
 }

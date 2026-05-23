@@ -36,7 +36,7 @@ void triton::iObject::Send(eEventType type)
     dispatcher->Send(type);
 }
 
-void triton::iObject::Send(eEventType type, cDataBuffer* data)
+void triton::iObject::Send(eEventType type, XDataBuffer* data)
 {
     cEventDispatcher* dispatcher = _context->GetSubsystem<cEventDispatcher>();
     dispatcher->Send(type, data);

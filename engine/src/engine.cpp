@@ -59,7 +59,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cRenderTarget>();
 	_context->RegisterFactory<cRenderPass>();
 	_context->RegisterFactory<cRenderPassGPU>();
-	_context->RegisterFactory<cDataBuffer>();
+	_context->RegisterFactory<XDataBuffer>();
 	_context->RegisterFactory<cDataFile>();
 	_context->RegisterFactory<cRenderThread>();
 	_context->RegisterFactory<XFrameSync>();
@@ -102,7 +102,7 @@ void triton::cEngine::Initialize()
 	// Subscribe systems to core events
 	//audioSystem->Subscribe(
 	//	eEventType::FRAME_UPDATE,
-	//	[audioSystem] (iObject* self, cContext* context, cDataBuffer* data) {
+	//	[audioSystem] (iObject* self, cContext* context, XDataBuffer* data) {
 	//		audioSystem->OnFrameUpdate();
 	//	}
 	//);

@@ -9,7 +9,7 @@ namespace triton
 {
     class XDataBuffer : public iObject
     {
-        TRITON_OBJECT(cDataBuffer)
+        TRITON_OBJECT(XDataBuffer)
 
         types::u8* _data = nullptr;
         types::usize _byteSize = 0;

@@ -39,7 +39,7 @@ triton::cBuffer* triton::cGraphicsResourceBackendOGL::CreateBuffer(
         glBufferData(GL_UNIFORM_BUFFER, byteSize, data, GL_STATIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
-    else if (type == cBuffer::eType::LARGE)
+    else if (type == cBuffer::eType::STORAGE)
     {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, instance);
         glBufferData(GL_SHADER_STORAGE_BUFFER, byteSize, data, GL_STATIC_DRAW);
@@ -59,7 +59,7 @@ void triton::cGraphicsResourceBackendOGL::BindBuffer(const cBuffer* buffer)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->GetInstance());
     else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
         glBindBufferBase(GL_UNIFORM_BUFFER, buffer->GetSlot(), (GLuint)buffer->GetInstance());
-    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+    else if (buffer->GetBufferType() == cBuffer::eType::STORAGE)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), buffer->GetInstance());
 }
 
@@ -67,7 +67,7 @@ void triton::cGraphicsResourceBackendOGL::BindBufferNotVAO(const cBuffer* buffer
 {
     if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
         glBindBufferBase(GL_UNIFORM_BUFFER, buffer->GetSlot(), (GLuint)buffer->GetInstance());
-    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+    else if (buffer->GetBufferType() == cBuffer::eType::STORAGE)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), buffer->GetInstance());
 }
 
@@ -79,7 +79,7 @@ void triton::cGraphicsResourceBackendOGL::UnbindBuffer(const cBuffer* buffer)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
         glBindBufferBase(GL_UNIFORM_BUFFER, buffer->GetSlot(), 0);
-    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+    else if (buffer->GetBufferType() == cBuffer::eType::STORAGE)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->GetSlot(), 0);
 }
 
@@ -108,7 +108,7 @@ void triton::cGraphicsResourceBackendOGL::WriteBuffer(
         glBufferSubData(GL_UNIFORM_BUFFER, offset, byteSize, data);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
-    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+    else if (buffer->GetBufferType() == cBuffer::eType::STORAGE)
     {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->GetInstance());
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, byteSize, data);
@@ -124,7 +124,7 @@ void triton::cGraphicsResourceBackendOGL::DestroyBuffer(cBuffer* buffer)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
+    else if (buffer->GetBufferType() == cBuffer::eType::STORAGE)
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     GLuint instance = buffer->GetInstance();

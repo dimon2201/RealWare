@@ -11,7 +11,7 @@ namespace triton
 {
 	class cAudioBackendSound;
 	class iAudioBackend;
-	class cDataBuffer;
+	class XDataBuffer;
 
 	class cAudio : public ecs::cSystem
 	{

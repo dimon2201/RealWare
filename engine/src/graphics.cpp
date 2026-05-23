@@ -99,7 +99,7 @@ void triton::cGraphics::Initialize()
 {
     _geometryStorage->Initialize();
 
-    _vertices = memoryAllocator->Allocate(caps->vertexBufferSize, caps->memoryAlignment);
+    /*_vertices = memoryAllocator->Allocate(caps->vertexBufferSize, caps->memoryAlignment);
     _verticesByteSize = 0;
     _indices = memoryAllocator->Allocate(caps->indexBufferSize, caps->memoryAlignment);
     _indicesByteSize = 0;
@@ -256,7 +256,7 @@ void triton::cGraphics::Initialize()
     compositeFinalRenderPassDesc.blendMode.srcFactors[0] = sBlendMode::eBlendFactor::ONE;
     compositeFinalRenderPassDesc.blendMode.dstFactors[0] = sBlendMode::eBlendFactor::ZERO;
     compositeFinalRenderPassDesc.renderTarget = nullptr;
-    _compositeFinal = CreateRenderPass(compositeFinalRenderPassDesc);
+    _compositeFinal = CreateRenderPass(compositeFinalRenderPassDesc);*/
 }
 
 void triton::cGraphics::Shutdown()
@@ -343,7 +343,7 @@ triton::cVertexArray* triton::cGraphics::CreateDefaultVertexArray()
     return vertexArray;
 }
 
-triton::SGeometryView triton::cGraphics::CreateGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize)
+std::optional<triton::SGeometryView> triton::cGraphics::CreateGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize)
 {
     return _geometryStorage->CreateGeometry(format, vertices, verticesByteSize, indices, indicesByteSize);
 }

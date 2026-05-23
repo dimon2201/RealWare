@@ -12,7 +12,7 @@ namespace triton
 {
     class cEngine;
     class cBuffer;
-    class cDataBuffer;
+    class XDataBuffer;
 
     class XGeometryStorage : public iObject
     {
@@ -30,8 +30,8 @@ namespace triton
         cBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
         cBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
         cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
-        cDataBuffer* _vertexBufferCPU = nullptr;
-        cDataBuffer* _indexBufferCPU = nullptr;
+        XDataBuffer* _vertexBufferCPU = nullptr;
+        XDataBuffer* _indexBufferCPU = nullptr;
 
     public:
         explicit XGeometryStorage(cContext* context);
