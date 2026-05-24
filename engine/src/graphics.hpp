@@ -149,46 +149,44 @@ namespace triton
         cVector4 _attenuation = cVector4(0.0f);
     };
 
+    class SGeometryBuffers final
+    {
+        cBuffer* _vertexBuffer = nullptr;
+        cBuffer* _indexBuffer = nullptr;
+        cBuffer* _lightBuffer = nullptr;
+        XDataBuffer* _vertexBufferCPU = nullptr;
+        XDataBuffer* _indexBufferCPU = nullptr;
+        types::usize _vertexBufferPointer = 0;
+        types::usize _indexBufferPointer = 0;
+    };
+
+    class SRenderPassBuffers final
+    {
+        cBuffer* _opaqueInstanceBuffer = nullptr;
+        cBuffer* _transparentInstanceBuffer = nullptr;
+        cBuffer* _textInstanceBuffer = nullptr;
+        XDataBuffer* _opaqueInstanceCPU = nullptr;
+        XDataBuffer* _transparentInstanceCPU = nullptr;
+        XDataBuffer* _textInstanceCPU = nullptr;
+        cBuffer* _opaqueMaterialBuffer = nullptr;
+        cBuffer* _transparentMaterialBuffer = nullptr;
+        cBuffer* _textMaterialBuffer = nullptr;
+        cBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
+        cBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
+        cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
+    };
+
+    class SRenderPasses final
+    {
+        XDataBuffer* _opaquePassInstance = nullptr;
+        XDataBuffer* _transparentPassInstances = nullptr;
+        XDataBuffer* _textPassInstance = nullptr;
+    };
+
 	class cGraphics : public iObject
 	{
         TRITON_OBJECT(cGraphics)
 
-        types::usize _maxOpaqueInstanceBufferByteSize = 0;
-        types::usize _maxTransparentInstanceBufferByteSize = 0;
-        types::usize _maxTextInstanceBufferByteSize = 0;
-        types::usize _maxMaterialBufferByteSize = 0;
-        types::usize _maxLightBufferByteSize = 0;
-        types::usize _maxTextureAtlasTexturesBufferByteSize = 0;
-        cBuffer* _vertexBuffer = nullptr;
-        cBuffer* _indexBuffer = nullptr;
-        cBuffer* _opaqueInstanceBuffer = nullptr;
-        cBuffer* _transparentInstanceBuffer = nullptr;
-        cBuffer* _textInstanceBuffer = nullptr;
-        cBuffer* _opaqueMaterialBuffer = nullptr;
-        cBuffer* _transparentMaterialBuffer = nullptr;
-        cBuffer* _textMaterialBuffer = nullptr;
-        cBuffer* _lightBuffer = nullptr;
-        cBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
-        cBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
-        cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
-        types::usize _opaqueInstanceCount = 0;
-        types::usize _transparentInstanceCount = 0;
-        void* _vertices = nullptr;
-        types::usize _verticesByteSize = 0;
-        void* _indices = nullptr;
-        types::usize _indicesByteSize = 0;
-        void* _opaqueInstances = nullptr;
-        types::usize _opaqueInstancesByteSize = 0;
-        void* _transparentInstances = nullptr;
-        types::usize _transparentInstancesByteSize = 0;
-        void* _textInstances = nullptr;
-        types::usize _textInstancesByteSize = 0;
-        void* _opaqueMaterials = nullptr;
-        types::usize _opaqueMaterialsByteSize = 0;
-        void* _transparentMaterials = nullptr;
-        types::usize _transparentMaterialsByteSize = 0;
-        void* _textMaterials = nullptr;
-        types::usize _textMaterialsByteSize = 0;
         void* _lights = nullptr;
         types::usize _lightsByteSize = 0;
         void* _opaqueTextureAtlasTextures = nullptr;
@@ -207,7 +205,9 @@ namespace triton
         cRenderTarget* _transparentRenderTarget = nullptr;
         types::usize _materialCountCPU = 0;
 
-        XGeometryStorage* _geometryStorage = nullptr;
+        SGeometryBuffers* _geometryBuffers = nullptr;
+        SRenderPassBuffers* _instanceBuffers = nullptr;
+        SRenderPasses* _renderPasses = nullptr;
 
 	public:
         enum class eAPI

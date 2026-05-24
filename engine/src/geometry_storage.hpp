@@ -32,6 +32,9 @@ namespace triton
         cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
         XDataBuffer* _vertexBufferCPU = nullptr;
         XDataBuffer* _indexBufferCPU = nullptr;
+        XDataBuffer* _opaquePassInstance = nullptr;
+        XDataBuffer* _transparentPassInstances = nullptr;
+        XDataBuffer* _textPassInstance = nullptr;
         types::usize _vertexBufferPointer = 0;
         types::usize _indexBufferPointer = 0;
 
