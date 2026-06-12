@@ -321,12 +321,12 @@ std::optional<triton::SGeometryView> triton::cGraphics::CreateGeometry(EGraphics
     return _geometryStorage->CreateGeometry(format, vertices, verticesByteSize, indices, indicesByteSize);
 }
 
-triton::cRenderPass* triton::cGraphics::CreateRenderPass(const sRenderPassDescriptor& desc)
+triton::XRenderPass* triton::cGraphics::CreateRenderPass(const SRenderPassDescriptor& desc)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    cRenderPassGPU* renderPass = gfxPipelineBackend->CreateRenderPass(desc);
+    XRenderPassGPU* renderPass = gfxPipelineBackend->CreateRenderPass(desc);
 
-    return _context->Create<cRenderPass>(_context, desc, renderPass);
+    return _context->Create<XRenderPass>(_context, desc, renderPass);
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)

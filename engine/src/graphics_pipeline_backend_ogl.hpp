@@ -3,6 +3,7 @@
 #pragma once
 
 #include "graphics_pipeline_backend.hpp"
+#include "render_pass.hpp"
 #include "types.hpp"
 
 namespace triton
