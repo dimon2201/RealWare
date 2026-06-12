@@ -151,6 +151,7 @@ namespace triton
 
     class SGeometryBuffers final
     {
+    public:
         cBuffer* _vertexBuffer = nullptr;
         cBuffer* _indexBuffer = nullptr;
         cBuffer* _lightBuffer = nullptr;
@@ -162,6 +163,7 @@ namespace triton
 
     class SRenderPassBuffers final
     {
+    public:
         cBuffer* _opaqueInstanceBuffer = nullptr;
         cBuffer* _transparentInstanceBuffer = nullptr;
         cBuffer* _textInstanceBuffer = nullptr;
@@ -181,6 +183,13 @@ namespace triton
         XDataBuffer* _opaquePassInstance = nullptr;
         XDataBuffer* _transparentPassInstances = nullptr;
         XDataBuffer* _textPassInstance = nullptr;
+    };
+
+    class SRenderInputState final
+    {
+    public:
+        SGeometryBuffers _geometryBuffers = {};
+        SRenderPassBuffers _renderPassBuffers = {};
     };
 
 	class cGraphics : public iObject
@@ -205,9 +214,7 @@ namespace triton
         cRenderTarget* _transparentRenderTarget = nullptr;
         types::usize _materialCountCPU = 0;
 
-        SGeometryBuffers* _geometryBuffers = nullptr;
-        SRenderPassBuffers* _instanceBuffers = nullptr;
-        SRenderPasses* _renderPasses = nullptr;
+        SRenderInputState _renderInputState = {};
 
 	public:
         enum class eAPI
