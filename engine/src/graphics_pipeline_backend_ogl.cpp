@@ -6,6 +6,7 @@
 #include "graphics_resource_backend.hpp"
 #include "context.hpp"
 #include "filesystem_manager.hpp"
+#include "application.hpp"
 
 using namespace types;
 
@@ -335,7 +336,7 @@ void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(cVertexArray* verte
 
 triton::XRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(const SRenderPassDescriptor& desc)
 {
-    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
     std::vector<cShader::sDefinePair> definePairs = {};
     cVertexArray* vertexArray = nullptr;
@@ -377,19 +378,24 @@ triton::XRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
     if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
     {
         for (auto buffer : desc._inputBuffers)
-            resourceBackend->BindBuffer(buffer);
+            gfxResourceBackend->BindBuffer(buffer);
     }
     else if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
     {
         for (auto buffer : desc._inputBuffers)
-            resourceBackend->BindBuffer(buffer);
+            gfxResourceBackend->BindBuffer(buffer);
 
         BindDefaultInputLayout();
     }
-
     UnbindVertexArray();
 
-    return _context->Create<XRenderPassGPU>(_context, vertexArray, shader);
+    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    const sCapabilities* caps = app->GetCapabilities();
+    cBuffer* instanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderOpaqueInstanceCount, 0);
+    cBuffer* materialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
+    cBuffer* textureBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
+
+    return _context->Create<XRenderPassGPU>(_context, vertexArray, shader, instanceBuffer, materialBuffer, textureBuffer);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* renderPass, cShader* customShader)

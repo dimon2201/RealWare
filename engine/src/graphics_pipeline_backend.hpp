@@ -118,9 +118,12 @@ namespace triton
 
         cVertexArray* _vertexArray = nullptr;
         cShader* _shader = nullptr;
+        cBuffer* _instanceBuffer = nullptr;
+        cBuffer* _materialBuffer = nullptr;
+        cBuffer* _textureBuffer = nullptr;
 
     public:
-        explicit XRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader);
+        explicit XRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, cBuffer* instanceBuffer, cBuffer* materialBuffer, cBuffer* textureBuffer);
         virtual ~XRenderPassGPU() override final = default;
 
         inline cVertexArray* GetVertexArray() const { return _vertexArray; }
