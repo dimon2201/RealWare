@@ -271,5 +271,8 @@ namespace triton
         inline cRenderPass* GetCompositeFinalRenderPass() const { return _compositeFinal; }
         inline cRenderTarget* GetOpaqueRenderTarget() const { return _opaqueRenderTarget; }
         inline cRenderTarget* GetTransparentRenderTarget() const { return _transparentRenderTarget; }
+
+    private:
+        void CreateDefaultRenderTargets();
 	};
 }

@@ -71,6 +71,7 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
 void triton::cGraphics::Initialize()
 {
     _geometryStorage.Initialize();
+    CreateDefaultRenderTargets();
 
     /*_vertices = memoryAllocator->Allocate(caps->vertexBufferSize, caps->memoryAlignment);
     _verticesByteSize = 0;
@@ -95,38 +96,6 @@ void triton::cGraphics::Initialize()
     _transparentTextureAtlasTextures = memoryAllocator->Allocate(_maxTextureAtlasTexturesBufferByteSize, caps->memoryAlignment);
     _transparentTextureAtlasTexturesByteSize = 0;
     _materialsMap = new std::unordered_map<cMaterial*, s32>(); // TODO: replace std::unordered_map with cHashTable
-
-    cTexture* color = gfxResourceBackend->CreateTexture(
-        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::RGBA8,
-        nullptr,
-        0
-    );
-    cTexture* accumulation = gfxResourceBackend->CreateTexture(
-        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::RGBA16F,
-        nullptr,
-        0
-    );
-    cTexture* revealage = gfxResourceBackend->CreateTexture(
-        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::R8F,
-        nullptr,
-        0
-    );
-    cTexture* depth = gfxResourceBackend->CreateTexture(
-        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::DEPTH_STENCIL,
-        nullptr,
-        0
-    );
-
-    _opaqueRenderTarget = gfxPipelineBackend->CreateRenderTarget({ color }, depth);
-    _transparentRenderTarget = gfxPipelineBackend->CreateRenderTarget({ accumulation, revealage }, depth);
 
     cTextureAtlas* textureAtlas = _context->GetSubsystem<cTextureAtlas>();
 
@@ -972,4 +941,44 @@ void triton::cGraphics::CompositeFinal()
     gfxPipelineBackend->UnbindRenderPass(_compositeFinal);
 
     gfxPipelineBackend->UnbindShader();
+}
+
+void triton::cGraphics::CreateDefaultRenderTargets()
+{
+    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+
+    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0)->GetSize();
+
+    cTexture* color = gfxResourceBackend->CreateTexture(
+        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
+        cTexture::eDimension::TEXTURE_2D,
+        cTexture::eFormat::RGBA8,
+        nullptr,
+        0
+    );
+    cTexture* accumulation = gfxResourceBackend->CreateTexture(
+        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
+        cTexture::eDimension::TEXTURE_2D,
+        cTexture::eFormat::RGBA16F,
+        nullptr,
+        0
+    );
+    cTexture* revealage = gfxResourceBackend->CreateTexture(
+        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
+        cTexture::eDimension::TEXTURE_2D,
+        cTexture::eFormat::R8F,
+        nullptr,
+        0
+    );
+    cTexture* depth = gfxResourceBackend->CreateTexture(
+        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
+        cTexture::eDimension::TEXTURE_2D,
+        cTexture::eFormat::DEPTH_STENCIL,
+        nullptr,
+        0
+    );
+
+    _opaqueRenderTarget = gfxPipelineBackend->CreateRenderTarget({ color }, depth);
+    _transparentRenderTarget = gfxPipelineBackend->CreateRenderTarget({ accumulation, revealage }, depth);
 }
