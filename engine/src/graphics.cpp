@@ -70,7 +70,7 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
 
 void triton::cGraphics::Initialize()
 {
-    _geometryStorage->Initialize();
+    _geometryStorage.Initialize();
 
     /*_vertices = memoryAllocator->Allocate(caps->vertexBufferSize, caps->memoryAlignment);
     _verticesByteSize = 0;
@@ -234,7 +234,7 @@ void triton::cGraphics::Initialize()
 
 void triton::cGraphics::Shutdown()
 {
-    _geometryStorage->Free();
+    _geometryStorage.Free();
 
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();

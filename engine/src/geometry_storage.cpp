@@ -17,7 +17,10 @@ void triton::XGeometryStorage::Initialize()
 
     _vertexBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::VERTEX, nullptr, caps->vertexBufferSize, 0);
     _indexBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::INDEX, nullptr, caps->indexBufferSize, 0);
-    _opaqueInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderOpaqueInstanceCount, 0);
+    _vertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->vertexBufferSize);
+    _indexBufferCPU = _context->Create<XDataBuffer>(_context, caps->indexBufferSize);
+    
+    /*_opaqueInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderOpaqueInstanceCount, 0);
     _transparentInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTransparentInstanceCount, 0);
     _textInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextInstanceCount, 0);
     _opaqueMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
@@ -25,9 +28,7 @@ void triton::XGeometryStorage::Initialize()
     _transparentMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
     _lightBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderLightCount, 2);
     _opaqueTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
-    _transparentTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
-    _vertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->vertexBufferSize);
-    _indexBufferCPU = _context->Create<XDataBuffer>(_context, caps->indexBufferSize);
+    _transparentTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);*/
 }
 
 void triton::XGeometryStorage::Free()
@@ -36,7 +37,10 @@ void triton::XGeometryStorage::Free()
     _context->Destroy<XDataBuffer>(_vertexBufferCPU);
 
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    gfxResourceBackend->DestroyBuffer(_transparentTextureAtlasTexturesBuffer);
+    gfxResourceBackend->DestroyBuffer(_indexBuffer);
+    gfxResourceBackend->DestroyBuffer(_vertexBuffer);
+
+    /*gfxResourceBackend->DestroyBuffer(_transparentTextureAtlasTexturesBuffer);
     gfxResourceBackend->DestroyBuffer(_opaqueTextureAtlasTexturesBuffer);
     gfxResourceBackend->DestroyBuffer(_lightBuffer);
     gfxResourceBackend->DestroyBuffer(_transparentMaterialBuffer);
@@ -44,9 +48,7 @@ void triton::XGeometryStorage::Free()
     gfxResourceBackend->DestroyBuffer(_opaqueMaterialBuffer);
     gfxResourceBackend->DestroyBuffer(_textInstanceBuffer);
     gfxResourceBackend->DestroyBuffer(_transparentInstanceBuffer);
-    gfxResourceBackend->DestroyBuffer(_opaqueInstanceBuffer);
-    gfxResourceBackend->DestroyBuffer(_indexBuffer);
-    gfxResourceBackend->DestroyBuffer(_vertexBuffer);
+    gfxResourceBackend->DestroyBuffer(_opaqueInstanceBuffer);*/
 }
 
 std::optional<triton::SGeometryView> triton::XGeometryStorage::CreateGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize)

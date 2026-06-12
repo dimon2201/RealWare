@@ -20,7 +20,12 @@ namespace triton
 
         cBuffer* _vertexBuffer = nullptr;
         cBuffer* _indexBuffer = nullptr;
-        cBuffer* _opaqueInstanceBuffer = nullptr;
+        XDataBuffer* _vertexBufferCPU = nullptr;
+        XDataBuffer* _indexBufferCPU = nullptr;
+        types::usize _vertexBufferPointer = 0;
+        types::usize _indexBufferPointer = 0;
+
+        /*cBuffer* _opaqueInstanceBuffer = nullptr;
         cBuffer* _transparentInstanceBuffer = nullptr;
         cBuffer* _textInstanceBuffer = nullptr;
         cBuffer* _opaqueMaterialBuffer = nullptr;
@@ -30,13 +35,9 @@ namespace triton
         cBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
         cBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
         cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
-        XDataBuffer* _vertexBufferCPU = nullptr;
-        XDataBuffer* _indexBufferCPU = nullptr;
         XDataBuffer* _opaquePassInstance = nullptr;
         XDataBuffer* _transparentPassInstances = nullptr;
-        XDataBuffer* _textPassInstance = nullptr;
-        types::usize _vertexBufferPointer = 0;
-        types::usize _indexBufferPointer = 0;
+        XDataBuffer* _textPassInstance = nullptr;*/
 
     public:
         explicit XGeometryStorage(cContext* context) : iObject(context) {}
