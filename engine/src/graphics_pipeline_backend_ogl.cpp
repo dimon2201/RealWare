@@ -333,7 +333,7 @@ void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(cVertexArray* verte
         _context->Destroy<cVertexArray>(vertexArray);
 }
 
-triton::cRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(const sRenderPassDescriptor& desc)
+triton::XRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(const SRenderPassDescriptor& desc)
 {
     iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
@@ -341,47 +341,47 @@ triton::cRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
     cVertexArray* vertexArray = nullptr;
     cShader* shader = nullptr;
 
-    if (desc.inputTextureAtlasTextures.size() != desc.inputTextureAtlasTextureNames.size())
+    if (desc._inputTextureAtlasTextures.size() != desc._inputTextureAtlasTextureNames.size())
     {
         Print("Error: mismatch of render pass input texture atlas texture array and input texture atlas texture name array!");
         return nullptr;
     }
-    for (usize i = 0; i < desc.inputTextureAtlasTextures.size(); i++)
+    for (usize i = 0; i < desc._inputTextureAtlasTextures.size(); i++)
     {
         const usize textureAtlasTextureIndex = i;
-        const std::string& textureAtlasTextureName = desc.inputTextureAtlasTextureNames[i];
+        const std::string& textureAtlasTextureName = desc._inputTextureAtlasTextureNames[i];
         definePairs.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
     }
 
-    if (desc.shaderBase == nullptr)
+    if (desc._shaderBase == nullptr)
     {
         shader = CreateShader(
-            desc.shaderRenderPath,
-            desc.shaderVertexPath,
-            desc.shaderFragmentPath,
+            desc._shaderRenderPath,
+            desc._shaderVertexPath,
+            desc._shaderFragmentPath,
             definePairs
         );
     }
     else
     {
         shader = CreateShader(
-            desc.shaderBase,
-            desc.shaderVertexFunc,
-            desc.shaderFragmentFunc,
+            desc._shaderBase,
+            desc._shaderVertexFunc,
+            desc._shaderFragmentFunc,
             definePairs
         );
     }
 
     vertexArray = CreateVertexArray();
     BindVertexArray(vertexArray);
-    if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
+    if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
     {
-        for (auto buffer : desc.inputBuffers)
+        for (auto buffer : desc._inputBuffers)
             resourceBackend->BindBuffer(buffer);
     }
-    else if (desc.inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
+    else if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
     {
-        for (auto buffer : desc.inputBuffers)
+        for (auto buffer : desc._inputBuffers)
             resourceBackend->BindBuffer(buffer);
 
         BindDefaultInputLayout();
@@ -389,7 +389,7 @@ triton::cRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
 
     UnbindVertexArray();
 
-    return _context->Create<cRenderPassGPU>(_context, vertexArray, shader);
+    return _context->Create<XRenderPassGPU>(_context, vertexArray, shader);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* renderPass, cShader* customShader)

@@ -8,6 +8,7 @@
 namespace triton
 {
     class cContext;
+    class XRenderPass;
 
     class cGraphicsPipelineBackendOGL final : public iGraphicsPipelineBackend
     {
@@ -20,7 +21,7 @@ namespace triton
         virtual void BindShader(const cShader* shader) override final;
         virtual void UnbindShader() override final;
         virtual cShader* CreateShader(
-            sRenderPassDescriptor::eRenderPath renderPath,
+            SRenderPassDescriptor::eRenderPath renderPath,
             const std::string& vertexPath,
             const std::string& fragmentPath,
             const std::vector<cShader::sDefinePair>& definePairs = {}
@@ -50,10 +51,10 @@ namespace triton
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) override final;
         virtual void UnbindVertexArray() override final;
         virtual void DestroyVertexArray(cVertexArray* vertexArray) override final;
-        virtual cRenderPassGPU* CreateRenderPass(const sRenderPassDescriptor& desc) override final;
-        virtual void BindRenderPass(const cRenderPass* renderPass, cShader* customShader = nullptr) override final;
-        virtual void UnbindRenderPass(const cRenderPass* renderPass) override final;
-        virtual void DestroyRenderPass(cRenderPassGPU* renderPass) override final;
+        virtual XRenderPassGPU* CreateRenderPass(const SRenderPassDescriptor& desc) override final;
+        virtual void BindRenderPass(const XRenderPass* renderPass, cShader* customShader = nullptr) override final;
+        virtual void UnbindRenderPass(const XRenderPass* renderPass) override final;
+        virtual void DestroyRenderPass(XRenderPassGPU* renderPass) override final;
         virtual void BindDefaultInputLayout() override final;
         virtual void BindDepthMode(const sDepthMode& blendMode) override final;
         virtual void BindBlendMode(const sBlendMode& blendMode) override final;

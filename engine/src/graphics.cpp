@@ -65,33 +65,6 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
         0.0f
     );
 }
-
-triton::cRenderPass::cRenderPass(cContext* context, const sRenderPassDescriptor& desc, cRenderPassGPU* renderPass)
-    : iObject(context), _desc(desc), _renderPass(renderPass) {}
-
-void triton::cRenderPass::ResizeViewport(const glm::vec2& size)
-{
-    _desc.viewport.rect.SetZ(size.x);
-    _desc.viewport.rect.SetW(size.y);
-}
-
-void triton::cRenderPass::ResizeColorAttachments(const glm::vec2& size)
-{
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    gfxPipelineBackend->ResizeRenderTargetColors(GetRenderTarget(), size);
-}
-
-void triton::cRenderPass::ResizeDepthAttachment(const glm::vec2& size)
-{
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    cRenderTarget* renderTarget = GetRenderTarget();
-    renderTarget->SetDepthAttachment(
-        gfxResourceBackend->ResizeTexture(
-            renderTarget->GetDepthAttachment(),
-            cVector2(size)
-        )
-    );
-}
     
 triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
 
