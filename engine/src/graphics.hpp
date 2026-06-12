@@ -150,23 +150,6 @@ namespace triton
         cVector4 _attenuation = cVector4(0.0f);
     };
 
-    class SRenderPassBuffers final
-    {
-    public:
-        cBuffer* _opaqueInstanceBuffer = nullptr;
-        cBuffer* _transparentInstanceBuffer = nullptr;
-        cBuffer* _textInstanceBuffer = nullptr;
-        XDataBuffer* _opaqueInstanceCPU = nullptr;
-        XDataBuffer* _transparentInstanceCPU = nullptr;
-        XDataBuffer* _textInstanceCPU = nullptr;
-        cBuffer* _opaqueMaterialBuffer = nullptr;
-        cBuffer* _transparentMaterialBuffer = nullptr;
-        cBuffer* _textMaterialBuffer = nullptr;
-        cBuffer* _opaqueTextureAtlasTexturesBuffer = nullptr;
-        cBuffer* _transparentTextureAtlasTexturesBuffer = nullptr;
-        cBuffer* _textTextureAtlasTexturesBuffer = nullptr;
-    };
-
     class SRenderPasses final
     {
         XDataBuffer* _opaquePassInstance = nullptr;
@@ -187,17 +170,16 @@ namespace triton
         void* _textTextureAtlasTextures = nullptr;
         types::usize _textTextureAtlasTexturesByteSize = 0;
         std::unordered_map<cMaterial*, types::s32>* _materialsMap = {};
-        cRenderPass* _opaque = nullptr;
-        cRenderPass* _transparent = nullptr;
-        cRenderPass* _text = nullptr;
-        cRenderPass* _compositeTransparent = nullptr;
-        cRenderPass* _compositeFinal = nullptr;
         cRenderTarget* _opaqueRenderTarget = nullptr;
         cRenderTarget* _transparentRenderTarget = nullptr;
         types::usize _materialCountCPU = 0;
 
         XGeometryStorage _geometryStorage;
-        SRenderPassBuffers _renderPassBuffers = {};
+        XRenderPass* _opaque = nullptr;
+        XRenderPass* _transparent = nullptr;
+        XRenderPass* _text = nullptr;
+        XRenderPass* _compositeTransparent = nullptr;
+        XRenderPass* _compositeFinal = nullptr;
 
 	public:
         enum class eAPI
@@ -274,5 +256,6 @@ namespace triton
 
     private:
         void CreateDefaultRenderTargets();
+        void CreateDefaultRenderPasses();
 	};
 }
