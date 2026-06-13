@@ -92,6 +92,14 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 				cmd->_args._argD
 			));
 			break;
+		case ERenderCommand::DRAW:
+			drawcallBackend->Draw(
+				cmd->_args._argA,
+				cmd->_args._argB,
+				cmd->_args._argC,
+				cmd->_args._argD
+			);
+			break;
 		}
 	}
 }

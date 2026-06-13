@@ -19,6 +19,7 @@ namespace triton
 		NONE = 0,
 		RESIZE_RENDER_TARGETS,
 		CLEAR,
+		DRAW
 	};
 
 	enum class EFrameState
