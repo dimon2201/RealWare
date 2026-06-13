@@ -35,6 +35,7 @@ namespace triton
     struct sRenderPass;
     struct sShader;
     class XGeometryStorage;
+    class XRenderPassExecutor;
 
     using index = types::u32;
 
@@ -175,6 +176,7 @@ namespace triton
         types::usize _materialCountCPU = 0;
 
         XGeometryStorage* _geometryStorage = nullptr;
+        XRenderPassExecutor* _renderPassExecutor = nullptr;
         XRenderPass* _opaque = nullptr;
         XRenderPass* _transparent = nullptr;
         XRenderPass* _text = nullptr;

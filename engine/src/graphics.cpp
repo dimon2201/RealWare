@@ -23,6 +23,7 @@
 #include "input.hpp"
 #include "geometry_storage.hpp"
 #include "log.hpp"
+#include "render_pass_executor.hpp"
 
 using namespace types;
 
@@ -73,6 +74,8 @@ void triton::cGraphics::Initialize()
 {
     _geometryStorage = _context->Create<XGeometryStorage>(_context);
     _geometryStorage->Initialize();
+    _renderPassExecutor = _context->Create<XRenderPassExecutor>(_context);
+    _renderPassExecutor->Initialize();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
 
@@ -103,6 +106,8 @@ void triton::cGraphics::Initialize()
 
 void triton::cGraphics::Shutdown()
 {
+    _renderPassExecutor->Free();
+    _context->Destroy<XRenderPassExecutor>(_renderPassExecutor);
     _geometryStorage->Free();
     _context->Destroy<XGeometryStorage>(_geometryStorage);
 
