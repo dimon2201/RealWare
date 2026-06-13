@@ -394,7 +394,7 @@ triton::XRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
     cBuffer* instanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderOpaqueInstanceCount, 0);
     cBuffer* materialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
     cBuffer* textureBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
-
+    
     return _context->Create<XRenderPassGPU>(_context, vertexArray, shader, instanceBuffer, materialBuffer, textureBuffer);
 }
 

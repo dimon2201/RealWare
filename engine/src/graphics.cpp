@@ -6,6 +6,7 @@
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
+#include <vector>
 #include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
 #include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
 #include "context.hpp"
@@ -195,8 +196,13 @@ triton::XRenderPass* triton::cGraphics::CreateRenderPass(const SRenderPassDescri
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     XRenderPassGPU* renderPass = gfxPipelineBackend->CreateRenderPass(desc);
+    
+    SRenderPassDescriptor newDesc = desc;
+    newDesc._inputBuffers.push_back(renderPass->GetInstanceBuffer());
+    newDesc._inputBuffers.push_back(renderPass->GetMaterialBuffer());
+    newDesc._inputBuffers.push_back(renderPass->GetTextureBuffer());
 
-    return _context->Create<XRenderPass>(_context, desc, renderPass);
+    return _context->Create<XRenderPass>(_context, newDesc, renderPass);
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
@@ -899,16 +905,12 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     opaqueRenderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
     opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetVertexBuffer());
     opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetIndexBuffer());
-    opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetOpaqueRenderPass()->GetInstanceBuffer());
-    opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetOpaqueRenderPass()->GetMaterialBuffer());
-    //opaqueRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetLightBuffer());
-    opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetOpaqueRenderPass()->GetTextureBuffer());
     opaqueRenderPassDesc._inputTextures.emplace_back(textureAtlas->GetAtlas());
     opaqueRenderPassDesc._inputTextureNames.emplace_back("TextureAtlas");
     opaqueRenderPassDesc._shaderBase = nullptr;
     opaqueRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::OPAQUE_PATH;
-    opaqueRenderPassDesc._shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    opaqueRenderPassDesc._shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    opaqueRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
+    opaqueRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     opaqueRenderPassDesc._viewport = viewport;
     opaqueRenderPassDesc._depthMode.useDepthTest = K_TRUE;
     opaqueRenderPassDesc._depthMode.useDepthWrite = K_TRUE;
@@ -922,14 +924,12 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     transparentRenderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
     transparentRenderPassDesc._inputBuffers.emplace_back(gfx->GetVertexBuffer());
     transparentRenderPassDesc._inputBuffers.emplace_back(gfx->GetIndexBuffer());
-    transparentRenderPassDesc._inputBuffers.emplace_back(gfx->GetTransparentRenderPass()->GetInstanceBuffer());
-    transparentRenderPassDesc._inputBuffers.emplace_back(gfx->GetTransparentRenderPass()->GetMaterialBuffer());
     transparentRenderPassDesc._inputTextures.emplace_back(textureAtlas->GetAtlas());
     transparentRenderPassDesc._inputTextureNames.emplace_back("TextureAtlas");
     transparentRenderPassDesc._shaderBase = nullptr;
     transparentRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::TRANSPARENT_PATH;
-    transparentRenderPassDesc._shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    transparentRenderPassDesc._shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    transparentRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
+    transparentRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     transparentRenderPassDesc._viewport = viewport;
     transparentRenderPassDesc._depthMode.useDepthTest = K_TRUE;
     transparentRenderPassDesc._depthMode.useDepthWrite = K_FALSE;
@@ -943,12 +943,10 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 
     SRenderPassDescriptor textRenderPassDesc;
     textRenderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-    textRenderPassDesc._inputBuffers.emplace_back(gfx->GetTextRenderPass()->GetInstanceBuffer());
-    textRenderPassDesc._inputBuffers.emplace_back(gfx->GetTextRenderPass()->GetMaterialBuffer());
     textRenderPassDesc._shaderBase = nullptr;
     textRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::TEXT_PATH;
-    textRenderPassDesc._shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    textRenderPassDesc._shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    textRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
+    textRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     textRenderPassDesc._viewport = viewport;
     textRenderPassDesc._depthMode.useDepthTest = K_FALSE;
     textRenderPassDesc._depthMode.useDepthWrite = K_FALSE;
@@ -964,8 +962,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeTransparentRenderPassDesc._inputTextureNames.emplace_back("RevealageTexture");
     compositeTransparentRenderPassDesc._shaderBase = nullptr;
     compositeTransparentRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::TRANSPARENT_COMPOSITE_PATH;
-    compositeTransparentRenderPassDesc._shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    compositeTransparentRenderPassDesc._shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    compositeTransparentRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
+    compositeTransparentRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     compositeTransparentRenderPassDesc._viewport = viewport;
     compositeTransparentRenderPassDesc._depthMode.useDepthTest = K_FALSE;
     compositeTransparentRenderPassDesc._depthMode.useDepthWrite = K_FALSE;
@@ -982,8 +980,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeFinalRenderPassDesc._inputTextureNames.emplace_back("ColorTexture");
     compositeFinalRenderPassDesc._shaderBase = nullptr;
     compositeFinalRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::QUAD_PATH;
-    compositeFinalRenderPassDesc._shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    compositeFinalRenderPassDesc._shaderFragmentPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    compositeFinalRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
+    compositeFinalRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
     compositeFinalRenderPassDesc._viewport = viewport;
     compositeFinalRenderPassDesc._depthMode.useDepthTest = K_FALSE;
     compositeFinalRenderPassDesc._depthMode.useDepthWrite = K_FALSE;
