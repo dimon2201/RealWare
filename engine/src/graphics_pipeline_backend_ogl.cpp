@@ -53,7 +53,7 @@ void triton::cGraphicsPipelineBackendOGL::UnbindShader()
 }
 
 triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
-    sRenderPassDescriptor::eRenderPath renderPath,
+    SRenderPassDescriptor::eRenderPath renderPath,
     const std::string& vertexPath,
     const std::string& fragmentPath,
     const std::vector<cShader::sDefinePair>& definePairs
@@ -62,27 +62,27 @@ triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
     std::string header = "";
     switch (renderPath)
     {
-    case sRenderPassDescriptor::eRenderPath::NONE:
+    case SRenderPassDescriptor::eRenderPath::NONE:
         Print("Error: invalid 'RENDER_PATH_NONE' for shaders '" + vertexPath + "' and '" + fragmentPath + "'!");
         return nullptr;
 
-    case sRenderPassDescriptor::eRenderPath::OPAQUE_PATH:
+    case SRenderPassDescriptor::eRenderPath::OPAQUE_PATH:
         header = "RENDER_PATH_OPAQUE";
         break;
 
-    case sRenderPassDescriptor::eRenderPath::TRANSPARENT_PATH:
+    case SRenderPassDescriptor::eRenderPath::TRANSPARENT_PATH:
         header = "RENDER_PATH_TRANSPARENT";
         break;
 
-    case sRenderPassDescriptor::eRenderPath::TEXT_PATH:
+    case SRenderPassDescriptor::eRenderPath::TEXT_PATH:
         header = "RENDER_PATH_TEXT";
         break;
 
-    case sRenderPassDescriptor::eRenderPath::TRANSPARENT_COMPOSITE_PATH:
+    case SRenderPassDescriptor::eRenderPath::TRANSPARENT_COMPOSITE_PATH:
         header = "RENDER_PATH_TRANSPARENT_COMPOSITE";
         break;
 
-    case sRenderPassDescriptor::eRenderPath::QUAD_PATH:
+    case SRenderPassDescriptor::eRenderPath::QUAD_PATH:
         header = "RENDER_PATH_QUAD";
         break;
     }
@@ -398,7 +398,7 @@ triton::XRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
     return _context->Create<XRenderPassGPU>(_context, vertexArray, shader, instanceBuffer, materialBuffer, textureBuffer);
 }
 
-void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* renderPass, cShader* customShader)
+void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const XRenderPass* renderPass, cShader* customShader)
 {
     iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* pipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
@@ -429,7 +429,7 @@ void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const cRenderPass* rend
         );
 }
 
-void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const cRenderPass* renderPass)
+void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const XRenderPass* renderPass)
 {
     iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
@@ -442,14 +442,14 @@ void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const cRenderPass* re
         resourceBackend->UnbindTexture(texture);
 }
 
-void triton::cGraphicsPipelineBackendOGL::DestroyRenderPass(cRenderPassGPU* renderPass)
+void triton::cGraphicsPipelineBackendOGL::DestroyRenderPass(XRenderPassGPU* renderPass)
 {
     glBindVertexArray(0);
     DestroyVertexArray(renderPass->GetVertexArray());
 
     DestroyShader(renderPass->GetShader());
 
-    _context->Destroy<cRenderPassGPU>(renderPass);
+    _context->Destroy<XRenderPassGPU>(renderPass);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindDefaultInputLayout()

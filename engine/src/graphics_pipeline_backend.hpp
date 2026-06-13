@@ -6,6 +6,7 @@
 #include "backend.hpp"
 #include "math.hpp"
 #include "category.hpp"
+#include "render_pass.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -54,34 +55,6 @@ namespace triton
         inline const std::string& GetFragmentStr() const { return _fragment; }
     };
 
-    struct sDepthMode
-    {
-        types::boolean useDepthTest = types::K_TRUE;
-        types::boolean useDepthWrite = types::K_TRUE;
-    };
-
-    struct sBlendMode
-    {
-        enum class eBlendFactor
-        {
-            ZERO = 0,
-            ONE = 1,
-            SRC_COLOR = 2,
-            INV_SRC_COLOR = 3,
-            SRC_ALPHA = 4,
-            INV_SRC_ALPHA = 5
-        };
-
-        types::usize factorCount = 0;
-        eBlendFactor srcFactors[8] = { eBlendFactor::ZERO };
-        eBlendFactor dstFactors[8] = { eBlendFactor::ZERO };
-    };
-
-    struct sViewport
-    {
-        cVector4 rect = cVector4(0.0f);
-    };
-
     class cRenderTarget : public cGPUResource
     {
         TRITON_OBJECT(cRenderTarget)
@@ -128,6 +101,21 @@ namespace triton
 
         inline cVertexArray* GetVertexArray() const { return _vertexArray; }
         inline cShader* GetShader() const { return _shader; }
+        
+        inline cBuffer* GetInstanceBuffer() const
+        {
+            return _instanceBuffer;
+        }
+
+        inline cBuffer* GetMaterialBuffer() const
+        {
+            return _materialBuffer;
+        }
+
+        inline cBuffer* GetTextureBuffer() const
+        {
+            return _textureBuffer;
+        }
     };
 
     class iGraphicsPipelineBackend : public iBackend

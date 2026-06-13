@@ -57,8 +57,8 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cShader>();
 	_context->RegisterFactory<cVertexArray>();
 	_context->RegisterFactory<cRenderTarget>();
-	_context->RegisterFactory<cRenderPass>();
-	_context->RegisterFactory<cRenderPassGPU>();
+	_context->RegisterFactory<XRenderPass>();
+	_context->RegisterFactory<XRenderPassGPU>();
 	_context->RegisterFactory<XDataBuffer>();
 	_context->RegisterFactory<cDataFile>();
 	_context->RegisterFactory<cRenderThread>();

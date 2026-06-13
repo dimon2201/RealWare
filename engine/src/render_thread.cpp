@@ -79,7 +79,7 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 		switch (cmd->_command)
 		{
 		case ERenderCommand::RESIZE_RENDER_TARGETS:
-			gfx->ResizeRenderTargets(glm::vec2(
+			gfx->ResizeRenderTargets(cVector2(
 				cmd->_args._argA,
 				cmd->_args._argB
 			));

@@ -3,11 +3,15 @@
 #pragma once
 
 #include "object.hpp"
+#include "category.hpp"
+#include "rasterizer.hpp"
 #include "math.hpp"
 
 namespace triton
 {
     class cBuffer;
+    class cVertexArray;
+    class cShader;
     class cTexture;
     class cTextureAtlasTexture;
     class cShader;
@@ -60,18 +64,21 @@ namespace triton
         void ResizeColorAttachments(const cVector2& size);
         void ResizeDepthAttachment(const cVector2& size);
 
-        inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc.inputTextureAtlasTextures; }
-        inline cVertexArray* GetVertexArray() const { return _renderPass->GetVertexArray(); }
-        inline cShader* GetShader() const { return _renderPass->GetShader(); }
-        inline cRenderTarget* GetRenderTarget() const { return _desc.renderTarget; }
-        inline const sViewport& GetViewport() const { return _desc.viewport; }
-        inline const std::vector<cBuffer*>& GetInputBuffers() const { return _desc.inputBuffers; }
-        inline const std::vector<cTexture*>& GetInputTextures() const { return _desc.inputTextures; }
-        inline const std::vector<std::string>& GetInputTextureNames() const { return _desc.inputTextureNames; }
-        inline const sBlendMode& GetBlendMode() const { return _desc.blendMode; }
-        inline const sDepthMode& GetDepthMode() const { return _desc.depthMode; }
-        inline cRenderPassGPU* GetRenderPassGPU() const { return _renderPass; }
-        inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc.inputTextures[textureIndex] = texture; }
-        inline void SetRenderTarget(cRenderTarget* newRenderTarget) { _desc.renderTarget = newRenderTarget; }
+        inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc._inputTextureAtlasTextures; }
+        cVertexArray* GetVertexArray() const;
+        cShader* GetShader() const;
+        inline cRenderTarget* GetRenderTarget() const { return _desc._renderTarget; }
+        inline const sViewport& GetViewport() const { return _desc._viewport; }
+        inline const std::vector<cBuffer*>& GetInputBuffers() const { return _desc._inputBuffers; }
+        inline const std::vector<cTexture*>& GetInputTextures() const { return _desc._inputTextures; }
+        inline const std::vector<std::string>& GetInputTextureNames() const { return _desc._inputTextureNames; }
+        inline const sBlendMode& GetBlendMode() const { return _desc._blendMode; }
+        inline const sDepthMode& GetDepthMode() const { return _desc._depthMode; }
+        inline XRenderPassGPU* GetRenderPassGPU() const { return _renderPassGPU; }
+        cBuffer* GetInstanceBuffer() const;
+        cBuffer* GetMaterialBuffer() const;
+        cBuffer* GetTextureBuffer() const;
+        inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc._inputTextures[textureIndex] = texture; }
+        inline void SetRenderTarget(cRenderTarget* newRenderTarget) { _desc._renderTarget = newRenderTarget; }
     };
 }

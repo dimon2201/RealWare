@@ -1,21 +1,24 @@
 #include "render_pass.hpp"
+#include "context.hpp"
+#include "graphics_pipeline_backend.hpp"
+#include "graphics_resource_backend.hpp"
 
 triton::XRenderPass::XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU)
-    : iObject(context), _desc(desc), _renderPass(renderPass) {}
+    : iObject(context), _desc(desc), _renderPassGPU(renderPassGPU) {}
 
-void triton::cRenderPass::ResizeViewport(const cVector2& size)
+void triton::XRenderPass::ResizeViewport(const cVector2& size)
 {
-    _desc.viewport.rect.SetZ(size.x);
-    _desc.viewport.rect.SetW(size.y);
+    _desc._viewport.rect.SetZ(size.GetX());
+    _desc._viewport.rect.SetW(size.GetY());
 }
 
-void triton::cRenderPass::ResizeColorAttachments(const cVector2& size)
+void triton::XRenderPass::ResizeColorAttachments(const cVector2& size)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    gfxPipelineBackend->ResizeRenderTargetColors(GetRenderTarget(), size);
+    gfxPipelineBackend->ResizeRenderTargetColors(GetRenderTarget(), glm::vec2(size.GetX(), size.GetY()));
 }
 
-void triton::cRenderPass::ResizeDepthAttachment(const cVector2& size)
+void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
 {
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     cRenderTarget* renderTarget = GetRenderTarget();
@@ -25,4 +28,29 @@ void triton::cRenderPass::ResizeDepthAttachment(const cVector2& size)
             size
         )
     );
+}
+
+triton::cVertexArray* triton::XRenderPass::GetVertexArray() const
+{
+    return _renderPassGPU->GetVertexArray();
+}
+
+triton::cShader* triton::XRenderPass::GetShader() const
+{
+    return _renderPassGPU->GetShader();
+}
+
+triton::cBuffer* triton::XRenderPass::GetInstanceBuffer() const
+{
+    return _renderPassGPU->GetInstanceBuffer();
+}
+
+triton::cBuffer* triton::XRenderPass::GetMaterialBuffer() const
+{
+    return _renderPassGPU->GetMaterialBuffer();
+}
+
+triton::cBuffer* triton::XRenderPass::GetTextureBuffer() const
+{
+    return _renderPassGPU->GetTextureBuffer();
 }

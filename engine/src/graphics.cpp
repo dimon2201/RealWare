@@ -70,7 +70,8 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
 
 void triton::cGraphics::Initialize()
 {
-    _geometryStorage.Initialize();
+    _geometryStorage = _context->Create<XGeometryStorage>(_context);
+    _geometryStorage->Initialize();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
 
@@ -101,7 +102,8 @@ void triton::cGraphics::Initialize()
 
 void triton::cGraphics::Shutdown()
 {
-    _geometryStorage.Free();
+    _geometryStorage->Free();
+    _context->Destroy<XGeometryStorage>(_geometryStorage);
 
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
@@ -126,7 +128,7 @@ void triton::cGraphics::Shutdown()
     memoryAllocator->Deallocate(_transparentTextureAtlasTextures);
     memoryAllocator->Deallocate(_opaqueTextureAtlasTextures);
     memoryAllocator->Deallocate(_lights);
-    memoryAllocator->Deallocate(_textMaterials);
+    /*memoryAllocator->Deallocate(_textMaterials);
     memoryAllocator->Deallocate(_transparentMaterials);
     memoryAllocator->Deallocate(_opaqueMaterials);
     memoryAllocator->Deallocate(_textInstances);
@@ -145,7 +147,7 @@ void triton::cGraphics::Shutdown()
     gfxResourceBackend->DestroyBuffer(_transparentInstanceBuffer);
     gfxResourceBackend->DestroyBuffer(_opaqueInstanceBuffer);
     gfxResourceBackend->DestroyBuffer(_indexBuffer);
-    gfxResourceBackend->DestroyBuffer(_vertexBuffer);
+    gfxResourceBackend->DestroyBuffer(_vertexBuffer);*/
 }
 
 // TODO: Remove material creation from cGraphics
@@ -171,8 +173,9 @@ triton::cVertexArray* triton::cGraphics::CreateDefaultVertexArray()
 {
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+    cGraphics* gfx = _context->GetSubsystem<cGraphics>();
     cVertexArray* vertexArray = gfxPipelineBackend->CreateVertexArray();
-    std::vector<cBuffer*> buffersToBind = { _vertexBuffer, _indexBuffer };
+    std::vector<cBuffer*> buffersToBind = { gfx->GetVertexBuffer(), gfx->GetIndexBuffer()};
 
     gfxPipelineBackend->BindVertexArray(vertexArray);
     for (auto buffer : buffersToBind)
@@ -344,11 +347,11 @@ void triton::cGraphics::DestroyGeometry(sVertexBufferGeometry* geometry)
     _context->Destroy<sVertexBufferGeometry>(geometry);
 }
 
-void triton::cGraphics::DestroyRenderPass(cRenderPass* renderPass)
+void triton::cGraphics::DestroyRenderPass(XRenderPass* renderPass)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     gfxPipelineBackend->DestroyRenderPass(renderPass->GetRenderPassGPU());
-    _context->Destroy<cRenderPass>(renderPass);
+    _context->Destroy<XRenderPass>(renderPass);
 }
 
 void triton::cGraphics::DestroyPrimitive(sPrimitive* primitiveObject)
@@ -362,14 +365,8 @@ void triton::cGraphics::DestroyPrimitive(sPrimitive* primitiveObject)
     _context->Destroy<sPrimitive>(primitiveObject);
 }
 
-void triton::cGraphics::ClearGeometryBuffer()
-{
-    _verticesByteSize = 0;
-    _indicesByteSize = 0;
-}
-
 void triton::cGraphics::ClearRenderTarget(
-    const cRenderPass* renderPass,
+    const XRenderPass* renderPass,
     types::boolean clearColor,
     usize bufferIndex,
     const glm::vec4& color,
@@ -405,7 +402,7 @@ void triton::cGraphics::ClearRenderTargets(const glm::vec4& clearColor, f32 clea
     gfxDrawcallBackend->ClearFramebufferColor(0, cVector4(clearColor));
 }
 
-void triton::cGraphics::ResizeRenderTargets(const glm::vec2& size)
+void triton::cGraphics::ResizeRenderTargets(const cVector2& size)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 
@@ -482,7 +479,7 @@ void triton::cGraphics::UpdateLights()
 }
 
 // TODO: Implement new CPU->GPU geometry buffer communication
-/*void cGraphics::WriteObjectsToOpaqueBuffers(cIdVector<cGameObject>& objects, cRenderPass* renderPass)
+/*void cGraphics::WriteObjectsToOpaqueBuffers(cIdVector<cGameObject>& objects, XRenderPass* renderPass)
 {
     _opaqueInstanceCount = 0;
     _opaqueInstancesByteSize = 0;
@@ -555,7 +552,7 @@ void triton::cGraphics::UpdateLights()
     _gfx->WriteBuffer(_opaqueTextureAtlasTexturesBuffer, 0, _opaqueTextureAtlasTexturesByteSize, _opaqueTextureAtlasTextures);
 }
 
-void cGraphics::WriteObjectsToTransparentBuffers(cIdVector<cGameObject>& objects, cRenderPass* renderPass)
+void cGraphics::WriteObjectsToTransparentBuffers(cIdVector<cGameObject>& objects, XRenderPass* renderPass)
 {
     _transparentInstanceCount = 0;
     _transparentInstancesByteSize = 0;
@@ -627,7 +624,7 @@ void cGraphics::WriteObjectsToTransparentBuffers(cIdVector<cGameObject>& objects
     _gfx->WriteBuffer(_transparentTextureAtlasTexturesBuffer, 0, _transparentTextureAtlasTexturesByteSize, _transparentTextureAtlasTextures);
 }*/
 
-void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, cRenderPass* renderPass)
+void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, XRenderPass* renderPass)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
@@ -643,12 +640,12 @@ void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry
         gfxPipelineBackend->SetShaderUniform(renderPass->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
     }
 
-    gfxDrawcallBackend->Draw(
+    /*gfxDrawcallBackend->Draw(
         geometry->_indexCount,
         geometry->_offsetVertex,
         geometry->_offsetIndex,
        _opaqueInstanceCount
-    );
+    );*/
 
     if (renderPass == nullptr)
         gfxPipelineBackend->UnbindRenderPass(_opaque);
@@ -668,17 +665,17 @@ void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry
     else
         gfxPipelineBackend->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
 
-    gfxDrawcallBackend->Draw(
+    /*gfxDrawcallBackend->Draw(
         geometry->_indexCount,
         geometry->_offsetVertex,
         geometry->_offsetIndex,
         _opaqueInstanceCount
-    );
+    );*/
 
     gfxPipelineBackend->UnbindRenderPass(_opaque);
 }
 
-void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const std::vector<cGameObject>& objects, const cGameObject* cameraObject, cRenderPass* renderPass)
+void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const std::vector<cGameObject>& objects, const cGameObject* cameraObject, XRenderPass* renderPass)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
@@ -694,12 +691,12 @@ void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geo
         gfxPipelineBackend->SetShaderUniform(renderPass->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
     }
 
-    gfxDrawcallBackend->Draw(
+    /*gfxDrawcallBackend->Draw(
         geometry->_indexCount,
         geometry->_offsetVertex,
         geometry->_offsetIndex,
         _transparentInstanceCount
-    );
+    );*/
 
     if (renderPass == nullptr)
         gfxPipelineBackend->UnbindRenderPass(_transparent);
@@ -721,12 +718,12 @@ void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geo
     else
         gfxPipelineBackend->SetShaderUniform(_transparent->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
 
-    gfxDrawcallBackend->Draw(
+    /*gfxDrawcallBackend->Draw(
         geometry->_indexCount,
         geometry->_offsetVertex,
         geometry->_offsetIndex,
         _transparentInstanceCount
-    );
+    );*/
 
     gfxPipelineBackend->UnbindRenderPass(_transparent);
 }
@@ -841,6 +838,16 @@ void triton::cGraphics::CompositeFinal()
     gfxPipelineBackend->UnbindShader();
 }
 
+triton::cBuffer* triton::cGraphics::GetVertexBuffer() const
+{
+    return _geometryStorage->GetVertexBuffer();
+}
+
+triton::cBuffer* triton::cGraphics::GetIndexBuffer() const
+{
+    return _geometryStorage->GetIndexBuffer();
+}
+
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
@@ -887,14 +894,15 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     sViewport viewport;
     viewport.rect = cVector4(0.0f, 0.0f, windowSize.GetX(), windowSize.GetY());
 
+    cGraphics* gfx = _context->GetSubsystem<cGraphics>();
     SRenderPassDescriptor opaqueRenderPassDesc;
     opaqueRenderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
-    opaqueRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetVertexBuffer());
-    opaqueRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetIndexBuffer());
-    opaqueRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetOpaqueInstanceBuffer());
-    opaqueRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetOpaqueMaterialBuffer());
-    opaqueRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetLightBuffer());
-    opaqueRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetOpaqueTextureAtlasTexturesBuffer());
+    opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetVertexBuffer());
+    opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetIndexBuffer());
+    opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetOpaqueRenderPass()->GetInstanceBuffer());
+    opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetOpaqueRenderPass()->GetMaterialBuffer());
+    //opaqueRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetLightBuffer());
+    opaqueRenderPassDesc._inputBuffers.emplace_back(gfx->GetOpaqueRenderPass()->GetTextureBuffer());
     opaqueRenderPassDesc._inputTextures.emplace_back(textureAtlas->GetAtlas());
     opaqueRenderPassDesc._inputTextureNames.emplace_back("TextureAtlas");
     opaqueRenderPassDesc._shaderBase = nullptr;
@@ -912,10 +920,10 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 
     SRenderPassDescriptor transparentRenderPassDesc;
     transparentRenderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
-    transparentRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetVertexBuffer());
-    transparentRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetIndexBuffer());
-    transparentRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetTransparentInstanceBuffer());
-    transparentRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetTransparentMaterialBuffer());
+    transparentRenderPassDesc._inputBuffers.emplace_back(gfx->GetVertexBuffer());
+    transparentRenderPassDesc._inputBuffers.emplace_back(gfx->GetIndexBuffer());
+    transparentRenderPassDesc._inputBuffers.emplace_back(gfx->GetTransparentRenderPass()->GetInstanceBuffer());
+    transparentRenderPassDesc._inputBuffers.emplace_back(gfx->GetTransparentRenderPass()->GetMaterialBuffer());
     transparentRenderPassDesc._inputTextures.emplace_back(textureAtlas->GetAtlas());
     transparentRenderPassDesc._inputTextureNames.emplace_back("TextureAtlas");
     transparentRenderPassDesc._shaderBase = nullptr;
@@ -935,8 +943,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 
     SRenderPassDescriptor textRenderPassDesc;
     textRenderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-    textRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetTextInstanceBuffer());
-    textRenderPassDesc._inputBuffers.emplace_back(cGraphics::GetTextMaterialBuffer());
+    textRenderPassDesc._inputBuffers.emplace_back(gfx->GetTextRenderPass()->GetInstanceBuffer());
+    textRenderPassDesc._inputBuffers.emplace_back(gfx->GetTextRenderPass()->GetMaterialBuffer());
     textRenderPassDesc._shaderBase = nullptr;
     textRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::TEXT_PATH;
     textRenderPassDesc._shaderVertexPath = "C:/My/My Projects Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
