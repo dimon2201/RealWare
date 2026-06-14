@@ -27,7 +27,7 @@ namespace triton
             STORAGE = 4
         };
 
-    private:
+    protected:
         eType _type = eType::NONE;
         types::usize _byteSize = 0;
         types::s32 _slot = -1;

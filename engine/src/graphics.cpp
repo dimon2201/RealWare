@@ -27,14 +27,6 @@
 
 using namespace types;
 
-triton::sRenderInstance::sRenderInstance(s32 materialIndex, const cTransform& transform)
-{
-    // TODO: Implement 2D/3D render instances
-    //_use2D = transform._use2D;
-    _materialIndex = materialIndex;
-    _world = transform.GetWorld();
-}
-
 triton::cMaterialInstance::cMaterialInstance(s32 materialIndex, const cMaterial* material)
 {
     _bufferIndex = materialIndex;

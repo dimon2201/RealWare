@@ -109,16 +109,6 @@ namespace triton
         inline const glm::vec4& GetHighlightColor() const { return _highlightColor; }
     };
 
-    struct sRenderInstance
-    {
-        sRenderInstance(types::s32 materialIndex, const cTransform& transform);
-
-        types::f32 _use2D = 0.0f;
-        types::s32 _materialIndex = -1;
-        types::dword _pad[2] = {};
-        cMatrix4 _world = cMatrix4(1.0f);
-    };
-
     struct sTextInstance
     {
         glm::vec4 _info = glm::vec4(0.0f);
