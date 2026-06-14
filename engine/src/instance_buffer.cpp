@@ -32,25 +32,50 @@ void triton::XInstanceBuffer::Free()
 		_context->Destroy<cHashTable<std::string, usize>>(_instances);
 }
 
-void triton::XInstanceBuffer::AddInstance(const std::string& tag, SRenderInstance::EUsage usage, const SRenderInstance& instance)
+void triton::XInstanceBuffer::Add(const std::string& tag, SRenderInstance::EUsage usage, const SRenderInstance& instance)
 {
 	if (!_instances)
 		return;
 
 	if (usage == SRenderInstance::EUsage::STATIC)
 	{
+		_instances->Insert(tag, std::move(_firstDynamicInstanceBytePointer));
+
+		_cpuBuffer->Move(_lastDynamicInstanceBytePointer - _firstDynamicInstanceBytePointer, _firstDynamicInstanceBytePointer, _firstDynamicInstanceBytePointer + sizeof(SRenderInstance));
+		_cpuBuffer->Write((const u8*)&instance, sizeof(SRenderInstance), _firstDynamicInstanceBytePointer);
+		_firstDynamicInstanceBytePointer += sizeof(SRenderInstance);
+		_lastDynamicInstanceBytePointer += sizeof(SRenderInstance);
 	}
 	else if (usage == SRenderInstance::EUsage::DYNAMIC)
 	{
+		_instances->Insert(tag, std::move(_lastDynamicInstanceBytePointer));
+
+		_cpuBuffer->Write((const u8*)&instance, sizeof(SRenderInstance), _lastDynamicInstanceBytePointer);
+		_lastDynamicInstanceBytePointer += sizeof(SRenderInstance);
 	}
 }
 
-void triton::XInstanceBuffer::RemoveInstance(const std::string& tag)
+void triton::XInstanceBuffer::Remove(const std::string& tag)
 {
 	if (!_instances)
 		return;
+
+	usize* value = _instances->Find(tag);
+	if (value)
+	{
+		usize byteOffset = *value;
+		_cpuBuffer->Move(_cpuBuffer->GetByteSize() - (byteOffset + sizeof(SRenderInstance)), byteOffset + sizeof(SRenderInstance), byteOffset);
+	}
 }
 
-void triton::XInstanceBuffer::Write()
+void triton::XInstanceBuffer::Write(SRenderInstance::EUsage usage)
 {
+	if (!_instances)
+		return;
+
+	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+	if (usage == SRenderInstance::EUsage::STATIC)
+		gfxResourceBackend->WriteBuffer(this, 0, _firstDynamicInstanceBytePointer, _cpuBuffer->GetData());
+	else if (usage == SRenderInstance::EUsage::DYNAMIC)
+		gfxResourceBackend->WriteBuffer(this, _firstDynamicInstanceBytePointer, _lastDynamicInstanceBytePointer - _firstDynamicInstanceBytePointer, _cpuBuffer->GetData() + _firstDynamicInstanceBytePointer);
 }

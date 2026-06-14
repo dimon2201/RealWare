@@ -19,7 +19,8 @@ namespace triton
 
 		XDataBuffer* _cpuBuffer = nullptr;
 		cHashTable<std::string, types::usize>* _instances = nullptr;
-		types::usize _firstDynamicInstancePointer = 0;
+		types::usize _firstDynamicInstanceBytePointer = 0;
+		types::usize _lastDynamicInstanceBytePointer = 0;
 
 	public:
 		explicit XInstanceBuffer(cContext* context, types::qword instance, eType type, types::usize byteSize, types::s32 slot)
@@ -28,8 +29,8 @@ namespace triton
 
 		void Initialize();
 		void Free();
-		void AddInstance(const std::string& tag, SRenderInstance::EUsage usage, const SRenderInstance& instance);
-		void RemoveInstance(const std::string& tag);
-		void Write();
+		void Add(const std::string& tag, SRenderInstance::EUsage usage, const SRenderInstance& instance);
+		void Remove(const std::string& tag);
+		void Write(SRenderInstance::EUsage usage);
 	};
 }
