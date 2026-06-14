@@ -19,6 +19,8 @@ namespace triton
         virtual ~XDataBuffer() override;
 
         void Write(const types::u8* data, types::usize byteSize, types::usize byteOffset);
+        void Erase(types::usize byteSize, types::usize byteOffset);
+        void Move(types::usize byteSize, types::usize sourceByteOffset, types::usize destinationByteOffset);
 
         inline types::u8* GetData() const
         {
