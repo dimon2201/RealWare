@@ -16,6 +16,7 @@ namespace triton
     class cTexture;
     class cTextureAtlasTexture;
     class XRenderPass;
+    class XInstanceBuffer;
 
     class cVertexArray : public cGPUResource
     {
@@ -91,7 +92,7 @@ namespace triton
 
         cVertexArray* _vertexArray = nullptr;
         cShader* _shader = nullptr;
-        cBuffer* _instanceBuffer = nullptr;
+        XInstanceBuffer* _instanceBuffer = nullptr;
         cBuffer* _materialBuffer = nullptr;
         cBuffer* _textureBuffer = nullptr;
 
@@ -102,7 +103,7 @@ namespace triton
         inline cVertexArray* GetVertexArray() const { return _vertexArray; }
         inline cShader* GetShader() const { return _shader; }
         
-        inline cBuffer* GetInstanceBuffer() const
+        inline XInstanceBuffer* GetInstanceBuffer() const
         {
             return _instanceBuffer;
         }
