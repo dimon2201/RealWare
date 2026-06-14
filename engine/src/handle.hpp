@@ -4,13 +4,10 @@
 
 namespace triton
 {
-	class cHandle
+	class SHandle
 	{
 	protected:
-		index idx = 0;
-		types::usize generation = 0;
-
-	public:
-		using index = types::u32;
+		types::usize _index = 0;
+		types::usize _generation = 0;
 	};
 }
