@@ -1,4 +1,4 @@
-// buffer.hpp
+// data_buffer.hpp
 
 #pragma once
 
