@@ -4,6 +4,13 @@
 
 namespace triton
 {
+	class SSlot
+	{
+	protected:
+		void* _object = nullptr;
+		types::usize _generation = 0;
+	};
+
 	class SHandle
 	{
 	protected:

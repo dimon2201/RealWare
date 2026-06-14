@@ -3,16 +3,21 @@
 #pragma once
 
 #include "object.hpp"
-#include "entity.hpp"
+#include "handle.hpp"
 
 namespace triton::ecs
 {
 	class cContext;
 	class cScene;
+	template <typename T>
+	class cStack;
 
 	class XECSSubsystem : public iObject
 	{
 		TRITON_OBJECT(XECSSubsystem)
+
+		cStack<SSlot>* _sceneGenerationSlots = nullptr;
+		cStack<cScene>* _scenes = nullptr;
 
 	public:
 		explicit XECSSubsystem(cContext* context) : iObject(context) {}
@@ -20,7 +25,7 @@ namespace triton::ecs
 
 		void Initialize();
 		void Shutdown();
-		cScene* CreateScene();
-		void DestroyScene(cScene* scene);
+		SHandle CreateScene();
+		void DestroyScene(const SHandle& scene);
 	};
 }
