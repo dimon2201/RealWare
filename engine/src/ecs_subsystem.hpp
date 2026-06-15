@@ -3,7 +3,7 @@
 #pragma once
 
 #include "object.hpp"
-#include "handle.hpp"
+#include "scene_handle.hpp"
 
 namespace triton::ecs
 {
@@ -16,7 +16,7 @@ namespace triton::ecs
 	{
 		TRITON_OBJECT(XECSSubsystem)
 
-		cStack<SSlot>* _sceneGenerationSlots = nullptr;
+		cStack<SSceneSlot>* _sceneGenerationSlots = nullptr;
 		cStack<cScene>* _scenes = nullptr;
 
 	public:
@@ -25,7 +25,7 @@ namespace triton::ecs
 
 		void Initialize();
 		void Shutdown();
-		SHandle CreateScene();
+		SSceneHandle CreateScene();
 		void DestroyScene(const SHandle& scene);
 	};
 }
