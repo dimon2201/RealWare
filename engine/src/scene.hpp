@@ -21,7 +21,7 @@ namespace triton::ecs
 
 		::std::string _name = "";
 		cHashTable<entity, cSingleValue>* _isEntityExist = nullptr; // TODO: make this member field not of a pointer type
-		cComponentStorage<components::sSoundComponent>* _audios = nullptr;
+		cComponentStorage<components::STransformComponent>* _transforms = nullptr;
 
 	public:
 		explicit cScene(cContext* context, const ::std::string& name);
@@ -30,7 +30,12 @@ namespace triton::ecs
 		entity CreateEntity();
 		void DestroyEntity(entity ent);
 		types::boolean IsEntityExist(entity ent);
+		components::STransformComponent* CreateTransformComponent(entity ent);
+		void DestroyTransformComponent(entity ent);
 
-		inline const ::std::string& GetName() const { return _name; }
+		inline const ::std::string& GetName() const
+		{
+			return _name;
+		}
 	};
 }

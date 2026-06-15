@@ -1,10 +1,13 @@
 #include <iostream>
-
 #include "capabilities.hpp"
 #include "context.hpp"
 #include "application.hpp"
+#include "ecs_subsystem.hpp"
+#include "components.hpp"
 
 using namespace triton;
+using namespace triton::ecs;
+using namespace triton::ecs::components;
 using namespace types;
 
 class cMyApplication final : public IApplication
@@ -20,6 +23,12 @@ public:
 
     virtual void Setup() override final
     {
+        XECSSubsystem* ecs = _context->GetSubsystem<XECSSubsystem>();
+        SSceneHandle scene1Handle = ecs->CreateScene("Scene1");
+        cScene* scene1 = ecs->GetScene(scene1Handle);
+        entity ent = scene1->CreateEntity();
+        STransformComponent* entTransform = scene1->CreateTransformComponent(ent);
+        entTransform->_world = cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
     }
 
     virtual void Stop() override final

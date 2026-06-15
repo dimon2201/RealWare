@@ -31,6 +31,7 @@
 #include "instance_buffer.hpp"
 
 using namespace triton::ecs;
+using namespace triton::ecs::components;
 using namespace types;
 
 triton::cEngine::cEngine(cContext* context, IApplication* app) : iObject(context), _app(app)
@@ -68,6 +69,9 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<XFrameSync>();
 	_context->RegisterFactory<XGeometryStorage>();
 	_context->RegisterFactory<XInstanceBuffer>();
+	_context->RegisterFactory<cScene>();
+	_context->RegisterFactory<cHashTable<entity, cSingleValue>>();
+	_context->RegisterFactory<cComponentStorage<STransformComponent>>();
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputBackendGLFW(_context));

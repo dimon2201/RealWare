@@ -24,7 +24,7 @@ namespace triton::ecs
 	{
 		TRITON_OBJECT(cComponentStorage)
 
-		static_assert(std::is_base_of_v<components::sComponent, TComponent>, "TComponent must inherit from sComponent");
+		static_assert(std::is_base_of_v<components::SComponent, TComponent>, "TComponent must inherit from sComponent");
 
 		cStack<TComponent>* _data = nullptr;
 		cHashTable<entity, cSingleValue>* _indices = nullptr;
@@ -64,9 +64,9 @@ template <typename TComponent>
 TComponent* triton::ecs::cComponentStorage<TComponent>::Create(entity ent)
 {
 	_indices->Insert(ent, _data->GetSize());
-	TComponent* component = _data->Push();
+	TComponent component = {};
 
-	return component;
+	return _data->Push(std::move(component));
 }
 
 template <typename TComponent>
