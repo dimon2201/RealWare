@@ -6,7 +6,7 @@
 
 namespace triton
 {
-	class SSceneSlot : public SSlot {};
+	class SSceneSlot final : public SSlot {};
 
-	class SSceneHandle : public SHandle {};
+	class SSceneHandle final : public SHandle {};
 }

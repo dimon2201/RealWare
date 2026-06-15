@@ -6,15 +6,15 @@ namespace triton
 {
 	class SSlot
 	{
-	protected:
-		void* _object = nullptr;
+	public:
+		types::usize _arrayIndex = nullptr;
 		types::usize _generation = 0;
 	};
 
 	class SHandle
 	{
-	protected:
-		types::usize _index = 0;
+	public:
+		types::usize _slotIndex = 0;
 		types::usize _generation = 0;
 	};
 }
