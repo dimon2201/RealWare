@@ -27,6 +27,7 @@
 #include "render_subsystem.hpp"
 #include "thread_guard.hpp"
 #include "geometry_storage.hpp"
+#include "ecs_subsystem.hpp"
 
 using namespace triton::ecs;
 using namespace types;
@@ -84,6 +85,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	_context->RegisterSubsystem(new cTime(_context));
 	_context->RegisterSubsystem(new cThreadSubsystem(_context));
+	_context->RegisterSubsystem(new XECSSubsystem(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
@@ -96,6 +98,7 @@ void triton::cEngine::Initialize()
 	// NOTE: order matters
 	_context->GetSubsystem<cInput>()->Initialize();
 	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
+	_context->GetSubsystem<XECSSubsystem>()->Initialize();
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);
@@ -122,6 +125,7 @@ void triton::cEngine::Shutdown()
 	_context->GetSubsystem<cGraphics>()->Shutdown();
 	_context->GetSubsystem<cTextureAtlas>()->Shutdown();
 	_context->GetSubsystem<cInput>()->Shutdown();
+	_context->GetSubsystem<XECSSubsystem>()->Shutdown();
 	_context->GetSubsystem<XRenderSubsystem>()->Shutdown();
 }
 
