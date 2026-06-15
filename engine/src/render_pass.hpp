@@ -9,6 +9,11 @@
 
 namespace triton
 {
+    namespace ecs::components
+    {
+        class SRenderComponent;
+    }
+
     class cBuffer;
     class cVertexArray;
     class cShader;
@@ -56,11 +61,14 @@ namespace triton
 
         SRenderPassDescriptor _desc = {};
         XRenderPassGPU* _renderPassGPU = nullptr;
+        cStack<ecs::components::SRenderComponent*>* _instances = nullptr;
 
     public:
         explicit XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU);
         virtual ~XRenderPass() override final = default;
 
+        void AddInstance(ecs::components::SRenderComponent* component);
+        void RemoveInstance();
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
         void ResizeDepthAttachment(const cVector2& size);

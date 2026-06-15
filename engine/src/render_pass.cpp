@@ -2,9 +2,18 @@
 #include "context.hpp"
 #include "graphics_pipeline_backend.hpp"
 #include "graphics_resource_backend.hpp"
+#include "instance_buffer.hpp"
 
 triton::XRenderPass::XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU)
     : iObject(context), _desc(desc), _renderPassGPU(renderPassGPU) {}
+
+void triton::XRenderPass::AddInstance()
+{
+}
+
+void triton::XRenderPass::RemoveInstance()
+{
+}
 
 void triton::XRenderPass::ResizeViewport(const cVector2& size)
 {
