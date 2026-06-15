@@ -4,11 +4,11 @@
 
 #include "object.hpp"
 #include "scene_handle.hpp"
+#include "scene.hpp"
 
 namespace triton
 {
 	class cContext;
-	class cScene;
 	template <typename T>
 	class cStack;
 }

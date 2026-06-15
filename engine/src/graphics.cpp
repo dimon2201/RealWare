@@ -195,7 +195,7 @@ triton::XRenderPass* triton::cGraphics::CreateRenderPass(const SRenderPassDescri
     XRenderPassGPU* renderPass = gfxPipelineBackend->CreateRenderPass(desc);
     
     SRenderPassDescriptor newDesc = desc;
-    newDesc._inputBuffers.push_back(renderPass->GetInstanceBuffer());
+    newDesc._inputBuffers.push_back((cBuffer*)renderPass->GetInstanceBuffer());
     newDesc._inputBuffers.push_back(renderPass->GetMaterialBuffer());
     newDesc._inputBuffers.push_back(renderPass->GetTextureBuffer());
 

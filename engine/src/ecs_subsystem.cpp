@@ -47,7 +47,7 @@ triton::SSceneHandle triton::ecs::XECSSubsystem::CreateScene(const std::string& 
 	return handle;
 }
 
-triton::cScene* triton::ecs::XECSSubsystem::GetScene(const SSceneHandle& handle)
+triton::ecs::cScene* triton::ecs::XECSSubsystem::GetScene(const SSceneHandle& handle)
 {
 	SSceneSlot* slot = _sceneGenerationSlots->At(handle._slotIndex);
 	if (handle._generation != slot->_generation)

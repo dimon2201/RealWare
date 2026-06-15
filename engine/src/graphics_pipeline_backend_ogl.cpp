@@ -7,6 +7,7 @@
 #include "context.hpp"
 #include "filesystem_manager.hpp"
 #include "application.hpp"
+#include "instance_buffer.hpp"
 
 using namespace types;
 
@@ -391,7 +392,10 @@ triton::XRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
 
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-    cBuffer* instanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderOpaqueInstanceCount, 0);
+    XInstanceBuffer* instanceBuffer = _context->Create<XInstanceBuffer>(
+        _context,
+        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderOpaqueInstanceCount, 0)
+    );
     cBuffer* materialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
     cBuffer* textureBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
     

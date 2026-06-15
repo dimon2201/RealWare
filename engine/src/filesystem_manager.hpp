@@ -3,7 +3,7 @@
 #pragma once
 
 #include "object.hpp"
-#include "buffer.hpp"
+#include "data_buffer.hpp"
 #include "types.hpp"
 
 namespace triton

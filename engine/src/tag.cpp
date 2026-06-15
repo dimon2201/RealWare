@@ -33,6 +33,20 @@ bool triton::cTag::operator==(const cTag& rhs)
 	return true;
 }
 
+bool triton::cTag::operator==(const cTag& rhs) const
+{
+	if (rhs.GetByteSize() != _byteSize)
+		return false;
+
+	for (usize i = 0; i < _byteSize; i++)
+	{
+		if (rhs.GetData()[i] != _data[i])
+			return false;
+	}
+
+	return true;
+}
+
 bool triton::cTag::operator==(const std::string& rhs)
 {
 	if (rhs.size() != _byteSize)

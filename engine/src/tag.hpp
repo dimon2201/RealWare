@@ -4,6 +4,7 @@
 
 #include <string>
 #include <array>
+#include "stack_value.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -11,7 +12,7 @@ namespace triton
     class cContext;
     class cIdentifier;
     
-    class cTag
+    class cTag : public cStackValue
     {
         friend class cIdentifier;
 
@@ -33,9 +34,10 @@ namespace triton
         ~cTag() = default;
 
         bool operator==(const cTag& rhs);
+        bool operator==(const cTag& rhs) const;
         bool operator==(const ::std::string& rhs);
 
-        inline const chars& GetData() const { return _data; }
+        inline const types::u8* GetData() const { return &_data[0]; }
         inline types::usize GetByteSize() const { return _byteSize; }
     };
 }

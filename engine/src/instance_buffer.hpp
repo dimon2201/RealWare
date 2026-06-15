@@ -4,6 +4,7 @@
 
 #include "graphics_resource_backend.hpp"
 #include "render_instance.hpp"
+#include "tag.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -13,18 +14,32 @@ namespace triton
 	class cHashTable;
 	class cContext;
 
+	class SInstanceBufferOffset final : public cStackValue
+	{
+		types::usize _offset = 0;
+
+	public:
+		SInstanceBufferOffset() = default;
+		SInstanceBufferOffset(types::usize offset) : _offset(offset) {}
+
+		inline types::usize GetOffset() const
+		{
+			return _offset;
+		}
+	};
+
 	class XInstanceBuffer final : public cBuffer
 	{
 		TRITON_OBJECT(XInstanceBuffer)
 
 		XDataBuffer* _cpuBuffer = nullptr;
-		cHashTable<std::string, types::usize>* _instances = nullptr;
+		cHashTable<cTag, SInstanceBufferOffset>* _instances = nullptr;
 		types::usize _firstDynamicInstanceBytePointer = 0;
 		types::usize _lastDynamicInstanceBytePointer = 0;
 
 	public:
-		explicit XInstanceBuffer(cContext* context, types::qword instance, eType type, types::usize byteSize, types::s32 slot)
-			: cBuffer(context, instance, type, byteSize, slot) {}
+		explicit XInstanceBuffer(cContext* context, cBuffer* buffer)
+			: cBuffer(context, buffer->GetInstance(), buffer->GetBufferType(), buffer->GetByteSize(), buffer->GetSlot()) {}
 		virtual ~XInstanceBuffer() override = default;
 
 		void Initialize();

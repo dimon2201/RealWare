@@ -7,7 +7,7 @@
 #include "gameobject_manager.hpp"
 #include "engine.hpp"
 #include "event_manager.hpp"
-#include "buffer.hpp"
+#include "data_buffer.hpp"
 
 using namespace types;
 

@@ -7,7 +7,7 @@
 #include "context.hpp"
 #include "graphics_context_backend.hpp"
 #include "thread_subsystem.hpp"
-#include "buffer.hpp"
+#include "data_buffer.hpp"
 
 using namespace types;
 

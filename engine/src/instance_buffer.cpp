@@ -21,7 +21,7 @@ void triton::XInstanceBuffer::Initialize()
 	cad.chunkByteSize = caps->hashTableChunkByteSize;
 	cad.hashTableSize = caps->hashTableSize;
 	cad.maxChunkCount = caps->hashTableMaxChunkCount;
-	_instances = _context->Create<cHashTable<std::string, usize>>(_context, cad);
+	_instances = _context->Create<cHashTable<cTag, SInstanceBufferOffset>>(_context, cad);
 }
 
 void triton::XInstanceBuffer::Free()
@@ -29,7 +29,7 @@ void triton::XInstanceBuffer::Free()
 	if (_cpuBuffer)
 		_context->Destroy<XDataBuffer>(_cpuBuffer);
 	if (_instances)
-		_context->Destroy<cHashTable<std::string, usize>>(_instances);
+		_context->Destroy<cHashTable<cTag, SInstanceBufferOffset>>(_instances);
 }
 
 void triton::XInstanceBuffer::Add(const std::string& tag, SRenderInstance::EUsage usage, const SRenderInstance& instance)
@@ -39,7 +39,7 @@ void triton::XInstanceBuffer::Add(const std::string& tag, SRenderInstance::EUsag
 
 	if (usage == SRenderInstance::EUsage::STATIC)
 	{
-		_instances->Insert(tag, std::move(_firstDynamicInstanceBytePointer));
+		_instances->Insert(cTag(tag), SInstanceBufferOffset(_firstDynamicInstanceBytePointer));
 
 		_cpuBuffer->Move(_lastDynamicInstanceBytePointer - _firstDynamicInstanceBytePointer, _firstDynamicInstanceBytePointer, _firstDynamicInstanceBytePointer + sizeof(SRenderInstance));
 		_cpuBuffer->Write((const u8*)&instance, sizeof(SRenderInstance), _firstDynamicInstanceBytePointer);
@@ -48,7 +48,7 @@ void triton::XInstanceBuffer::Add(const std::string& tag, SRenderInstance::EUsag
 	}
 	else if (usage == SRenderInstance::EUsage::DYNAMIC)
 	{
-		_instances->Insert(tag, std::move(_lastDynamicInstanceBytePointer));
+		_instances->Insert(cTag(tag), std::move(_lastDynamicInstanceBytePointer));
 
 		_cpuBuffer->Write((const u8*)&instance, sizeof(SRenderInstance), _lastDynamicInstanceBytePointer);
 		_lastDynamicInstanceBytePointer += sizeof(SRenderInstance);
@@ -60,10 +60,10 @@ void triton::XInstanceBuffer::Remove(const std::string& tag)
 	if (!_instances)
 		return;
 
-	usize* value = _instances->Find(tag);
+	SInstanceBufferOffset* value = _instances->Find(cTag(tag));
 	if (value)
 	{
-		usize byteOffset = *value;
+		usize byteOffset = value->GetOffset();
 		_cpuBuffer->Move(_cpuBuffer->GetByteSize() - (byteOffset + sizeof(SRenderInstance)), byteOffset + sizeof(SRenderInstance), byteOffset);
 	}
 }

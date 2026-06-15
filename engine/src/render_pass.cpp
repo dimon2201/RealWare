@@ -40,7 +40,7 @@ triton::cShader* triton::XRenderPass::GetShader() const
     return _renderPassGPU->GetShader();
 }
 
-triton::cBuffer* triton::XRenderPass::GetInstanceBuffer() const
+triton::XInstanceBuffer* triton::XRenderPass::GetInstanceBuffer() const
 {
     return _renderPassGPU->GetInstanceBuffer();
 }

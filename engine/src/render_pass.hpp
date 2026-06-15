@@ -17,6 +17,7 @@ namespace triton
     class cShader;
     class cRenderTarget;
     class XRenderPassGPU;
+    class XInstanceBuffer;
 
     class SRenderPassDescriptor final
     {
@@ -75,7 +76,7 @@ namespace triton
         inline const sBlendMode& GetBlendMode() const { return _desc._blendMode; }
         inline const sDepthMode& GetDepthMode() const { return _desc._depthMode; }
         inline XRenderPassGPU* GetRenderPassGPU() const { return _renderPassGPU; }
-        cBuffer* GetInstanceBuffer() const;
+        XInstanceBuffer* GetInstanceBuffer() const;
         cBuffer* GetMaterialBuffer() const;
         cBuffer* GetTextureBuffer() const;
         inline void SetInputTexture(types::usize textureIndex, cTexture* texture) { _desc._inputTextures[textureIndex] = texture; }

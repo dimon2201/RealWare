@@ -7,7 +7,7 @@ namespace triton
 	class SSlot
 	{
 	public:
-		types::usize _arrayIndex = nullptr;
+		types::usize _arrayIndex = 0;
 		types::usize _generation = 0;
 	};
 

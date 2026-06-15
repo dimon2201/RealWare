@@ -5,7 +5,7 @@
 #include "context.hpp"
 #include "graphics_resource_backend.hpp"
 #include "graphics_buffer_formats.hpp"
-#include "buffer.hpp"
+#include "data_buffer.hpp"
 
 using namespace types;
 

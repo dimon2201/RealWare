@@ -3,6 +3,7 @@
 #pragma once
 
 #include <type_traits>
+#include "application.hpp"
 #include "object.hpp"
 #include "context.hpp"
 #include "memory_pool.hpp"
