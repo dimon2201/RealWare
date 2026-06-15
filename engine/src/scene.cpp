@@ -18,11 +18,13 @@ triton::ecs::cScene::cScene(cContext* context, const std::string& name) : iObjec
 
 	_isEntityExist = _context->Create<cHashTable<entity, cSingleValue>>(_context, cad);
 	_transforms = _context->Create<cComponentStorage<components::STransformComponent>>(_context);
+	_renders = _context->Create<cComponentStorage<components::SRenderComponent>>(_context);
 }
 
 triton::ecs::cScene::~cScene()
 {
 	_context->Destroy<cHashTable<entity, cSingleValue>>(_isEntityExist);
+	_context->Destroy<cComponentStorage<components::SRenderComponent>>(_renders);
 	_context->Destroy<cComponentStorage<components::STransformComponent>>(_transforms);
 }
 
@@ -55,7 +57,17 @@ triton::ecs::components::STransformComponent* triton::ecs::cScene::CreateTransfo
 	return _transforms->Create(ent);
 }
 
+triton::ecs::components::SRenderComponent* triton::ecs::cScene::CreateRenderComponent(entity ent)
+{
+	return _renders->Create(ent);
+}
+
 void triton::ecs::cScene::DestroyTransformComponent(entity ent)
 {
 	return _transforms->Destroy(ent);
+}
+
+void triton::ecs::cScene::DestroyRenderComponent(entity ent)
+{
+	return _renders->Destroy(ent);
 }

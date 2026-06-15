@@ -28,6 +28,7 @@ public:
         cScene* scene1 = ecs->GetScene(scene1Handle);
         entity ent = scene1->CreateEntity();
         STransformComponent* entTransform = scene1->CreateTransformComponent(ent);
+        SRenderComponent* entRender = scene1->CreateRenderComponent(ent);
         entTransform->_world = cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
     }
 

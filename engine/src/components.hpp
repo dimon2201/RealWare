@@ -18,6 +18,8 @@ namespace triton::ecs::components
         cMatrix4 _world = cMatrix4(1.0f);
     };
 
+    class SRenderComponent final : public SComponent {};
+
     class SCameraComponent : public SComponent
     {
     public:
