@@ -28,6 +28,7 @@
 #include "thread_guard.hpp"
 #include "geometry_storage.hpp"
 #include "ecs_subsystem.hpp"
+#include "instance_buffer.hpp"
 
 using namespace triton::ecs;
 using namespace types;
@@ -66,6 +67,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cRenderThread>();
 	_context->RegisterFactory<XFrameSync>();
 	_context->RegisterFactory<XGeometryStorage>();
+	_context->RegisterFactory<XInstanceBuffer>();
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputBackendGLFW(_context));
