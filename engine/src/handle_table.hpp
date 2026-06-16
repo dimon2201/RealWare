@@ -43,13 +43,14 @@ namespace triton
 				_context->Destroy<cStack<TSlot>>(_objectGenerationSlots);
 		}
 
-		THandle Create(const std::string& name)
+		template <typename... Args>
+		THandle Create(Args&&... args)
 		{
 			types::usize arrayIndex = _objects->GetSize();
 			types::usize slotIndex = _objectGenerationSlots->GetSize();
 			types::usize generation = 0;
 
-			TObject* object = _objects->Push(_context, name);
+			TObject* object = _objects->Push(_context, std::forward<Args>(args)...);
 			TSlot slot = {};
 			slot._arrayIndex = arrayIndex;
 			slot._generation = generation;

@@ -6,6 +6,7 @@
 #include "context.hpp"
 #include "data_buffer.hpp"
 #include "components.hpp"
+#include "handle_table.hpp"
 
 using namespace triton::ecs::components;
 using namespace types;
@@ -16,53 +17,57 @@ void triton::XInstanceBuffer::Initialize()
 		return;
 	_cpuBuffer = _context->Create<XDataBuffer>(_context, _byteSize);
 
-	if (_instances)
+	if (_handleTable)
 		return;
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 	sChunkAllocatorDescriptor cad = {};
 	cad.chunkByteSize = caps->hashTableChunkByteSize;
 	cad.hashTableSize = caps->hashTableSize;
 	cad.maxChunkCount = caps->hashTableMaxChunkCount;
-	_instances = _context->Create<cHashTable<cTag, SInstanceBufferOffset>>(_context, cad);
+	_handleTable = _context->Create<XHandleTable<SInstanceBufferSlot, SInstanceBufferHandle, SInstanceBufferOffset>>(_context, cad);
 }
 
 void triton::XInstanceBuffer::Free()
 {
 	if (_cpuBuffer)
 		_context->Destroy<XDataBuffer>(_cpuBuffer);
-	if (_instances)
-		_context->Destroy<cHashTable<cTag, SInstanceBufferOffset>>(_instances);
+	if (_handleTable)
+		_context->Destroy<XHandleTable<SInstanceBufferSlot, SInstanceBufferHandle, SInstanceBufferOffset>>(_handleTable);
 }
 
-void triton::XInstanceBuffer::Add(const std::string& tag, SRenderInstance::EUsage usage, const SRenderInstance& instance)
+triton::SInstanceBufferHandle triton::XInstanceBuffer::Add(const SRenderInstance& instance)
 {
-	if (!_instances)
+	if (!_handleTable)
 		return;
 
-	if (usage == SRenderInstance::EUsage::STATIC)
+	SInstanceBufferHandle handle = {};
+
+	if (instance._usage == SRenderInstance::EUsage::STATIC)
 	{
-		_instances->Insert(cTag(tag), SInstanceBufferOffset(_firstDynamicInstanceBytePointer));
+		handle = _handleTable->Create(_firstDynamicInstanceBytePointer);
 
 		_cpuBuffer->Move(_lastDynamicInstanceBytePointer - _firstDynamicInstanceBytePointer, _firstDynamicInstanceBytePointer, _firstDynamicInstanceBytePointer + sizeof(SRenderInstance));
 		_cpuBuffer->Write((const u8*)&instance, sizeof(SRenderInstance), _firstDynamicInstanceBytePointer);
 		_firstDynamicInstanceBytePointer += sizeof(SRenderInstance);
 		_lastDynamicInstanceBytePointer += sizeof(SRenderInstance);
 	}
-	else if (usage == SRenderInstance::EUsage::DYNAMIC)
+	else if (instance._usage == SRenderInstance::EUsage::DYNAMIC)
 	{
-		_instances->Insert(cTag(tag), std::move(_lastDynamicInstanceBytePointer));
+		handle = _handleTable->Create(_lastDynamicInstanceBytePointer);
 
 		_cpuBuffer->Write((const u8*)&instance, sizeof(SRenderInstance), _lastDynamicInstanceBytePointer);
 		_lastDynamicInstanceBytePointer += sizeof(SRenderInstance);
 	}
+
+	return handle;
 }
 
-void triton::XInstanceBuffer::Remove(const std::string& tag)
+void triton::XInstanceBuffer::Remove(const SInstanceBufferHandle& handle)
 {
-	if (!_instances)
+	if (!_handleTable)
 		return;
 
-	SInstanceBufferOffset* value = _instances->Find(cTag(tag));
+	SInstanceBufferOffset* value = _handleTable->Get(handle);
 	if (value)
 	{
 		usize byteOffset = value->GetOffset();
