@@ -10,13 +10,14 @@ namespace triton
     class SRenderInstance final
     {
     public:
-        enum class EUsage
+        enum class EUsage : types::u32
         {
             NONE = 0,
             STATIC,
             DYNAMIC
         };
 
+        SRenderInstance() = default;
         SRenderInstance(types::s32 materialIndex, const cTransform& transform);
 
         types::f32 _use2D = 0.0f;

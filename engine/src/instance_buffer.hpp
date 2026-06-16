@@ -5,6 +5,7 @@
 #include "graphics_resource_backend.hpp"
 #include "render_instance.hpp"
 #include "tag.hpp"
+#include "render_data.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -46,6 +47,9 @@ namespace triton
 		void Free();
 		void Add(const std::string& tag, SRenderInstance::EUsage usage, const SRenderInstance& instance);
 		void Remove(const std::string& tag);
-		void Write(SRenderInstance::EUsage usage);
+		void UploadStatic(const SRenderData& data);
+		void UploadDynamic(const SRenderData& data);
+		void WriteToGPUStatic();
+		void WriteToGPUDynamic();
 	};
 }

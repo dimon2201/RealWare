@@ -35,7 +35,9 @@ namespace triton::ecs
 
 		TComponent* Create(entity ent);
 		TComponent* Get(entity ent);
+		TComponent* GetByIndex(types::usize index);
 		void Destroy(entity ent);
+		types::usize GetCount();
 	};
 }
 
@@ -79,8 +81,22 @@ TComponent* triton::ecs::cComponentStorage<TComponent>::Get(entity ent)
 }
 
 template <typename TComponent>
+TComponent* triton::ecs::cComponentStorage<TComponent>::GetByIndex(types::usize index)
+{
+	TComponent* component = _data->At(index);
+
+	return component;
+}
+
+template <typename TComponent>
 void triton::ecs::cComponentStorage<TComponent>::Destroy(entity ent)
 {
 	cSingleValue* index = _indices->Find(ent);
 	_data->Erase(index->Value());
+}
+
+template <typename TComponent>
+types::usize triton::ecs::cComponentStorage<TComponent>::GetCount()
+{
+	return _data->GetSize();
 }

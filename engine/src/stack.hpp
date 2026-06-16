@@ -50,6 +50,7 @@ namespace triton
 		TValue* Top() const;
 		void Erase(types::u32 index);
 		void Pop();
+		void Clear();
 
 		inline types::usize GetSize() const { return _elementCount; }
 	};
@@ -163,6 +164,14 @@ template <typename TValue>
 void triton::cStack<TValue>::Pop()
 {
 	Erase(_elementCount - 1);
+}
+
+template <typename TValue>
+void triton::cStack<TValue>::Clear()
+{
+	types::usize size = GetSize();
+	for (types::usize i = 0; i < size; i++)
+		Pop();
 }
 
 template <typename TValue>

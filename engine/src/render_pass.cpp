@@ -3,17 +3,27 @@
 #include "graphics_pipeline_backend.hpp"
 #include "graphics_resource_backend.hpp"
 #include "instance_buffer.hpp"
+#include "components.hpp"
 
 using namespace triton::ecs::components;
+using namespace types;
 
 triton::XRenderPass::XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU)
     : iObject(context), _desc(desc), _renderPassGPU(renderPassGPU) {}
 
-void triton::XRenderPass::AddInstance(SRenderComponent* component)
+void triton::XRenderPass::UploadInstancesStatic(const SRenderData& data)
 {
+    _renderPassGPU->GetInstanceBuffer()->UploadStatic(data);
+    _renderPassGPU->GetInstanceBuffer()->WriteToGPUStatic();
 }
 
-void triton::XRenderPass::RemoveInstance()
+void triton::XRenderPass::UploadInstancesDynamic(const SRenderData& data)
+{
+    _renderPassGPU->GetInstanceBuffer()->UploadDynamic(data);
+    _renderPassGPU->GetInstanceBuffer()->WriteToGPUDynamic();
+}
+
+void triton::XRenderPass::Execute()
 {
 }
 

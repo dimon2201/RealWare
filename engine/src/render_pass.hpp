@@ -5,13 +5,15 @@
 #include "object.hpp"
 #include "category.hpp"
 #include "rasterizer.hpp"
+#include "render_instance.hpp"
 #include "math.hpp"
+#include "render_data.hpp"
 
 namespace triton
 {
     namespace ecs::components
     {
-        class SRenderComponent;
+        class SRenderInstanceComponent;
     }
 
     class cBuffer;
@@ -61,14 +63,14 @@ namespace triton
 
         SRenderPassDescriptor _desc = {};
         XRenderPassGPU* _renderPassGPU = nullptr;
-        cStack<ecs::components::SRenderComponent*>* _instances = nullptr;
 
     public:
         explicit XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU);
-        virtual ~XRenderPass() override final = default;
+        virtual ~XRenderPass() override = default;
 
-        void AddInstance(ecs::components::SRenderComponent* component);
-        void RemoveInstance();
+        void UploadInstancesStatic(const SRenderData& data);
+        void UploadInstancesDynamic(const SRenderData& data);
+        void Execute();
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
         void ResizeDepthAttachment(const cVector2& size);

@@ -2,6 +2,7 @@
 
 #include "math.hpp"
 #include "stack_value.hpp"
+#include "render_instance.hpp"
 
 namespace triton
 {
@@ -18,7 +19,11 @@ namespace triton::ecs::components
         cMatrix4 _world = cMatrix4(1.0f);
     };
 
-    class SRenderComponent final : public SComponent {};
+    class SRenderInstanceComponent final : public SComponent
+    {
+    public:
+        SRenderInstance::EUsage _usage = SRenderInstance::EUsage::NONE;
+    };
 
     class SCameraComponent : public SComponent
     {

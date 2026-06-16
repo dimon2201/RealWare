@@ -5,7 +5,9 @@
 #include "engine.hpp"
 #include "context.hpp"
 #include "data_buffer.hpp"
+#include "components.hpp"
 
+using namespace triton::ecs::components;
 using namespace types;
 
 void triton::XInstanceBuffer::Initialize()
@@ -68,14 +70,45 @@ void triton::XInstanceBuffer::Remove(const std::string& tag)
 	}
 }
 
-void triton::XInstanceBuffer::Write(SRenderInstance::EUsage usage)
+void triton::XInstanceBuffer::UploadStatic(const SRenderData& data)
+{
+	usize size = data._renderInstances->GetSize();
+	for (usize i = 0; i < size; i++)
+	{
+		SRenderInstanceComponent* ric = data._renderInstances->At(i);
+		SRenderInstance ri = {};
+		_cpuBuffer->Write((u8*)&ri, sizeof(SRenderInstance), i * sizeof(SRenderInstance));
+	}
+	_firstDynamicInstanceBytePointer = size * sizeof(SRenderInstance);
+	_lastDynamicInstanceBytePointer = _firstDynamicInstanceBytePointer;
+}
+
+void triton::XInstanceBuffer::UploadDynamic(const SRenderData& data)
+{
+	usize size = data._renderInstances->GetSize();
+	for (usize i = 0; i < size; i++)
+	{
+		SRenderInstanceComponent* ric = data._renderInstances->At(i);
+		SRenderInstance ri = {};
+		_cpuBuffer->Write((u8*)&ri, sizeof(SRenderInstance), _firstDynamicInstanceBytePointer + (i * sizeof(SRenderInstance)));
+	}
+	_lastDynamicInstanceBytePointer += size * sizeof(SRenderInstance);
+}
+
+void triton::XInstanceBuffer::WriteToGPUStatic()
 {
 	if (!_instances)
 		return;
 
 	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-	if (usage == SRenderInstance::EUsage::STATIC)
-		gfxResourceBackend->WriteBuffer(this, 0, _firstDynamicInstanceBytePointer, _cpuBuffer->GetData());
-	else if (usage == SRenderInstance::EUsage::DYNAMIC)
-		gfxResourceBackend->WriteBuffer(this, _firstDynamicInstanceBytePointer, _lastDynamicInstanceBytePointer - _firstDynamicInstanceBytePointer, _cpuBuffer->GetData() + _firstDynamicInstanceBytePointer);
+	gfxResourceBackend->WriteBuffer(this, 0, _firstDynamicInstanceBytePointer, _cpuBuffer->GetData());
+}
+
+void triton::XInstanceBuffer::WriteToGPUDynamic()
+{
+	if (!_instances)
+		return;
+
+	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+	gfxResourceBackend->WriteBuffer(this, _firstDynamicInstanceBytePointer, _lastDynamicInstanceBytePointer - _firstDynamicInstanceBytePointer, _cpuBuffer->GetData() + _firstDynamicInstanceBytePointer);
 }

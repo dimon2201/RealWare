@@ -4,6 +4,7 @@
 #include "application.hpp"
 #include "ecs_subsystem.hpp"
 #include "components.hpp"
+#include "graphics.hpp"
 
 using namespace triton;
 using namespace triton::ecs;
@@ -28,8 +29,12 @@ public:
         cScene* scene1 = ecs->GetScene(scene1Handle);
         entity ent = scene1->CreateEntity();
         STransformComponent* entTransform = scene1->CreateTransformComponent(ent);
-        SRenderComponent* entRender = scene1->CreateRenderComponent(ent);
+        SRenderInstanceComponent* entRender = scene1->CreateRenderInstanceComponent(ent);
         entTransform->_world = cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
+        
+        SRenderData renderDataStatic = scene1->BuildRenderDataStatic();
+        XRenderPass* opaqueRenderPass = _context->GetSubsystem<cGraphics>()->GetOpaqueRenderPass();
+        opaqueRenderPass->UploadInstancesStatic(renderDataStatic);
     }
 
     virtual void Stop() override final
