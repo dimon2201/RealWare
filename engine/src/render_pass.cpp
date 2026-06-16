@@ -4,10 +4,12 @@
 #include "graphics_resource_backend.hpp"
 #include "instance_buffer.hpp"
 
+using namespace triton::ecs::components;
+
 triton::XRenderPass::XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU)
     : iObject(context), _desc(desc), _renderPassGPU(renderPassGPU) {}
 
-void triton::XRenderPass::AddInstance()
+void triton::XRenderPass::AddInstance(SRenderComponent* component)
 {
 }
 
