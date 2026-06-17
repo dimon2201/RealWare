@@ -12,9 +12,12 @@
 namespace triton
 {
 	class XDataBuffer;
-	template <typename X, typename Y, typename Z>
+	template <typename TSlot, typename THandle, typename TDataStructure>
 	class XHandleAllocator;
 	class cContext;
+	template <typename TValue>
+	class XLinearArray;
+	class SRenderInstance;
 
 	class SInstanceBufferOffset final : public cStackValue
 	{
@@ -38,10 +41,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XInstanceBuffer)
 
-		XDataBuffer* _cpuBuffer = nullptr;
-		types::usize _firstDynamicInstanceBytePointer = 0;
-		types::usize _lastDynamicInstanceBytePointer = 0;
-		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, SInstanceBufferOffset>* _handles = nullptr;
+		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>>* _instances = nullptr;
 
 	public:
 		explicit XInstanceBuffer(cContext* context, cBuffer* buffer)
