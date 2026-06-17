@@ -52,7 +52,7 @@ namespace triton
 		TValue* At(const cStackValue& value) const;
 		TValue* Top() const;
 		void Erase(types::u32 index);
-		void Pop();
+		TValue Pop();
 		void Clear();
 		types::boolean IsEmpty();
 
@@ -224,9 +224,12 @@ void triton::cStack<TValue>::Erase(types::u32 index)
 }
 
 template <typename TValue>
-void triton::cStack<TValue>::Pop()
+TValue triton::cStack<TValue>::Pop()
 {
+	TValue value = Top();
 	Erase(_elementCount - 1);
+
+	return value;
 }
 
 template <typename TValue>
