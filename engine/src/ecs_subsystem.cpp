@@ -17,7 +17,7 @@ void triton::ecs::XECSSubsystem::Initialize()
 	cad.hashTableSize = caps->hashTableSize;
 	if (!_handleAllocator)
 	{
-		_handleAllocator = _context->Create<XHandleAllocator<SSceneSlot, SSceneHandle, cScene>>(_context);
+		_handleAllocator = _context->Create<XHandleAllocator<SSceneSlot, SSceneHandle, cStack<cScene>, cScene>>(_context);
 		_handleAllocator->Initialize();
 	}
 }
@@ -27,7 +27,7 @@ void triton::ecs::XECSSubsystem::Shutdown()
 	if (_handleAllocator)
 	{
 		_handleAllocator->Free();
-		_context->Destroy<XHandleAllocator<SSceneSlot, SSceneHandle, cScene>>(_handleAllocator);
+		_context->Destroy<XHandleAllocator<SSceneSlot, SSceneHandle, cStack<cScene>, cScene>>(_handleAllocator);
 	}
 }
 

@@ -12,7 +12,7 @@
 namespace triton
 {
 	class XDataBuffer;
-	template <typename TSlot, typename THandle, typename TDataStructure>
+	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
 	class XHandleAllocator;
 	class cContext;
 	template <typename TValue>
@@ -41,7 +41,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XInstanceBuffer)
 
-		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>>* _instances = nullptr;
+		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>* _instances = nullptr;
 
 	public:
 		explicit XInstanceBuffer(cContext* context, cBuffer* buffer)

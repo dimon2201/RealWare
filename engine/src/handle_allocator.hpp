@@ -24,6 +24,8 @@ namespace triton
 	{
 		TRITON_OBJECT(XHandleAllocator)
 
+		static_assert(std::is_base_of_v<TDataStructure, cStack>, "TDataStructure must inherit from cStack");
+
 		cStack<TSlot>* _slots = nullptr;
 		cStack<SValue>* _freeSlots = nullptr;
 		cStack<SValue>* _reverseMap = nullptr;

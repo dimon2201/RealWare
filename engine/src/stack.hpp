@@ -226,7 +226,7 @@ void triton::cStack<TValue>::Erase(types::u32 index)
 template <typename TValue>
 TValue triton::cStack<TValue>::Pop()
 {
-	TValue value = Top();
+	TValue value = *Top();
 	Erase(_elementCount - 1);
 
 	return value;

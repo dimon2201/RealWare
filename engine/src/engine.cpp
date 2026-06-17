@@ -73,7 +73,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cScene>();
 	_context->RegisterFactory<cHashTable<entity, cSingleValue>>();
 	_context->RegisterFactory<cComponentStorage<STransformComponent>>();
-	_context->RegisterFactory<XHandleAllocator<SSceneSlot, SSceneHandle, cScene>>();
+	_context->RegisterFactory<XHandleAllocator<SSceneSlot, SSceneHandle, cStack<cScene>, cScene>>();
 	_context->RegisterFactory<cStack<SSceneSlot>>();
 	_context->RegisterFactory<cStack<cScene>>();
 
