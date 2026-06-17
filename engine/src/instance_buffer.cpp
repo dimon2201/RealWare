@@ -13,15 +13,14 @@ using namespace types;
 
 void triton::XInstanceBuffer::Initialize()
 {
-	if (_cpuBuffer)
-		return;
-	_cpuBuffer = _context->Create<XDataBuffer>(_context, _byteSize);
+	if (!_instances)
+		_instances = _context->Create<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>>>(_context);
 }
 
 void triton::XInstanceBuffer::Free()
 {
-	if (_cpuBuffer)
-		_context->Destroy<XDataBuffer>(_cpuBuffer);
+	if (_instances)
+		_context->Destroy<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>>>(_instances);
 }
 
 triton::SInstanceBufferHandle triton::XInstanceBuffer::Add(const SRenderInstance& instance)
