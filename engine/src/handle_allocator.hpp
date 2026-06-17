@@ -19,14 +19,14 @@ namespace triton
 		types::usize _value = 0;
 	};
 
-	template <typename TSlot, typename THandle, typename TObject>
+	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
 	class XHandleAllocator : public iObject
 	{
 		TRITON_OBJECT(XHandleAllocator)
 
 		cStack<TSlot>* _slots = nullptr;
 		cStack<SFreeSlotValue>* _freeSlots = nullptr;
-		cStack<TObject>* _objects = nullptr;
+		TDataStructure<TObject>* _objects = nullptr;
 
 	public:
 		explicit XHandleAllocator(cContext* context) : iObject(context) {}

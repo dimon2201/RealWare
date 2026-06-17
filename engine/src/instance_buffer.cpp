@@ -24,11 +24,11 @@ void triton::XInstanceBuffer::Free()
 		_context->Destroy<XDataBuffer>(_cpuBuffer);
 }
 
-triton::SInstanceBufferOffset triton::XInstanceBuffer::Add(const SRenderInstance& instance)
+triton::SInstanceBufferHandle triton::XInstanceBuffer::Add(const SRenderInstance& instance)
 {
 	if (instance._usage == SRenderInstance::EUsage::STATIC)
 	{
-		SInstanceBufferOffset offset(_firstDynamicInstanceBytePointer);
+		SInstanceBufferHandle handle = _handles->Create(_firstDynamicInstanceBytePointer);
 
 		u8* data = _cpuBuffer->GetData();
 		const SRenderInstance firstDynamicInstance = *(const SRenderInstance*)(data + _firstDynamicInstanceBytePointer);
@@ -55,7 +55,7 @@ triton::SInstanceBufferOffset triton::XInstanceBuffer::Add(const SRenderInstance
 		return offset;
 	}
 
-	return SInstanceBufferOffset();
+	return SInstanceBufferHandle();
 }
 
 triton::SRenderInstance* triton::XInstanceBuffer::Get(const SInstanceBufferOffset& offset)

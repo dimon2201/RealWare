@@ -13,7 +13,7 @@ namespace triton
 {
 	class XDataBuffer;
 	template <typename X, typename Y, typename Z>
-	class XHandleTable;
+	class XHandleAllocator;
 	class cContext;
 
 	class SInstanceBufferOffset final : public cStackValue
@@ -30,6 +30,10 @@ namespace triton
 		}
 	};
 
+	class SInstanceBufferSlot final : public SSlot {};
+
+	class SInstanceBufferHandle final : public SHandle {};
+
 	class XInstanceBuffer final : public cBuffer
 	{
 		TRITON_OBJECT(XInstanceBuffer)
@@ -37,6 +41,7 @@ namespace triton
 		XDataBuffer* _cpuBuffer = nullptr;
 		types::usize _firstDynamicInstanceBytePointer = 0;
 		types::usize _lastDynamicInstanceBytePointer = 0;
+		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, SInstanceBufferOffset>* _handles = nullptr;
 
 	public:
 		explicit XInstanceBuffer(cContext* context, cBuffer* buffer)
@@ -45,9 +50,9 @@ namespace triton
 
 		void Initialize();
 		void Free();
-		SInstanceBufferOffset Add(const SRenderInstance& instance);
-		SRenderInstance* Get(const SInstanceBufferOffset& offset);
-		void Remove(const SInstanceBufferOffset& offset);
+		SInstanceBufferHandle Add(const SRenderInstance& instance);
+		SRenderInstance* Get(const SInstanceBufferHandle& handle);
+		void Remove(const SInstanceBufferHandle& handle);
 		void UploadStatic(const SRenderData& data);
 		void UploadDynamic(const SRenderData& data);
 		void WriteToGPUStatic();
