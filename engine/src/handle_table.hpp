@@ -15,7 +15,8 @@ namespace triton
 	{
 		TRITON_OBJECT(XHandleTable)
 
-		cStack<TSlot>* _objectGenerationSlots = nullptr;
+		cStack<TSlot>* _slots = nullptr;
+		cStack<types::usize>* _freeSlots = nullptr;
 		cStack<TObject>* _objects = nullptr;
 
 	public:
@@ -29,8 +30,10 @@ namespace triton
 			cad.chunkByteSize = caps->hashTableChunkByteSize;
 			cad.maxChunkCount = caps->hashTableMaxChunkCount;
 			cad.hashTableSize = caps->hashTableSize;
-			if (!_objectGenerationSlots)
-				_objectGenerationSlots = _context->Create<cStack<TSlot>>(_context, cad);
+			if (!_slots)
+				_slots = _context->Create<cStack<TSlot>>(_context, cad);
+			if (!_freeSlots)
+				_freeSlots = _context->Create<cStack<types::usize>>(_context, cad);
 			if (!_objects)
 				_objects = _context->Create<cStack<TObject>>(_context, cad);
 		}
@@ -39,22 +42,41 @@ namespace triton
 		{
 			if (_objects)
 				_context->Destroy<cStack<TObject>>(_objects);
-			if (_objectGenerationSlots)
-				_context->Destroy<cStack<TSlot>>(_objectGenerationSlots);
+			if (_freeSlots)
+				_context->Destroy<cStack<types::usize>>(_freeSlots);
+			if (_slots)
+				_context->Destroy<cStack<TSlot>>(_slots);
 		}
 
 		template <typename... Args>
 		THandle Create(Args&&... args)
 		{
-			types::usize arrayIndex = _objects->GetSize();
-			types::usize slotIndex = _objectGenerationSlots->GetSize();
-			types::usize generation = 0;
+			types::usize arrayIndex;
+			types::usize slotIndex;
+			types::usize generation;
+			if (_freeSlots->IsEmpty())
+			{
+				arrayIndex = _objects->GetSize();
+				slotIndex = _slots->GetSize();
+				generation = 0;
 
-			TObject* object = _objects->Push(_context, std::forward<Args>(args)...);
-			TSlot slot = {};
-			slot._arrayIndex = arrayIndex;
-			slot._generation = generation;
-			_objectGenerationSlots->Push(std::move(slot));
+				_objects->Push(_context, std::forward<Args>(args)...);
+				TSlot slot = {};
+				slot._arrayIndex = arrayIndex;
+				slot._generation = generation;
+				_slots->Push(std::move(slot));
+			}
+			else
+			{
+				slotIndex = *_freeSlots->Top();
+				_freeSlots->Pop();
+
+				TSlot slot = _slots->At(slotIndex);
+				arrayIndex = slot._arrayIndex;
+				generation = slot._generation;
+
+				_objects->Recreate(arrayIndex, _context, std::forward<Args>(args)...);
+			}
 
 			THandle handle = {};
 			handle._slotIndex = slotIndex;
@@ -65,7 +87,7 @@ namespace triton
 
 		TObject* Get(const THandle& handle)
 		{
-			TSlot* slot = _objectGenerationSlots->At(handle._slotIndex);
+			TSlot* slot = _slots->At(handle._slotIndex);
 			if (handle._generation != slot->_generation)
 				return nullptr;
 
@@ -74,9 +96,9 @@ namespace triton
 
 		void Destroy(const THandle& handle)
 		{
-			TSlot* slot = _objectGenerationSlots->At(handle._slotIndex);
-			_objects->Erase(slot->_arrayIndex);
+			TSlot* slot = _slots->At(handle._slotIndex);
 			slot->_generation += 1;
+			_freeSlots->Push(handle._slotIndex);
 		}
 	};
 }
