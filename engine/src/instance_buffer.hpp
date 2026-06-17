@@ -30,16 +30,11 @@ namespace triton
 		}
 	};
 
-	class SInstanceBufferSlot final : public SSlot {};
-
-	class SInstanceBufferHandle final : public SHandle {};
-
 	class XInstanceBuffer final : public cBuffer
 	{
 		TRITON_OBJECT(XInstanceBuffer)
 
 		XDataBuffer* _cpuBuffer = nullptr;
-		XHandleTable<SInstanceBufferSlot, SInstanceBufferHandle, SInstanceBufferOffset>* _handleTable = nullptr;
 		types::usize _firstDynamicInstanceBytePointer = 0;
 		types::usize _lastDynamicInstanceBytePointer = 0;
 
@@ -50,9 +45,9 @@ namespace triton
 
 		void Initialize();
 		void Free();
-		SInstanceBufferHandle Add(const SRenderInstance& instance);
-		SRenderInstance* Get(const SInstanceBufferHandle& handle);
-		void Remove(const SInstanceBufferHandle& handle);
+		SInstanceBufferOffset Add(const SRenderInstance& instance);
+		SRenderInstance* Get(const SInstanceBufferOffset& offset);
+		void Remove(const SInstanceBufferOffset& offset);
 		void UploadStatic(const SRenderData& data);
 		void UploadDynamic(const SRenderData& data);
 		void WriteToGPUStatic();
