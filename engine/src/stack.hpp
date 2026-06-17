@@ -118,7 +118,7 @@ template <typename... Args>
 TValue* triton::cStack<TValue>::Recreate(types::usize index, Args&&... args)
 {
 	if (_elementCount == 0 || index >= _elementCount)
-		return;
+		return nullptr;
 
 	const types::u32 lastChunkIndex = _chunkCount - 1;
 	const types::u32 chunkIndex = GetChunkIndex(index);
@@ -128,7 +128,7 @@ TValue* triton::cStack<TValue>::Recreate(types::usize index, Args&&... args)
 	const types::boolean isLastChunk = chunkIndex == lastChunkIndex;
 
 	if (chunkIndex >= _chunkCount || (isLastChunk == types::K_TRUE && localPosition >= lastChunkObjectCount))
-		return;
+		return nullptr;
 
 	_chunks[chunkIndex][localPosition].~TValue();
 
@@ -146,7 +146,7 @@ template <typename TValue>
 TValue* triton::cStack<TValue>::Recreate(types::usize index, TValue&& value)
 {
 	if (_elementCount == 0 || index >= _elementCount)
-		return;
+		return nullptr;
 
 	const types::u32 lastChunkIndex = _chunkCount - 1;
 	const types::u32 chunkIndex = GetChunkIndex(index);
@@ -156,7 +156,7 @@ TValue* triton::cStack<TValue>::Recreate(types::usize index, TValue&& value)
 	const types::boolean isLastChunk = chunkIndex == lastChunkIndex;
 
 	if (chunkIndex >= _chunkCount || (isLastChunk == types::K_TRUE && localPosition >= lastChunkObjectCount))
-		return;
+		return nullptr;
 
 	_chunks[chunkIndex][localPosition].~TValue();
 

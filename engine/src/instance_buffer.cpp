@@ -6,7 +6,7 @@
 #include "context.hpp"
 #include "data_buffer.hpp"
 #include "components.hpp"
-#include "handle_table.hpp"
+#include "handle_allocator.hpp"
 
 using namespace triton::ecs::components;
 using namespace types;

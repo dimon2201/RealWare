@@ -29,7 +29,7 @@
 #include "geometry_storage.hpp"
 #include "ecs_subsystem.hpp"
 #include "instance_buffer.hpp"
-#include "handle_table.hpp"
+#include "handle_allocator.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -73,7 +73,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cScene>();
 	_context->RegisterFactory<cHashTable<entity, cSingleValue>>();
 	_context->RegisterFactory<cComponentStorage<STransformComponent>>();
-	_context->RegisterFactory<XHandleTable<SSceneSlot, SSceneHandle, cScene>>();
+	_context->RegisterFactory<XHandleAllocator<SSceneSlot, SSceneHandle, cScene>>();
 	_context->RegisterFactory<cStack<SSceneSlot>>();
 	_context->RegisterFactory<cStack<cScene>>();
 

@@ -4,7 +4,7 @@
 #include "context.hpp"
 #include "engine.hpp"
 #include "stack.hpp"
-#include "handle_table.hpp"
+#include "handle_allocator.hpp"
 
 using namespace types;
 
@@ -15,33 +15,33 @@ void triton::ecs::XECSSubsystem::Initialize()
 	cad.chunkByteSize = caps->hashTableChunkByteSize;
 	cad.maxChunkCount = caps->hashTableMaxChunkCount;
 	cad.hashTableSize = caps->hashTableSize;
-	if (!_handleTable)
+	if (!_handleAllocator)
 	{
-		_handleTable = _context->Create<XHandleTable<SSceneSlot, SSceneHandle, cScene>>(_context);
-		_handleTable->Initialize();
+		_handleAllocator = _context->Create<XHandleAllocator<SSceneSlot, SSceneHandle, cScene>>(_context);
+		_handleAllocator->Initialize();
 	}
 }
 
 void triton::ecs::XECSSubsystem::Shutdown()
 {
-	if (_handleTable)
+	if (_handleAllocator)
 	{
-		_handleTable->Free();
-		_context->Destroy<XHandleTable<SSceneSlot, SSceneHandle, cScene>>(_handleTable);
+		_handleAllocator->Free();
+		_context->Destroy<XHandleAllocator<SSceneSlot, SSceneHandle, cScene>>(_handleAllocator);
 	}
 }
 
 triton::SSceneHandle triton::ecs::XECSSubsystem::CreateScene(const std::string& name)
 {
-	return _handleTable->Create(name);
+	return _handleAllocator->Create(name);
 }
 
 triton::ecs::cScene* triton::ecs::XECSSubsystem::GetScene(const SSceneHandle& handle)
 {
-	return _handleTable->Get(handle);
+	return _handleAllocator->Get(handle);
 }
 
 void triton::ecs::XECSSubsystem::DestroyScene(const SSceneHandle& handle)
 {
-	return _handleTable->Destroy(handle);
+	return _handleAllocator->Destroy(handle);
 }

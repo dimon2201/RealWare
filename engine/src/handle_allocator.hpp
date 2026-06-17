@@ -10,13 +10,22 @@ namespace triton
 	template <typename T>
 	class cStack;
 
+	class SFreeSlotValue : public cStackValue
+	{
+	public:
+		SFreeSlotValue() = default;
+		SFreeSlotValue(types::usize value) : _value(value) {}
+
+		types::usize _value = 0;
+	};
+
 	template <typename TSlot, typename THandle, typename TObject>
 	class XHandleAllocator : public iObject
 	{
 		TRITON_OBJECT(XHandleAllocator)
 
 		cStack<TSlot>* _slots = nullptr;
-		cStack<types::usize>* _freeSlots = nullptr;
+		cStack<SFreeSlotValue>* _freeSlots = nullptr;
 		cStack<TObject>* _objects = nullptr;
 
 	public:
@@ -33,7 +42,7 @@ namespace triton
 			if (!_slots)
 				_slots = _context->Create<cStack<TSlot>>(_context, cad);
 			if (!_freeSlots)
-				_freeSlots = _context->Create<cStack<types::usize>>(_context, cad);
+				_freeSlots = _context->Create<cStack<SFreeSlotValue>>(_context, cad);
 			if (!_objects)
 				_objects = _context->Create<cStack<TObject>>(_context, cad);
 		}
@@ -43,7 +52,7 @@ namespace triton
 			if (_objects)
 				_context->Destroy<cStack<TObject>>(_objects);
 			if (_freeSlots)
-				_context->Destroy<cStack<types::usize>>(_freeSlots);
+				_context->Destroy<cStack<SFreeSlotValue>>(_freeSlots);
 			if (_slots)
 				_context->Destroy<cStack<TSlot>>(_slots);
 		}
@@ -52,6 +61,7 @@ namespace triton
 		THandle Create(Args&&... args)
 		{
 			types::usize arrayIndex;
+			SFreeSlotValue slotValue;
 			types::usize slotIndex;
 			types::usize generation;
 			if (_freeSlots->IsEmpty())
@@ -68,10 +78,11 @@ namespace triton
 			}
 			else
 			{
-				slotIndex = *_freeSlots->Top();
+				slotValue = *_freeSlots->Top();
 				_freeSlots->Pop();
+				slotIndex = slotValue._value;
 
-				TSlot slot = _slots->At(slotIndex);
+				TSlot slot = *_slots->At(slotIndex);
 				arrayIndex = slot._arrayIndex;
 				generation = slot._generation;
 
@@ -98,7 +109,7 @@ namespace triton
 		{
 			TSlot* slot = _slots->At(handle._slotIndex);
 			slot->_generation += 1;
-			_freeSlots->Push(handle._slotIndex);
+			_freeSlots->Push(SFreeSlotValue(handle._slotIndex));
 		}
 	};
 }
