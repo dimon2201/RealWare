@@ -30,8 +30,13 @@ triton::SInstanceBufferOffset triton::XInstanceBuffer::Add(const SRenderInstance
 	{
 		SInstanceBufferOffset offset(_firstDynamicInstanceBytePointer);
 
-		_cpuBuffer->Move(_lastDynamicInstanceBytePointer - _firstDynamicInstanceBytePointer, _firstDynamicInstanceBytePointer, _firstDynamicInstanceBytePointer + sizeof(SRenderInstance));
-		_cpuBuffer->Write((const u8*)&instance, sizeof(SRenderInstance), _firstDynamicInstanceBytePointer);
+		u8* data = _cpuBuffer->GetData();
+		const SRenderInstance firstDynamicInstance = *(const SRenderInstance*)(data + _firstDynamicInstanceBytePointer);
+		*(SRenderInstance*)(data + _lastDynamicInstanceBytePointer) = firstDynamicInstance;
+		*(SRenderInstance*)(data + _firstDynamicInstanceBytePointer) = instance;
+		// TODO: write two instances to GPU
+		// WriteToGPU(_firstDynamicInstanceBytePointer)
+		// WriteToGPU(_lastDynamicInstanceBytePointer)
 		_firstDynamicInstanceBytePointer += sizeof(SRenderInstance);
 		_lastDynamicInstanceBytePointer += sizeof(SRenderInstance);
 
@@ -41,7 +46,10 @@ triton::SInstanceBufferOffset triton::XInstanceBuffer::Add(const SRenderInstance
 	{
 		SInstanceBufferOffset offset(_lastDynamicInstanceBytePointer);
 
-		_cpuBuffer->Write((const u8*)&instance, sizeof(SRenderInstance), _lastDynamicInstanceBytePointer);
+		u8* data = _cpuBuffer->GetData();
+		*(SRenderInstance*)(data + _lastDynamicInstanceBytePointer) = instance;
+		// TODO: write instance to GPU
+		// WriteToGPU(_lastDynamicInstanceBytePointer)
 		_lastDynamicInstanceBytePointer += sizeof(SRenderInstance);
 
 		return offset;
