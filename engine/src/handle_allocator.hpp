@@ -1,4 +1,4 @@
-// handle_table.hpp
+// handle_allocator.hpp
 
 #pragma once
 
@@ -11,17 +11,17 @@ namespace triton
 	class cStack;
 
 	template <typename TSlot, typename THandle, typename TObject>
-	class XHandleTable : public iObject
+	class XHandleAllocator : public iObject
 	{
-		TRITON_OBJECT(XHandleTable)
+		TRITON_OBJECT(XHandleAllocator)
 
 		cStack<TSlot>* _slots = nullptr;
 		cStack<types::usize>* _freeSlots = nullptr;
 		cStack<TObject>* _objects = nullptr;
 
 	public:
-		explicit XHandleTable(cContext* context) : iObject(context) {}
-		virtual ~XHandleTable() override = default;
+		explicit XHandleAllocator(cContext* context) : iObject(context) {}
+		virtual ~XHandleAllocator() override = default;
 
 		void Initialize()
 		{
