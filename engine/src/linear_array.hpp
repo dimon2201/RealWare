@@ -7,6 +7,7 @@
 #include "context.hpp"
 #include "memory_pool.hpp"
 #include "stack_value.hpp"
+#include "buffer_view.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -17,7 +18,7 @@ namespace triton
 		TRITON_OBJECT(XLinearArray)
 
 		types::usize _elementCount = 0;
-		TValue* _chunk = nullptr;
+		TValue* _data = nullptr;
 
 	public:
 		explicit XLinearArray(cContext* context, types::usize maxByteSize);
@@ -40,6 +41,11 @@ namespace triton
 		{
 			return _elementCount;
 		}
+
+		inline SBufferView GetData() const
+		{
+			return SBufferView((void*)_data, _elementCount * sizeof(XLinearArray));
+		}
 	};
 }
 
@@ -48,7 +54,7 @@ triton::XLinearArray<TValue>::XLinearArray(cContext* context, types::usize maxBy
 {
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-	_chunk = (TValue*)memoryAllocator->Allocate(maxByteSize, caps->memoryAlignment);
+	_data = (TValue*)memoryAllocator->Allocate(maxByteSize, caps->memoryAlignment);
 }
 
 template <typename TValue>
@@ -58,14 +64,14 @@ triton::XLinearArray<TValue>::~XLinearArray()
 		Pop();
 
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-	memoryAllocator->Deallocate(_chunk);
+	memoryAllocator->Deallocate(_data);
 }
 
 template <typename TValue>
 template <typename... Args>
 TValue* triton::XLinearArray<TValue>::Push(Args&&... args)
 {
-	TValue* object = _context->Create<TValue>((types::u8*)_chunk, _elementCount, std::forward<Args>(args)...);
+	TValue* object = _context->Create<TValue>((types::u8*)_data, _elementCount, std::forward<Args>(args)...);
 	_elementCount += 1;
 
 	return object;
@@ -74,8 +80,8 @@ TValue* triton::XLinearArray<TValue>::Push(Args&&... args)
 template <typename TValue>
 TValue* triton::XLinearArray<TValue>::Push(TValue&& value)
 {
-	_chunk[_elementCount] = std::move(value);
-	TValue* object = &_chunk[_elementCount];
+	_data[_elementCount] = std::move(value);
+	TValue* object = &_data[_elementCount];
 	_elementCount += 1;
 
 	return object;
@@ -88,9 +94,9 @@ TValue* triton::XLinearArray<TValue>::Recreate(types::usize index, Args&&... arg
 	if (_elementCount == 0 || index >= _elementCount)
 		return nullptr;
 
-	_chunk[index].~TValue();
+	_data[index].~TValue();
 
-	TValue* object = _context->Create<TValue>((types::u8*)_chunk, index, std::forward<Args>(args)...);
+	TValue* object = _context->Create<TValue>((types::u8*)_data, index, std::forward<Args>(args)...);
 
 	return object;
 }
@@ -101,10 +107,10 @@ TValue* triton::XLinearArray<TValue>::Recreate(types::usize index, TValue&& valu
 	if (_elementCount == 0 || index >= _elementCount)
 		return nullptr;
 
-	_chunk[index].~TValue();
-	_chunk[index] = std::move(value);
+	_data[index].~TValue();
+	_data[index] = std::move(value);
 
-	TValue* object = &_chunk[index];
+	TValue* object = &_data[index];
 
 	return object;
 }
@@ -112,10 +118,10 @@ TValue* triton::XLinearArray<TValue>::Recreate(types::usize index, TValue&& valu
 template <typename TValue>
 TValue* triton::XLinearArray<TValue>::At(types::u32 index) const
 {
-	if (_chunkCount == 0 || index >= _elementCount)
+	if (_dataCount == 0 || index >= _elementCount)
 		return nullptr;
 
-	return &_chunk[index];
+	return &_data[index];
 }
 
 template <typename TValue>
@@ -133,8 +139,8 @@ void triton::XLinearArray<TValue>::Erase(types::u32 index)
 	if (_elementCount == 0 || index >= _elementCount)
 		return;
 
-	_chunk[index].~TValue();
-	_chunk[index] = _chunk[_elementCount - 1];
+	_data[index].~TValue();
+	_data[index] = _data[_elementCount - 1];
 	_elementCount -= 1;
 }
 

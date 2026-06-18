@@ -53,9 +53,7 @@ namespace triton
 		SInstanceBufferHandle Add(const SRenderInstance& instance);
 		SRenderInstance* Get(const SInstanceBufferHandle& handle);
 		void Remove(const SInstanceBufferHandle& handle);
-		void UploadStatic(const SRenderData& data);
-		void UploadDynamic(const SRenderData& data);
-		void WriteToGPUStatic();
-		void WriteToGPUDynamic();
+		void Write(const SInstanceBufferHandle& handle);
+		void WriteAll();
 	};
 }

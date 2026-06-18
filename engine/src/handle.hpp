@@ -15,6 +15,7 @@ namespace triton
 	{
 	public:
 		types::usize _slotIndex = 0;
+		types::usize _indexInArray = 0;
 		types::usize _generation = 0;
 	};
 }

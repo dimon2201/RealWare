@@ -29,7 +29,7 @@ namespace triton
 
 		void NotifyThread();
 		void MakeContextCurrent(const CRenderFrame* renderFrame, iGraphicsContextBackend* contextBackend);
-		void ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, cGraphics* gfx);
+		void ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, iGraphicsResourceBackend* resourceBackend, cGraphics* gfx);
 		void Present(const CRenderFrame* renderFrame, iGraphicsContextBackend* contextBackend);
 
 	public:

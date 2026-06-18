@@ -7,6 +7,7 @@
 #include "texture_manager.hpp"
 #include "graphics.hpp"
 #include "graphics_context_backend.hpp"
+#include "graphics_resource_backend.hpp"
 #include "render_subsystem.hpp"
 #include "thread_guard.hpp"
 
@@ -32,7 +33,7 @@ void triton::cRenderThread::ThreadFunction()
 	}
 
 	_initialized.store(K_TRUE);
-	_renderSubsystem->NotifyMainThread();
+	_renderSubsystem->NotifyMainThread(); // TODO: move NotifyMainThread() to render thread
 
 	// Initialize subsystems
 	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
@@ -40,6 +41,7 @@ void triton::cRenderThread::ThreadFunction()
 
 	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
+	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
 	while (K_TRUE)
 	{
@@ -51,7 +53,7 @@ void triton::cRenderThread::ThreadFunction()
 		const CRenderFrame* renderFrame = _sync->AcquireFrame();
 
 		MakeContextCurrent(renderFrame, gfxContextBackend);
-		ExecuteCommands(renderFrame, gfxDrawcallBackend, gfx);
+		ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfx);
 		Present(renderFrame, gfxContextBackend);
 
 		_sync->FreeFrame(renderFrame->GetIndexInSwapChain());
@@ -70,7 +72,7 @@ void triton::cRenderThread::MakeContextCurrent(const CRenderFrame* renderFrame, 
 	contextBackend->MakeWindowGraphicsContextCurrent(renderFrame->GetWindow()->GetBackendWindow());
 }
 
-void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, cGraphics* gfx)
+void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, iGraphicsResourceBackend* resourceBackend, cGraphics* gfx)
 {
 	while (auto result = renderFrame->Next())
 	{
@@ -98,6 +100,14 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 				cmd->_args._argB,
 				cmd->_args._argC,
 				cmd->_args._argD
+			);
+			break;
+		case ERenderCommand::WRITE_BUFFER:
+			resourceBackend->WriteBuffer(
+				(cBuffer*)cmd->_args._argA,
+				cmd->_args._argB,
+				cmd->_args._argC,
+				(const u8*)cmd->_args._argD
 			);
 			break;
 		}

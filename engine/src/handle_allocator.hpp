@@ -87,6 +87,7 @@ namespace triton
 
 				_slots->Push(std::move(slot));
 
+				handle._indexInArray = arrayIndex;
 				handle._generation = 0;
 			}
 			else
@@ -98,9 +99,51 @@ namespace triton
 
 				_slots->At(slotIndex)->_arrayIndex = arrayIndex;
 
+				handle._indexInArray = arrayIndex;
 				handle._generation = _slots->At(slotIndex)->_generation;
 			}
 			
+			handle._slotIndex = slotIndex;
+
+			return handle;
+		}
+
+		THandle Create(TObject&& object)
+		{
+			types::usize arrayIndex;
+			types::usize slotIndex;
+			types::usize generation;
+
+			arrayIndex = _objects->GetSize();
+			THandle handle = {};
+
+			if (_freeSlots->IsEmpty())
+			{
+				slotIndex = _slots->GetSize();
+
+				_objects->Push(std::move(object);
+				_reverseMap->Push(slotIndex);
+
+				TSlot slot = {};
+				slot._arrayIndex = arrayIndex;
+				slot._generation = 0;
+
+				_slots->Push(std::move(slot));
+
+				handle._generation = 0;
+			}
+			else
+			{
+				slotIndex = _freeSlots->Pop()._value;
+
+				_objects->Push(std::move(object);
+				_reverseMap->Push(slotIndex);
+
+				_slots->At(slotIndex)->_arrayIndex = arrayIndex;
+
+				handle._generation = _slots->At(slotIndex)->_generation;
+			}
+
 			handle._slotIndex = slotIndex;
 
 			return handle;
@@ -142,6 +185,11 @@ namespace triton
 			_freeSlots->Push(handle._slotIndex);
 
 			slot->_generation += 1;
+		}
+
+		inline SBufferView GetData() const
+		{
+			return _objects->GetData();
 		}
 	};
 }
