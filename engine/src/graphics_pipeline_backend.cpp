@@ -18,8 +18,8 @@ triton::cShader::cShader(
 
 triton::cVertexArray::cVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}
 
-triton::XRenderPassGPU::XRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, XInstanceBuffer* instanceBuffer, cBuffer* materialBuffer, cBuffer* textureBuffer)
-	: iObject(context), _vertexArray(vertexArray), _shader(shader), _instanceBuffer(instanceBuffer), _materialBuffer(materialBuffer), _textureBuffer(textureBuffer) {}
+triton::XRenderPassGPU::XRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, XInstanceBuffer* instanceBufferStatic, XInstanceBuffer* instanceBufferDynamic, cBuffer* materialBuffer, cBuffer* textureBuffer)
+	: iObject(context), _vertexArray(vertexArray), _shader(shader), _instanceBufferStatic(instanceBufferStatic), _instanceBufferDynamic(instanceBufferDynamic), _materialBuffer(materialBuffer), _textureBuffer(textureBuffer) {}
 
 triton::cRenderTarget::cRenderTarget(
 	cContext* context,

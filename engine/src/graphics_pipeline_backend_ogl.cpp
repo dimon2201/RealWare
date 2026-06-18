@@ -392,14 +392,18 @@ triton::XRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(co
 
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-    XInstanceBuffer* instanceBuffer = _context->Create<XInstanceBuffer>(
+    XInstanceBuffer* instanceBufferStatic = _context->Create<XInstanceBuffer>(
         _context,
-        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderOpaqueInstanceCount, 0)
+        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance), 0)
+    );
+    XInstanceBuffer* instanceBufferDynamic = _context->Create<XInstanceBuffer>(
+        _context,
+        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance), 0)
     );
     cBuffer* materialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
     cBuffer* textureBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
     
-    return _context->Create<XRenderPassGPU>(_context, vertexArray, shader, instanceBuffer, materialBuffer, textureBuffer);
+    return _context->Create<XRenderPassGPU>(_context, vertexArray, shader, instanceBufferStatic, instanceBufferDynamic, materialBuffer, textureBuffer);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const XRenderPass* renderPass, cShader* customShader)

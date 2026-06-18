@@ -1,5 +1,6 @@
 #include "render_pass.hpp"
 #include "context.hpp"
+#include "engine.hpp"
 #include "graphics_pipeline_backend.hpp"
 #include "graphics_resource_backend.hpp"
 #include "instance_buffer.hpp"
@@ -9,18 +10,35 @@ using namespace triton::ecs::components;
 using namespace types;
 
 triton::XRenderPass::XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU)
-    : iObject(context), _desc(desc), _renderPassGPU(renderPassGPU) {}
-
-void triton::XRenderPass::UploadInstancesStatic(const SRenderData& data)
+    : iObject(context), _desc(desc), _renderPassGPU(renderPassGPU)
 {
-    _renderPassGPU->GetInstanceBuffer()->UploadStatic(data);
-    _renderPassGPU->GetInstanceBuffer()->WriteToGPUStatic();
+    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+    sChunkAllocatorDescriptor cad = {};
+    cad.chunkByteSize = caps->hashTableChunkByteSize;
+    cad.maxChunkCount = caps->hashTableMaxChunkCount;
+    cad.hashTableSize = caps->hashTableSize;
+    _dirtyStaticInstances = _context->Create<cStack<SInstanceBufferHandle>>(_context, cad);
 }
 
-void triton::XRenderPass::UploadInstancesDynamic(const SRenderData& data)
+void triton::XRenderPass::WriteDirtyStaticInstancesToGPU()
 {
-    _renderPassGPU->GetInstanceBuffer()->UploadDynamic(data);
-    _renderPassGPU->GetInstanceBuffer()->WriteToGPUDynamic();
+    while (_dirtyStaticInstances->IsEmpty())
+    {
+        SInstanceBufferHandle handle = _dirtyStaticInstances->Pop();
+    }
+}
+
+void triton::XRenderPass::WriteDynamicInstancesToGPU()
+{
+}
+
+void triton::XRenderPass::WriteStaticInstanceToGPU(const SInstanceBufferHandle& instance)
+{
+    _dirtyStaticInstances->Push(std::move(instance));
+}
+
+void triton::XRenderPass::SynchronizeGPU()
+{
 }
 
 void triton::XRenderPass::Execute()

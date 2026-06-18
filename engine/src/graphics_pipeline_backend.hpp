@@ -90,33 +90,16 @@ namespace triton
     {
         TRITON_OBJECT(XRenderPassGPU)
 
+    public:
         cVertexArray* _vertexArray = nullptr;
         cShader* _shader = nullptr;
-        XInstanceBuffer* _instanceBuffer = nullptr;
+        XInstanceBuffer* _instanceBufferStatic = nullptr;
+        XInstanceBuffer* _instanceBufferDynamic = nullptr;
         cBuffer* _materialBuffer = nullptr;
         cBuffer* _textureBuffer = nullptr;
 
-    public:
-        explicit XRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, XInstanceBuffer* instanceBuffer, cBuffer* materialBuffer, cBuffer* textureBuffer);
+        explicit XRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, XInstanceBuffer* instanceBufferStatic, XInstanceBuffer* instanceBufferDynamic, cBuffer* materialBuffer, cBuffer* textureBuffer);
         virtual ~XRenderPassGPU() override final = default;
-
-        inline cVertexArray* GetVertexArray() const { return _vertexArray; }
-        inline cShader* GetShader() const { return _shader; }
-        
-        inline XInstanceBuffer* GetInstanceBuffer() const
-        {
-            return _instanceBuffer;
-        }
-
-        inline cBuffer* GetMaterialBuffer() const
-        {
-            return _materialBuffer;
-        }
-
-        inline cBuffer* GetTextureBuffer() const
-        {
-            return _textureBuffer;
-        }
     };
 
     class iGraphicsPipelineBackend : public iBackend

@@ -8,6 +8,7 @@
 #include "render_instance.hpp"
 #include "math.hpp"
 #include "render_data.hpp"
+#include "instance_buffer.hpp"
 
 namespace triton
 {
@@ -24,7 +25,6 @@ namespace triton
     class cShader;
     class cRenderTarget;
     class XRenderPassGPU;
-    class XInstanceBuffer;
 
     class SRenderPassDescriptor final
     {
@@ -63,13 +63,17 @@ namespace triton
 
         SRenderPassDescriptor _desc = {};
         XRenderPassGPU* _renderPassGPU = nullptr;
+        cStack<SInstanceBufferHandle>* _dirtyStaticInstances = nullptr;
+
+        void WriteDirtyStaticInstancesToGPU();
+        void WriteDynamicInstancesToGPU();
 
     public:
         explicit XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU);
         virtual ~XRenderPass() override = default;
 
-        void UploadInstancesStatic(const SRenderData& data);
-        void UploadInstancesDynamic(const SRenderData& data);
+        void WriteStaticInstanceToGPU(const SInstanceBufferHandle& instance);
+        void SynchronizeGPU();
         void Execute();
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
