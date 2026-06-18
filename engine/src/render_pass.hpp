@@ -9,6 +9,7 @@
 #include "math.hpp"
 #include "render_data.hpp"
 #include "instance_buffer.hpp"
+#include "graphics_pipeline_backend.hpp"
 
 namespace triton
 {
@@ -47,27 +48,26 @@ namespace triton
     {
         TRITON_OBJECT(XRenderPass)
 
-        eCategory                           _inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-        std::vector<cBuffer*>               _inputBuffers = {};
-        std::vector<cTexture*>              _inputTextures = {};
-        std::vector<std::string>            _inputTextureNames = {};
-        eDefaultRenderPath                  _shaderRenderPath = eDefaultRenderPath::NONE;
-        std::string                         _shaderVertexPath = "";
-        std::string                         _shaderFragmentPath = "";
-        std::string                         _shaderVertexFunc = "";
-        std::string                         _shaderFragmentFunc = "";
-        cShader*                            _shaderBase = nullptr;
-        sDepthMode                          _depthMode = {};
-        sBlendMode                          _blendMode = {};
-        sViewport                           _viewport = {};
-        cRenderTarget*                      _renderTarget = nullptr;
-        cVertexArray*                       _vertexArray = nullptr;
-        cShader*                            _shader = nullptr;
-        XInstanceBuffer*                    _instanceBufferStatic = nullptr;
-        XInstanceBuffer*                    _instanceBufferDynamic = nullptr;
-        cBuffer*                            _materialBuffer = nullptr;
-        cBuffer*                            _textureBuffer = nullptr;
-        cStack<SInstanceBufferHandle>*      _dirtyStaticInstances = nullptr;
+        eCategory                       _inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+        std::vector<cBuffer*>           _inputBuffers = {};
+        std::vector<SRenderPassTexture> _inputTextures = {};
+        eDefaultRenderPath              _shaderRenderPath = eDefaultRenderPath::NONE;
+        std::string                     _shaderVertexPath = "";
+        std::string                     _shaderFragmentPath = "";
+        std::string                     _shaderVertexFunc = "";
+        std::string                     _shaderFragmentFunc = "";
+        cShader*                        _shaderBase = nullptr;
+        sDepthMode                      _depthMode = {};
+        sBlendMode                      _blendMode = {};
+        sViewport                       _viewport = {};
+        cRenderTarget*                  _renderTarget = nullptr;
+        cVertexArray*                   _vertexArray = nullptr;
+        cShader*                        _shader = nullptr;
+        XInstanceBuffer*                _instanceBufferStatic = nullptr;
+        XInstanceBuffer*                _instanceBufferDynamic = nullptr;
+        cBuffer*                        _materialBuffer = nullptr;
+        cBuffer*                        _textureBuffer = nullptr;
+        cStack<SInstanceBufferHandle>*  _dirtyStaticInstances = nullptr;
 
         void WriteDirtyStaticInstancesToGPU();
         void WriteDynamicInstancesToGPU();
@@ -82,7 +82,8 @@ namespace triton
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
         void ResizeDepthAttachment(const cVector2& size);
-        void SetInputTextures(const std::vector<SRenderPassTexture>& textures);
+        const std::vector<sShaderDefine>&& SetInputTextures(const std::vector<SRenderPassTexture>& textures);
+        void SetShader(const std::vector<sShaderDefine>&& defines = {});
 
         inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc._inputTextureAtlasTextures; }
         cVertexArray* GetVertexArray() const;

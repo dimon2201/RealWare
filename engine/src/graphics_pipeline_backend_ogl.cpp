@@ -158,6 +158,8 @@ triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
     const std::vector<cShader::sDefinePair>& definePairs
 )
 {
+    // TODO: rewrite shader creation logic
+    // This must be an interface ---> CreateShader(vertexStr, fragmentStr, vertexFunc, fragmentFunc, defines={})
     const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
     const std::string vertexFuncPassthroughCall = "Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);";
     const std::string fragmentFuncDefinition = "void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";

@@ -27,6 +27,15 @@ namespace triton
         virtual ~cVertexArray() override = default;
     };
 
+    struct sShaderDefine
+    {
+        sShaderDefine(const std::string& name, types::usize index);
+        ~sShaderDefine() = default;
+
+        std::string name = "";
+        types::usize index = 0;
+    };
+
     class cShader : public cGPUResource
     {
         TRITON_OBJECT(cShader)
@@ -35,15 +44,6 @@ namespace triton
         std::string _fragment = "";
 
     public:
-        struct sDefinePair
-        {
-            sDefinePair(const std::string& name, types::usize index);
-            ~sDefinePair() = default;
-
-            std::string name = "";
-            types::usize index = 0;
-        };
-
         explicit cShader(
             cContext* context,
             types::qword instance,

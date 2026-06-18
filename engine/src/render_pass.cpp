@@ -17,25 +17,6 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
     cVertexArray* vertexArray = nullptr;
     cShader* shader = nullptr;
 
-    if (desc._shaderBase == nullptr)
-    {
-        shader = CreateShader(
-            desc._shaderRenderPath,
-            desc._shaderVertexPath,
-            desc._shaderFragmentPath,
-            definePairs
-        );
-    }
-    else
-    {
-        shader = CreateShader(
-            desc._shaderBase,
-            desc._shaderVertexFunc,
-            desc._shaderFragmentFunc,
-            definePairs
-        );
-    }
-
     vertexArray = CreateVertexArray();
     BindVertexArray(vertexArray);
     if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
@@ -124,7 +105,7 @@ void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
     );
 }
 
-void triton::XRenderPass::SetInputTextures(const std::vector<SRenderPassTexture>& textures)
+std::vector<sShaderDefine>&& triton::XRenderPass::SetInputTextures(const std::vector<SRenderPassTexture>& textures)
 {
     for (usize i = 0; i < textures.size(); i++)
     {
