@@ -1,4 +1,4 @@
-// rasterizer.hpp
+// rasterizer_state.hpp
 
 #pragma once
 
@@ -7,31 +7,34 @@
 
 namespace triton
 {
-    struct sDepthMode
+    class SDepthState final
     {
+    public:
         types::boolean useDepthTest = types::K_TRUE;
         types::boolean useDepthWrite = types::K_TRUE;
     };
 
-    struct sBlendMode
+    enum class EBlendFactor
     {
-        enum class eBlendFactor
-        {
-            ZERO = 0,
-            ONE = 1,
-            SRC_COLOR = 2,
-            INV_SRC_COLOR = 3,
-            SRC_ALPHA = 4,
-            INV_SRC_ALPHA = 5
-        };
+        ZER,
+        ONE,
+        SRC_COLOR,
+        INV_SRC_COLOR,
+        SRC_ALPHA,
+        INV_SRC_ALPHA
+    };
 
+    class SBlendState final
+    {
+    public:
         types::usize factorCount = 0;
         eBlendFactor srcFactors[8] = { eBlendFactor::ZERO };
         eBlendFactor dstFactors[8] = { eBlendFactor::ZERO };
     };
 
-    struct sViewport
+    class SViewport final
     {
+    public:
         cVector4 rect = cVector4(0.0f);
     };
 }

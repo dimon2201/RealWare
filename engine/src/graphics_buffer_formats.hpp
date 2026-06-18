@@ -8,7 +8,7 @@ namespace triton
 {
 	enum class EGraphicsBufferFormat
 	{
-		NONE = 0,
-		VERTEX_POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3 = 1
+		NONE,
+		POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3
 	};
 }

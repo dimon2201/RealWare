@@ -18,13 +18,13 @@ namespace triton
     class XRenderPass;
     class XInstanceBuffer;
 
-    class cVertexArray : public cGPUResource
+    class CVertexArray : public cGPUResource
     {
-        TRITON_OBJECT(cVertexArray)
+        TRITON_OBJECT(CVertexArray)
 
     public:
-        explicit cVertexArray(cContext* context, types::qword instance);
-        virtual ~cVertexArray() override = default;
+        explicit CVertexArray(cContext* context, types::qword instance);
+        virtual ~CVertexArray() override = default;
     };
 
     class SShaderDefine final
@@ -56,21 +56,21 @@ namespace triton
         ~XShader() override;
     };
 
-    class cRenderTarget : public cGPUResource
+    class CRenderTarget : public cGPUResource
     {
-        TRITON_OBJECT(cRenderTarget)
+        TRITON_OBJECT(CRenderTarget)
 
         mutable std::vector<cTexture*> _colorAttachments = {};
         cTexture* _depthAttachment = nullptr;
 
     public:
-        explicit cRenderTarget(
+        explicit CRenderTarget(
             cContext* context,
             types::qword instance,
             const std::vector<cTexture*>& colorAttachments,
             cTexture* depthAttachment
         );
-        virtual ~cRenderTarget() override = default;
+        ~CRenderTarget() override = default;
 
         inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
         inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
