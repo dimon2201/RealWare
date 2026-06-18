@@ -10,13 +10,15 @@ namespace triton
     class SDepthState final
     {
     public:
+        SDepthState(types::boolean useDepthTest_, types::boolean useDepthWrite_) : useDepthTest(useDepthTest_), useDepthWrite(useDepthWrite_) {}
+
         types::boolean useDepthTest = types::K_TRUE;
         types::boolean useDepthWrite = types::K_TRUE;
     };
 
     enum class EBlendFactor
     {
-        ZER,
+        ZERO,
         ONE,
         SRC_COLOR,
         INV_SRC_COLOR,

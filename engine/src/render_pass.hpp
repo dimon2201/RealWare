@@ -22,10 +22,9 @@ namespace triton
     class cBuffer;
     class cTexture;
     class cTextureAtlasTexture;
-    class CRenderTarget;
+    class XRenderTarget;
     class XRenderPassGPU;
     class XShader;
-    class CRenderTarget;
 
     enum class EBuiltinRenderPassType
     {
@@ -40,7 +39,9 @@ namespace triton
     class SRenderPassTexture final
     {
     public:
-        cTextureAtlasTexture* _texture = nullptr;
+        SRenderPassTexture(const std::string& name, cTexture* texture) : _name(name), _texture(texture) {}
+
+        cTexture* _texture = nullptr;
         std::string _name = "";
     };
 
@@ -56,7 +57,7 @@ namespace triton
         SDepthState                     _depthState = {};
         SBlendState                     _blendState = {};
         SViewport                       _viewport = {};
-        CRenderTarget*                  _renderTarget = nullptr;
+        XRenderTarget*                  _renderTarget = nullptr;
         XShader*                        _shader = nullptr;
         XInstanceBuffer*                _instanceBufferStatic = nullptr;
         XInstanceBuffer*                _instanceBufferDynamic = nullptr;
@@ -109,7 +110,7 @@ namespace triton
             _viewport = viewport;
         }
 
-        inline void SetRenderTarget(CRenderTarget* renderTarget)
+        inline void SetRenderTarget(XRenderTarget* renderTarget)
         {
             _renderTarget = renderTarget;
         }
