@@ -77,7 +77,12 @@ namespace triton
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
         void ResizeDepthAttachment(const cVector2& size);
-        const std::vector<SShaderDefine>&& SetInputTextures(const std::vector<SRenderPassTexture>& textures);
+        std::vector<SShaderDefine> SetInputTextures(const std::vector<SRenderPassTexture>& textures);
+
+        inline void SetInputBuffers(const std::vector<cBuffer*>& buffers)
+        {
+            _inputBuffers = buffers;
+        }
 
         inline void SetVertexArray(CVertexArray* vertexArray)
         {
@@ -109,7 +114,7 @@ namespace triton
             _renderTarget = renderTarget;
         }
 
-        inline void SetRenderTarget(XShader* shader)
+        inline void SetShader(XShader* shader)
         {
             _shader = shader;
         }
