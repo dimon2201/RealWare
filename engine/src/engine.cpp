@@ -59,7 +59,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<cBuffer>();
 	_context->RegisterFactory<cTexture>();
 	_context->RegisterFactory<cRenderTarget>();
-	_context->RegisterFactory<cShader>();
+	_context->RegisterFactory<XShader>();
 	_context->RegisterFactory<cVertexArray>();
 	_context->RegisterFactory<cRenderTarget>();
 	_context->RegisterFactory<XRenderPass>();

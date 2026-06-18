@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <vector>
 #include "object.hpp"
 #include "category.hpp"
 #include "rasterizer.hpp"
@@ -20,14 +21,13 @@ namespace triton
 
     class cBuffer;
     class cVertexArray;
-    class cShader;
     class cTexture;
     class cTextureAtlasTexture;
-    class cShader;
+    class XShader;
     class cRenderTarget;
     class XRenderPassGPU;
 
-    enum class eDefaultRenderPath
+    enum class EBuiltinRenderPassType
     {
         NONE,
         OPAQUE_PATH,
@@ -51,18 +51,17 @@ namespace triton
         eCategory                       _inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
         std::vector<cBuffer*>           _inputBuffers = {};
         std::vector<SRenderPassTexture> _inputTextures = {};
-        eDefaultRenderPath              _shaderRenderPath = eDefaultRenderPath::NONE;
+        EBuiltinRenderPassType          _shaderRenderPath = EBuiltinRenderPassType::NONE;
         std::string                     _shaderVertexPath = "";
         std::string                     _shaderFragmentPath = "";
         std::string                     _shaderVertexFunc = "";
         std::string                     _shaderFragmentFunc = "";
-        cShader*                        _shaderBase = nullptr;
         sDepthMode                      _depthMode = {};
         sBlendMode                      _blendMode = {};
         sViewport                       _viewport = {};
         cRenderTarget*                  _renderTarget = nullptr;
         cVertexArray*                   _vertexArray = nullptr;
-        cShader*                        _shader = nullptr;
+        XShader*                        _shader = nullptr;
         XInstanceBuffer*                _instanceBufferStatic = nullptr;
         XInstanceBuffer*                _instanceBufferDynamic = nullptr;
         cBuffer*                        _materialBuffer = nullptr;
@@ -82,12 +81,12 @@ namespace triton
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
         void ResizeDepthAttachment(const cVector2& size);
-        const std::vector<sShaderDefine>&& SetInputTextures(const std::vector<SRenderPassTexture>& textures);
-        void SetShader(const std::vector<sShaderDefine>&& defines = {});
+        const std::vector<SShaderDefine>&& SetInputTextures(const std::vector<SRenderPassTexture>& textures);
+        void SetShader(const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFuncStr, const std::string& fragmentCustomFuncStr, const std::vector<SShaderDefine>&& defines = {});
 
         inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc._inputTextureAtlasTextures; }
         cVertexArray* GetVertexArray() const;
-        cShader* GetShader() const;
+        XShader* GetShader() const;
         inline cRenderTarget* GetRenderTarget() const { return _desc._renderTarget; }
         inline const sViewport& GetViewport() const { return _desc._viewport; }
         inline const std::vector<cBuffer*>& GetInputBuffers() const { return _desc._inputBuffers; }

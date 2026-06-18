@@ -27,33 +27,33 @@ namespace triton
         virtual ~cVertexArray() override = default;
     };
 
-    struct sShaderDefine
+    class SShaderDefine final
     {
-        sShaderDefine(const std::string& name, types::usize index);
-        ~sShaderDefine() = default;
+    public:
+        SShaderDefine(const std::string& name, types::usize index);
 
         std::string name = "";
         types::usize index = 0;
     };
 
-    class cShader : public cGPUResource
+    class CGPUShader : public cGPUResource
     {
-        TRITON_OBJECT(cShader)
-
-        std::string _vertex = "";
-        std::string _fragment = "";
+        TRITON_OBJECT(CGPUShader)
 
     public:
-        explicit cShader(
-            cContext* context,
-            types::qword instance,
-            const std::string& vertexShaderStr,
-            const std::string& fragmentShaderStr
-        );
-        virtual ~cShader() override = default;
+        explicit CGPUShader(cContext* context, types::usize instance, types::usize viewInstance) : cGPUResource(context, instance, viewInstance) {}
+        ~CGPUShader() override = default;
+    };
 
-        inline const std::string& GetVertexStr() const { return _vertex; }
-        inline const std::string& GetFragmentStr() const { return _fragment; }
+    class XShader : public iObject
+    {
+        TRITON_OBJECT(XShader)
+
+        CGPUShader _gpuShader = CGPUShader(nullptr, 0, 0);
+
+    public:
+        explicit XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFunc, const std::string& fragmentCustomFunc, const std::vector<SShaderDefine>&& defines);
+        ~XShader() override;
     };
 
     class cRenderTarget : public cGPUResource
@@ -104,19 +104,15 @@ namespace triton
 
         virtual void BindShader(const cShader* shader) = 0;
         virtual void UnbindShader() = 0;
-        virtual cShader* CreateShader(
-            SRenderPassDescriptor::eRenderPath renderPath,
-            const std::string& vertexPath,
-            const std::string& fragmentPath,
-            const std::vector<cShader::sDefinePair>& definePairs = {}
+        virtual CGPUShader CreateShader(
+            EBuiltinRenderPassType builtinType,
+            const std::string& vertexStr,
+            const std::string& fragmentStr,
+            const std::string& vertexCustomFuncStr,
+            const std::string& fragmentCustomFuncStr,
+            const std::vector<SShaderDefine>& defines = {}
         ) = 0;
-        virtual cShader* CreateShader(
-            const cShader* baseShader,
-            const std::string& vertexFunc,
-            const std::string& fragmentFunc,
-            const std::vector<cShader::sDefinePair>& definePairs = {}
-        ) = 0;
-        virtual void DestroyShader(cShader* shader) = 0;
+        virtual void DestroyShader(const CGPUShader& shader) = 0;
         virtual void SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix) = 0;
         virtual void SetShaderUniform(
             const cShader* shader,

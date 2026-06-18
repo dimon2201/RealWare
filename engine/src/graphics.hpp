@@ -23,7 +23,7 @@ namespace triton
     class cGameObject;
     class cTextureAtlasTexture;
     class cContext;
-    class cShader;
+    class XShader;
     class cVertexArray;
     class cRenderTarget;
     class XRenderPass;

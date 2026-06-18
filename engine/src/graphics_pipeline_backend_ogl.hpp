@@ -22,19 +22,15 @@ namespace triton
 
         virtual void BindShader(const cShader* shader) override final;
         virtual void UnbindShader() override final;
-        virtual cShader* CreateShader(
-            SRenderPassDescriptor::eRenderPath renderPath,
-            const std::string& vertexPath,
-            const std::string& fragmentPath,
-            const std::vector<cShader::sDefinePair>& definePairs = {}
+        virtual CGPUShader CreateShader(
+            EBuiltinRenderPassType builtinType,
+            const std::string& vertexStr,
+            const std::string& fragmentStr,
+            const std::string& vertexCustomFuncStr,
+            const std::string& fragmentCustomFuncStr,
+            const std::vector<SShaderDefine>& defines = {}
         ) override final;
-        virtual cShader* CreateShader(
-            const cShader* baseShader,
-            const std::string& vertexFunc,
-            const std::string& fragmentFunc,
-            const std::vector<cShader::sDefinePair>& definePairs = {}
-        ) override final;
-        virtual void DestroyShader(cShader* shader) override final;
+        virtual void DestroyShader(const CGPUShader& shader) override final;
         virtual void SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix) override final;
         virtual void SetShaderUniform(
             const cShader* shader,

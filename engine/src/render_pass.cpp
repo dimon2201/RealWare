@@ -105,14 +105,25 @@ void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
     );
 }
 
-std::vector<sShaderDefine>&& triton::XRenderPass::SetInputTextures(const std::vector<SRenderPassTexture>& textures)
+const std::vector<triton::SShaderDefine>&& SetInputTextures(const std::vector<triton::SRenderPassTexture>& textures)
 {
+    std::vector<triton::SShaderDefine> defines = {};
     for (usize i = 0; i < textures.size(); i++)
     {
         const usize textureAtlasTextureIndex = i;
         const std::string& textureAtlasTextureName = textures[i]._name;
-        definePairs.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
+        defines.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
     }
+
+    return std::move(defines);
+}
+
+void triton::XRenderPass::SetShader(const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFunc, const std::string& fragmentCustomFunc, const std::vector<SShaderDefine>&& defines)
+{
+    if (!_shader)
+        _context->Destroy<XShader>(_shader);
+    
+    _shader = _context->Create<XShader>(_context, vertexStr, fragmentStr, vertexCustomFunc, fragmentCustomFunc, defines);
 }
 
 triton::cVertexArray* triton::XRenderPass::GetVertexArray() const

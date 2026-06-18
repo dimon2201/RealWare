@@ -26,7 +26,7 @@ namespace triton
         return out;
     }
 
-    void DefineInShader(std::string& shaderVertexStr, std::string& shaderFragmentStr, const std::vector<cShader::sDefinePair>& definePairs)
+    void DefineInShader(std::string& shaderVertexStr, std::string& shaderFragmentStr, const std::vector<SShaderDefine>& definePairs)
     {
         if (!definePairs.empty())
         {
@@ -53,57 +53,79 @@ void triton::cGraphicsPipelineBackendOGL::UnbindShader()
     glUseProgram(0);
 }
 
-triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
-    SRenderPassDescriptor::eRenderPath renderPath,
-    const std::string& vertexPath,
-    const std::string& fragmentPath,
-    const std::vector<cShader::sDefinePair>& definePairs
+triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
+    EBuiltinRenderPassType builtinType,
+    const std::string& vertexStr,
+    const std::string& fragmentStr,
+    const std::string& vertexCustomFuncStr,
+    const std::string& fragmentCustomFuncStr,
+    const std::vector<SShaderDefine>& defines = {}
 )
 {
-    std::string header = "";
-    switch (renderPath)
-    {
-    case SRenderPassDescriptor::eRenderPath::NONE:
-        Print("Error: invalid 'RENDER_PATH_NONE' for shaders '" + vertexPath + "' and '" + fragmentPath + "'!");
-        return nullptr;
+    std::string finalVertexStr = vertexStr;
+    std::string finalFragmentStr = fragmentStr;
 
-    case SRenderPassDescriptor::eRenderPath::OPAQUE_PATH:
+    std::string header = "";
+    switch (builtinType)
+    {
+    case EBuiltinRenderPassType::NONE:
+        Print("Error: invalid builtin render pass type 'RENDER_PATH_NONE' when creating a shader!");
+        return CGPUShader(_context, 0, 0);
+
+    case EBuiltinRenderPassType::OPAQUE_PATH:
         header = "RENDER_PATH_OPAQUE";
         break;
 
-    case SRenderPassDescriptor::eRenderPath::TRANSPARENT_PATH:
+    case EBuiltinRenderPassType::TRANSPARENT_PATH:
         header = "RENDER_PATH_TRANSPARENT";
         break;
 
-    case SRenderPassDescriptor::eRenderPath::TEXT_PATH:
+    case EBuiltinRenderPassType::TEXT_PATH:
         header = "RENDER_PATH_TEXT";
         break;
 
-    case SRenderPassDescriptor::eRenderPath::TRANSPARENT_COMPOSITE_PATH:
+    case EBuiltinRenderPassType::TRANSPARENT_COMPOSITE_PATH:
         header = "RENDER_PATH_TRANSPARENT_COMPOSITE";
         break;
 
-    case SRenderPassDescriptor::eRenderPath::QUAD_PATH:
+    case EBuiltinRenderPassType::QUAD_PATH:
         header = "RENDER_PATH_QUAD";
         break;
     }
 
     const std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
 
-    cFileSystem* fileSystem = _context->GetSubsystem<cFileSystem>();
-    cDataFile* vertexShaderFile = fileSystem->CreateDataFile(vertexPath, K_TRUE);
-    std::string vertexShaderStr = CleanShaderSource(std::string((const char*)vertexShaderFile->GetBuffer()->GetData()));
-    cDataFile* fragmentShaderFile = fileSystem->CreateDataFile(fragmentPath, K_TRUE);
-    std::string fragmentShaderStr = CleanShaderSource(std::string((const char*)fragmentShaderFile->GetBuffer()->GetData()));
+    const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
+    const std::string vertexFuncPassthroughCall = "Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);";
+    const std::string fragmentFuncDefinition = "void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";
+    const std::string fragmentFuncPassthroughCall = "Fragment_Passthrough(textureColor, DiffuseColor, fragColor);";
 
-    DefineInShader(vertexShaderStr, fragmentShaderStr, definePairs);
+    if (!vertexCustomFuncStr.empty() && !fragmentCustomFuncStr.empty())
+    {
+        const usize vertexFuncDefinitionPos = finalVertexStr.find(vertexFuncDefinition);
+        if (vertexFuncDefinitionPos != std::string::npos)
+            finalVertexStr.replace(vertexFuncDefinitionPos, vertexFuncDefinition.length(), vertexCustomFuncStr);
+        const usize vertexFuncPasstroughCallPos = finalVertexStr.find(vertexFuncPassthroughCall);
+        if (vertexFuncPasstroughCallPos != std::string::npos)
+            finalVertexStr.replace(vertexFuncPasstroughCallPos, vertexFuncPassthroughCall.length(), "");
+        const usize fragmentFuncDefinitionPos = finalFragmentStr.find(fragmentFuncDefinition);
+        if (fragmentFuncDefinitionPos != std::string::npos)
+            finalFragmentStr.replace(fragmentFuncDefinitionPos, fragmentFuncDefinition.length(), fragmentCustomFuncStr);
+        const usize fragmentFuncPassthroughPos = finalFragmentStr.find(fragmentFuncPassthroughCall);
+        if (fragmentFuncPassthroughPos != std::string::npos)
+            finalFragmentStr.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
+    }
 
-    vertexShaderStr = appendStr + vertexShaderStr;
-    fragmentShaderStr = appendStr + fragmentShaderStr;
+    finalVertexStr = CleanShaderSource(finalVertexStr);
+    finalFragmentStr = CleanShaderSource(finalFragmentStr);
 
-    const char* vertexShaderStrPtr = vertexShaderStr.c_str();
-    const char* fragmentShaderStrPtr = fragmentShaderStr.c_str();
+    DefineInShader(finalVertexStr, finalFragmentStr, defines);
 
+    finalVertexStr = appendStr + finalVertexStr;
+    finalFragmentStr = appendStr + finalFragmentStr;
+
+    const char* vertexShaderStrPtr = finalVertexStr.c_str();
+    const char* fragmentShaderStrPtr = finalFragmentStr.c_str();
     const GLint vertexShaderStrByteSize = strlen(vertexShaderStrPtr);
     const GLint fragmentShaderStrByteSize = strlen(fragmentShaderStrPtr);
     GLuint instance = glCreateProgram();
@@ -116,39 +138,31 @@ triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
     glAttachShader(instance, vertexShader);
     glAttachShader(instance, fragmentShader);
     glLinkProgram(instance);
-
     GLint success;
     glGetProgramiv(instance, GL_LINK_STATUS, &success);
     if (!success)
         Print("Error: can't link shader!");
     if (!glIsProgram(instance))
         Print("Error: invalid shader!");
-
     GLint logBufferByteSize = 0;
     GLchar logBuffer[1024] = {};
     glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
     if (logBufferByteSize > 0)
     {
-        Print("Error: vertex shader, header: " + header + ", path: " + vertexPath + "!");
+        Print("Error: vertex shader, header: " + header + "!");
         Print(logBuffer);
     }
     logBufferByteSize = 0;
     glGetShaderInfoLog(fragmentShader, 1024, &logBufferByteSize, &logBuffer[0]);
     if (logBufferByteSize > 0)
     {
-        Print("Error: fragment shader, header: " + header + ", path: " + fragmentPath + "!");
+        Print("Error: fragment shader, header: " + header + "!");
         Print(logBuffer);
     }
-
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    fileSystem->DestroyDataFile(vertexShaderFile);
-    fileSystem->DestroyDataFile(fragmentShaderFile);
-
-    cShader* shader = _context->Create<cShader>(_context, instance, vertexShaderStr, fragmentShaderStr);
-
-    return shader;
+    return CGPUShader(_context, instance, 0);
 }
 
 triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
@@ -243,12 +257,9 @@ triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
     return shader;
 }
 
-void triton::cGraphicsPipelineBackendOGL::DestroyShader(cShader* shader)
+void triton::cGraphicsPipelineBackendOGL::DestroyShader(const CGPUShader& shader)
 {
-    glDeleteProgram(shader->GetInstance());
-
-    if (shader != nullptr)
-        _context->Destroy<cShader>(shader);
+    glDeleteProgram(shader.GetInstance());
 }
 
 void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix)

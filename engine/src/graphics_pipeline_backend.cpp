@@ -6,20 +6,24 @@
 
 using namespace types;
 
-triton::cShader::sDefinePair::sDefinePair(const std::string& name_, types::usize index_) : name(name_), index(index_) {}
+triton::XShader::XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFuncStr, const std::string& fragmentCustomFuncStr, const std::vector<SShaderDefine>&& defines) : iObject(context)
+{
+	_gpuShader = _context->GetBackend<iGraphicsPipelineBackend>()->CreateShader(
+		EBuiltinRenderPassType::NONE,
+		vertexStr,
+		fragmentStr,
+		vertexCustomFuncStr,
+		fragmentCustomFuncStr,
+		defines
+	);
+}
 
-triton::cShader::cShader(
-	cContext* context,
-	qword instance,
-	const std::string& vertexShaderStr,
-	const std::string& fragmentShaderStr
-)
-: cGPUResource(context, instance, 0), _vertex(vertexShaderStr), _fragment(fragmentShaderStr) {}
+triton::XShader::~XShader()
+{
+	_context->GetBackend<iGraphicsPipelineBackend>()->DestroyShader(_gpuShader);
+}
 
 triton::cVertexArray::cVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}
-
-triton::XRenderPassGPU::XRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, XInstanceBuffer* instanceBufferStatic, XInstanceBuffer* instanceBufferDynamic, cBuffer* materialBuffer, cBuffer* textureBuffer)
-	: iObject(context), _vertexArray(vertexArray), _shader(shader), _instanceBufferStatic(instanceBufferStatic), _instanceBufferDynamic(instanceBufferDynamic), _materialBuffer(materialBuffer), _textureBuffer(textureBuffer) {}
 
 triton::cRenderTarget::cRenderTarget(
 	cContext* context,
