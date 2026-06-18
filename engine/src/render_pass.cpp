@@ -12,7 +12,6 @@ using namespace types;
 triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
 {
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
     _instanceBufferStatic = _context->Create<XInstanceBuffer>(
@@ -25,8 +24,7 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
     );
     _materialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
     _textureBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
-
-    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+    
     sChunkAllocatorDescriptor cad = {};
     cad.chunkByteSize = caps->hashTableChunkByteSize;
     cad.maxChunkCount = caps->hashTableMaxChunkCount;
