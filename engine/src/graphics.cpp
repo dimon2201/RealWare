@@ -24,6 +24,7 @@
 #include "geometry_storage.hpp"
 #include "log.hpp"
 #include "render_pass_executor.hpp"
+#include "graphics_pipeline_backend.hpp"
 
 using namespace types;
 
@@ -60,17 +61,22 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
     );
 }
     
-triton::cGraphics::cGraphics(cContext* context) : iObject(context) {}
-
-void triton::cGraphics::Initialize()
+triton::cGraphics::cGraphics(cContext* context) : iObject(context)
 {
-    _geometryStorage = _context->Create<XGeometryStorage>(_context);
-    _geometryStorage->Initialize();
-    _renderPassExecutor = _context->Create<XRenderPassExecutor>(_context);
-    _renderPassExecutor->Initialize();
+    CreateGeometryStorage();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
+}
 
+triton::cGraphics::~cGraphics()
+{
+    DestroyGeometryStorage();
+    DestroyDefaultRenderTargets();
+    DestroyDefaultRenderPasses();
+}
+
+void Initialize()
+{
     /*_vertices = memoryAllocator->Allocate(caps->vertexBufferSize, caps->memoryAlignment);
     _verticesByteSize = 0;
     _indices = memoryAllocator->Allocate(caps->indexBufferSize, caps->memoryAlignment);
@@ -96,9 +102,9 @@ void triton::cGraphics::Initialize()
     _materialsMap = new std::unordered_map<cMaterial*, s32>(); // TODO: replace std::unordered_map with cHashTable*/
 }
 
-void triton::cGraphics::Shutdown()
+void Shutdown()
 {
-    _renderPassExecutor->Free();
+    /*_renderPassExecutor->Free();
     _context->Destroy<XRenderPassExecutor>(_renderPassExecutor);
     _geometryStorage->Free();
     _context->Destroy<XGeometryStorage>(_geometryStorage);
@@ -838,6 +844,12 @@ triton::cBuffer* triton::cGraphics::GetIndexBuffer() const
     return _geometryStorage->GetIndexBuffer();
 }
 
+void triton::cGraphics::CreateGeometryStorage()
+{
+    _geometryStorage = _context->Create<XGeometryStorage>(_context);
+    _geometryStorage->Initialize();
+}
+
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
@@ -881,7 +893,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 {
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0)->GetSize();
     cTextureAtlas* textureAtlas = _context->GetSubsystem<cTextureAtlas>();
-    sViewport viewport;
+    SViewport viewport;
     viewport.rect = cVector4(0.0f, 0.0f, windowSize.GetX(), windowSize.GetY());
 
     cGraphics* gfx = _context->GetSubsystem<cGraphics>();
@@ -902,7 +914,9 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     opaqueRenderPassDesc._blendMode.srcFactors[0] = sBlendMode::eBlendFactor::ONE;
     opaqueRenderPassDesc._blendMode.dstFactors[0] = sBlendMode::eBlendFactor::ZERO;
     opaqueRenderPassDesc._renderTarget = _opaqueRenderTarget;
-    _opaque = CreateRenderPass(opaqueRenderPassDesc);
+
+    _opaque = _context->Create<XRenderPass>(_context);
+    _opaque->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
 
     SRenderPassDescriptor transparentRenderPassDesc;
     transparentRenderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
@@ -974,4 +988,42 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeFinalRenderPassDesc._blendMode.dstFactors[0] = sBlendMode::eBlendFactor::ZERO;
     compositeFinalRenderPassDesc._renderTarget = nullptr;
     _compositeFinal = CreateRenderPass(compositeFinalRenderPassDesc);
+}
+
+void triton::cGraphics::DestroyGeometryStorage()
+{
+    if (_geometryStorage)
+        _context->Destroy<XGeometryStorage>(_geometryStorage);
+}
+
+void triton::cGraphics::DestroyDefaultRenderTargets()
+{
+    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+    if (_opaqueRenderTarget->GetColorAttachments()[0])
+        gfxResourceBackend->DestroyTexture(_opaqueRenderTarget->GetColorAttachments()[0]);
+    if (_transparentRenderTarget->GetColorAttachments()[0])
+        gfxResourceBackend->DestroyTexture(_transparentRenderTarget->GetColorAttachments()[0]);
+    if (_transparentRenderTarget->GetColorAttachments()[1])
+        gfxResourceBackend->DestroyTexture(_transparentRenderTarget->GetColorAttachments()[1]);
+    if (_opaqueRenderTarget->GetDepthAttachment())
+        gfxResourceBackend->DestroyTexture(_opaqueRenderTarget->GetDepthAttachment());
+    if (_transparentRenderTarget)
+        gfxPipelineBackend->DestroyRenderTarget(_transparentRenderTarget);
+    if (_opaqueRenderTarget)
+        gfxPipelineBackend->DestroyRenderTarget(_opaqueRenderTarget);
+}
+
+void triton::cGraphics::DestroyDefaultRenderPasses()
+{
+    if (_compositeFinal)
+        _context->Destroy<XRenderPass>(_compositeFinal);
+    if (_compositeTransparent)
+        _context->Destroy<XRenderPass>(_compositeTransparent);
+    if (_text)
+        _context->Destroy<XRenderPass>(_text);
+    if (_transparent)
+        _context->Destroy<XRenderPass>(_transparent);
+    if (_opaque)
+        _context->Destroy<XRenderPass>(_opaque);
 }

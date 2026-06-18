@@ -56,7 +56,7 @@ namespace triton
         ~XShader() override;
     };
 
-    class CRenderTarget : public cGPUResource
+    class XRenderTarget : public cGPUResource
     {
         TRITON_OBJECT(CRenderTarget)
 
@@ -64,19 +64,18 @@ namespace triton
         cTexture* _depthAttachment = nullptr;
 
     public:
-        explicit CRenderTarget(
+        explicit XRenderTarget(
             cContext* context,
             types::qword instance,
             const std::vector<cTexture*>& colorAttachments,
             cTexture* depthAttachment
         );
-        ~CRenderTarget() override = default;
+        ~XRenderTarget() override = default;
 
         inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
         inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
-        inline void SetColorAttachments(
-            const std::vector<cTexture*>& newColorAttachments
-        ) {
+        inline void SetColorAttachments(const std::vector<cTexture*>& newColorAttachments)
+        {
             _colorAttachments = newColorAttachments;
         }
         inline void SetDepthAttachment(

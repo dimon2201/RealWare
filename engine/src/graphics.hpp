@@ -25,7 +25,7 @@ namespace triton
     class cContext;
     class XShader;
     class cVertexArray;
-    class cRenderTarget;
+    class XRenderTarget;
     class XRenderPass;
     class XRenderPassGPU;
     class cBuffer;
@@ -161,8 +161,6 @@ namespace triton
         void* _textTextureAtlasTextures = nullptr;
         types::usize _textTextureAtlasTexturesByteSize = 0;
         std::unordered_map<cMaterial*, types::s32>* _materialsMap = {};
-        cRenderTarget* _opaqueRenderTarget = nullptr;
-        cRenderTarget* _transparentRenderTarget = nullptr;
         types::usize _materialCountCPU = 0;
 
         XGeometryStorage* _geometryStorage = nullptr;
@@ -172,6 +170,15 @@ namespace triton
         XRenderPass* _text = nullptr;
         XRenderPass* _compositeTransparent = nullptr;
         XRenderPass* _compositeFinal = nullptr;
+        XRenderTarget* _opaqueRenderTarget = nullptr;
+        XRenderTarget* _transparentRenderTarget = nullptr;
+
+        void CreateGeometryStorage();
+        void CreateDefaultRenderTargets();
+        void CreateDefaultRenderPasses();
+        void DestroyGeometryStorage();
+        void DestroyDefaultRenderTargets();
+        void DestroyDefaultRenderPasses();
 
 	public:
         enum class eAPI
@@ -183,9 +190,6 @@ namespace triton
 
 		explicit cGraphics(cContext* context);
 		virtual ~cGraphics() override final = default;
-
-        void Initialize();
-        void Shutdown();
 
         // TODO: Remove material creation from cGraphics
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
@@ -262,9 +266,5 @@ namespace triton
         {
             return _transparentRenderTarget;
         }
-
-    private:
-        void CreateDefaultRenderTargets();
-        void CreateDefaultRenderPasses();
 	};
 }
