@@ -26,50 +26,54 @@ namespace triton
     class cRenderTarget;
     class XRenderPassGPU;
 
-    class SRenderPassDescriptor final
+    enum class eDefaultRenderPath
+    {
+        NONE,
+        OPAQUE_PATH,
+        TRANSPARENT_PATH,
+        TEXT_PATH,
+        TRANSPARENT_COMPOSITE_PATH,
+        QUAD_PATH
+    };
+
+    class SRenderPassTexture final
     {
     public:
-        enum class eRenderPath
-        {
-            NONE = 0,
-            OPAQUE_PATH,
-            TRANSPARENT_PATH,
-            TEXT_PATH,
-            TRANSPARENT_COMPOSITE_PATH,
-            QUAD_PATH
-        };
-
-        eCategory _inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-        std::vector<cBuffer*> _inputBuffers = {};
-        std::vector<cTexture*> _inputTextures = {};
-        std::vector<std::string> _inputTextureNames = {};
-        std::vector<cTextureAtlasTexture*> _inputTextureAtlasTextures = {};
-        std::vector<std::string> _inputTextureAtlasTextureNames = {};
-        eRenderPath _shaderRenderPath = eRenderPath::NONE;
-        std::string _shaderVertexPath = "";
-        std::string _shaderFragmentPath = "";
-        std::string _shaderVertexFunc = "";
-        std::string _shaderFragmentFunc = "";
-        cShader* _shaderBase = nullptr;
-        sDepthMode _depthMode = {};
-        sBlendMode _blendMode = {};
-        sViewport _viewport = {};
-        cRenderTarget* _renderTarget = nullptr;
+        cTextureAtlasTexture* _texture = nullptr;
+        std::string _name = "";
     };
 
     class XRenderPass : public iObject
     {
         TRITON_OBJECT(XRenderPass)
 
-        SRenderPassDescriptor _desc = {};
-        XRenderPassGPU* _renderPassGPU = nullptr;
-        cStack<SInstanceBufferHandle>* _dirtyStaticInstances = nullptr;
+        eCategory                           _inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+        std::vector<cBuffer*>               _inputBuffers = {};
+        std::vector<cTexture*>              _inputTextures = {};
+        std::vector<std::string>            _inputTextureNames = {};
+        eDefaultRenderPath                  _shaderRenderPath = eDefaultRenderPath::NONE;
+        std::string                         _shaderVertexPath = "";
+        std::string                         _shaderFragmentPath = "";
+        std::string                         _shaderVertexFunc = "";
+        std::string                         _shaderFragmentFunc = "";
+        cShader*                            _shaderBase = nullptr;
+        sDepthMode                          _depthMode = {};
+        sBlendMode                          _blendMode = {};
+        sViewport                           _viewport = {};
+        cRenderTarget*                      _renderTarget = nullptr;
+        cVertexArray*                       _vertexArray = nullptr;
+        cShader*                            _shader = nullptr;
+        XInstanceBuffer*                    _instanceBufferStatic = nullptr;
+        XInstanceBuffer*                    _instanceBufferDynamic = nullptr;
+        cBuffer*                            _materialBuffer = nullptr;
+        cBuffer*                            _textureBuffer = nullptr;
+        cStack<SInstanceBufferHandle>*      _dirtyStaticInstances = nullptr;
 
         void WriteDirtyStaticInstancesToGPU();
         void WriteDynamicInstancesToGPU();
 
     public:
-        explicit XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU);
+        explicit XRenderPass(cContext* context);
         virtual ~XRenderPass() override = default;
 
         void WriteStaticInstanceToGPU(const SInstanceBufferHandle& instance);
@@ -78,6 +82,7 @@ namespace triton
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
         void ResizeDepthAttachment(const cVector2& size);
+        void SetInputTextures(const std::vector<SRenderPassTexture>& textures);
 
         inline const std::vector<cTextureAtlasTexture*>& GetInputTextureAtlasTextures() const { return _desc._inputTextureAtlasTextures; }
         cVertexArray* GetVertexArray() const;

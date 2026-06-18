@@ -86,20 +86,12 @@ namespace triton
         }
     };
 
-    class XRenderPassGPU : public iObject
+    class CGPURenderPass final : public cGPUResource
     {
-        TRITON_OBJECT(XRenderPassGPU)
-
     public:
-        cVertexArray* _vertexArray = nullptr;
-        cShader* _shader = nullptr;
-        XInstanceBuffer* _instanceBufferStatic = nullptr;
-        XInstanceBuffer* _instanceBufferDynamic = nullptr;
-        cBuffer* _materialBuffer = nullptr;
-        cBuffer* _textureBuffer = nullptr;
-
-        explicit XRenderPassGPU(cContext* context, cVertexArray* vertexArray, cShader* shader, XInstanceBuffer* instanceBufferStatic, XInstanceBuffer* instanceBufferDynamic, cBuffer* materialBuffer, cBuffer* textureBuffer);
-        virtual ~XRenderPassGPU() override final = default;
+        explicit CGPURenderPass(cContext* context, types::qword instance, types::qword viewInstance)
+            : cGPUResource(context, instance, viewInstance) {}
+        ~CGPURenderPass() override = default;
     };
 
     class iGraphicsPipelineBackend : public iBackend
@@ -143,7 +135,7 @@ namespace triton
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) = 0;
         virtual void UnbindVertexArray() = 0;
         virtual void DestroyVertexArray(cVertexArray* vertexArray) = 0;
-        virtual XRenderPassGPU* CreateRenderPass(const SRenderPassDescriptor& desc) = 0;
+        virtual CGPURenderPass CreateRenderPass() = 0;
         virtual void BindRenderPass(const XRenderPass* renderPass, cShader* customShader = nullptr) = 0;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) = 0;
         virtual void DestroyRenderPass(XRenderPassGPU* renderPass) = 0;

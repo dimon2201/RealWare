@@ -335,75 +335,9 @@ void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(cVertexArray* verte
         _context->Destroy<cVertexArray>(vertexArray);
 }
 
-triton::XRenderPassGPU* triton::cGraphicsPipelineBackendOGL::CreateRenderPass(const SRenderPassDescriptor& desc)
+triton::CGPURenderPass triton::cGraphicsPipelineBackendOGL::CreateRenderPass()
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-
-    std::vector<cShader::sDefinePair> definePairs = {};
-    cVertexArray* vertexArray = nullptr;
-    cShader* shader = nullptr;
-
-    if (desc._inputTextureAtlasTextures.size() != desc._inputTextureAtlasTextureNames.size())
-    {
-        Print("Error: mismatch of render pass input texture atlas texture array and input texture atlas texture name array!");
-        return nullptr;
-    }
-    for (usize i = 0; i < desc._inputTextureAtlasTextures.size(); i++)
-    {
-        const usize textureAtlasTextureIndex = i;
-        const std::string& textureAtlasTextureName = desc._inputTextureAtlasTextureNames[i];
-        definePairs.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
-    }
-
-    if (desc._shaderBase == nullptr)
-    {
-        shader = CreateShader(
-            desc._shaderRenderPath,
-            desc._shaderVertexPath,
-            desc._shaderFragmentPath,
-            definePairs
-        );
-    }
-    else
-    {
-        shader = CreateShader(
-            desc._shaderBase,
-            desc._shaderVertexFunc,
-            desc._shaderFragmentFunc,
-            definePairs
-        );
-    }
-
-    vertexArray = CreateVertexArray();
-    BindVertexArray(vertexArray);
-    if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
-    {
-        for (auto buffer : desc._inputBuffers)
-            gfxResourceBackend->BindBuffer(buffer);
-    }
-    else if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
-    {
-        for (auto buffer : desc._inputBuffers)
-            gfxResourceBackend->BindBuffer(buffer);
-
-        BindDefaultInputLayout();
-    }
-    UnbindVertexArray();
-
-    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
-    const sCapabilities* caps = app->GetCapabilities();
-    XInstanceBuffer* instanceBufferStatic = _context->Create<XInstanceBuffer>(
-        _context,
-        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance), 0)
-    );
-    XInstanceBuffer* instanceBufferDynamic = _context->Create<XInstanceBuffer>(
-        _context,
-        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance), 0)
-    );
-    cBuffer* materialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
-    cBuffer* textureBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
-    
-    return _context->Create<XRenderPassGPU>(_context, vertexArray, shader, instanceBufferStatic, instanceBufferDynamic, materialBuffer, textureBuffer);
+    return CGPURenderPass(_context, 0, 0);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const XRenderPass* renderPass, cShader* customShader)

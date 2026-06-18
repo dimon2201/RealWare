@@ -189,19 +189,6 @@ std::optional<triton::SGeometryView> triton::cGraphics::CreateGeometry(EGraphics
     return _geometryStorage->CreateGeometry(format, vertices, verticesByteSize, indices, indicesByteSize);
 }
 
-triton::XRenderPass* triton::cGraphics::CreateRenderPass(const SRenderPassDescriptor& desc)
-{
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    XRenderPassGPU* renderPass = gfxPipelineBackend->CreateRenderPass(desc);
-    
-    SRenderPassDescriptor newDesc = desc;
-    newDesc._inputBuffers.push_back((cBuffer*)renderPass->GetInstanceBuffer());
-    newDesc._inputBuffers.push_back(renderPass->GetMaterialBuffer());
-    newDesc._inputBuffers.push_back(renderPass->GetTextureBuffer());
-
-    return _context->Create<XRenderPass>(_context, newDesc, renderPass);
-}
-
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();

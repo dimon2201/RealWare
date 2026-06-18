@@ -9,9 +9,64 @@
 using namespace triton::ecs::components;
 using namespace types;
 
-triton::XRenderPass::XRenderPass(cContext* context, const SRenderPassDescriptor& desc, XRenderPassGPU* renderPassGPU)
-    : iObject(context), _desc(desc), _renderPassGPU(renderPassGPU)
+triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
 {
+    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+
+    std::vector<cShader::sDefinePair> definePairs = {};
+    cVertexArray* vertexArray = nullptr;
+    cShader* shader = nullptr;
+
+    if (desc._shaderBase == nullptr)
+    {
+        shader = CreateShader(
+            desc._shaderRenderPath,
+            desc._shaderVertexPath,
+            desc._shaderFragmentPath,
+            definePairs
+        );
+    }
+    else
+    {
+        shader = CreateShader(
+            desc._shaderBase,
+            desc._shaderVertexFunc,
+            desc._shaderFragmentFunc,
+            definePairs
+        );
+    }
+
+    vertexArray = CreateVertexArray();
+    BindVertexArray(vertexArray);
+    if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
+    {
+        for (auto buffer : desc._inputBuffers)
+            gfxResourceBackend->BindBuffer(buffer);
+    }
+    else if (desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
+    {
+        for (auto buffer : desc._inputBuffers)
+            gfxResourceBackend->BindBuffer(buffer);
+
+        BindDefaultInputLayout();
+    }
+    UnbindVertexArray();
+
+    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    const sCapabilities* caps = app->GetCapabilities();
+    XInstanceBuffer* instanceBufferStatic = _context->Create<XInstanceBuffer>(
+        _context,
+        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance), 0)
+    );
+    XInstanceBuffer* instanceBufferDynamic = _context->Create<XInstanceBuffer>(
+        _context,
+        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance), 0)
+    );
+    cBuffer* materialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
+    cBuffer* textureBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
+
+    return _context->Create<XRenderPassGPU>(_context, vertexArray, shader, instanceBufferStatic, instanceBufferDynamic, materialBuffer, textureBuffer);
+
     const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
     sChunkAllocatorDescriptor cad = {};
     cad.chunkByteSize = caps->hashTableChunkByteSize;
@@ -67,6 +122,16 @@ void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
             size
         )
     );
+}
+
+void triton::XRenderPass::SetInputTextures(const std::vector<SRenderPassTexture>& textures)
+{
+    for (usize i = 0; i < textures.size(); i++)
+    {
+        const usize textureAtlasTextureIndex = i;
+        const std::string& textureAtlasTextureName = textures[i]._name;
+        definePairs.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
+    }
 }
 
 triton::cVertexArray* triton::XRenderPass::GetVertexArray() const

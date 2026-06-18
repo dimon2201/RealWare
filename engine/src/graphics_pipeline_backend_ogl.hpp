@@ -4,6 +4,7 @@
 
 #include "graphics_pipeline_backend.hpp"
 #include "render_pass.hpp"
+#include "gpu_resource.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -52,7 +53,7 @@ namespace triton
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) override final;
         virtual void UnbindVertexArray() override final;
         virtual void DestroyVertexArray(cVertexArray* vertexArray) override final;
-        virtual XRenderPassGPU* CreateRenderPass(const SRenderPassDescriptor& desc) override final;
+        virtual CGPURenderPass CreateRenderPass() override final;
         virtual void BindRenderPass(const XRenderPass* renderPass, cShader* customShader = nullptr) override final;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) override final;
         virtual void DestroyRenderPass(XRenderPassGPU* renderPass) override final;
