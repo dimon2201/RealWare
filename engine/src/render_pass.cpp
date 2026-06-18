@@ -39,11 +39,13 @@ void triton::XRenderPass::WriteDirtyStaticInstancesToGPU()
     while (_dirtyStaticInstances->IsEmpty())
     {
         SInstanceBufferHandle handle = _dirtyStaticInstances->Pop();
+        _instanceBufferStatic->Write(handle);
     }
 }
 
 void triton::XRenderPass::WriteDynamicInstancesToGPU()
 {
+    _instanceBufferDynamic->WriteAll();
 }
 
 void triton::XRenderPass::WriteStaticInstanceToGPU(const SInstanceBufferHandle& instance)
@@ -53,6 +55,8 @@ void triton::XRenderPass::WriteStaticInstanceToGPU(const SInstanceBufferHandle& 
 
 void triton::XRenderPass::SynchronizeGPU()
 {
+    WriteDirtyStaticInstancesToGPU();
+    WriteDynamicInstancesToGPU();
 }
 
 void triton::XRenderPass::Execute()
