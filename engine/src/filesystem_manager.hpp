@@ -31,6 +31,7 @@ namespace triton
         ~cFileSystem() = default;
 
         cDataFile* CreateDataFile(const std::string& path, types::boolean isText);
+        std::string TextFileToString(const std::string& path);
         void DestroyDataFile(cDataFile* buffer);
     };
 }

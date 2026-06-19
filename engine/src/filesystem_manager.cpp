@@ -50,6 +50,16 @@ triton::cDataFile* triton::cFileSystem::CreateDataFile(const std::string& path, 
     return file;
 }
 
+std::string triton::cFileSystem::TextFileToString(const std::string& path)
+{
+    cDataFile* file = _context->Create<cDataFile>(_context, path);
+    std::string str = "";
+    for (usize i = 0; i < file->GetBuffer()->GetByteSize(); i++)
+        str.push_back(((u8*)file->GetData())[i]);
+    
+    return str;
+}
+
 void triton::cFileSystem::DestroyDataFile(cDataFile* file)
 {
     if (file == nullptr)
