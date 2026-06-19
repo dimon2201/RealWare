@@ -895,13 +895,30 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0)->GetSize();
     cTextureAtlas* textureAtlas = _context->GetSubsystem<cTextureAtlas>();
     cGraphics* gfx = _context->GetSubsystem<cGraphics>();
+    cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
 
     SViewport viewport;
     viewport.rect = cVector4(0.0f, 0.0f, windowSize.GetX(), windowSize.GetY());
 
-    opaqueRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::OPAQUE_PATH;
-    opaqueRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    opaqueRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    const std::string opaqueVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/opaque_vertex.shader";
+    const std::string opaqueFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/opaque_fragment.shader";
+    const std::string transparentVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/transparent_vertex.shader";
+    const std::string transparentFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/transparent_fragment.shader";
+    const std::string textVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/text_vertex.shader";
+    const std::string textFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/text_fragment.shader";
+    const std::string compositeTransparentVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/composite_transparent_vertex.shader";
+    const std::string compositeTransparentFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/composite_transparent_fragment.shader";
+    const std::string compositeFinalVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/composite_final_vertex.shader";
+    const std::string compositeFinalFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/composite_final_fragment.shader";
+
+    // Opaque render pass
+    XShader* opaqueShader = _context->Create<XShader>(
+        _context,
+        fs->TextFileToString(opaqueVertexShaderPath),
+        fs->TextFileToString(opaqueFragmentShaderPath),
+        "",
+        ""
+    );
     SBlendState opaqueBlendState = {};
     opaqueBlendState.factorCount = 1;
     opaqueBlendState.srcFactors[0] = EBlendFactor::ONE;
@@ -921,9 +938,14 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _opaque->SetBlendState(opaqueBlendState);
     _opaque->SetRenderTarget(_opaqueRenderTarget);
 
-    transparentRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::TRANSPARENT_PATH;
-    transparentRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    transparentRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    // Transparent render pass
+    XShader* transparentShader = _context->Create<XShader>(
+        _context,
+        fs->TextFileToString(transparentVertexShaderPath),
+        fs->TextFileToString(transparentFragmentShaderPath),
+        "",
+        ""
+    );
     SBlendState transparentBlendState = {};
     transparentBlendState.factorCount = 2;
     transparentBlendState.srcFactors[0] = EBlendFactor::ONE;
@@ -945,13 +967,14 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _transparent->SetBlendState(transparentBlendState);
     _transparent->SetRenderTarget(_transparentRenderTarget);
 
-    textRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::TEXT_PATH;
-    textRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    textRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
-    textRenderPassDesc._viewport = viewport;
-    textRenderPassDesc._depthMode.useDepthTest = K_FALSE;
-    textRenderPassDesc._depthMode.useDepthWrite = K_FALSE;
-    textRenderPassDesc._renderTarget = _opaqueRenderTarget;
+    // Text render pass
+    XShader* textShader = _context->Create<XShader>(
+        _context,
+        fs->TextFileToString(textVertexShaderPath),
+        fs->TextFileToString(textFragmentShaderPath),
+        "",
+        ""
+    );
     _text = _context->Create<XRenderPass>(_context);
     _text->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
     _text->SetShader(textShader);
@@ -959,9 +982,14 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _text->SetDepthState(SDepthState(K_FALSE, K_FALSE));
     _text->SetRenderTarget(_opaqueRenderTarget);
 
-    compositeTransparentRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::TRANSPARENT_COMPOSITE_PATH;
-    compositeTransparentRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    compositeTransparentRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    // Composite transparent render pass
+    XShader* compositeTransparentShader = _context->Create<XShader>(
+        _context,
+        fs->TextFileToString(compositeTransparentVertexShaderPath),
+        fs->TextFileToString(compositeTransparentFragmentShaderPath),
+        "",
+        ""
+    );
     SBlendState compositeTransparentBlendState = {};
     compositeTransparentBlendState.factorCount = 1;
     compositeTransparentBlendState.srcFactors[0] = EBlendFactor::SRC_ALPHA;
@@ -978,9 +1006,14 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _opaque->SetBlendState(compositeTransparentBlendState);
     _opaque->SetRenderTarget(_opaqueRenderTarget);
 
-    compositeFinalRenderPassDesc._shaderRenderPath = SRenderPassDescriptor::eRenderPath::QUAD_PATH;
-    compositeFinalRenderPassDesc._shaderVertexPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_vertex.shader";
-    compositeFinalRenderPassDesc._shaderFragmentPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/main_fragment.shader";
+    // Composite final render pass
+    XShader* compositeFinalShader = _context->Create<XShader>(
+        _context,
+        fs->TextFileToString(compositeFinalVertexShaderPath),
+        fs->TextFileToString(compositeFinalFragmentShaderPath),
+        "",
+        ""
+    );
     SBlendState compositeFinalBlendState = {};
     compositeFinalBlendState.factorCount = 1;
     compositeFinalBlendState.srcFactors[0] = EBlendFactor::ONE;
