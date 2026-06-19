@@ -54,7 +54,7 @@ namespace triton
         std::vector<cBuffer*>           _inputBuffers = {};
         std::vector<SRenderPassTexture> _inputTextures = {};
         EBuiltinRenderPassType          _shaderRenderPath = EBuiltinRenderPassType::NONE;
-        SDepthState                     _depthState = {};
+        SDepthState                     _depthState = SDepthState(0, 0);
         SBlendState                     _blendState = {};
         SViewport                       _viewport = {};
         XRenderTarget*                  _renderTarget = nullptr;
