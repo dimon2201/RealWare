@@ -78,7 +78,18 @@ namespace triton
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
         void ResizeDepthAttachment(const cVector2& size);
+        SShaderDefine SetInputTexture(types::usize slot, const SRenderPassTexture& texture);
         std::vector<SShaderDefine> SetInputTextures(const std::vector<SRenderPassTexture>& textures);
+
+        inline XRenderTarget* GetRenderTarget() const
+        {
+            return _renderTarget;
+        }
+
+        inline XShader* GetShader() const
+        {
+            return _shader;
+        }
 
         inline void SetInputBuffers(const std::vector<cBuffer*>& buffers)
         {

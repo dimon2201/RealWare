@@ -344,13 +344,6 @@ void triton::cGraphics::DestroyGeometry(sVertexBufferGeometry* geometry)
     _context->Destroy<sVertexBufferGeometry>(geometry);
 }
 
-void triton::cGraphics::DestroyRenderPass(XRenderPass* renderPass)
-{
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    gfxPipelineBackend->DestroyRenderPass(renderPass->GetRenderPassGPU());
-    _context->Destroy<XRenderPass>(renderPass);
-}
-
 void triton::cGraphics::DestroyPrimitive(sPrimitive* primitiveObject)
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
@@ -416,8 +409,8 @@ void triton::cGraphics::ResizeRenderTargets(const cVector2& size)
 
     _text->ResizeViewport(size);
 
-    cRenderTarget* newOpaqueRenderTarget = _opaque->GetRenderTarget();
-    cRenderTarget* newTransparentRenderTarget = _transparent->GetRenderTarget();
+    XRenderTarget* newOpaqueRenderTarget = _opaque->GetRenderTarget();
+    XRenderTarget* newTransparentRenderTarget = _transparent->GetRenderTarget();
     gfxPipelineBackend->UpdateRenderTargetBuffers(newOpaqueRenderTarget);
     gfxPipelineBackend->UpdateRenderTargetBuffers(newTransparentRenderTarget);
     _opaque->SetRenderTarget(newOpaqueRenderTarget);
@@ -425,15 +418,12 @@ void triton::cGraphics::ResizeRenderTargets(const cVector2& size)
 
     _compositeTransparent->ResizeViewport(size);
     auto& transparentColorAttachments = _transparent->GetRenderTarget()->GetColorAttachments();
-    _compositeTransparent->SetInputTexture(0, transparentColorAttachments[0]);
-    _compositeTransparent->SetInputTexture(1, transparentColorAttachments[1]);
-    //_compositeTransparent->_desc._inputTextureNames[0] = "AccumulationTexture";
-    //_compositeTransparent->_desc._inputTextureNames[1] = "RevealageTexture";
+    _compositeTransparent->SetInputTexture(0, SRenderPassTexture("AccumulationTexture", transparentColorAttachments[0]));
+    _compositeTransparent->SetInputTexture(1, SRenderPassTexture("RevealageTexture", transparentColorAttachments[1]));
 
     _compositeFinal->ResizeViewport(size);
     auto& opaqueColorAttachments = _opaque->GetRenderTarget()->GetColorAttachments();
-    _compositeFinal->SetInputTexture(0, opaqueColorAttachments[0]);
-    //_compositeFinal->_desc._inputTextureNames[0] = "ColorTexture";
+    _compositeFinal->SetInputTexture(0, SRenderPassTexture("ColorTexture", opaqueColorAttachments[0]));
 }
 
 void triton::cGraphics::LoadShaderFiles(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc)
@@ -650,7 +640,7 @@ void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry
         gfxPipelineBackend->UnbindRenderPass(renderPass);
 }
 
-void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, cShader* singleShader)
+void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, XShader* singleShader)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
@@ -703,7 +693,7 @@ void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geo
     CompositeTransparent();
 }
 
-void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, cShader* singleShader)
+void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, XShader* singleShader)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();

@@ -94,16 +94,16 @@ namespace triton
     {
         TRITON_OBJECT(cMaterial)
 
-        cShader* _customShader = nullptr;
+        XShader* _customShader = nullptr;
         cTextureAtlasTexture* _diffuseTexture = nullptr;
         glm::vec4 _diffuseColor = glm::vec4(1.0f);
         glm::vec4 _highlightColor = glm::vec4(1.0f);
 
     public:
-        explicit cMaterial(cContext* context, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, cShader* customShader) : iObject(context), _diffuseTexture(diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor), _customShader(customShader) {}
+        explicit cMaterial(cContext* context, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, XShader* customShader) : iObject(context), _diffuseTexture(diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor), _customShader(customShader) {}
         ~cMaterial() = default;
 
-        inline cShader* GetCustomShader() const { return _customShader; }
+        inline XShader* GetCustomShader() const { return _customShader; }
         inline cTextureAtlasTexture* GetDiffuseTexture() const { return _diffuseTexture; }
         inline const glm::vec4& GetDiffuseColor() const { return _diffuseColor; }
         inline const glm::vec4& GetHighlightColor() const { return _highlightColor; }
@@ -220,9 +220,9 @@ namespace triton
         //void WriteObjectsToTransparentBuffers(cIdVector<cGameObject>& objects, XRenderPass* renderPass);
         
         void DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, XRenderPass* renderPass);
-        void DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, cShader* singleShader = nullptr);
+        void DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, XShader* singleShader = nullptr);
         void DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const std::vector<cGameObject>& objects, const cGameObject* cameraObject, XRenderPass* renderPass);
-        void DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, cShader* singleShader = nullptr);
+        void DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, XShader* singleShader = nullptr);
         // TODO: Implement new text drawing approach
         //void DrawTexts(const std::vector<cGameObject>& objects);
         
@@ -255,16 +255,6 @@ namespace triton
         inline XRenderPass* GetCompositeFinalRenderPass() const
         {
             return _compositeFinal;
-        }
-
-        inline cRenderTarget* GetOpaqueRenderTarget() const
-        {
-            return _opaqueRenderTarget;
-        }
-
-        inline cRenderTarget* GetTransparentRenderTarget() const
-        {
-            return _transparentRenderTarget;
         }
 	};
 }

@@ -84,9 +84,19 @@ void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
     );
 }
 
-std::vector<triton::SShaderDefine> SetInputTextures(const std::vector<triton::SRenderPassTexture>& textures)
+triton::SShaderDefine triton::XRenderPass::SetInputTexture(types::usize slot, const SRenderPassTexture& texture)
 {
-    std::vector<triton::SShaderDefine> defines = {};
+    if (slot >= _inputTextures.size())
+        return SShaderDefine("", 0);
+
+    _inputTextures.at(slot) = texture;
+
+    return SShaderDefine(texture._name, slot);
+}
+
+std::vector<triton::SShaderDefine> triton::XRenderPass::SetInputTextures(const std::vector<triton::SRenderPassTexture>& textures)
+{
+    std::vector<SShaderDefine> defines = {};
     for (usize i = 0; i < textures.size(); i++)
     {
         const usize textureAtlasTextureIndex = i;
