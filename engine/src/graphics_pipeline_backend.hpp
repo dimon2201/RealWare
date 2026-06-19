@@ -135,18 +135,18 @@ namespace triton
         virtual void UnbindRenderPass(const XRenderPass* renderPass) = 0;
         virtual void DestroyRenderPass(XRenderPassGPU* renderPass) = 0;
         virtual void BindDefaultInputLayout() = 0;
-        virtual void BindDepthMode(const sDepthMode& blendMode) = 0;
-        virtual void BindBlendMode(const sBlendMode& blendMode) = 0;
-        virtual void Viewport(const sViewport& viewport) = 0;
-        virtual cRenderTarget* CreateRenderTarget(
+        virtual void BindDepthMode(const SDepthState& blendMode) = 0;
+        virtual void BindBlendMode(const SBlendState& blendMode) = 0;
+        virtual void Viewport(const SViewport& viewport) = 0;
+        virtual XRenderTarget* CreateRenderTarget(
             const std::vector<cTexture*>& colorAttachments,
             cTexture* depthAttachment
         ) = 0;
-        virtual void ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
-        virtual void ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size) = 0;
-        virtual void UpdateRenderTargetBuffers(cRenderTarget*& renderTarget) = 0;
-        virtual void BindRenderTarget(const cRenderTarget* renderTarget) = 0;
+        virtual void ResizeRenderTargetColors(XRenderTarget* renderTarget, const glm::vec2& size) = 0;
+        virtual void ResizeRenderTargetDepth(XRenderTarget* renderTarget, const glm::vec2& size) = 0;
+        virtual void UpdateRenderTargetBuffers(XRenderTarget*& renderTarget) = 0;
+        virtual void BindRenderTarget(const XRenderTarget* renderTarget) = 0;
         virtual void UnbindRenderTarget() = 0;
-        virtual void DestroyRenderTarget(cRenderTarget* renderTarget) = 0;
+        virtual void DestroyRenderTarget(XRenderTarget* renderTarget) = 0;
     };
 }
