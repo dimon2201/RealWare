@@ -125,7 +125,7 @@ namespace triton
             const std::string& textureName,
             types::u32 slot
         ) = 0;
-        virtual cVertexArray* CreateVertexArray() = 0;
+        virtual CVertexArray* CreateVertexArray() = 0;
         virtual void BindVertexArray(const cVertexArray* vertexArray) = 0;
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) = 0;
         virtual void UnbindVertexArray() = 0;
