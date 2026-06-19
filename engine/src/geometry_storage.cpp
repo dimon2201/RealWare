@@ -79,7 +79,7 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::CreateGeometry(EG
 
     switch (format)
     {
-    case EGraphicsBufferFormat::VERTEX_POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3:
+    case EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3:
         vertexCount /= 32;
         vertexOffset /= 32;
         break;
