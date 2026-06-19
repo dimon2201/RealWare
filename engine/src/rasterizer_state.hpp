@@ -30,8 +30,8 @@ namespace triton
     {
     public:
         types::usize factorCount = 0;
-        eBlendFactor srcFactors[8] = { eBlendFactor::ZERO };
-        eBlendFactor dstFactors[8] = { eBlendFactor::ZERO };
+        EBlendFactor srcFactors[8] = { EBlendFactor::ZERO };
+        EBlendFactor dstFactors[8] = { EBlendFactor::ZERO };
     };
 
     class SViewport final
