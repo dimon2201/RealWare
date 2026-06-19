@@ -25,6 +25,7 @@ namespace triton
     class XRenderTarget;
     class XRenderPassGPU;
     class XShader;
+    class CVertexArray;
 
     enum class EBuiltinRenderPassType
     {
