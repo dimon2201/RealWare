@@ -101,7 +101,7 @@ namespace triton
         explicit iGraphicsPipelineBackend(cContext* context);
         virtual ~iGraphicsPipelineBackend() override = default;
 
-        virtual void BindShader(const cShader* shader) = 0;
+        virtual void BindShader(const XShader* shader) = 0;
         virtual void UnbindShader() = 0;
         virtual CGPUShader CreateShader(
             EBuiltinRenderPassType builtinType,
@@ -112,15 +112,15 @@ namespace triton
             const std::vector<SShaderDefine>& defines = {}
         ) = 0;
         virtual void DestroyShader(const CGPUShader& shader) = 0;
-        virtual void SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix) = 0;
+        virtual void SetShaderUniform(const XShader* shader, const std::string& name, const glm::mat4& matrix) = 0;
         virtual void SetShaderUniform(
-            const cShader* shader,
+            const XShader* shader,
             const std::string& name,
             types::usize count,
             const types::f32* values
         ) = 0;
         virtual void BindTextureNamed(
-            cShader* shader,
+            XShader* shader,
             cTexture* texture,
             const std::string& textureName,
             types::u32 slot
@@ -131,7 +131,7 @@ namespace triton
         virtual void UnbindVertexArray() = 0;
         virtual void DestroyVertexArray(cVertexArray* vertexArray) = 0;
         virtual CGPURenderPass CreateRenderPass() = 0;
-        virtual void BindRenderPass(const XRenderPass* renderPass, cShader* customShader = nullptr) = 0;
+        virtual void BindRenderPass(const XRenderPass* renderPass, XShader* customShader = nullptr) = 0;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) = 0;
         virtual void DestroyRenderPass(XRenderPassGPU* renderPass) = 0;
         virtual void BindDefaultInputLayout() = 0;
