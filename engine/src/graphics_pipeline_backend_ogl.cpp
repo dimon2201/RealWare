@@ -464,7 +464,7 @@ void triton::cGraphicsPipelineBackendOGL::Viewport(const sViewport& viewport)
     glViewport(viewport.rect.GetX(), viewport.rect.GetY(), viewport.rect.GetZ(), viewport.rect.GetW());
 }
 
-triton::cRenderTarget* triton::cGraphicsPipelineBackendOGL::CreateRenderTarget(
+triton::XRenderTarget* triton::cGraphicsPipelineBackendOGL::CreateRenderTarget(
     const std::vector<cTexture*>& colorAttachments,
     cTexture* depthAttachment
 )
@@ -499,7 +499,7 @@ triton::cRenderTarget* triton::cGraphicsPipelineBackendOGL::CreateRenderTarget(
     if (status != GL_FRAMEBUFFER_COMPLETE)
         Print("Error: incomplete framebuffer!");
 
-    cRenderTarget* renderTarget = _context->Create<cRenderTarget>(
+    XRenderTarget* renderTarget = _context->Create<XRenderTarget>(
         _context,
         instance,
         colorAttachments,
@@ -510,7 +510,7 @@ triton::cRenderTarget* triton::cGraphicsPipelineBackendOGL::CreateRenderTarget(
 }
 
 void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetColors(
-    cRenderTarget* renderTarget,
+    XRenderTarget* renderTarget,
     const glm::vec2& size
 )
 {
@@ -551,7 +551,7 @@ void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetColors(
 }
 
 void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetDepth(
-    cRenderTarget* renderTarget,
+    XRenderTarget* renderTarget,
     const glm::vec2& size
 )
 {
@@ -579,7 +579,7 @@ void triton::cGraphicsPipelineBackendOGL::ResizeRenderTargetDepth(
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void triton::cGraphicsPipelineBackendOGL::UpdateRenderTargetBuffers(cRenderTarget*& renderTarget)
+void triton::cGraphicsPipelineBackendOGL::UpdateRenderTargetBuffers(XRenderTarget*& renderTarget)
 {
     GLuint instance = 0;
 
@@ -609,11 +609,11 @@ void triton::cGraphicsPipelineBackendOGL::UpdateRenderTargetBuffers(cRenderTarge
 
     const std::vector<cTexture*> colorAttachments = renderTarget->GetColorAttachments();
     cTexture* depthAttachments = renderTarget->GetDepthAttachment();
-    _context->Destroy<cRenderTarget>(renderTarget);
-    renderTarget = _context->Create<cRenderTarget>(_context, instance, colorAttachments, depthAttachments);
+    _context->Destroy<XRenderTarget>(renderTarget);
+    renderTarget = _context->Create<XRenderTarget>(_context, instance, colorAttachments, depthAttachments);
 }
 
-void triton::cGraphicsPipelineBackendOGL::BindRenderTarget(const cRenderTarget* renderTarget)
+void triton::cGraphicsPipelineBackendOGL::BindRenderTarget(const XRenderTarget* renderTarget)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)renderTarget->GetInstance());
 }
@@ -623,7 +623,7 @@ void triton::cGraphicsPipelineBackendOGL::UnbindRenderTarget()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void triton::cGraphicsPipelineBackendOGL::DestroyRenderTarget(cRenderTarget* renderTarget)
+void triton::cGraphicsPipelineBackendOGL::DestroyRenderTarget(XRenderTarget* renderTarget)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -631,5 +631,5 @@ void triton::cGraphicsPipelineBackendOGL::DestroyRenderTarget(cRenderTarget* ren
     glDeleteFramebuffers(1, &instance);
 
     if (renderTarget != nullptr)
-        _context->Destroy<cRenderTarget>(renderTarget);
+        _context->Destroy<XRenderTarget>(renderTarget);
 }

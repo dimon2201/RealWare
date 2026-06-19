@@ -25,7 +25,7 @@ triton::XShader::~XShader()
 
 triton::CVertexArray::CVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}
 
-triton::cRenderTarget::cRenderTarget(
+triton::XRenderTarget::XRenderTarget(
 	cContext* context,
 	qword instance,
 	const std::vector<cTexture*>& colorAttachments,

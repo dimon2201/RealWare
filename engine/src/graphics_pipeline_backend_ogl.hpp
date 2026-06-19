@@ -57,15 +57,15 @@ namespace triton
         virtual void BindDepthMode(const sDepthMode& blendMode) override final;
         virtual void BindBlendMode(const sBlendMode& blendMode) override final;
         virtual void Viewport(const sViewport& viewport) override final;
-        virtual cRenderTarget* CreateRenderTarget(
+        virtual XRenderTarget* CreateRenderTarget(
             const std::vector<cTexture*>& colorAttachments,
             cTexture* depthAttachment
         ) override final;
-        virtual void ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size) override final;
-        virtual void ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size) override final;
-        virtual void UpdateRenderTargetBuffers(cRenderTarget*& renderTarget) override final;
-        virtual void BindRenderTarget(const cRenderTarget* renderTarget) override final;
+        virtual void ResizeRenderTargetColors(XRenderTarget* renderTarget, const glm::vec2& size) override final;
+        virtual void ResizeRenderTargetDepth(XRenderTarget* renderTarget, const glm::vec2& size) override final;
+        virtual void UpdateRenderTargetBuffers(XRenderTarget*& renderTarget) override final;
+        virtual void BindRenderTarget(const XRenderTarget* renderTarget) override final;
         virtual void UnbindRenderTarget() override final;
-        virtual void DestroyRenderTarget(cRenderTarget* renderTarget) override final;
+        virtual void DestroyRenderTarget(XRenderTarget* renderTarget) override final;
     };
 }
