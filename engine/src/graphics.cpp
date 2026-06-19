@@ -158,7 +158,7 @@ void Shutdown()
 // TODO: Remove material creation from cGraphics
 /*cCacheObject<cMaterial> cGraphics::CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath, const std::string& customVertexFuncPath, const std::string& customFragmentFuncPath)
 {
-    cShader* customShader = nullptr;
+    XShader* customShader = nullptr;
     if (customVertexFuncPath != "" || customFragmentFuncPath != "")
     {
         std::string vertexFunc = "";

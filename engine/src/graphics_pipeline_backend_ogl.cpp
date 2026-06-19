@@ -42,7 +42,7 @@ namespace triton
 
 triton::cGraphicsPipelineBackendOGL::cGraphicsPipelineBackendOGL(cContext* context) : iGraphicsPipelineBackend(context) {}
 
-void triton::cGraphicsPipelineBackendOGL::BindShader(const cShader* shader)
+void triton::cGraphicsPipelineBackendOGL::BindShader(const XShader* shader)
 {
     const GLuint shaderID = (GLuint)shader->GetInstance();
     glUseProgram(shaderID);
@@ -165,11 +165,11 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     return CGPUShader(_context, instance, 0);
 }
 
-triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
-    const cShader* baseShader,
+triton::XShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
+    const XShader* baseShader,
     const std::string& vertexFunc,
     const std::string& fragmentFunc,
-    const std::vector<cShader::sDefinePair>& definePairs
+    const std::vector<XShader::sDefinePair>& definePairs
 )
 {
     // TODO: rewrite shader creation logic
@@ -252,7 +252,7 @@ triton::cShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    cShader* shader = _context->Create<cShader>(_context, instance, vertexShaderStr, fragmentShaderStr);
+    XShader* shader = _context->Create<XShader>(_context, instance, vertexShaderStr, fragmentShaderStr);
 
     return shader;
 }
@@ -262,18 +262,18 @@ void triton::cGraphicsPipelineBackendOGL::DestroyShader(const CGPUShader& shader
     glDeleteProgram(shader.GetInstance());
 }
 
-void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix)
+void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const XShader* shader, const std::string& name, const glm::mat4& matrix)
 {
     glUniformMatrix4fv(glGetUniformLocation(shader->GetInstance(), name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 }
 
-void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const cShader* shader, const std::string& name, usize count, const f32* values)
+void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const XShader* shader, const std::string& name, usize count, const f32* values)
 {
     glUniform4fv(glGetUniformLocation(shader->GetInstance(), name.c_str()), count, &values[0]);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindTextureNamed(
-    cShader* shader,
+    XShader* shader,
     cTexture* texture,
     const std::string& textureName,
     types::u32 slot
@@ -353,12 +353,12 @@ triton::CGPURenderPass triton::cGraphicsPipelineBackendOGL::CreateRenderPass()
     return CGPURenderPass(_context, 0, 0);
 }
 
-void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const XRenderPass* renderPass, cShader* customShader)
+void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const XRenderPass* renderPass, XShader* customShader)
 {
     iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* pipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 
-    cShader* shader = nullptr;
+    XShader* shader = nullptr;
     if (customShader == nullptr)
         shader = renderPass->GetRenderPassGPU()->GetShader();
     else

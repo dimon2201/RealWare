@@ -20,7 +20,7 @@ namespace triton
         explicit cGraphicsPipelineBackendOGL(cContext* context);
         virtual ~cGraphicsPipelineBackendOGL() override final = default;
 
-        virtual void BindShader(const cShader* shader) override final;
+        virtual void BindShader(const XShader* shader) override final;
         virtual void UnbindShader() override final;
         virtual CGPUShader CreateShader(
             EBuiltinRenderPassType builtinType,
@@ -31,15 +31,15 @@ namespace triton
             const std::vector<SShaderDefine>& defines = {}
         ) override final;
         virtual void DestroyShader(const CGPUShader& shader) override final;
-        virtual void SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix) override final;
+        virtual void SetShaderUniform(const XShader* shader, const std::string& name, const glm::mat4& matrix) override final;
         virtual void SetShaderUniform(
-            const cShader* shader,
+            const XShader* shader,
             const std::string& name,
             types::usize count,
             const types::f32* values
         ) override final;
         virtual void BindTextureNamed(
-            cShader* shader,
+            XShader* shader,
             cTexture* texture,
             const std::string& textureName,
             types::u32 slot
@@ -50,7 +50,7 @@ namespace triton
         virtual void UnbindVertexArray() override final;
         virtual void DestroyVertexArray(CVertexArray* vertexArray) override final;
         virtual CGPURenderPass CreateRenderPass() override final;
-        virtual void BindRenderPass(const XRenderPass* renderPass, cShader* customShader = nullptr) override final;
+        virtual void BindRenderPass(const XRenderPass* renderPass, XShader* customShader = nullptr) override final;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) override final;
         virtual void DestroyRenderPass(XRenderPassGPU* renderPass) override final;
         virtual void BindDefaultInputLayout() override final;
