@@ -23,7 +23,7 @@ triton::XShader::~XShader()
 	_context->GetBackend<iGraphicsPipelineBackend>()->DestroyShader(_gpuShader);
 }
 
-triton::cVertexArray::cVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}
+triton::CVertexArray::CVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}
 
 triton::cRenderTarget::cRenderTarget(
 	cContext* context,

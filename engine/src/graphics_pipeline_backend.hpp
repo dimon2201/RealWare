@@ -126,10 +126,10 @@ namespace triton
             types::u32 slot
         ) = 0;
         virtual CVertexArray* CreateVertexArray() = 0;
-        virtual void BindVertexArray(const cVertexArray* vertexArray) = 0;
+        virtual void BindVertexArray(const CVertexArray* vertexArray) = 0;
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) = 0;
         virtual void UnbindVertexArray() = 0;
-        virtual void DestroyVertexArray(cVertexArray* vertexArray) = 0;
+        virtual void DestroyVertexArray(CVertexArray* vertexArray) = 0;
         virtual CGPURenderPass CreateRenderPass() = 0;
         virtual void BindRenderPass(const XRenderPass* renderPass, XShader* customShader = nullptr) = 0;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) = 0;

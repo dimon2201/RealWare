@@ -44,11 +44,11 @@ namespace triton
             const std::string& textureName,
             types::u32 slot
         ) override final;
-        virtual cVertexArray* CreateVertexArray() override final;
-        virtual void BindVertexArray(const cVertexArray* vertexArray) override final;
+        virtual CVertexArray* CreateVertexArray() override final;
+        virtual void BindVertexArray(const CVertexArray* vertexArray) override final;
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) override final;
         virtual void UnbindVertexArray() override final;
-        virtual void DestroyVertexArray(cVertexArray* vertexArray) override final;
+        virtual void DestroyVertexArray(CVertexArray* vertexArray) override final;
         virtual CGPURenderPass CreateRenderPass() override final;
         virtual void BindRenderPass(const XRenderPass* renderPass, cShader* customShader = nullptr) override final;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) override final;

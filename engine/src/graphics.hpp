@@ -24,7 +24,7 @@ namespace triton
     class cTextureAtlasTexture;
     class cContext;
     class XShader;
-    class cVertexArray;
+    class CVertexArray;
     class XRenderTarget;
     class XRenderPass;
     class XRenderPassGPU;
@@ -193,7 +193,7 @@ namespace triton
 
         // TODO: Remove material creation from cGraphics
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
-        cVertexArray* CreateDefaultVertexArray();
+        CVertexArray* CreateDefaultVertexArray();
         std::optional<triton::SGeometryView> CreateGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
@@ -203,7 +203,7 @@ namespace triton
         
         // TODO: Remove material destroying from cGraphics
         void DestroyMaterial(const cTag& id);
-        void DestroyVertexArray(cVertexArray* vertexArray);
+        void DestroyVertexArray(CVertexArray* vertexArray);
         void DestroyGeometry(sVertexBufferGeometry* geometry);
         void DestroyRenderPass(XRenderPass* renderPass);
         void DestroyPrimitive(sPrimitive* primitiveObject);

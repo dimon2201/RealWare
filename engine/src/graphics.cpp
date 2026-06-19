@@ -174,12 +174,12 @@ void Shutdown()
     return _materialsCPU->Create(id, diffuseTexture, diffuseColor, highlightColor, customShader);
 }*/
 
-triton::cVertexArray* triton::cGraphics::CreateDefaultVertexArray()
+triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
 {
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     cGraphics* gfx = _context->GetSubsystem<cGraphics>();
-    cVertexArray* vertexArray = gfxPipelineBackend->CreateVertexArray();
+    CVertexArray* vertexArray = gfxPipelineBackend->CreateVertexArray();
     std::vector<cBuffer*> buffersToBind = { gfx->GetVertexBuffer(), gfx->GetIndexBuffer()};
 
     gfxPipelineBackend->BindVertexArray(vertexArray);

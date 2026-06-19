@@ -298,18 +298,18 @@ void triton::cGraphicsPipelineBackendOGL::BindTextureNamed(
     }
 }
 
-triton::cVertexArray* triton::cGraphicsPipelineBackendOGL::CreateVertexArray()
+triton::CVertexArray* triton::cGraphicsPipelineBackendOGL::CreateVertexArray()
 {
     GLuint instance = 0;
 
     glGenVertexArrays(1, (GLuint*)&instance);
 
-    cVertexArray* vertexArray = _context->Create<cVertexArray>(_context, instance);
+    CVertexArray* vertexArray = _context->Create<CVertexArray>(_context, instance);
 
     return vertexArray;
 }
 
-void triton::cGraphicsPipelineBackendOGL::BindVertexArray(const cVertexArray* vertexArray)
+void triton::cGraphicsPipelineBackendOGL::BindVertexArray(const CVertexArray* vertexArray)
 {
     glBindVertexArray((GLuint)vertexArray->GetInstance());
 }
@@ -318,7 +318,7 @@ void triton::cGraphicsPipelineBackendOGL::BindDefaultVertexArray(const std::vect
 {
     iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
-    static cVertexArray* vertexArray = nullptr;
+    static CVertexArray* vertexArray = nullptr;
 
     if (vertexArray == nullptr)
     {
@@ -339,13 +339,13 @@ void triton::cGraphicsPipelineBackendOGL::UnbindVertexArray()
     glBindVertexArray(0);
 }
 
-void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(cVertexArray* vertexArray)
+void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(CVertexArray* vertexArray)
 {
     GLuint instance = vertexArray->GetInstance();
     glDeleteVertexArrays(1, (GLuint*)&instance);
 
     if (vertexArray != nullptr)
-        _context->Destroy<cVertexArray>(vertexArray);
+        _context->Destroy<CVertexArray>(vertexArray);
 }
 
 triton::CGPURenderPass triton::cGraphicsPipelineBackendOGL::CreateRenderPass()
