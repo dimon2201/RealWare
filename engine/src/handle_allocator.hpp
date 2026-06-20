@@ -3,6 +3,7 @@
 #pragma once
 
 #include "object.hpp"
+#include "buffer_view.hpp"
 
 namespace triton
 {
