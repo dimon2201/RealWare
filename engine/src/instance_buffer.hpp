@@ -19,7 +19,7 @@ namespace triton
 	class XLinearArray;
 	class SRenderInstance;
 
-	class SInstanceBufferOffset final : public cStackValue
+	class SInstanceBufferOffset final
 	{
 		types::usize _offset = 0;
 
