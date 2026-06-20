@@ -109,7 +109,7 @@ namespace triton
 		_chunkIndices[si.chunkIndex][si.localPosition] = si;
 
 		SStackValue<TValue> returnValue = {};
-		returnValue.value = object;
+		returnValue.data = object;
 		returnValue.index = _chunkIndices[si.chunkIndex][si.localPosition];
 
 		return returnValue;
@@ -200,7 +200,7 @@ namespace triton
 		const types::u32 localPosition = GetChunkLocalPosition(chunkIndex, index);
 
 		SStackValue<TValue> returnValue = {};
-		returnValue.value = _chunkValues[chunkIndex][localPosition];
+		returnValue.data = _chunkValues[chunkIndex][localPosition];
 		returnValue.index = _chunkIndices[chunkIndex][localPosition];
 
 		return returnValue;
