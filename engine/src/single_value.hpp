@@ -5,7 +5,7 @@
 
 namespace triton
 {
-	class cSingleValue : public cStackValue
+	class cSingleValue
 	{
 		types::qword _value = 0;
 
