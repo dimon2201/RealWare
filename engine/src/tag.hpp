@@ -12,7 +12,7 @@ namespace triton
     class cContext;
     class cIdentifier;
     
-    class cTag : public cStackValue
+    class cTag
     {
         friend class cIdentifier;
 

@@ -37,7 +37,7 @@ namespace triton
 		iObject* object = nullptr;
 	};
 
-	class iObject : public cStackValue
+	class iObject
 	{
 		template <typename T>
 		friend class cIdVector;

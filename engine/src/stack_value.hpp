@@ -9,7 +9,7 @@ namespace triton
 	template <typename TKey, typename TValue>
 	class cHashTable;
 
-	class cStackValue
+	/*class cStackValue
 	{
 		template <typename>
 		friend class cStack;
@@ -19,5 +19,5 @@ namespace triton
 		types::u32 chunk = 0;
 		types::u32 localPosition = 0;
 		types::u32 globalPosition = 0;
-	};
+	};*/
 }

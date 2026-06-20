@@ -41,13 +41,11 @@ namespace triton
 		cStack<cHashTablePair<TKey, TValue>>* _elements;
 		types::usize _hashTableSize = 0;
 		types::qword _hashMask = 0;
-		cStackValue* _hashTable = nullptr;
+		TValue* _hashTable = nullptr;
 
 		void HashPair(const TKey& key, const TValue* value);
 
 	public:
-		static_assert(std::is_base_of_v<cStackValue, TValue>, "TValue must inherit from cStackValue");
-
 		explicit cHashTable(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc);
 		virtual ~cHashTable() override final;
 

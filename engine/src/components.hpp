@@ -11,7 +11,7 @@ namespace triton
 
 namespace triton::ecs::components
 {
-    class SComponent : public cStackValue {};
+    class SComponent {};
 
     class STransformComponent final : public SComponent
     {

@@ -11,7 +11,7 @@ namespace triton
 	template <typename T>
 	class cStack;
 
-	class SValue : public cStackValue
+	class SValue
 	{
 	public:
 		SValue() = default;
