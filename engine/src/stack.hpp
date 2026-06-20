@@ -23,6 +23,9 @@ namespace triton
 	{
 		TRITON_OBJECT(IStack)
 
+	public:
+		using ValueType = TValue;
+
 		template<typename... Args>
 		virtual TValue* Push(Args&&... args) = 0;
 		virtual TValue* Push(TValue&& value) = 0;
