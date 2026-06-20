@@ -53,30 +53,6 @@ void triton::cEngine::Initialize()
 	// Create memory allocator
 	_context->CreateMemoryAllocator();
 
-	// Register factories
-	_context->RegisterFactory<cInputWindow>();
-	_context->RegisterFactory<cStack<cInputWindow>>();
-	_context->RegisterFactory<cBuffer>();
-	_context->RegisterFactory<cTexture>();
-	_context->RegisterFactory<XRenderTarget>();
-	_context->RegisterFactory<XShader>();
-	_context->RegisterFactory<CVertexArray>();
-	_context->RegisterFactory<XRenderTarget>();
-	_context->RegisterFactory<XRenderPass>();
-	_context->RegisterFactory<CGPURenderPass>();
-	_context->RegisterFactory<XDataBuffer>();
-	_context->RegisterFactory<cDataFile>();
-	_context->RegisterFactory<cRenderThread>();
-	_context->RegisterFactory<XFrameSync>();
-	_context->RegisterFactory<XGeometryStorage>();
-	_context->RegisterFactory<XInstanceBuffer>();
-	_context->RegisterFactory<cScene>();
-	_context->RegisterFactory<cHashTable<entity, cSingleValue>>();
-	_context->RegisterFactory<cComponentStorage<STransformComponent>>();
-	_context->RegisterFactory<XHandleAllocator<SSceneSlot, SSceneHandle, cStack<cScene>, cScene>>();
-	_context->RegisterFactory<cStack<SSceneSlot>>();
-	_context->RegisterFactory<cStack<cScene>>();
-
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputBackendGLFW(_context));
 	_context->RegisterBackend<iGraphicsResourceBackend>(new cGraphicsResourceBackendOGL(_context));

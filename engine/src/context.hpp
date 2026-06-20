@@ -16,7 +16,6 @@ namespace triton
 	{
 		cMemoryAllocator* _allocator = nullptr;
 		::std::unordered_map<ClassType, std::shared_ptr<iBackend>> _backends;
-		::std::unordered_map<ClassType, iObject*> _factories;
 		::std::unordered_map<ClassType, iObject*> _subsystems;
 
 	public:
@@ -36,17 +35,11 @@ namespace triton
 		void DestroyMemoryAllocator(cMemoryAllocator* allocator);
 
 		template <typename T>
-		void RegisterFactory();
-
-		template <typename T>
 		void RegisterBackend(T* backend);
 
 		void RegisterSubsystem(iObject* object);
 
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
-
-		template <typename T>
-		inline T* GetFactory() const;
 
 		template <typename T>
 		inline T* GetBackend() const;
@@ -99,20 +92,11 @@ T* triton::cContext::Create(types::u8* ptr, types::u32 index, Args&&... args)
 template <typename T>
 void triton::cContext::Destroy(T* object)
 {
-	const ClassType type = T::GetTypeStatic();
-	const auto it = _factories.find(type);
-	if (it != _factories.end())
-		((cFactory<T>*)it->second)->Destroy(object);
-}
+	if (object == nullptr)
+		return;
 
-template <typename T>
-void triton::cContext::RegisterFactory()
-{
-	// TODO: static_assert that T must inherit from iObject
-	const ClassType type = T::GetTypeStatic();
-	const auto it = _factories.find(type);
-	if (it == _factories.end())
-		_factories.insert({type, new cFactory<T>(this)});
+	object->~T();
+	GetMemoryAllocator()->Deallocate(object);
 }
 
 template <typename T>
@@ -123,17 +107,6 @@ void triton::cContext::RegisterBackend(T* backend)
 	const auto it = _backends.find(type);
 	if (it == _backends.end())
 		_backends.insert({ type, std::shared_ptr<iBackend>(backend) });
-}
-
-template <typename T>
-T* triton::cContext::GetFactory() const
-{
-	const ClassType type = T::GetTypeStatic();
-	const auto it = _factories.find(type);
-	if (it != _factories.end())
-		return (T*)it->second;
-	else
-		return nullptr;
 }
 
 template <typename T>
