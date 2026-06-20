@@ -41,9 +41,10 @@ namespace triton
 		cStack<cHashTablePair<TKey, TValue>>* _elements;
 		types::usize _hashTableSize = 0;
 		types::qword _hashMask = 0;
-		TValue* _hashTable = nullptr;
+		TValue* _hashTableValues = nullptr;
+		SStackIndex* _hashTableIndices = nullptr;
 
-		void HashPair(const TKey& key, const TValue* value);
+		void HashPair(const TKey& key, const TValue* value, const SStackIndex& index);
 
 	public:
 		explicit cHashTable(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc);
@@ -176,13 +177,13 @@ void triton::cHashTable<TKey, TValue>::Erase(types::u32 index)
 }
 
 template <typename TKey, typename TValue>
-void triton::cHashTable<TKey, TValue>::HashPair(const TKey& key, const TValue* value)
+void triton::cHashTable<TKey, TValue>::HashPair(const TKey& key, const TValue* value, const SStackIndex& index)
 {
-	TValue value = {};
-	sv.chunk = value->chunk;
-	sv.localPosition = value->localPosition;
-	sv.globalPosition = value->globalPosition;
+	SStackIndex si = {};
+	si.chunkIndex = index.chunkIndex;
+	si.localPosition = index.localPosition;
+	si.globalPosition = index.globalPosition;
 
 	const types::u32 hash = cMath::Hash<TKey>(key, _hashMask);
-	_hashTable[hash] = sv;
+	_hashTableIndices[hash] = si;
 }
