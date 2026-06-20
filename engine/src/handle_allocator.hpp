@@ -20,21 +20,21 @@ namespace triton
 		types::usize _value = 0;
 	};
 
-	// Concept to check if XHandleAllocator member data structure is derived from base stack interface cStack<TValue>
-	template<typename T>
+	// Concept to check if XHandleAllocator member data structure is derived from stack class cStack<TValue>
+	/*template<typename T>
 	concept IsDerivedFromIStack =
 		requires
 	{
 		typename T::ValueType;
 	} &&
-	std::derived_from<T, cStack<typename T::ValueType>>;
+	std::derived_from<T, cStack<typename T::ValueType>>;*/
 
 	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
 	class XHandleAllocator : public iObject
 	{
 		TRITON_OBJECT(XHandleAllocator)
 
-		static_assert(IsDerivedFromIStack<TDataStructure>, "TDataStructure must inherit from cStack<TValue>");
+		//static_assert(IsDerivedFromIStack<TDataStructure>, "TDataStructure must inherit from cStack<TValue>");
 
 		cStack<TSlot>* _slots = nullptr;
 		cStack<SValue>* _freeSlots = nullptr;
