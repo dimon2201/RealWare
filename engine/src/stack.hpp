@@ -200,7 +200,7 @@ namespace triton
 
 		SValue returnValue = {};
 		returnValue.value = _chunkValues[chunkIndex][localPosition];
-		returnValue.index = _chunkIndices[si.chunkIndex][si.localPosition];
+		returnValue.index = _chunkIndices[chunkIndex][localPosition];
 
 		return returnValue;
 	}
