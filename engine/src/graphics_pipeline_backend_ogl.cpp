@@ -430,7 +430,7 @@ void triton::cGraphicsPipelineBackendOGL::BindDepthMode(const SDepthState& blend
         glDepthMask(GL_FALSE);
 }
 
-void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const sBlendMode& blendMode)
+void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const SBlendState& blendMode)
 {
     for (usize i = 0; i < blendMode.factorCount; i++)
     {
@@ -439,20 +439,20 @@ void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const sBlendMode& blendM
 
         switch (blendMode.srcFactors[i])
         {
-            case sBlendMode::eBlendFactor::ONE: srcFactor = GL_ONE; break;
-            case sBlendMode::eBlendFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
-            case sBlendMode::eBlendFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
-            case sBlendMode::eBlendFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
-            case sBlendMode::eBlendFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+            case SBlendState::eBlendFactor::ONE: srcFactor = GL_ONE; break;
+            case SBlendState::eBlendFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
+            case SBlendState::eBlendFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
+            case SBlendState::eBlendFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
+            case SBlendState::eBlendFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
         }
 
         switch (blendMode.dstFactors[i])
         {
-            case sBlendMode::eBlendFactor::ONE: dstFactor = GL_ONE; break;
-            case sBlendMode::eBlendFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
-            case sBlendMode::eBlendFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
-            case sBlendMode::eBlendFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
-            case sBlendMode::eBlendFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+            case SBlendState::eBlendFactor::ONE: dstFactor = GL_ONE; break;
+            case SBlendState::eBlendFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
+            case SBlendState::eBlendFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
+            case SBlendState::eBlendFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
+            case SBlendState::eBlendFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
         }
 
         glBlendFunci(i, srcFactor, dstFactor);
