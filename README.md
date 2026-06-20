@@ -1,6 +1,6 @@
 # Triton Engine
 
-High-performance C++17 game engine.
+High-performance C++23 game engine.
 
 Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 
