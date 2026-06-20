@@ -19,27 +19,6 @@ namespace triton
 	};
 
 	template <typename TValue>
-	class IStack : public iObject
-	{
-		TRITON_OBJECT(IStack)
-
-	public:
-		using ValueType = TValue;
-
-		template<typename... Args>
-		virtual TValue* Push(Args&&... args) = 0;
-		virtual TValue* Push(TValue&& value) = 0;
-		virtual TValue* At(types::u32 index) const = 0;
-		virtual TValue* At(const cStackValue& value) const = 0;
-		virtual TValue* Top() const = 0;
-		virtual void Erase(types::u32 index) = 0;
-		virtual TValue Pop() = 0;
-		virtual void Clear() = 0;
-		virtual types::boolean IsEmpty() = 0;
-		inline types::usize GetSize() const = 0;
-	};
-
-	template <typename TValue>
 	class cStack : public iObject
 	{
 		TRITON_OBJECT(cStack)
