@@ -54,7 +54,7 @@ namespace triton
         virtual void UnbindRenderPass(const XRenderPass* renderPass) override final;
         virtual void DestroyRenderPass(XRenderPassGPU* renderPass) override final;
         virtual void BindDefaultInputLayout() override final;
-        virtual void BindDepthMode(const sDepthMode& blendMode) override final;
+        virtual void BindDepthMode(const SDepthState& blendMode) override final;
         virtual void BindBlendMode(const sBlendMode& blendMode) override final;
         virtual void Viewport(const sViewport& viewport) override final;
         virtual XRenderTarget* CreateRenderTarget(

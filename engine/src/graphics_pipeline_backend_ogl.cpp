@@ -417,7 +417,7 @@ void triton::cGraphicsPipelineBackendOGL::BindDefaultInputLayout()
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 32, (void*)20);
 }
 
-void triton::cGraphicsPipelineBackendOGL::BindDepthMode(const sDepthMode& blendMode)
+void triton::cGraphicsPipelineBackendOGL::BindDepthMode(const SDepthState& blendMode)
 {
     if (blendMode.useDepthTest == K_TRUE)
         glEnable(GL_DEPTH_TEST);
