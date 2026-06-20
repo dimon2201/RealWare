@@ -121,7 +121,7 @@ namespace triton
 			{
 				slotIndex = _slots->GetSize();
 
-				_objects->Push(std::move(object);
+				_objects->Push(std::move(object));
 				_reverseMap->Push(slotIndex);
 
 				TSlot slot = {};
@@ -136,7 +136,7 @@ namespace triton
 			{
 				slotIndex = _freeSlots->Pop()._value;
 
-				_objects->Push(std::move(object);
+				_objects->Push(std::move(object));
 				_reverseMap->Push(slotIndex);
 
 				_slots->At(slotIndex)->_arrayIndex = arrayIndex;
