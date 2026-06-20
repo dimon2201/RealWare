@@ -189,7 +189,7 @@ namespace triton
         };
 
 		explicit cGraphics(cContext* context);
-		virtual ~cGraphics() override final = default;
+		~cGraphics() override;
 
         // TODO: Remove material creation from cGraphics
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
