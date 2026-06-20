@@ -22,25 +22,23 @@ triton::ecs::cSceneStorage::~cSceneStorage()
 	_context->Destroy<cStack<cScene>>(_scenes);
 }
 
-triton::ecs::cScene* triton::ecs::cSceneStorage::Create(const std::string& name)
+const triton::ecs::cScene& triton::ecs::cSceneStorage::Create(const std::string& name)
 {
 	_sceneIndices->Insert(name, _scenes->GetSize());
-	cScene* scene = _scenes->Push(_context, name);
 
-	return scene;
+	return _scenes->Push(_context, name).data;
 }
 
-triton::ecs::cScene* triton::ecs::cSceneStorage::Get(const std::string& name)
+const triton::ecs::cScene& triton::ecs::cSceneStorage::Get(const std::string& name)
 {
 	cSingleValue* index = _sceneIndices->Find(name);
-	cScene* scene = _scenes->At(index->Value());
 
-	return scene;
+	return _scenes->At(index->Value()).data;
 }
 
-triton::ecs::cScene* triton::ecs::cSceneStorage::Get(types::usize index)
+const triton::ecs::cScene& triton::ecs::cSceneStorage::Get(types::usize index)
 {
-	return _scenes->At(index);
+	return _scenes->At(index).data;
 }
 
 void triton::ecs::cSceneStorage::Destroy(const std::string& name)
@@ -56,8 +54,9 @@ triton::ecs::cSceneStorage::sFindResult triton::ecs::cSceneStorage::FindEntity(e
 
 	for (usize i = 0; i < _scenes->GetSize(); i++)
 	{
-		cScene* scene = _scenes->At(i);
-		if (scene->IsEntityExist(ent))
+		// TODO: remove this const cast when handle storage system will be created
+		cScene& scene = (cScene&)_scenes->At(i).data;
+		if (scene.IsEntityExist(ent))
 		{
 			fr.isOK = K_TRUE;
 			fr.index = i;
