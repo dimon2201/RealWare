@@ -459,7 +459,7 @@ void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const SBlendState& blend
     }
 }
 
-void triton::cGraphicsPipelineBackendOGL::Viewport(const sViewport& viewport)
+void triton::cGraphicsPipelineBackendOGL::Viewport(const SViewport& viewport)
 {
     glViewport(viewport.rect.GetX(), viewport.rect.GetY(), viewport.rect.GetZ(), viewport.rect.GetW());
 }
