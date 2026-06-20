@@ -616,7 +616,8 @@ void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 
-    if (renderPass == nullptr)
+    // TODO: uncomment this
+    /*if (renderPass == nullptr)
     {
         gfxPipelineBackend->BindRenderPass(_opaque);
         gfxPipelineBackend->SetShaderUniform(_opaque->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
@@ -625,7 +626,7 @@ void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry
     {
         gfxPipelineBackend->BindRenderPass(renderPass);
         gfxPipelineBackend->SetShaderUniform(renderPass->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
-    }
+    }*/
 
     /*gfxDrawcallBackend->Draw(
         geometry->_indexCount,
@@ -645,12 +646,15 @@ void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 
+    // TODO: uncomment this
+    /*
     gfxPipelineBackend->BindRenderPass(_opaque, singleShader);
 
     if (singleShader == nullptr)
         gfxPipelineBackend->SetShaderUniform(_opaque->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
     else
         gfxPipelineBackend->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+    */
 
     /*gfxDrawcallBackend->Draw(
         geometry->_indexCount,
@@ -667,6 +671,8 @@ void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geo
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 
+    // TODO: uncomment this
+    /*
     if (renderPass == nullptr)
     {
         gfxPipelineBackend->BindRenderPass(_transparent);
@@ -677,6 +683,7 @@ void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geo
         gfxPipelineBackend->BindRenderPass(renderPass);
         gfxPipelineBackend->SetShaderUniform(renderPass->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
     }
+    */
 
     /*gfxDrawcallBackend->Draw(
         geometry->_indexCount,
@@ -698,12 +705,15 @@ void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geo
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 
+    // TODO: uncomment this
+    /*
     gfxPipelineBackend->BindRenderPass(_transparent, singleShader);
 
     if (singleShader != nullptr)
         gfxPipelineBackend->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
     else
         gfxPipelineBackend->SetShaderUniform(_transparent->GetShader(), "ViewProjection", cameraObject->GetViewProjectionMatrix());
+    */
 
     /*gfxDrawcallBackend->Draw(
         geometry->_indexCount,
@@ -845,7 +855,7 @@ void triton::cGraphics::CreateDefaultRenderTargets()
 {
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0)->GetSize();
+    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
 
     cTexture* color = gfxResourceBackend->CreateTexture(
         cVector3(windowSize.GetX(), windowSize.GetY(), 0),
@@ -882,7 +892,7 @@ void triton::cGraphics::CreateDefaultRenderTargets()
 
 void triton::cGraphics::CreateDefaultRenderPasses()
 {
-    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0)->GetSize();
+    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
     cTextureAtlas* textureAtlas = _context->GetSubsystem<cTextureAtlas>();
     cGraphics* gfx = _context->GetSubsystem<cGraphics>();
     cFileSystem* fs = _context->GetSubsystem<cFileSystem>();

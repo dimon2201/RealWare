@@ -63,7 +63,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterFactory<CVertexArray>();
 	_context->RegisterFactory<XRenderTarget>();
 	_context->RegisterFactory<XRenderPass>();
-	_context->RegisterFactory<XRenderPassGPU>();
+	_context->RegisterFactory<CGPURenderPass>();
 	_context->RegisterFactory<XDataBuffer>();
 	_context->RegisterFactory<cDataFile>();
 	_context->RegisterFactory<cRenderThread>();
@@ -132,7 +132,6 @@ void triton::cEngine::Initialize()
 
 void triton::cEngine::Shutdown()
 {
-	_context->GetSubsystem<cGraphics>()->Shutdown();
 	_context->GetSubsystem<cTextureAtlas>()->Shutdown();
 	_context->GetSubsystem<cInput>()->Shutdown();
 	_context->GetSubsystem<XECSSubsystem>()->Shutdown();

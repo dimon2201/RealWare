@@ -42,7 +42,7 @@ namespace triton
 
 triton::cGraphicsPipelineBackendOGL::cGraphicsPipelineBackendOGL(cContext* context) : iGraphicsPipelineBackend(context) {}
 
-void triton::cGraphicsPipelineBackendOGL::BindShader(const XShader* shader)
+void triton::cGraphicsPipelineBackendOGL::BindShader(const CGPUShader* shader)
 {
     const GLuint shaderID = (GLuint)shader->GetInstance();
     glUseProgram(shaderID);
@@ -59,7 +59,7 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     const std::string& fragmentStr,
     const std::string& vertexCustomFuncStr,
     const std::string& fragmentCustomFuncStr,
-    const std::vector<SShaderDefine>& defines = {}
+    const std::vector<SShaderDefine>& defines
 )
 {
     std::string finalVertexStr = vertexStr;
@@ -165,115 +165,23 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     return CGPUShader(_context, instance, 0);
 }
 
-triton::XShader* triton::cGraphicsPipelineBackendOGL::CreateShader(
-    const XShader* baseShader,
-    const std::string& vertexFunc,
-    const std::string& fragmentFunc,
-    const std::vector<XShader::sDefinePair>& definePairs
-)
-{
-    // TODO: rewrite shader creation logic
-    // This must be an interface ---> CreateShader(vertexStr, fragmentStr, vertexFunc, fragmentFunc, defines={})
-    const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
-    const std::string vertexFuncPassthroughCall = "Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);";
-    const std::string fragmentFuncDefinition = "void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";
-    const std::string fragmentFuncPassthroughCall = "Fragment_Passthrough(textureColor, DiffuseColor, fragColor);";
-
-    std::string vertexShaderStr = baseShader->GetVertexStr();
-    std::string fragmentShaderStr = baseShader->GetFragmentStr();
-
-    const usize vertexFuncDefinitionPos = vertexShaderStr.find(vertexFuncDefinition);
-    if (vertexFuncDefinitionPos != std::string::npos)
-        vertexShaderStr.replace(vertexFuncDefinitionPos, vertexFuncDefinition.length(), vertexFunc);
-    const usize vertexFuncPasstroughCallPos = vertexShaderStr.find(vertexFuncPassthroughCall);
-    if (vertexFuncPasstroughCallPos != std::string::npos)
-        vertexShaderStr.replace(vertexFuncPasstroughCallPos, vertexFuncPassthroughCall.length(), "");
-
-    const usize fragmentFuncDefinitionPos = fragmentShaderStr.find(fragmentFuncDefinition);
-    if (fragmentFuncDefinitionPos != std::string::npos)
-        fragmentShaderStr.replace(fragmentFuncDefinitionPos, fragmentFuncDefinition.length(), fragmentFunc);
-    const usize fragmentFuncPassthroughPos = fragmentShaderStr.find(fragmentFuncPassthroughCall);
-    if (fragmentFuncPassthroughPos != std::string::npos)
-        fragmentShaderStr.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
-
-    vertexShaderStr = CleanShaderSource(vertexShaderStr);
-    fragmentShaderStr = CleanShaderSource(fragmentShaderStr);
-
-    DefineInShader(vertexShaderStr, fragmentShaderStr, definePairs);
-
-    const usize vertexVersionPos = vertexShaderStr.find("#version 430");
-    if (vertexVersionPos != std::string::npos)
-        vertexShaderStr.replace(vertexVersionPos, std::string("#version 430").length(), "");
-    const usize fragmentVersionPos = fragmentShaderStr.find("#version 430");
-    if (fragmentVersionPos != std::string::npos)
-        fragmentShaderStr.replace(fragmentVersionPos, std::string("#version 430").length(), "");
-
-    vertexShaderStr = "#version 430\n\n" + vertexShaderStr;
-    fragmentShaderStr = "#version 430\n\n" + fragmentShaderStr;
-
-    const char* vertex = vertexShaderStr.c_str();
-    const char* fragment = fragmentShaderStr.c_str();
-    const GLint vertexByteSize = strlen(vertex);
-    const GLint fragmentByteSize = strlen(fragment);
-    GLuint instance = glCreateProgram();
-    const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
-    glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
-    glCompileShader(vertexShader);
-    glCompileShader(fragmentShader);
-    glAttachShader(instance, vertexShader);
-    glAttachShader(instance, fragmentShader);
-    glLinkProgram(instance);
-
-    GLint success;
-    glGetProgramiv(instance, GL_LINK_STATUS, &success);
-    if (!success)
-        Print("Error: can't link shader!");
-    if (!glIsProgram(instance))
-        Print("Error: invalid shader!");
-
-    GLint logBufferByteSize = 0;
-    GLchar logBuffer[1024] = {};
-    glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
-    if (logBufferByteSize > 0)
-    {
-        Print("Error: vertex shader!");
-        Print(logBuffer);
-    }
-    logBufferByteSize = 0;
-    glGetShaderInfoLog(fragmentShader, 1024, &logBufferByteSize, &logBuffer[0]);
-    if (logBufferByteSize > 0)
-    {
-        Print("Error: fragment shader!");
-        Print(logBuffer);
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    XShader* shader = _context->Create<XShader>(_context, instance, vertexShaderStr, fragmentShaderStr);
-
-    return shader;
-}
-
 void triton::cGraphicsPipelineBackendOGL::DestroyShader(const CGPUShader& shader)
 {
     glDeleteProgram(shader.GetInstance());
 }
 
-void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const XShader* shader, const std::string& name, const glm::mat4& matrix)
+void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const CGPUShader* shader, const std::string& name, const glm::mat4& matrix)
 {
     glUniformMatrix4fv(glGetUniformLocation(shader->GetInstance(), name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 }
 
-void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const XShader* shader, const std::string& name, usize count, const f32* values)
+void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const CGPUShader* shader, const std::string& name, usize count, const f32* values)
 {
     glUniform4fv(glGetUniformLocation(shader->GetInstance(), name.c_str()), count, &values[0]);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindTextureNamed(
-    XShader* shader,
+    CGPUShader* shader,
     cTexture* texture,
     const std::string& textureName,
     types::u32 slot
@@ -353,12 +261,14 @@ triton::CGPURenderPass triton::cGraphicsPipelineBackendOGL::CreateRenderPass()
     return CGPURenderPass(_context, 0, 0);
 }
 
-void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const XRenderPass* renderPass, XShader* customShader)
+void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const XRenderPass* renderPass, CGPUShader* customShader)
 {
-    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    // TODO: 99% that this method must be deleted
+    // render pass binding must be done in XRenderPass
+    /*iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* pipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 
-    XShader* shader = nullptr;
+    CGPUShader* shader = nullptr;
     if (customShader == nullptr)
         shader = renderPass->GetRenderPassGPU()->GetShader();
     else
@@ -381,12 +291,14 @@ void triton::cGraphicsPipelineBackendOGL::BindRenderPass(const XRenderPass* rend
             renderPass->GetInputTextures()[i],
             renderPass->GetInputTextureNames()[i],
             i
-        );
+        );*/
 }
 
 void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const XRenderPass* renderPass)
 {
-    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    // TODO: 99% that this method must be deleted
+    // render pass binding must be done in XRenderPass
+    /*iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
     UnbindVertexArray();
     if (renderPass->GetRenderTarget() != nullptr)
@@ -394,17 +306,7 @@ void triton::cGraphicsPipelineBackendOGL::UnbindRenderPass(const XRenderPass* re
     for (auto buffer : renderPass->GetInputBuffers())
         resourceBackend->UnbindBuffer(buffer);
     for (auto texture : renderPass->GetInputTextures())
-        resourceBackend->UnbindTexture(texture);
-}
-
-void triton::cGraphicsPipelineBackendOGL::DestroyRenderPass(XRenderPassGPU* renderPass)
-{
-    glBindVertexArray(0);
-    DestroyVertexArray(renderPass->GetVertexArray());
-
-    DestroyShader(renderPass->GetShader());
-
-    _context->Destroy<XRenderPassGPU>(renderPass);
+        resourceBackend->UnbindTexture(texture);*/
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindDefaultInputLayout()
@@ -439,20 +341,20 @@ void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const SBlendState& blend
 
         switch (blendMode.srcFactors[i])
         {
-            case SBlendState::eBlendFactor::ONE: srcFactor = GL_ONE; break;
-            case SBlendState::eBlendFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
-            case SBlendState::eBlendFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
-            case SBlendState::eBlendFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
-            case SBlendState::eBlendFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+            case EBlendFactor::ONE: srcFactor = GL_ONE; break;
+            case EBlendFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
+            case EBlendFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
+            case EBlendFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
+            case EBlendFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
         }
 
         switch (blendMode.dstFactors[i])
         {
-            case SBlendState::eBlendFactor::ONE: dstFactor = GL_ONE; break;
-            case SBlendState::eBlendFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
-            case SBlendState::eBlendFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
-            case SBlendState::eBlendFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
-            case SBlendState::eBlendFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+            case EBlendFactor::ONE: dstFactor = GL_ONE; break;
+            case EBlendFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
+            case EBlendFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
+            case EBlendFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
+            case EBlendFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
         }
 
         glBlendFunci(i, srcFactor, dstFactor);

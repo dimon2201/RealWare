@@ -68,14 +68,14 @@ TComponent* triton::ecs::cComponentStorage<TComponent>::Create(entity ent)
 	_indices->Insert(ent, _data->GetSize());
 	TComponent component = {};
 
-	return _data->Push(std::move(component));
+	return _data->Push(std::move(component)).data;
 }
 
 template <typename TComponent>
 TComponent* triton::ecs::cComponentStorage<TComponent>::Get(entity ent)
 {
 	cSingleValue* index = _indices->Find(ent);
-	TComponent* component = _data->At(index->Value());
+	TComponent* component = _data->At(index->Value()).data;
 
 	return component;
 }

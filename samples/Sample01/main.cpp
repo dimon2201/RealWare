@@ -34,7 +34,6 @@ public:
         
         SRenderData renderDataStatic = scene1->BuildRenderDataStatic();
         XRenderPass* opaqueRenderPass = _context->GetSubsystem<cGraphics>()->GetOpaqueRenderPass();
-        opaqueRenderPass->UploadInstancesStatic(renderDataStatic);
     }
 
     virtual void Stop() override final

@@ -66,7 +66,7 @@ void triton::cEventDispatcher::Unsubscribe(iObject* receiver, eEventType type)
 
     for (usize i = 0; i < listener->GetSize(); i++)
     {
-        const iObject* listenerReceiver = listener->At(i);
+        const iObject* listenerReceiver = listener->At(i).data;
         if (listenerReceiver == receiver)
         {
             listener->Erase(i);
@@ -91,7 +91,7 @@ void triton::cEventDispatcher::Send(eEventType type, XDataBuffer* data)
 
     for (usize i = 0; i < listener->GetSize(); i++)
     {
-        cEventHandler* eventHandler = listener->At(i);
+        cEventHandler* eventHandler = listener->At(i).data;
         eventHandler->Invoke(eventHandler->GetReceiver(), data);
     }
 }

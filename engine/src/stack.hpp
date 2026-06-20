@@ -30,8 +30,8 @@ namespace triton
 	template <typename TValue>
 	struct SStackValue final
 	{
-		const TValue* data = nullptr;
-		const SStackIndex* index = nullptr;
+		TValue* data = nullptr;
+		SStackIndex* index = nullptr;
 	};
 
 	template <typename TValue>
@@ -110,7 +110,7 @@ namespace triton
 
 		SStackValue<TValue> returnValue = {};
 		returnValue.data = object;
-		returnValue.index = _chunkIndices[si.chunkIndex][si.localPosition];
+		returnValue.index = &_chunkIndices[si.chunkIndex][si.localPosition];
 
 		return returnValue;
 	}
@@ -124,8 +124,8 @@ namespace triton
 		_chunkIndices[si.chunkIndex][si.localPosition] = si;
 
 		SStackValue<TValue> returnValue = {};
-		returnValue.value = object;
-		returnValue.index = _chunkIndices[si.chunkIndex][si.localPosition];
+		returnValue.data = object;
+		returnValue.index = &_chunkIndices[si.chunkIndex][si.localPosition];
 
 		return returnValue;
 	}
@@ -185,7 +185,7 @@ namespace triton
 
 		SStackValue<TValue> returnValue = {};
 		returnValue.value = object;
-		returnValue.index = _chunkIndices[si.chunkIndex][si.localPosition];
+		returnValue.index = &_chunkIndices[si.chunkIndex][si.localPosition];
 
 		return returnValue;
 	}
@@ -194,14 +194,14 @@ namespace triton
 	SStackValue<TValue> cStack<TValue>::At(types::u32 index) const
 	{
 		if (_chunkCount == 0 || index >= _elementCount)
-			return nullptr;
+			return {};
 
 		const types::u32 chunkIndex = GetChunkIndex(index);
 		const types::u32 localPosition = GetChunkLocalPosition(chunkIndex, index);
 
 		SStackValue<TValue> returnValue = {};
-		returnValue.data = _chunkValues[chunkIndex][localPosition];
-		returnValue.index = _chunkIndices[chunkIndex][localPosition];
+		returnValue.data = &_chunkValues[chunkIndex][localPosition];
+		returnValue.index = &_chunkIndices[chunkIndex][localPosition];
 
 		return returnValue;
 	}
@@ -216,7 +216,7 @@ namespace triton
 	SStackValue<TValue> cStack<TValue>::Top() const
 	{
 		if (_elementCount == 0)
-			return nullptr;
+			return {};
 
 		return At(_elementCount - 1);
 	}
@@ -249,7 +249,7 @@ namespace triton
 	template <typename TValue>
 	SStackValue<TValue> cStack<TValue>::Pop()
 	{
-		SStackValue<TValue> value = *Top();
+		SStackValue<TValue> value = Top();
 		Erase(_elementCount - 1);
 
 		return value;

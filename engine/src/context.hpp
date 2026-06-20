@@ -59,23 +59,41 @@ namespace triton
 template <typename T, typename... Args>
 T* triton::cContext::Create(Args&&... args)
 {
-	const ClassType type = T::GetTypeStatic();
+	// TODO: rewrite object creation system completely
+	// temporary solution
+
+	const sCapabilities* caps = GetSubsystem<cEngine>()->GetCapabilities();
+	cMemoryAllocator* memoryAllocator = GetMemoryAllocator();
+	T* object = (T*)memoryAllocator->Allocate(sizeof(T), caps->memoryAlignment);
+	
+	new (object) T(std::forward<Args>(args)...);
+
+	return object;
+
+	/*const ClassType type = T::GetTypeStatic();
 	const auto it = _factories.find(type);
 	if (it != _factories.end())
 		return ((cFactory<T>*)it->second)->Create(std::forward<Args>(args)...);
 	else
-		return nullptr;
+		return nullptr;*/
 }
 
 template <typename T, typename... Args>
 T* triton::cContext::Create(types::u8* ptr, types::u32 index, Args&&... args)
 {
-	const ClassType type = T::GetTypeStatic();
+	// TODO: rewrite object creation system completely
+	// temporary solution
+
+	new (&ptr[index]) T(std::forward<Args>(args)...);
+
+	return (T*)&ptr[index];
+
+	/*const ClassType type = T::GetTypeStatic();
 	const auto it = _factories.find(type);
 	if (it != _factories.end())
 		return ((cFactory<T>*)it->second)->Create(ptr, index, std::forward<Args>(args)...);
 	else
-		return nullptr;
+		return nullptr;*/
 }
 
 template <typename T>

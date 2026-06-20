@@ -13,6 +13,7 @@ namespace triton
 	class XRenderSubsystem;
 	class iGraphicsContextBackend;
 	class iGraphicsDrawcallBackend;
+	class iGraphicsResourceBackend;
 	class cInputWindow;
 	class XFrameSync;
 	class cGraphics;

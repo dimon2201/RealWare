@@ -50,9 +50,9 @@ namespace triton
 
 		void Initialize();
 		void Free();
-		SInstanceBufferHandle Add(const SRenderInstance& instance);
-		SRenderInstance* Get(const SInstanceBufferHandle& handle);
-		void Remove(const SInstanceBufferHandle& handle);
+		SInstanceBufferHandle Add(SRenderInstance& instance);
+		SRenderInstance* Get(SInstanceBufferHandle& handle);
+		void Remove(SInstanceBufferHandle& handle);
 		void Write(const SInstanceBufferHandle& handle);
 		void WriteAll();
 	};

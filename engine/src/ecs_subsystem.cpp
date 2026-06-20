@@ -33,7 +33,7 @@ void triton::ecs::XECSSubsystem::Shutdown()
 
 triton::SSceneHandle triton::ecs::XECSSubsystem::CreateScene(const std::string& name)
 {
-	return _handleAllocator->Create(name);
+	return _handleAllocator->Create(_context, name);
 }
 
 triton::ecs::cScene* triton::ecs::XECSSubsystem::GetScene(const SSceneHandle& handle)

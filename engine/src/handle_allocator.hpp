@@ -4,21 +4,13 @@
 
 #include "object.hpp"
 #include "buffer_view.hpp"
+#include "linear_array.hpp"
 
 namespace triton
 {
 	class cContext;
 	template <typename T>
 	class cStack;
-
-	class SValue
-	{
-	public:
-		SValue() = default;
-		SValue(types::usize value) : _value(value) {}
-
-		types::usize _value = 0;
-	};
 
 	// Concept to check if XHandleAllocator member data structure is derived from stack class cStack<TValue>
 	/*template<typename T>
@@ -37,8 +29,8 @@ namespace triton
 		//static_assert(IsDerivedFromIStack<TDataStructure>, "TDataStructure must inherit from cStack<TValue>");
 
 		cStack<TSlot>* _slots = nullptr;
-		cStack<SValue>* _freeSlots = nullptr;
-		cStack<SValue>* _reverseMap = nullptr;
+		cStack<types::usize>* _freeSlots = nullptr;
+		cStack<types::usize>* _reverseMap = nullptr;
 		TDataStructure* _objects = nullptr;
 
 	public:
@@ -55,9 +47,9 @@ namespace triton
 			if (!_slots)
 				_slots = _context->Create<cStack<TSlot>>(_context, cad);
 			if (!_freeSlots)
-				_freeSlots = _context->Create<cStack<SValue>>(_context, cad);
+				_freeSlots = _context->Create<cStack<types::usize>>(_context, cad);
 			if (!_reverseMap)
-				_reverseMap = _context->Create<cStack<SValue>>(_context, cad);
+				_reverseMap = _context->Create<cStack<types::usize>>(_context, cad);
 			if (!_objects)
 				_objects = _context->Create<cStack<TObject>>(_context, cad);
 		}
@@ -67,9 +59,9 @@ namespace triton
 			if (_objects)
 				_context->Destroy<cStack<TObject>>(_objects);
 			if (_reverseMap)
-				_context->Destroy<cStack<SValue>>(_reverseMap);
+				_context->Destroy<cStack<types::usize>>(_reverseMap);
 			if (_freeSlots)
-				_context->Destroy<cStack<SValue>>(_freeSlots);
+				_context->Destroy<cStack<types::usize>>(_freeSlots);
 			if (_slots)
 				_context->Destroy<cStack<TSlot>>(_slots);
 		}
@@ -88,7 +80,7 @@ namespace triton
 			{
 				slotIndex = _slots->GetSize();
 			
-				_objects->Push(_context, std::forward<Args>(args)...);
+				_objects->Push(std::forward<Args>(args)...);
 				_reverseMap->Push(slotIndex);
 
 				TSlot slot = {};
@@ -102,9 +94,9 @@ namespace triton
 			}
 			else
 			{
-				slotIndex = _freeSlots->Pop()._value;
+				slotIndex = *_freeSlots->Pop().data;
 
-				_objects->Push(_context, std::forward<Args>(args)...);
+				_objects->Push(std::forward<Args>(args)...);
 				_reverseMap->Push(slotIndex);
 
 				_slots->At(slotIndex).data->_arrayIndex = arrayIndex;
@@ -144,7 +136,7 @@ namespace triton
 			}
 			else
 			{
-				slotIndex = _freeSlots->Pop()._value;
+				slotIndex = *_freeSlots->Pop().data;
 
 				_objects->Push(std::move(object));
 				_reverseMap->Push(slotIndex);
@@ -177,15 +169,15 @@ namespace triton
 			if (slot->_generation != handle._generation)
 				return;
 
-			types::usize removeIndex = slot._arrayIndex;
+			types::usize removeIndex = slot->_arrayIndex;
 			types::usize lastIndex = _objects->GetSize() - 1;
 
 			if (removeIndex != lastIndex)
 			{
 				*(_objects->At(removeIndex).data) = std::move(*(_objects->At(lastIndex).data));
 
-				types::usize movedSlotIndex = _reverseMap->At(lastIndex).data->_value;
-				_reverseMap->At(removeIndex).data->_value = movedSlotIndex;
+				types::usize movedSlotIndex = *_reverseMap->At(lastIndex).data;
+				*_reverseMap->At(removeIndex).data = movedSlotIndex;
 
 				_slots->At(movedSlotIndex).data->_arrayIndex = removeIndex;
 			}

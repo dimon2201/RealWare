@@ -30,7 +30,7 @@ void triton::XRenderSubsystem::Initialize()
 	}
 	
 	// Create render thread
-	cInputWindow* window = _context->GetSubsystem<cInput>()->GetWindows()->At(0);
+	cInputWindow* window = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data;
 	for (usize i = 0; i < 2; i++)
 		_sync->_swapChain._frames[i].Reset(window);
 
@@ -73,7 +73,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
 	cInput* input = _context->GetSubsystem<cInput>();
 	cStack<cInputWindow>* windows = input->GetWindows();
-	cInputWindow* window = windows->At(0);
+	cInputWindow* window = windows->At(0).data;
 	s32 windowCount = windows->GetSize();
 	while (K_TRUE)
 	{

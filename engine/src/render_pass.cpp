@@ -2,6 +2,7 @@
 #include "context.hpp"
 #include "engine.hpp"
 #include "graphics_resource_backend.hpp"
+#include "graphics_pipeline_backend.hpp"
 #include "instance_buffer.hpp"
 #include "components.hpp"
 
@@ -35,8 +36,8 @@ void triton::XRenderPass::WriteDirtyStaticInstancesToGPU()
 {
     while (_dirtyStaticInstances->IsEmpty())
     {
-        SInstanceBufferHandle handle = _dirtyStaticInstances->Pop();
-        _instanceBufferStatic->Write(handle);
+        //SInstanceBufferHandle handle = _dirtyStaticInstances->Pop();
+        //_instanceBufferStatic->Write(handle);
     }
 }
 

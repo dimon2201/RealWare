@@ -30,7 +30,7 @@ namespace triton
     class SShaderDefine final
     {
     public:
-        SShaderDefine(const std::string& name, types::usize index);
+        SShaderDefine(const std::string& name_, types::usize index_) : name(name_), index(index_) {}
 
         std::string name = "";
         types::usize index = 0;
@@ -101,7 +101,7 @@ namespace triton
         explicit iGraphicsPipelineBackend(cContext* context);
         virtual ~iGraphicsPipelineBackend() override = default;
 
-        virtual void BindShader(const XShader* shader) = 0;
+        virtual void BindShader(const CGPUShader* shader) = 0;
         virtual void UnbindShader() = 0;
         virtual CGPUShader CreateShader(
             EBuiltinRenderPassType builtinType,
@@ -112,15 +112,15 @@ namespace triton
             const std::vector<SShaderDefine>& defines = {}
         ) = 0;
         virtual void DestroyShader(const CGPUShader& shader) = 0;
-        virtual void SetShaderUniform(const XShader* shader, const std::string& name, const glm::mat4& matrix) = 0;
+        virtual void SetShaderUniform(const CGPUShader* shader, const std::string& name, const glm::mat4& matrix) = 0;
         virtual void SetShaderUniform(
-            const XShader* shader,
+            const CGPUShader* shader,
             const std::string& name,
             types::usize count,
             const types::f32* values
         ) = 0;
         virtual void BindTextureNamed(
-            XShader* shader,
+            CGPUShader* shader,
             cTexture* texture,
             const std::string& textureName,
             types::u32 slot
@@ -131,9 +131,8 @@ namespace triton
         virtual void UnbindVertexArray() = 0;
         virtual void DestroyVertexArray(CVertexArray* vertexArray) = 0;
         virtual CGPURenderPass CreateRenderPass() = 0;
-        virtual void BindRenderPass(const XRenderPass* renderPass, XShader* customShader = nullptr) = 0;
+        virtual void BindRenderPass(const XRenderPass* renderPass, CGPUShader* customShader = nullptr) = 0;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) = 0;
-        virtual void DestroyRenderPass(XRenderPassGPU* renderPass) = 0;
         virtual void BindDefaultInputLayout() = 0;
         virtual void BindDepthMode(const SDepthState& blendMode) = 0;
         virtual void BindBlendMode(const SBlendState& blendMode) = 0;

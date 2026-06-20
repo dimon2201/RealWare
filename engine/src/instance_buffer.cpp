@@ -25,17 +25,17 @@ void triton::XInstanceBuffer::Free()
 		_context->Destroy<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_instances);
 }
 
-triton::SInstanceBufferHandle triton::XInstanceBuffer::Add(const SRenderInstance& instance)
+triton::SInstanceBufferHandle triton::XInstanceBuffer::Add(SRenderInstance& instance)
 {
 	return _instances->Create(std::move(instance));
 }
 
-triton::SRenderInstance* triton::XInstanceBuffer::Get(const SInstanceBufferHandle& handle)
+triton::SRenderInstance* triton::XInstanceBuffer::Get(SInstanceBufferHandle& handle)
 {
 	return _instances->Get(handle);
 }
 
-void triton::XInstanceBuffer::Remove(const SInstanceBufferHandle& handle)
+void triton::XInstanceBuffer::Remove(SInstanceBufferHandle& handle)
 {
 	_instances->Destroy(handle);
 }

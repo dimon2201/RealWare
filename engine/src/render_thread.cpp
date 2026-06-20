@@ -28,7 +28,7 @@ void triton::cRenderThread::ThreadFunction()
 	iGraphicsContextBackend* gfxContextBackend = _context->GetBackend<iGraphicsContextBackend>();
 	for (usize i = 0; i < windows->GetSize(); i++)
 	{
-		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->At(i)->GetBackendWindow());
+		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->At(i).data->GetBackendWindow());
 		gfxContextBackend->CreateGraphicsContext();
 	}
 
@@ -37,7 +37,6 @@ void triton::cRenderThread::ThreadFunction()
 
 	// Initialize subsystems
 	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
-	_context->GetSubsystem<cGraphics>()->Initialize();
 
 	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
