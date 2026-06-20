@@ -5,6 +5,8 @@
 #include "graphics_pipeline_backend.hpp"
 #include "instance_buffer.hpp"
 #include "components.hpp"
+#include "stack.hpp"
+#include "application.hpp"
 
 using namespace triton::ecs::components;
 using namespace types;

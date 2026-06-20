@@ -5,6 +5,7 @@
 #include "input_backend.hpp"
 #include "graphics_context_backend.hpp"
 #include "thread_guard.hpp"
+#include "stack.hpp"
 
 using namespace types;
 

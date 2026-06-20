@@ -10,6 +10,7 @@
 #include "engine.hpp"
 #include "log.hpp"
 #include "graphics_resource_backend.hpp"
+#include "stack.hpp"
 
 using namespace types;
 

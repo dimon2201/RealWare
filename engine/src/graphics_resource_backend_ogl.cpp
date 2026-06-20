@@ -4,6 +4,7 @@
 #include <lodepng.h>
 #include "graphics_resource_backend_ogl.hpp"
 #include "context.hpp"
+#include "capabilities.hpp"
 
 using namespace types;
 

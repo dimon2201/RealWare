@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 #include "object.hpp"
+#include "engine.hpp"
 #include "types.hpp"
 
 namespace triton

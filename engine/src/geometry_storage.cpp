@@ -6,6 +6,7 @@
 #include "graphics_resource_backend.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "data_buffer.hpp"
+#include "engine.hpp"
 
 using namespace types;
 

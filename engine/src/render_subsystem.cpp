@@ -9,6 +9,7 @@
 #include "input_backend.hpp"
 #include "input.hpp"
 #include "thread_guard.hpp"
+#include "stack.hpp"
 
 using namespace types;
 
