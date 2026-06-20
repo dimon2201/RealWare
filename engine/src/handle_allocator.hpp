@@ -107,10 +107,10 @@ namespace triton
 				_objects->Push(_context, std::forward<Args>(args)...);
 				_reverseMap->Push(slotIndex);
 
-				_slots->At(slotIndex)->_arrayIndex = arrayIndex;
+				_slots->At(slotIndex).data->_arrayIndex = arrayIndex;
 
 				handle._indexInArray = arrayIndex;
-				handle._generation = _slots->At(slotIndex)->_generation;
+				handle._generation = _slots->At(slotIndex).data->_generation;
 			}
 			
 			handle._slotIndex = slotIndex;
@@ -149,9 +149,9 @@ namespace triton
 				_objects->Push(std::move(object));
 				_reverseMap->Push(slotIndex);
 
-				_slots->At(slotIndex)->_arrayIndex = arrayIndex;
+				_slots->At(slotIndex).data->_arrayIndex = arrayIndex;
 
-				handle._generation = _slots->At(slotIndex)->_generation;
+				handle._generation = _slots->At(slotIndex).data->_generation;
 			}
 
 			handle._slotIndex = slotIndex;
@@ -161,11 +161,11 @@ namespace triton
 
 		TObject* Get(const THandle& handle)
 		{
-			TSlot* slot = _slots->At(handle._slotIndex);
+			TSlot* slot = _slots->At(handle._slotIndex).data;
 			if (handle._generation != slot->_generation)
 				return nullptr;
 
-			return _objects->At(slot->_arrayIndex);
+			return _objects->At(slot->_arrayIndex).data;
 		}
 
 		void Destroy(const THandle& handle)
@@ -173,7 +173,7 @@ namespace triton
 			if (_objects->IsEmpty())
 				return;
 
-			TSlot* slot = _slots->At(handle._slotIndex);
+			TSlot* slot = _slots->At(handle._slotIndex).data;
 			if (slot->_generation != handle._generation)
 				return;
 
@@ -182,12 +182,12 @@ namespace triton
 
 			if (removeIndex != lastIndex)
 			{
-				*_objects->At(removeIndex) = std::move(*_objects->At(lastIndex));
+				*(_objects->At(removeIndex).data) = std::move(*(_objects->At(lastIndex).data));
 
-				types::usize movedSlotIndex = _reverseMap->At(lastIndex)->_value;
-				_reverseMap->At(removeIndex)->_value = movedSlotIndex;
+				types::usize movedSlotIndex = _reverseMap->At(lastIndex).data->_value;
+				_reverseMap->At(removeIndex).data->_value = movedSlotIndex;
 
-				_slots->At(movedSlotIndex)->_arrayIndex = removeIndex;
+				_slots->At(movedSlotIndex).data->_arrayIndex = removeIndex;
 			}
 
 			_objects->Pop();
