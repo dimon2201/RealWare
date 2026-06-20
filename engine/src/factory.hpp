@@ -69,8 +69,10 @@ void triton::cFactory<T>::Destroy(T* object)
 
 	if (object->_allocatedUsingMemAllocator == types::K_TRUE)
 	{
-		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-		memoryAllocator->Deallocate(object);
+		// TODO: must rewrite object creation system completely
+		// TEMPORARY STUB TO MAKE PROJECT COMPILE
+		//cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
+		//memoryAllocator->Deallocate(object);
 	}
 }
 
@@ -91,7 +93,9 @@ template <typename T>
 template <typename... Args>
 T* triton::cFactory<T>::New(types::u8* data, types::u32 index, Args&&... args)
 {
-	T* object = nullptr;
+	// TODO: must rewrite object creation system completely
+	// TEMPORARY STUB TO MAKE PROJECT COMPILE
+	/*T* object = nullptr;
 
 	if (data == nullptr)
 	{
@@ -110,5 +114,6 @@ T* triton::cFactory<T>::New(types::u8* data, types::u32 index, Args&&... args)
 
 	object->_id = cIdentifier::Generate(T::GetTypeStatic());
 
-	return object;
+	return object;*/
+	return nullptr;
 }
