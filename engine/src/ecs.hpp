@@ -36,9 +36,9 @@ namespace triton
 			explicit cSceneStorage(triton::cContext* context);
 			virtual ~cSceneStorage() override final;
 				
-			const cScene& Create(const ::std::string& name);
-			const cScene& Get(const ::std::string& name);
-			const cScene& Get(types::usize index);
+			const cScene* Create(const ::std::string& name);
+			const cScene* Get(const ::std::string& name);
+			const cScene* Get(types::usize index);
 			void Destroy(const ::std::string& name);
 			sFindResult FindEntity(entity ent);
 		};
