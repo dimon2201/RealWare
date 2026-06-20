@@ -20,27 +20,33 @@ namespace triton
 		types::usize hashTableSize = 4096;
 	};
 
+	struct SStackIndex final
+	{
+		types::u32 chunkIndex = 0;
+		types::u32 localPosition = 0;
+		types::u32 globalPosition = 0;
+	};
+
 	template <typename TValue>
 	class cStack : public iObject
 	{
 		TRITON_OBJECT(cStack)
 
-			sChunkAllocatorDescriptor _allocatorDesc = {};
+		sChunkAllocatorDescriptor _allocatorDesc = {};
 		types::usize _chunkCount = 0;
 		types::usize _objectByteSize = 0;
 		types::usize _objectCountPerChunk = 0;
 		types::usize _elementCount = 0;
-		TValue** _chunks = nullptr;
+		TValue** _chunkValues = nullptr;
+		SStackIndex** _chunkIndices = nullptr;
 
-		cStackValue New();
+		SStackIndex New();
 		types::u32 AllocateChunk();
 		void DeallocateChunk(types::u32 chunkIndex);
 		types::u32 GetChunkIndex(types::u32 globalPosition) const;
 		types::u32 GetChunkLocalPosition(types::u32 chunkIndex, types::u32 globalPosition) const;
 
 	public:
-		static_assert(std::is_base_of_v<cStackValue, TValue>, "TValue must inherit from cStackValue");
-
 		explicit cStack(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc);
 		virtual ~cStack() override final;
 
@@ -51,7 +57,7 @@ namespace triton
 		TValue* Recreate(types::usize index, Args&&... args);
 		TValue* Recreate(types::usize index, TValue&& value);
 		TValue* At(types::u32 index) const;
-		TValue* At(const cStackValue& value) const;
+		TValue* At(const SStackIndex& index) const;
 		TValue* Top() const;
 		void Erase(types::u32 index);
 		TValue Pop();
@@ -70,7 +76,8 @@ namespace triton
 		_allocatorDesc = allocatorDesc;
 		_objectByteSize = sizeof(TValue);
 		_objectCountPerChunk = _allocatorDesc.chunkByteSize / _objectByteSize;
-		_chunks = (TValue**)memoryAllocator->Allocate(_allocatorDesc.maxChunkCount * sizeof(TValue*), caps->memoryAlignment);
+		_chunkValues = (TValue**)memoryAllocator->Allocate(_allocatorDesc.maxChunkCount * sizeof(TValue*), caps->memoryAlignment);
+		_chunkIndices = (SStackIndex**)memoryAllocator->Allocate(_allocatorDesc.maxChunkCount * sizeof(SStackIndex*), caps->memoryAlignment);
 
 		AllocateChunk();
 	}
@@ -82,19 +89,17 @@ namespace triton
 			Pop();
 
 		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-		memoryAllocator->Deallocate(_chunks);
+		memoryAllocator->Deallocate(_chunkIndices);
+		memoryAllocator->Deallocate(_chunkValues);
 	}
 
 	template <typename TValue>
 	template <typename... Args>
 	TValue* cStack<TValue>::Push(Args&&... args)
 	{
-		cStackValue se = New();
-
-		TValue* object = _context->Create<TValue>((types::u8*)_chunks[se.chunk], se.localPosition, std::forward<Args>(args)...);
-		object->chunk = se.chunk;
-		object->localPosition = se.localPosition;
-		object->globalPosition = se.globalPosition;
+		SStackIndex si = New();
+		TValue* object = _context->Create<TValue>((types::u8*)_chunkValues[si.chunkIndex], si.localPosition, std::forward<Args>(args)...);
+		_chunkIndices[si.chunkIndex][si.localPosition] = si;
 
 		return object;
 	}
@@ -102,14 +107,10 @@ namespace triton
 	template <typename TValue>
 	TValue* cStack<TValue>::Push(TValue&& value)
 	{
-		cStackValue se = New();
-
-		_chunks[se.chunk][se.localPosition] = std::move(value);
-
-		TValue* object = &_chunks[se.chunk][se.localPosition];
-		object->chunk = se.chunk;
-		object->localPosition = se.localPosition;
-		object->globalPosition = se.globalPosition;
+		SStackIndex si = New();
+		_chunkValues[si.chunkIndex][si.localPosition] = std::move(value);
+		TValue* object = &_chunkValues[si.chunkIndex][si.localPosition];
+		_chunkIndices[si.chunkIndex][si.localPosition] = si;
 
 		return object;
 	}
@@ -131,14 +132,11 @@ namespace triton
 		if (chunkIndex >= _chunkCount || (isLastChunk == types::K_TRUE && localPosition >= lastChunkObjectCount))
 			return nullptr;
 
-		_chunks[chunkIndex][localPosition].~TValue();
+		_chunkValues[chunkIndex][localPosition].~TValue();
 
-		cStackValue se = New();
-
-		TValue* object = _context->Create<TValue>((types::u8*)_chunks[se.chunk], se.localPosition, std::forward<Args>(args)...);
-		object->chunk = se.chunk;
-		object->localPosition = se.localPosition;
-		object->globalPosition = se.globalPosition;
+		SStackIndex si = New();
+		TValue* object = _context->Create<TValue>((types::u8*)_chunkValues[si.chunkIndex], si.localPosition, std::forward<Args>(args)...);
+		_chunkIndices[si.chunkIndex][si.localPosition] = si;
 
 		return object;
 	}
@@ -159,16 +157,12 @@ namespace triton
 		if (chunkIndex >= _chunkCount || (isLastChunk == types::K_TRUE && localPosition >= lastChunkObjectCount))
 			return nullptr;
 
-		_chunks[chunkIndex][localPosition].~TValue();
+		_chunkValues[chunkIndex][localPosition].~TValue();
 
-		cStackValue se = New();
-
-		_chunks[se.chunk][se.localPosition] = std::move(value);
-
-		TValue* object = &_chunks[se.chunk][se.localPosition];
-		object->chunk = se.chunk;
-		object->localPosition = se.localPosition;
-		object->globalPosition = se.globalPosition;
+		SStackIndex si = New();
+		_chunkValues[si.chunkIndex][si.localPosition] = std::move(value);
+		TValue* object = &_chunkValues[si.chunkIndex][si.localPosition];
+		_chunkIndices[si.chunkIndex][si.localPosition] = si;
 
 		return object;
 	}
@@ -182,13 +176,13 @@ namespace triton
 		const types::u32 chunkIndex = GetChunkIndex(index);
 		const types::u32 localPosition = GetChunkLocalPosition(chunkIndex, index);
 
-		return &_chunks[chunkIndex][localPosition];
+		return &_chunkValues[chunkIndex][localPosition];
 	}
 
 	template <typename TValue>
-	TValue* cStack<TValue>::At(const cStackValue& value) const
+	TValue* cStack<TValue>::At(const SStackIndex& index) const
 	{
-		return At(value.globalPosition);
+		return At(index.globalPosition);
 	}
 
 	template <typename TValue>
@@ -216,8 +210,9 @@ namespace triton
 		if (chunkIndex >= _chunkCount || (isLastChunk == types::K_TRUE && localPosition >= lastChunkObjectCount))
 			return;
 
-		_chunks[chunkIndex][localPosition].~TValue();
-		_chunks[chunkIndex][localPosition] = _chunks[lastChunkIndex][lastLocalPosition];
+		_chunkValues[chunkIndex][localPosition].~TValue();
+		_chunkValues[chunkIndex][localPosition] = _chunkValues[lastChunkIndex][lastLocalPosition];
+		_chunkIndices[chunkIndex][localPosition] = _chunkIndices[lastChunkIndex][lastLocalPosition];
 		_elementCount -= 1;
 
 		if (lastChunkObjectCount == 1)
@@ -248,7 +243,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	cStackValue cStack<TValue>::New()
+	SStackIndex cStack<TValue>::New()
 	{
 		types::u32 elementChunkIndex = GetChunkIndex(_elementCount);
 		types::u32 elementLocalPosition = GetChunkLocalPosition(elementChunkIndex, _elementCount);
@@ -260,12 +255,12 @@ namespace triton
 			elementLocalPosition = 0;
 		}
 
-		cStackValue se = {};
-		se.chunk = elementChunkIndex;
-		se.localPosition = elementLocalPosition;
-		se.globalPosition = _elementCount++;
+		SStackIndex si = {};
+		si.chunkIndex = elementChunkIndex;
+		si.localPosition = elementLocalPosition;
+		si.globalPosition = _elementCount++;
 
-		return se;
+		return si;
 	}
 
 	template <typename TValue>
@@ -276,7 +271,8 @@ namespace triton
 
 		const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-		_chunks[_chunkCount] = (TValue*)memoryAllocator->Allocate(_allocatorDesc.chunkByteSize, caps->memoryAlignment);
+		_chunkValues[_chunkCount] = (TValue*)memoryAllocator->Allocate(_allocatorDesc.chunkByteSize, caps->memoryAlignment);
+		_chunkIndices[_chunkCount] = (SStackIndex*)memoryAllocator->Allocate(_objectCountPerChunk, caps->memoryAlignment);
 
 		return _chunkCount++;
 	}
@@ -288,7 +284,8 @@ namespace triton
 			return;
 
 		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-		memoryAllocator->Deallocate(_chunks[chunkIndex]);
+		memoryAllocator->Deallocate(_chunkIndices[chunkIndex]);
+		memoryAllocator->Deallocate(_chunkValues[chunkIndex]);
 	}
 
 	template <typename TValue>
