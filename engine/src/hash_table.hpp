@@ -76,14 +76,16 @@ triton::cHashTable<TKey, TValue>::cHashTable(cContext* context, const sChunkAllo
 	_elements = _context->Create<cStack<cHashTablePair<TKey, TValue>>>(_context, _allocatorDesc);
 	_hashTableSize = _allocatorDesc.hashTableSize;
 	_hashMask = cMath::MakeHashMask(_allocatorDesc.hashTableSize);
-	_hashTable = (TValue*)memoryAllocator->Allocate(_hashTableSize * sizeof(TValue), caps->memoryAlignment);
+	_hashTableValues = (TValue*)memoryAllocator->Allocate(_hashTableSize * sizeof(TValue), caps->memoryAlignment);
+	_hashTableIndices = (SStackIndex*)memoryAllocator->Allocate(_hashTableSize * sizeof(SStackIndex), caps->memoryAlignment);
 }
 
 template <typename TKey, typename TValue>
 triton::cHashTable<TKey, TValue>::~cHashTable()
 {
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-	memoryAllocator->Deallocate(_hashTable);
+	memoryAllocator->Deallocate(_hashTableIndices);
+	memoryAllocator->Deallocate(_hashTableValues);
 
 	_context->Destroy<cStack<cHashTablePair<TKey, TValue>>>(_elements);
 }
@@ -127,7 +129,7 @@ template <typename TKey, typename TValue>
 TValue* triton::cHashTable<TKey, TValue>::Find(const TKey& key) const
 {
 	const types::qword hash = cMath::Hash<TKey>(key, _hashMask);
-	const TValue& value = _hashTable[hash];
+	const TValue& value = _hashTableValues[hash];
 	cHashTablePair<TKey, TValue>* pair = _elements->At(value);
 	if (pair != nullptr && key == pair->_key)
 		return &pair->_value;
@@ -157,7 +159,7 @@ template <typename TKey, typename TValue>
 void triton::cHashTable<TKey, TValue>::Erase(const TKey& key)
 {
 	const types::qword hash = cMath::Hash<TKey>(key, _hashMask);
-	const TValue& value = _hashTable[hash];
+	const TValue& value = _hashTableValues[hash];
 	const cHashTablePair<TKey, TValue>* pair = _elements->At(value);
 	if (pair != nullptr && key == pair->_key)
 		_elements->Erase(value.globalPosition);
