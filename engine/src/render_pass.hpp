@@ -75,7 +75,7 @@ namespace triton
         explicit XRenderPass(cContext* context);
         virtual ~XRenderPass() override = default;
 
-        void WriteStaticInstanceToGPU(const SInstanceBufferHandle& instance);
+        void WriteStaticInstanceToGPU(SInstanceBufferHandle& instance);
         void Execute();
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);

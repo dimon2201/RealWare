@@ -48,7 +48,7 @@ void triton::XRenderPass::WriteDynamicInstancesToGPU()
     _instanceBufferDynamic->WriteAll();
 }
 
-void triton::XRenderPass::WriteStaticInstanceToGPU(const SInstanceBufferHandle& instance)
+void triton::XRenderPass::WriteStaticInstanceToGPU(SInstanceBufferHandle& instance)
 {
     _dirtyStaticInstances->Push(std::move(instance));
 }
