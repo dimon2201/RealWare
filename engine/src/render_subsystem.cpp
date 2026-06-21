@@ -79,7 +79,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	{
 		inputBackend->PollEvents();
 
-		_synchronization->WaitOnMainThread(_cv);
+		_synchronization->WaitForFreeFrame(_cv);
 
 		s32 windowCount = windows->GetSize();
 		if (windowCount == 0)
@@ -119,6 +119,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	time->EndFrame();
 
 	// Stop render thread
+	// TODO: main thread must wait until render thread finishes job completely
 	_renderThread->Stop();
 
 	app->Stop();

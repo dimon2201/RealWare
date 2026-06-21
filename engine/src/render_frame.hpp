@@ -101,10 +101,10 @@ namespace triton
 
 		void ProduceFrame();
 		void ReleaseFrame(types::u32 frameIndex);
-		void WaitOnMainThread(std::condition_variable& cv);
-		void WaitOnRenderThread(std::condition_variable& cv);
+		void WaitForFreeFrame(std::condition_variable& cv);
+		void WaitForProducedFrame(std::condition_variable& cv);
 		types::boolean IsAlive();
-		const triton::CRenderFrame* AcquireFreeFrame();
+		const triton::CRenderFrame* AcquireProducedFrame();
 		void Kill();
 	};
 }

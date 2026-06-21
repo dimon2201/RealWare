@@ -71,7 +71,7 @@ void triton::XEngineMTSynchronization::ReleaseFrame(types::u32 frameIndex)
 	}
 }
 
-void triton::XEngineMTSynchronization::WaitOnMainThread(std::condition_variable& cv)
+void triton::XEngineMTSynchronization::WaitForFreeFrame(std::condition_variable& cv)
 {
 	CThreadGuard::AssertMain();
 
@@ -82,7 +82,7 @@ void triton::XEngineMTSynchronization::WaitOnMainThread(std::condition_variable&
 	});
 }
 
-void triton::XEngineMTSynchronization::WaitOnRenderThread(std::condition_variable& cv)
+void triton::XEngineMTSynchronization::WaitForProducedFrame(std::condition_variable& cv)
 {
 	CThreadGuard::AssertRender();
 
@@ -101,7 +101,7 @@ types::boolean triton::XEngineMTSynchronization::IsAlive()
 	return _renderThreadSwapChainSnapshot._stopSync == K_FALSE ? K_TRUE : K_FALSE;
 }
 
-const triton::CRenderFrame* triton::XEngineMTSynchronization::AcquireFreeFrame()
+const triton::CRenderFrame* triton::XEngineMTSynchronization::AcquireProducedFrame()
 {
 	CThreadGuard::AssertRender();
 

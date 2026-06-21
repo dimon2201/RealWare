@@ -46,12 +46,12 @@ void triton::cRenderThread::ThreadFunction()
 
 	while (K_TRUE)
 	{
-		_synchronization->WaitOnRenderThread(_cv);
+		_synchronization->WaitForProducedFrame(_cv);
 		
 		if (_synchronization->IsAlive())
 			break;
 
-		const CRenderFrame* renderFrame = _synchronization->AcquireFreeFrame();
+		const CRenderFrame* renderFrame = _synchronization->AcquireProducedFrame();
 
 		// Execute render passes
 		gfx->ExecuteDefaultRenderPasses();
