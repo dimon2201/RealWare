@@ -85,26 +85,26 @@ namespace triton
 		EFrameState _frames[2] = { EFrameState::READY, EFrameState::READY };
 	};
 
-	class XFrameSync final : public iObject
+	class XEngineMTSynchronization final : public iObject
 	{
-		TRITON_OBJECT(XFrameSync)
+		TRITON_OBJECT(XEngineMTSynchronization)
 
 		XRenderSubsystem* _renderSubsystem = nullptr;
 		SFrameDoubleBuffer _swapChain = {};
-		SFrameDoubleBufferSnapshot _mainThreadSwapChainSnapshot = {};
-		SFrameDoubleBufferSnapshot _renderThreadSwapChainSnapshot = {};
+		SFrameDoubleBufferSnapshot _mainThreadSwapChainSnapshot = {}; // TODO: this one needs only _stopSync && _frameState (READY, BUSY)
+		SFrameDoubleBufferSnapshot _renderThreadSwapChainSnapshot = {}; // TODO: this one needs only _stopSync && _frameState (READY, BUSY)
 		std::mutex _mutex;
 
 	public:
-		explicit XFrameSync(cContext* context, XRenderSubsystem* renderSubsystem) : iObject(context), _renderSubsystem(renderSubsystem) {}
-		virtual ~XFrameSync() override = default;
+		explicit XEngineMTSynchronization(cContext* context, XRenderSubsystem* renderSubsystem) : iObject(context), _renderSubsystem(renderSubsystem) {}
+		virtual ~XEngineMTSynchronization() override = default;
 
-		void WriteFrame();
-		void FreeFrame(types::u32 frameIndex);
-		void WaitMainThread(std::condition_variable& cv);
-		void WaitRenderThread(std::condition_variable& cv);
-		types::boolean CheckFrameSwapChain();
-		const triton::CRenderFrame* AcquireFrame();
-		void Stop();
+		void ProduceFrame();
+		void ReleaseFrame(types::u32 frameIndex);
+		void WaitOnMainThread(std::condition_variable& cv);
+		void WaitOnRenderThread(std::condition_variable& cv);
+		types::boolean IsAlive();
+		const triton::CRenderFrame* AcquireFreeFrame();
+		void Kill();
 	};
 }

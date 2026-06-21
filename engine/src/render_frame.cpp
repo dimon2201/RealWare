@@ -35,10 +35,11 @@ void triton::CRenderFrame::CopyScratchFrame(types::u32 indexInSwapChain, CRender
 	_nextCommandIndex = scratchFrame._nextCommandIndex;
 }
 
-void triton::XFrameSync::WriteFrame()
+void triton::XEngineMTSynchronization::ProduceFrame()
 {
 	CThreadGuard::AssertMain();
 
+	// Find free frame
 	u32 writeIndex = 0;
 	for (usize i = 0; i < 2; i++)
 	{
@@ -48,20 +49,21 @@ void triton::XFrameSync::WriteFrame()
 			break;
 		}
 	}
-
 	_mainThreadSwapChainSnapshot._frames[writeIndex] = EFrameState::BUSY;
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
 		_renderThreadSwapChainSnapshot._frames[writeIndex] = EFrameState::BUSY;
 	}
 
-	// Publish
+	// Publish frame
 	_swapChain._frames[writeIndex].Reset();
 	_swapChain._frames[writeIndex].CopyScratchFrame(writeIndex, _renderSubsystem->GetScratchFrame());
 }
 
-void triton::XFrameSync::FreeFrame(types::u32 frameIndex)
+void triton::XEngineMTSynchronization::ReleaseFrame(types::u32 frameIndex)
 {
+	CThreadGuard::AssertRender();
+
 	_renderThreadSwapChainSnapshot._frames[frameIndex] = EFrameState::READY;
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
@@ -69,8 +71,10 @@ void triton::XFrameSync::FreeFrame(types::u32 frameIndex)
 	}
 }
 
-void triton::XFrameSync::WaitMainThread(std::condition_variable& cv)
+void triton::XEngineMTSynchronization::WaitOnMainThread(std::condition_variable& cv)
 {
+	CThreadGuard::AssertMain();
+
 	std::unique_lock<std::mutex> lock(_mutex);
 	cv.wait(lock, [this] {
 		return _mainThreadSwapChainSnapshot._frames[0] == EFrameState::READY ||
@@ -78,8 +82,10 @@ void triton::XFrameSync::WaitMainThread(std::condition_variable& cv)
 	});
 }
 
-void triton::XFrameSync::WaitRenderThread(std::condition_variable& cv)
+void triton::XEngineMTSynchronization::WaitOnRenderThread(std::condition_variable& cv)
 {
+	CThreadGuard::AssertRender();
+
 	std::unique_lock<std::mutex> lock(_mutex);
 	cv.wait(lock, [this] {
 		return _renderThreadSwapChainSnapshot._stopSync == K_TRUE ||
@@ -88,12 +94,14 @@ void triton::XFrameSync::WaitRenderThread(std::condition_variable& cv)
 	});
 }
 
-types::boolean triton::XFrameSync::CheckFrameSwapChain()
+types::boolean triton::XEngineMTSynchronization::IsAlive()
 {
+	CThreadGuard::AssertRender();
+
 	return _renderThreadSwapChainSnapshot._stopSync;
 }
 
-const triton::CRenderFrame* triton::XFrameSync::AcquireFrame()
+const triton::CRenderFrame* triton::XEngineMTSynchronization::AcquireFreeFrame()
 {
 	CThreadGuard::AssertRender();
 
@@ -112,7 +120,7 @@ const triton::CRenderFrame* triton::XFrameSync::AcquireFrame()
 	return renderFrame;
 }
 
-void triton::XFrameSync::Stop()
+void triton::XEngineMTSynchronization::Kill()
 {
 	CThreadGuard::AssertMain();
 
