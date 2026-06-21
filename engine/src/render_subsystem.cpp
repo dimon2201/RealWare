@@ -137,7 +137,7 @@ void triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
 	_scratchFrame.PushCommand(command);
 }
 
-void triton::XRenderSubsystem::Stop()
+void triton::XRenderSubsystem::Kill()
 {
 	CThreadGuard::AssertMain();
 

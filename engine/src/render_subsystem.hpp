@@ -33,7 +33,7 @@ namespace triton
 		void MainThreadFunction(IApplication* app);
 		void NotifyMainThread();
 		void PushCommand(const SRenderCommand& command);
-		void Stop();
+		void Kill();
 
 		inline CRenderFrame GetScratchFrame() const
 		{
