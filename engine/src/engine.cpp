@@ -65,7 +65,6 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(this);
 	_context->RegisterSubsystem(new XRenderSubsystem(_context));
 	_context->RegisterSubsystem(new cInput(_context));
-	_context->RegisterSubsystem(new cGraphics(_context));
 	_context->RegisterSubsystem(new cAudio(_context));
 	_context->RegisterSubsystem(new cTextureAtlas(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));

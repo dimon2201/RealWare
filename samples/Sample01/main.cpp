@@ -65,7 +65,7 @@ int main()
     cMyApplication* myApp = new cMyApplication(context, &caps);
     std::cout << "Application initialized." << std::endl;
 
-    myApp->Run();
+    //myApp->Run();
 
     return 0;
 }
