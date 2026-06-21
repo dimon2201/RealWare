@@ -53,7 +53,7 @@ void triton::cRenderThread::ThreadFunction()
 
 		const CRenderFrame* renderFrame = _sync->AcquireFrame();
 
-		// Graphics frame stuff
+		// Execute render passes
 		gfx->ExecuteDefaultRenderPasses();
 
 		// Core events
