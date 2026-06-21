@@ -38,8 +38,8 @@ void triton::XRenderPass::WriteDirtyStaticInstancesToGPU()
 {
     while (_dirtyStaticInstances->IsEmpty())
     {
-        //SInstanceBufferHandle handle = _dirtyStaticInstances->Pop();
-        //_instanceBufferStatic->Write(handle);
+        SInstanceBufferHandle handle = *_dirtyStaticInstances->Pop().data;
+        _instanceBufferStatic->Write(handle);
     }
 }
 
