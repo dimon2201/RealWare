@@ -175,6 +175,11 @@ void Shutdown()
     return _materialsCPU->Create(id, diffuseTexture, diffuseColor, highlightColor, customShader);
 }*/
 
+void triton::cGraphics::ExecuteDefaultRenderPasses()
+{
+    _opaque->Execute();
+}
+
 triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
 {
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();

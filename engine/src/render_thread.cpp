@@ -53,6 +53,10 @@ void triton::cRenderThread::ThreadFunction()
 
 		const CRenderFrame* renderFrame = _sync->AcquireFrame();
 
+		// Graphics frame stuff
+		gfx->ExecuteDefaultRenderPasses();
+
+		// Core events
 		MakeContextCurrent(renderFrame, gfxContextBackend);
 		ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfx);
 		Present(renderFrame, gfxContextBackend);
