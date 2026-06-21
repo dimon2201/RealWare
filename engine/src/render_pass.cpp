@@ -61,6 +61,7 @@ void triton::XRenderPass::SynchronizeWithGPU()
 
 void triton::XRenderPass::Execute()
 {
+    SynchronizeWithGPU();
 }
 
 void triton::XRenderPass::ResizeViewport(const cVector2& size)
