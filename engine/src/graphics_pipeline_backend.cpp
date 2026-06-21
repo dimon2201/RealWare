@@ -9,7 +9,6 @@ using namespace types;
 triton::XShader::XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFuncStr, const std::string& fragmentCustomFuncStr, const std::vector<SShaderDefine>&& defines) : iObject(context)
 {
 	_gpuShader = _context->GetBackend<iGraphicsPipelineBackend>()->CreateShader(
-		EBuiltinRenderPassType::NONE,
 		vertexStr,
 		fragmentStr,
 		vertexCustomFuncStr,

@@ -104,7 +104,6 @@ namespace triton
         virtual void BindShader(const CGPUShader* shader) = 0;
         virtual void UnbindShader() = 0;
         virtual CGPUShader CreateShader(
-            EBuiltinRenderPassType builtinType,
             const std::string& vertexStr,
             const std::string& fragmentStr,
             const std::string& vertexCustomFuncStr,

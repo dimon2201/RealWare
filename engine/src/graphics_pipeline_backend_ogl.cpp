@@ -54,7 +54,6 @@ void triton::cGraphicsPipelineBackendOGL::UnbindShader()
 }
 
 triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
-    EBuiltinRenderPassType builtinType,
     const std::string& vertexStr,
     const std::string& fragmentStr,
     const std::string& vertexCustomFuncStr,
@@ -65,36 +64,7 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     std::string finalVertexStr = vertexStr;
     std::string finalFragmentStr = fragmentStr;
 
-    std::string header = "";
-    switch (builtinType)
-    {
-    case EBuiltinRenderPassType::NONE:
-        Print("Error: invalid builtin render pass type 'RENDER_PATH_NONE' when creating a shader!");
-        return CGPUShader(_context, 0, 0);
-
-    case EBuiltinRenderPassType::OPAQUE_PATH:
-        header = "RENDER_PATH_OPAQUE";
-        break;
-
-    case EBuiltinRenderPassType::TRANSPARENT_PATH:
-        header = "RENDER_PATH_TRANSPARENT";
-        break;
-
-    case EBuiltinRenderPassType::TEXT_PATH:
-        header = "RENDER_PATH_TEXT";
-        break;
-
-    case EBuiltinRenderPassType::TRANSPARENT_COMPOSITE_PATH:
-        header = "RENDER_PATH_TRANSPARENT_COMPOSITE";
-        break;
-
-    case EBuiltinRenderPassType::QUAD_PATH:
-        header = "RENDER_PATH_QUAD";
-        break;
-    }
-
-    const std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
-
+    const std::string appendStr = "#version 430\n\n";
     const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
     const std::string vertexFuncPassthroughCall = "Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);";
     const std::string fragmentFuncDefinition = "void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";
@@ -149,14 +119,14 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
     if (logBufferByteSize > 0)
     {
-        Print("Error: vertex shader, header: " + header + "!");
+        Print("Error: vertex shader!");
         Print(logBuffer);
     }
     logBufferByteSize = 0;
     glGetShaderInfoLog(fragmentShader, 1024, &logBufferByteSize, &logBuffer[0]);
     if (logBufferByteSize > 0)
     {
-        Print("Error: fragment shader, header: " + header + "!");
+        Print("Error: fragment shader!");
         Print(logBuffer);
     }
     glDeleteShader(vertexShader);
