@@ -102,7 +102,8 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 				// input->DestroyWindow(window);
 				windows->Erase(i);
 
-				Stop();
+				Kill();
+
 				_renderThread->NotifyThread();
 				break;
 			}
