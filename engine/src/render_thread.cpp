@@ -14,7 +14,7 @@
 
 using namespace types;
 
-triton::cRenderThread::cRenderThread(cContext* context, XFrameSync* sync, XRenderSubsystem* renderSubsystem) : cThread(context), _sync(sync), _renderSubsystem(renderSubsystem)
+triton::cRenderThread::cRenderThread(cContext* context, XEngineMTSynchronization* synchronization, XRenderSubsystem* renderSubsystem) : cThread(context), _synchronization(synchronization), _renderSubsystem(renderSubsystem)
 {
 	_initialized.store(K_FALSE);
 }
@@ -46,12 +46,12 @@ void triton::cRenderThread::ThreadFunction()
 
 	while (K_TRUE)
 	{
-		_sync->WaitRenderThread(_cv);
+		_synchronization->WaitOnRenderThread(_cv);
 		
-		if (_sync->CheckFrameSwapChain())
+		if (_synchronization->IsAlive())
 			break;
 
-		const CRenderFrame* renderFrame = _sync->AcquireFrame();
+		const CRenderFrame* renderFrame = _synchronization->AcquireFreeFrame();
 
 		// Execute render passes
 		gfx->ExecuteDefaultRenderPasses();
@@ -61,7 +61,7 @@ void triton::cRenderThread::ThreadFunction()
 		ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfx);
 		Present(renderFrame, gfxContextBackend);
 
-		_sync->FreeFrame(renderFrame->GetIndexInSwapChain());
+		_synchronization->ReleaseFrame(renderFrame->GetIndexInSwapChain());
 
 		_renderSubsystem->NotifyMainThread();
 	}
