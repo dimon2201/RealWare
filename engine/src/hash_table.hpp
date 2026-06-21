@@ -41,9 +41,9 @@ namespace triton
 		cStack<cHashTablePair<TKey, TValue>>* _elements;
 		types::usize _hashTableSize = 0;
 		types::qword _hashMask = 0;
-		SStackValue<TValue>* _values = nullptr;
+		SStackValue<cHashTablePair<TKey, TValue>>* _hashTableElements = nullptr;
 
-		void HashPair(const TKey& key, const TValue* value, const SStackIndex& index);
+		void HashElement(const SStackValue<cHashTablePair<TKey, TValue>>& element);
 
 	public:
 		explicit cHashTable(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc);
@@ -52,7 +52,7 @@ namespace triton
 		//template<typename... Args>
 		//TValue* Insert(const TKey& key, Args&&... args);
 		TValue* Insert(const TKey& key, TValue&& value);
-		TValue* Find(const TKey& key) const; // TODO: return sHashTableResult instead of TValue*
+		TValue* Find(const TKey& key) const;
 		TValue* Find(types::u32 index) const;
 		void Erase(const TKey& key);
 		void Erase(types::u32 index);
@@ -75,14 +75,15 @@ triton::cHashTable<TKey, TValue>::cHashTable(cContext* context, const sChunkAllo
 	_elements = _context->Create<cStack<cHashTablePair<TKey, TValue>>>(_context, _allocatorDesc);
 	_hashTableSize = _allocatorDesc.hashTableSize;
 	_hashMask = cMath::MakeHashMask(_allocatorDesc.hashTableSize);
-	_values = (SStackValue<TValue>*)memoryAllocator->Allocate(_hashTableSize * sizeof(SStackValue<TValue>), caps->memoryAlignment);
+	_hashTableElements = (SStackValue<cHashTablePair<TKey, TValue>>*)memoryAllocator->Allocate(_hashTableSize * sizeof(SStackValue<cHashTablePair<TKey, TValue>>), caps->memoryAlignment);
+	memset(&_hashTableElements[0], 0, _hashTableSize * sizeof(SStackValue<cHashTablePair<TKey, TValue>>));
 }
 
 template <typename TKey, typename TValue>
 triton::cHashTable<TKey, TValue>::~cHashTable()
 {
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-	memoryAllocator->Deallocate(_values);
+	memoryAllocator->Deallocate(_hashTableElements);
 
 	_context->Destroy<cStack<cHashTablePair<TKey, TValue>>>(_elements);
 }
@@ -110,15 +111,12 @@ template <typename TKey, typename TValue>
 TValue* triton::cHashTable<TKey, TValue>::Insert(const TKey& key, TValue&& value)
 {
 	cHashTablePair<TKey, TValue> pair(_context, std::move(key), std::move(value));
-	SStackValue<cHashTablePair<TKey, TValue>> stackValue = _elements->Push(std::move(pair));
-	cHashTablePair<TKey, TValue>* pPair = stackValue.data;
-
-	if (pPair == nullptr)
+	SStackValue<cHashTablePair<TKey, TValue>> element = _elements->Push(std::move(pair));
+	if (element.data == nullptr)
 		return nullptr;
 
-	TValue* object = &pPair->_value;
-
-	HashPair(key, object, *stackValue.index);
+	TValue* object = &element.data->_value;
+	HashElement(element);
 
 	return object;
 }
@@ -127,7 +125,7 @@ template <typename TKey, typename TValue>
 TValue* triton::cHashTable<TKey, TValue>::Find(const TKey& key) const
 {
 	const types::qword hash = cMath::Hash<TKey>(key, _hashMask);
-	const SStackValue<TValue>& value = _values[hash];
+	const SStackValue<cHashTablePair<TKey, TValue>>& value = _hashTableElements[hash];
 	cHashTablePair<TKey, TValue>* pair = _elements->At(*value.index).data;
 	if (pair != nullptr && key == pair->_key)
 		return &pair->_value;
@@ -157,7 +155,7 @@ template <typename TKey, typename TValue>
 void triton::cHashTable<TKey, TValue>::Erase(const TKey& key)
 {
 	const types::qword hash = cMath::Hash<TKey>(key, _hashMask);
-	const SStackValue<TValue>& value = _values[hash];
+	const SStackValue<cHashTablePair<TKey, TValue>>& value = _hashTableElements[hash];
 	const cHashTablePair<TKey, TValue>* pair = _elements->At(*value.index).data;
 	if (pair != nullptr && key == pair->_key)
 		_elements->Erase(value.index->globalPosition);
@@ -177,13 +175,23 @@ void triton::cHashTable<TKey, TValue>::Erase(types::u32 index)
 }
 
 template <typename TKey, typename TValue>
-void triton::cHashTable<TKey, TValue>::HashPair(const TKey& key, const TValue* value, const SStackIndex& index)
+void triton::cHashTable<TKey, TValue>::HashElement(const SStackValue<cHashTablePair<TKey, TValue>>& element)
 {
-	SStackIndex si = {};
-	si.chunkIndex = index.chunkIndex;
-	si.localPosition = index.localPosition;
-	si.globalPosition = index.globalPosition;
+	const types::u32 hash = cMath::Hash<TKey>(element.data->_key, _hashMask);
+	if (_hashTableElements[hash].index == nullptr)
+	{
+		// Insert new element
+		_hashTableElements[hash] = element;
+		return;
+	}
+	else
+	{
+		// Rewrite hash table element
+		SStackIndex si = {};
+		si.chunkIndex = element.index->chunkIndex;
+		si.localPosition = element.index->localPosition;
+		si.globalPosition = element.index->globalPosition;
 
-	const types::u32 hash = cMath::Hash<TKey>(key, _hashMask);
-	*_values[hash].index = si;
+		*_hashTableElements[hash].index = si;
+	}
 }

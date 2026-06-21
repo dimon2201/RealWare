@@ -64,7 +64,6 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 
 	app->Setup();
 
-	auto gfx = _context->GetSubsystem<cGraphics>();
 	//auto camera = _context->GetSubsystem<cCameraSystem>();
 	auto time = _context->GetSubsystem<cTime>();
 	//auto physics = _context->GetSubsystem<cPhysics>();
