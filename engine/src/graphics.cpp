@@ -895,7 +895,6 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 {
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
     cTextureAtlas* textureAtlas = _context->GetSubsystem<cTextureAtlas>();
-    cGraphics* gfx = _context->GetSubsystem<cGraphics>();
     cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
 
     SViewport viewport;
@@ -927,8 +926,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _opaque = _context->Create<XRenderPass>(_context);
     _opaque->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
     _opaque->SetInputBuffers({
-        gfx->GetVertexBuffer(),
-        gfx->GetIndexBuffer()
+        _geometryStorage->GetVertexBuffer(),
+        _geometryStorage->GetIndexBuffer()
     });
     _opaque->SetInputTextures({
         SRenderPassTexture("TextureAtlas", textureAtlas->GetAtlas())
@@ -956,8 +955,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _transparent = _context->Create<XRenderPass>(_context);
     _transparent->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
     _transparent->SetInputBuffers({
-        gfx->GetVertexBuffer(),
-        gfx->GetIndexBuffer()
+        _geometryStorage->GetVertexBuffer(),
+        _geometryStorage->GetIndexBuffer()
     });
     _transparent->SetInputTextures({
         SRenderPassTexture("TextureAtlas", textureAtlas->GetAtlas())
