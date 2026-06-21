@@ -98,7 +98,7 @@ types::boolean triton::XEngineMTSynchronization::IsAlive()
 {
 	CThreadGuard::AssertRender();
 
-	return _renderThreadSwapChainSnapshot._stopSync;
+	return _renderThreadSwapChainSnapshot._stopSync == K_FALSE ? K_TRUE : K_FALSE;
 }
 
 const triton::CRenderFrame* triton::XEngineMTSynchronization::AcquireFreeFrame()
