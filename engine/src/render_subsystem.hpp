@@ -19,7 +19,7 @@ namespace triton
 		TRITON_OBJECT(XRenderSubsystem)
 
 	private:
-		XFrameSync* _sync = nullptr;
+		XEngineMTSynchronization* _synchronization = nullptr;
 		cRenderThread* _renderThread = nullptr;
 		std::condition_variable _cv;
 		CRenderFrame _scratchFrame = CRenderFrame(nullptr);

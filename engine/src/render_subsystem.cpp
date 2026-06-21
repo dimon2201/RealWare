@@ -22,24 +22,24 @@ void triton::XRenderSubsystem::Initialize()
 {
 	CThreadGuard::AssertMain();
 
-	_sync = _context->Create<XFrameSync>(_context, this);
+	_synchronization = _context->Create<XEngineMTSynchronization>(_context, this);
 
 	for (usize i = 0; i < 2; i++)
 	{
-		_sync->_mainThreadSwapChainSnapshot._frames[i] = EFrameState::READY;
-		_sync->_renderThreadSwapChainSnapshot._frames[i] = EFrameState::READY;
+		_synchronization->_mainThreadSwapChainSnapshot._frames[i] = EFrameState::READY;
+		_synchronization->_renderThreadSwapChainSnapshot._frames[i] = EFrameState::READY;
 	}
 	
 	// Create render thread
 	cInputWindow* window = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data;
 	for (usize i = 0; i < 2; i++)
-		_sync->_swapChain._frames[i].Reset(window);
+		_synchronization->_swapChain._frames[i].Reset(window);
 
 	_scratchFrame.Reset(window);
 	
 	{
-		std::unique_lock<std::mutex> lock(_sync->_mutex);
-		_renderThread = _context->Create<cRenderThread>(_context, _sync, this);
+		std::unique_lock<std::mutex> lock(_synchronization->_mutex);
+		_renderThread = _context->Create<cRenderThread>(_context, _synchronization, this);
 		_renderThread->Run();
 
 		// Wait until render thread gets initialized to continue main thread
@@ -52,7 +52,7 @@ void triton::XRenderSubsystem::Shutdown()
 	CThreadGuard::AssertMain();
 
 	_context->Destroy<cRenderThread>(_renderThread);
-	_context->Destroy<XFrameSync>(_sync);
+	_context->Destroy<XEngineMTSynchronization>(_synchronization);
 }
 
 void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
@@ -79,7 +79,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	{
 		inputBackend->PollEvents();
 
-		_sync->WaitMainThread(_cv);
+		_synchronization->WaitOnMainThread(_cv);
 
 		s32 windowCount = windows->GetSize();
 		if (windowCount == 0)
@@ -108,7 +108,8 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			}
 		}
 
-		_sync->WriteFrame();
+		_synchronization->ProduceFrame();
+
 		_renderThread->NotifyThread();
 	}
 
@@ -140,5 +141,5 @@ void triton::XRenderSubsystem::Stop()
 {
 	CThreadGuard::AssertMain();
 
-	_sync->Stop();
+	_synchronization->Kill();
 }
