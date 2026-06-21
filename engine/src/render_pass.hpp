@@ -69,13 +69,13 @@ namespace triton
 
         void WriteDirtyStaticInstancesToGPU();
         void WriteDynamicInstancesToGPU();
+        void SynchronizeWithGPU();
 
     public:
         explicit XRenderPass(cContext* context);
         virtual ~XRenderPass() override = default;
 
         void WriteStaticInstanceToGPU(const SInstanceBufferHandle& instance);
-        void SynchronizeGPU();
         void Execute();
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
