@@ -42,14 +42,14 @@ namespace triton
 		virtual void ThreadFunction() override;
 
 		template <typename TResult>
-		TResult FetchCommandResult(std::condition_variable& cv) const
+		TResult FetchCommandResult(std::condition_variable& cv)
 		{
 			CThreadGuard::AssertMain();
 
 			_synchronization->WaitForResult(cv, this);
 
 			TResult r = {};
-			memcpy(&r, &resultBuffer[0], sizeof(TResult));
+			memcpy(&r, &_resultBuffer[0], sizeof(TResult));
 
 			return r;
 		}
