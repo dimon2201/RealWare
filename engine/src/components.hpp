@@ -3,6 +3,7 @@
 #include "math.hpp"
 #include "stack_value.hpp"
 #include "render_instance.hpp"
+#include "geometry_view.hpp"
 
 namespace triton
 {
