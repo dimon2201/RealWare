@@ -22,6 +22,7 @@ namespace triton
 	{
 		TRITON_OBJECT(cRenderThread)
 
+		types::u8* _resultBuffer = nullptr;
 		XEngineMTSynchronization* _synchronization = nullptr;
 		XRenderSubsystem* _renderSubsystem = nullptr;
 		std::atomic<types::boolean> _initialized = types::K_FALSE;
@@ -36,9 +37,22 @@ namespace triton
 
 	public:
 		explicit cRenderThread(cContext* context, XEngineMTSynchronization* synchronization, XRenderSubsystem* renderSubsystem);
-		virtual ~cRenderThread() = default;
+		~cRenderThread() override;
 
 		virtual void ThreadFunction() override;
+
+		template <typename TResult>
+		TResult FetchCommandResult(std::condition_variable& cv) const
+		{
+			CThreadGuard::AssertMain();
+
+			_synchronization->WaitForResult(cv, this);
+
+			TResult r = {};
+			memcpy(&r, &resultBuffer[0], sizeof(TResult));
+
+			return r;
+		}
 
 		inline types::boolean IsInitialized() const
 		{

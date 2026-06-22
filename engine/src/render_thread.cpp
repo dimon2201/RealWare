@@ -16,7 +16,14 @@ using namespace types;
 
 triton::cRenderThread::cRenderThread(cContext* context, XEngineMTSynchronization* synchronization, XRenderSubsystem* renderSubsystem) : cThread(context), _synchronization(synchronization), _renderSubsystem(renderSubsystem)
 {
+	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+	_resultBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(caps->futureResultBufferByteSize, 64);
 	_initialized.store(K_FALSE);
+}
+
+triton::cRenderThread::~cRenderThread()
+{
+	_context->GetMemoryAllocator()->Deallocate(_resultBuffer);
 }
 
 void triton::cRenderThread::ThreadFunction()
@@ -43,6 +50,7 @@ void triton::cRenderThread::ThreadFunction()
 	while (K_TRUE)
 	{
 		_frameDone.store(K_FALSE);
+		_renderSubsystem->NotifyMainThread();
 
 		_synchronization->WaitForProducedFrame(_cv);
 		
@@ -114,6 +122,16 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 				cmd->_args._argC,
 				(const u8*)cmd->_args._argD
 			);
+			break;
+		case ERenderCommand::CREATE_TEXTURE:
+			cTexture* result = resourceBackend->CreateTexture(
+				cVector3(cmd->_args._argA, cmd->_args._argB, cmd->_args._argC),
+				(cTexture::eDimension)cmd->_args._argD,
+				(cTexture::eFormat)cmd->_args._argE,
+				(u8*)cmd->_args._argF,
+				cmd->_args._argG
+			);
+			memcpy(&_resultBuffer[0], &result, sizeof(cTexture*));
 			break;
 		}
 	}

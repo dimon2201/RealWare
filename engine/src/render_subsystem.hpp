@@ -17,12 +17,6 @@ namespace triton
 	template <typename T>
 	class cStack;
 
-	struct SRenderCommandResult final
-	{
-		types::usize bufferByteOffset = 0;
-		types::usize bufferByteSize = 0;
-	};
-
 	class XRenderSubsystem final : public iObject
 	{
 		TRITON_OBJECT(XRenderSubsystem)
@@ -33,13 +27,6 @@ namespace triton
 		std::condition_variable _cv;
 		CRenderFrame _scratchFrame = CRenderFrame(nullptr);
 
-		// TODO: encapsulate this in separate CResultBuffer class
-		types::u8* _resultBuffer = nullptr;
-		types::usize _nextResultBufferByte = 0;
-		cStack<SRenderCommandResult>* _freeResults = nullptr;
-
-		void DiscardResult(const SRenderCommandResult& result);
-
 	public:
 		explicit XRenderSubsystem(cContext* context);
 		virtual ~XRenderSubsystem() = default;
@@ -48,20 +35,13 @@ namespace triton
 		void Shutdown();
 		void MainThreadFunction(IApplication* app);
 		void NotifyMainThread();
-		SRenderCommandResult PushCommand(const SRenderCommand& command);
+		void PushCommand(const SRenderCommand& command);
 		void Kill();
 
 		template <typename TResult>
-		TResult FetchResult(const SRenderCommandResult& result) const
+		TResult FetchResult() const
 		{
-			_synchronization->WaitForResult(_cv, _renderThread);
-
-			TResult r = {};
-			memcpy(&r, &_resultBuffer[result.bufferByteOffset], sizeof(TResult));
-
-			DiscardResult(result);
-
-			return r;
+			return _renderThread->FetchCommandResult<TResult>(_cv);
 		}
 
 		inline CRenderFrame GetScratchFrame() const

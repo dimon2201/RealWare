@@ -24,14 +24,6 @@ void triton::XRenderSubsystem::Initialize()
 {
 	CThreadGuard::AssertMain();
 
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-	_resultBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(caps->futureResultBufferByteSize, 64);
-	sChunkAllocatorDescriptor cad = {};
-	cad.chunkByteSize = caps->hashTableChunkByteSize;
-	cad.maxChunkCount = caps->hashTableMaxChunkCount;
-	cad.hashTableSize = caps->hashTableSize;
-	_freeResults = _context->Create<cStack<SRenderCommandResult>>(_context, cad);
-
 	_synchronization = _context->Create<XEngineMTSynchronization>(_context, this);
 	for (usize i = 0; i < 2; i++)
 	{
@@ -62,8 +54,6 @@ void triton::XRenderSubsystem::Shutdown()
 
 	_context->Destroy<cRenderThread>(_renderThread);
 	_context->Destroy<XEngineMTSynchronization>(_synchronization);
-	_context->Destroy<cStack<SRenderCommandResult>>(_freeResults);
-	_context->GetMemoryAllocator()->Deallocate(_resultBuffer);
 }
 
 void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
@@ -147,51 +137,29 @@ void triton::XRenderSubsystem::NotifyMainThread()
 	_cv.notify_one();
 }
 
-triton::SRenderCommandResult triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
+void triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
 {
 	CThreadGuard::AssertMain();
 
-	usize bufferByteSize = 0;
+	usize resultByteSize = 0;
 	switch (command._command)
 	{
-	case ERenderCommand::CREATE_TEXTURE:
-		bufferByteSize = sizeof(cTexture*);
+		case ERenderCommand::CREATE_TEXTURE:
+			resultByteSize = sizeof(cTexture*);
+			break;
+		case ERenderCommand::CREATE_RENDER_TARGET:
+			resultByteSize = sizeof(XRenderTarget*);
+			break;
 	}
 
-	usize bufferByteOffset = _nextResultBufferByte;
-	if (_freeResults->IsEmpty() == K_FALSE)
-	{
-		for (usize i = 0; i < _freeResults->GetSize(); i++)
-		{
-			SRenderCommandResult result = *_freeResults->At(i).data;
-			if (bufferByteSize <= result.bufferByteSize)
-			{
-				bufferByteOffset = result.bufferByteOffset;
-				break;
-			}
-		}
-	}
-	if (bufferByteOffset == _nextResultBufferByte)
-		_nextResultBufferByte += bufferByteSize;
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-	if (_nextResultBufferByte >= caps->futureResultBufferByteSize)
+	if (resultByteSize >= caps->futureResultBufferByteSize)
 	{
-		Print("Error: maximum futureResultBufferByteSize " + std::to_string(caps->futureResultBufferByteSize) + " exceeded!");
+		Print("Error: command result byte size value '" + std::to_string(resultByteSize) + "' exceeds futureResultBufferByteSize '" + std::to_string(caps->futureResultBufferByteSize) + "'!");
 		return;
 	}
 
 	_scratchFrame.PushCommand(command);
-
-	SRenderCommandResult result = {};
-	result.bufferByteOffset = bufferByteOffset;
-	result.bufferByteSize = bufferByteSize;
-
-	return result;
-}
-
-void triton::XRenderSubsystem::DiscardResult(const SRenderCommandResult& result)
-{
-	_freeResults->Push(result);
 }
 
 void triton::XRenderSubsystem::Kill()
