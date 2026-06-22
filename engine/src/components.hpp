@@ -36,6 +36,11 @@ namespace triton::ecs::components
         types::f32 _zFar = 100.0f;
     };
 
+    struct SGeometryComponent : public SComponent
+    {
+        SGeometryView geometry = {};
+    };
+
     class sSoundComponent : public SComponent
     {
     public:
