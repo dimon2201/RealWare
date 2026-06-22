@@ -863,7 +863,7 @@ void triton::cGraphics::CreateDefaultRenderTargets()
     XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
 
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
-    auto resultColor = renderSubsystem->PushCommand(SRenderCommand(
+    renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -873,7 +873,8 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    auto resultAccumulation = renderSubsystem->PushCommand(SRenderCommand(
+    cTexture* color = renderSubsystem->FetchResult<cTexture*>();
+    renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -883,7 +884,8 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    auto resultRevealage = renderSubsystem->PushCommand(SRenderCommand(
+    cTexture* accumulation = renderSubsystem->FetchResult<cTexture*>();
+    renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -893,7 +895,8 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    auto resultDepth = renderSubsystem->PushCommand(SRenderCommand(
+    cTexture* revealage = renderSubsystem->FetchResult<cTexture*>();
+    renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -903,27 +906,23 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         (cpuword)nullptr,
         0
     ));
-
-    cTexture* color = renderSubsystem->FetchResult<cTexture*>(resultColor);
-    cTexture* accumulation = renderSubsystem->FetchResult<cTexture*>(resultAccumulation);
-    cTexture* revealage = renderSubsystem->FetchResult<cTexture*>(resultRevealage);
-    cTexture* depth = renderSubsystem->FetchResult<cTexture*>(resultDepth);
+    cTexture* depth = renderSubsystem->FetchResult<cTexture*>();
     cTexture* opaqueColorAttachments[1] = { color };
-    auto resultOpaque = renderSubsystem->PushCommand(SRenderCommand(
+    renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
         1,
         (cpuword)&opaqueColorAttachments[0],
         (cpuword)depth
     ));
+    _opaqueRenderTarget = renderSubsystem->FetchResult<XRenderTarget*>();
     cTexture* transparentColorAttachments[2] = { accumulation, revealage };
-    auto resultTransparent = renderSubsystem->PushCommand(SRenderCommand(
+    renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
         2,
         (cpuword)&transparentColorAttachments[0],
         (cpuword)depth
     ));
-    _opaqueRenderTarget = renderSubsystem->FetchResult<XRenderTarget*>(resultOpaque);
-    _transparentRenderTarget = renderSubsystem->FetchResult<XRenderTarget*>(resultTransparent);
+    _transparentRenderTarget = renderSubsystem->FetchResult<XRenderTarget*>();
 }
 
 void triton::cGraphics::CreateDefaultRenderPasses()
