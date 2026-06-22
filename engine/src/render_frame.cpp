@@ -3,6 +3,7 @@
 #include "render_frame.hpp"
 #include "render_subsystem.hpp"
 #include "thread_guard.hpp"
+#include "render_thread.hpp"
 
 using namespace types;
 
@@ -91,6 +92,16 @@ void triton::XEngineMTSynchronization::WaitForProducedFrame(std::condition_varia
 		return _renderThreadSwapChainSnapshot._stopSync == K_TRUE ||
 			_renderThreadSwapChainSnapshot._frames[0] == EFrameState::BUSY ||
 			_renderThreadSwapChainSnapshot._frames[1] == EFrameState::BUSY;
+	});
+}
+
+void triton::XEngineMTSynchronization::WaitForResult(std::condition_variable& cv, cRenderThread* renderThread)
+{
+	CThreadGuard::AssertMain();
+
+	std::unique_lock<std::mutex> lock(_mutex);
+	cv.wait(lock, [renderThread] {
+		return renderThread->IsFrameDone();
 	});
 }
 

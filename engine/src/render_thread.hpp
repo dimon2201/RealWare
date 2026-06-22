@@ -25,6 +25,7 @@ namespace triton
 		XEngineMTSynchronization* _synchronization = nullptr;
 		XRenderSubsystem* _renderSubsystem = nullptr;
 		std::atomic<types::boolean> _initialized = types::K_FALSE;
+		std::atomic<types::boolean> _frameDone = types::K_FALSE;
 		std::mutex _threadMutex;
 		std::condition_variable _cv;
 
@@ -42,6 +43,11 @@ namespace triton
 		inline types::boolean IsInitialized() const
 		{
 			return _initialized.load();
+		}
+
+		inline types::boolean IsFrameDone() const
+		{
+			return _frameDone.load();
 		}
 	};
 }

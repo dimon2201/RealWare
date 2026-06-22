@@ -13,6 +13,7 @@ namespace triton
 {
 	class cInputWindow;
 	class XRenderSubsystem;
+	class cRenderThread;
 
 	enum class ERenderCommand
 	{
@@ -107,6 +108,7 @@ namespace triton
 		void ReleaseFrame(types::u32 frameIndex);
 		void WaitForFreeFrame(std::condition_variable& cv);
 		void WaitForProducedFrame(std::condition_variable& cv);
+		void WaitForResult(std::condition_variable& cv, cRenderThread* renderThread);
 		types::boolean IsAlive();
 		const triton::CRenderFrame* AcquireProducedFrame();
 		void Kill();

@@ -42,6 +42,8 @@ void triton::cRenderThread::ThreadFunction()
 
 	while (K_TRUE)
 	{
+		_frameDone.store(K_FALSE);
+
 		_synchronization->WaitForProducedFrame(_cv);
 		
 		if (_synchronization->IsAlive())
@@ -58,6 +60,8 @@ void triton::cRenderThread::ThreadFunction()
 		Present(renderFrame, gfxContextBackend);
 
 		_synchronization->ReleaseFrame(renderFrame->GetIndexInSwapChain());
+
+		_frameDone.store(K_TRUE);
 
 		_renderSubsystem->NotifyMainThread();
 	}
