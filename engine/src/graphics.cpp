@@ -27,6 +27,7 @@
 #include "graphics_pipeline_backend.hpp"
 #include "render_pass.hpp"
 #include "stack.hpp"
+#include "render_subsystem.hpp"
 
 using namespace types;
 
@@ -859,41 +860,70 @@ void triton::cGraphics::CreateGeometryStorage()
 
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
+
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
+    auto resultColor = renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_TEXTURE,
+        windowSize.GetX(),
+        windowSize.GetY(),
+        0,
+        (cpuword)cTexture::eDimension::TEXTURE_2D,
+        (cpuword)cTexture::eFormat::RGBA8,
+        (cpuword)nullptr,
+        0
+    ));
+    auto resultAccumulation = renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_TEXTURE,
+        windowSize.GetX(),
+        windowSize.GetY(),
+        0,
+        (cpuword)cTexture::eDimension::TEXTURE_2D,
+        (cpuword)cTexture::eFormat::RGBA16F,
+        (cpuword)nullptr,
+        0
+    ));
+    auto resultRevealage = renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_TEXTURE,
+        windowSize.GetX(),
+        windowSize.GetY(),
+        0,
+        (cpuword)cTexture::eDimension::TEXTURE_2D,
+        (cpuword)cTexture::eFormat::R8F,
+        (cpuword)nullptr,
+        0
+    ));
+    auto resultDepth = renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_TEXTURE,
+        windowSize.GetX(),
+        windowSize.GetY(),
+        0,
+        (cpuword)cTexture::eDimension::TEXTURE_2D,
+        (cpuword)cTexture::eFormat::DEPTH_STENCIL,
+        (cpuword)nullptr,
+        0
+    ));
 
-    cTexture* color = gfxResourceBackend->CreateTexture(
-        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::RGBA8,
-        nullptr,
-        0
-    );
-    cTexture* accumulation = gfxResourceBackend->CreateTexture(
-        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::RGBA16F,
-        nullptr,
-        0
-    );
-    cTexture* revealage = gfxResourceBackend->CreateTexture(
-        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::R8F,
-        nullptr,
-        0
-    );
-    cTexture* depth = gfxResourceBackend->CreateTexture(
-        cVector3(windowSize.GetX(), windowSize.GetY(), 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::DEPTH_STENCIL,
-        nullptr,
-        0
-    );
-
-    _opaqueRenderTarget = gfxPipelineBackend->CreateRenderTarget({ color }, depth);
-    _transparentRenderTarget = gfxPipelineBackend->CreateRenderTarget({ accumulation, revealage }, depth);
+    cTexture* color = renderSubsystem->FetchResult<cTexture*>(resultColor);
+    cTexture* accumulation = renderSubsystem->FetchResult<cTexture*>(resultAccumulation);
+    cTexture* revealage = renderSubsystem->FetchResult<cTexture*>(resultRevealage);
+    cTexture* depth = renderSubsystem->FetchResult<cTexture*>(resultDepth);
+    cTexture* opaqueColorAttachments[1] = { color };
+    auto resultOpaque = renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_RENDER_TARGET,
+        1,
+        (cpuword)&opaqueColorAttachments[0],
+        (cpuword)depth
+    ));
+    cTexture* transparentColorAttachments[2] = { accumulation, revealage };
+    auto resultTransparent = renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_RENDER_TARGET,
+        2,
+        (cpuword)&transparentColorAttachments[0],
+        (cpuword)depth
+    ));
+    _opaqueRenderTarget = renderSubsystem->FetchResult<XRenderTarget*>(resultOpaque);
+    _transparentRenderTarget = renderSubsystem->FetchResult<XRenderTarget*>(resultTransparent);
 }
 
 void triton::cGraphics::CreateDefaultRenderPasses()
