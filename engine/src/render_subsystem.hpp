@@ -6,6 +6,7 @@
 #include "types.hpp"
 #include "render_frame.hpp"
 #include "thread_guard.hpp"
+#include "render_thread.hpp"
 
 namespace triton
 {
