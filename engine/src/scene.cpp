@@ -67,6 +67,11 @@ triton::ecs::components::SRenderInstanceComponent* triton::ecs::cScene::CreateRe
 	return _renderInstanceComponents->Create(ent);
 }
 
+triton::ecs::components::SGeometryComponent* triton::ecs::cScene::CreateGeometryComponent(entity ent)
+{
+	return _geometryComponents->Create(ent);
+}
+
 void triton::ecs::cScene::DestroyTransformComponent(entity ent)
 {
 	return _transformComponents->Destroy(ent);

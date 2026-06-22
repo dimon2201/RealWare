@@ -24,6 +24,7 @@ namespace triton::ecs
 		cHashTable<entity, cSingleValue>* _isEntityExist = nullptr; // TODO: make this member field not of a pointer type
 		cComponentStorage<components::STransformComponent>* _transformComponents = nullptr;
 		cComponentStorage<components::SRenderInstanceComponent>* _renderInstanceComponents = nullptr;
+		cComponentStorage<components::SGeometryComponent>* _geometryComponents = nullptr;
 		cStack<components::SRenderInstanceComponent>* _renderInstancesStatic = nullptr;
 		cStack<components::SRenderInstanceComponent>* _renderInstancesDynamic = nullptr;
 
@@ -36,6 +37,7 @@ namespace triton::ecs
 		types::boolean IsEntityExist(entity ent);
 		components::STransformComponent* CreateTransformComponent(entity ent);
 		components::SRenderInstanceComponent* CreateRenderInstanceComponent(entity ent);
+		components::SGeometryComponent* CreateGeometryComponent(entity ent);
 		void DestroyTransformComponent(entity ent);
 		void DestroyRenderInstanceComponent(entity ent);
 		SRenderData BuildRenderDataStatic();
