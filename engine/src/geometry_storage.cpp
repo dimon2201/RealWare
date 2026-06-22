@@ -7,6 +7,7 @@
 #include "graphics_buffer_formats.hpp"
 #include "data_buffer.hpp"
 #include "engine.hpp"
+#include "render_subsystem.hpp"
 
 using namespace types;
 
@@ -52,32 +53,39 @@ void triton::XGeometryStorage::Free()
     gfxResourceBackend->DestroyBuffer(_opaqueInstanceBuffer);*/
 }
 
-std::optional<triton::SGeometryView> triton::XGeometryStorage::CreateGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize)
+std::optional<triton::SGeometryView> triton::XGeometryStorage::Store(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize)
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     
     usize vertexBufferByteSize = _vertexBufferPointer;
-    usize indicesBufferByteSize = _indexBufferPointer;
-
-    // CPU write
-    _vertexBufferCPU->Write(vertices, verticesByteSize, _vertexBuffer->GetByteSize());
-    _indexBufferCPU->Write(indices, indicesByteSize, _indexBuffer->GetByteSize());
-
-    // GPU write
-    gfxResourceBackend->WriteBuffer(_vertexBuffer, vertexBufferByteSize, verticesByteSize, vertices);
-    gfxResourceBackend->WriteBuffer(_indexBuffer, indicesByteSize, indicesByteSize, indices);
-
-    usize vertexCount = verticesByteSize;
-    usize vertexOffset = vertexBufferByteSize;
-    usize indexOffset = indicesBufferByteSize;
-    
+    usize indexBufferByteSize = _indexBufferPointer;
     _vertexBufferPointer += verticesByteSize;
     _indexBufferPointer += indicesByteSize;
 
-    usize indexCount = indicesByteSize / sizeof(u32);
-    u8* vertexAddress = &_vertexBufferCPU->GetData()[vertexOffset];
-    u8* indexAddress = &_indexBufferCPU->GetData()[indexOffset];
+    // CPU write
+    _vertexBufferCPU->Write(vertices, verticesByteSize, vertexBufferByteSize);
+    _indexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
 
+    // GPU write
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::WRITE_BUFFER,
+        (cpuword)_vertexBuffer,
+        vertexBufferByteSize,
+        verticesByteSize,
+        (cpuword)vertices
+    ));
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::WRITE_BUFFER,
+        (cpuword)_indexBuffer,
+        indexBufferByteSize,
+        indicesByteSize,
+        (cpuword)indices
+    ));
+
+    usize vertexCount = verticesByteSize;
+    usize indexCount = indicesByteSize / sizeof(u32);
+    usize vertexOffset = vertexBufferByteSize;
+    usize indexOffset = indexBufferByteSize;
     switch (format)
     {
     case EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3:
@@ -89,8 +97,8 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::CreateGeometry(EG
         Print("Error: unsupported vertex buffer format!");
         return std::nullopt;
     }
-
-    // Return geometry view
+    u8* vertexAddress = &_vertexBufferCPU->GetData()[vertexBufferByteSize];
+    u8* indexAddress = &_indexBufferCPU->GetData()[indexBufferByteSize];
     SGeometryView geometry;
     geometry._vertexCount = vertexCount;
     geometry._indexCount = indexCount;

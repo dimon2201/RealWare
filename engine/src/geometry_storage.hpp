@@ -45,7 +45,7 @@ namespace triton
 
         void Initialize();
         void Free();
-        std::optional<triton::SGeometryView> CreateGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
+        std::optional<triton::SGeometryView> Store(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
     
         inline cBuffer* GetVertexBuffer() const
         {
