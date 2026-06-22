@@ -20,7 +20,9 @@ namespace triton
 		RESIZE_RENDER_TARGETS,
 		CLEAR,
 		DRAW,
-		WRITE_BUFFER
+		CREATE_BUFFER,
+		WRITE_BUFFER,
+		DESTROY_BUFFER
 	};
 
 	enum class EFrameState
