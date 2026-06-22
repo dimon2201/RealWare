@@ -34,11 +34,7 @@ void triton::cRenderThread::ThreadFunction()
 	}
 
 	_initialized.store(K_TRUE);
-	_renderSubsystem->NotifyMainThread(); // TODO: move NotifyMainThread() to render thread
-
-	// Initialize subsystems
-	_context->RegisterSubsystem(new cGraphics(_context));
-	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
+	_renderSubsystem->NotifyMainThread(); // TODO: move XRenderSubsystem::NotifyMainThread() to cRenderThread
 
 	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
