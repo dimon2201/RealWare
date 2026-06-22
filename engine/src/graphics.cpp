@@ -197,9 +197,9 @@ triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
     return vertexArray;
 }
 
-std::optional<triton::SGeometryView> triton::cGraphics::CreateGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize)
+std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize)
 {
-    return _geometryStorage->CreateGeometry(format, vertices, verticesByteSize, indices, indicesByteSize);
+    return _geometryStorage->Store(format, vertices, verticesByteSize, indices, indicesByteSize);
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)

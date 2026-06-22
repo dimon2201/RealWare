@@ -195,7 +195,7 @@ namespace triton
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
         void ExecuteDefaultRenderPasses();
         CVertexArray* CreateDefaultVertexArray();
-        std::optional<triton::SGeometryView> CreateGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
+        std::optional<triton::SGeometryView> StoreGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
 
