@@ -29,20 +29,22 @@ namespace triton
 		BUSY
 	};
 
-	class SRenderCommandArgs
+	struct SRenderCommandArgs
 	{
-	public:
+		SRenderCommandArgs(types::cpuword argA_, types::cpuword argB_, types::cpuword argC_, types::cpuword argD_) : _argA(argA_), _argB(argB_), _argC(argC_), _argD(argD_) {}
+
 		types::cpuword _argA = 0;
 		types::cpuword _argB = 0;
 		types::cpuword _argC = 0;
 		types::cpuword _argD = 0;
 	};
 
-	class SRenderCommand
+	struct SRenderCommand
 	{
-	public:
+		SRenderCommand(ERenderCommand command_, types::cpuword argA_, types::cpuword argB_, types::cpuword argC_, types::cpuword argD_) : _command(command_), _args(argA_, argB_, argC_, argD_) {}
+
 		ERenderCommand _command = ERenderCommand::NONE;
-		SRenderCommandArgs _args = {};
+		SRenderCommandArgs _args = SRenderCommandArgs(0, 0, 0, 0);
 	};
 
 	class alignas(64) CRenderFrame final

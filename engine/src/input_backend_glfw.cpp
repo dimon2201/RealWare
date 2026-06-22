@@ -186,10 +186,13 @@ void triton::cInputBackendGLFW::WindowSizeCallback(GLFWwindow* window, int width
 
     input->ResizeWindows(cVector2(width, height));
 
-    SRenderCommand cmd;
-    cmd._command = ERenderCommand::RESIZE_RENDER_TARGETS;
-    cmd._args._argA = width;
-    cmd._args._argB = height;
+    SRenderCommand cmd = SRenderCommand(
+        ERenderCommand::RESIZE_RENDER_TARGETS,
+        width,
+        height,
+        0,
+        0
+    );
     renderSubsystem->PushCommand(cmd);
 }
 

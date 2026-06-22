@@ -42,23 +42,25 @@ void triton::XInstanceBuffer::Remove(SInstanceBufferHandle& handle)
 
 void triton::XInstanceBuffer::Write(const SInstanceBufferHandle& handle)
 {
-	SRenderCommand cmd = {};
-	cmd._command = ERenderCommand::WRITE_BUFFER;
-	cmd._args._argA = (cpuword)this;
-	cmd._args._argB = handle._indexInArray * sizeof(SRenderInstance);
-	cmd._args._argC = sizeof(SRenderInstance);
-	cmd._args._argD = (cpuword)_instances->Get(handle);
+	SRenderCommand cmd = SRenderCommand(
+		ERenderCommand::WRITE_BUFFER,
+		(cpuword)this,
+		handle._indexInArray * sizeof(SRenderInstance),
+		sizeof(SRenderInstance),
+		(cpuword)_instances->Get(handle)
+	);
 	_context->GetSubsystem<XRenderSubsystem>()->PushCommand(cmd);
 }
 
 void triton::XInstanceBuffer::WriteAll()
 {
 	SBufferView bufferView = _instances->GetData();
-	SRenderCommand cmd = {};
-	cmd._command = ERenderCommand::WRITE_BUFFER;
-	cmd._args._argA = (cpuword)this;
-	cmd._args._argB = 0;
-	cmd._args._argC = bufferView._byteSize;
-	cmd._args._argD = (cpuword)bufferView._data;
+	SRenderCommand cmd = SRenderCommand(
+		ERenderCommand::WRITE_BUFFER,
+		(cpuword)this,
+		0,
+		bufferView._byteSize,
+		(cpuword)bufferView._data
+	);
 	_context->GetSubsystem<XRenderSubsystem>()->PushCommand(cmd);
 }

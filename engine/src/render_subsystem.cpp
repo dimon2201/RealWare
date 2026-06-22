@@ -91,9 +91,13 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
 			{
 				// Fill frame
-				SRenderCommand cmd;
-				cmd._command = ERenderCommand::CLEAR;
-				cmd._args._argA = (cpuword)1.0f;
+				SRenderCommand cmd = SRenderCommand(
+					ERenderCommand::CLEAR,
+					1.0f,
+					0.0f,
+					0.0f,
+					0.0f
+				);
 				PushCommand(cmd);
 			}
 			// Destroy window if needed
