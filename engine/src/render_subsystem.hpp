@@ -40,7 +40,7 @@ namespace triton
 		void Kill();
 
 		template <typename TResult>
-		TResult FetchResult() const
+		TResult FetchResult()
 		{
 			return _renderThread->FetchCommandResult<TResult>(_cv);
 		}
