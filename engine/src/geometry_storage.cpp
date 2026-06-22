@@ -13,12 +13,23 @@ using namespace types;
 
 void triton::XGeometryStorage::Initialize()
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-
-    _vertexBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::VERTEX, nullptr, caps->vertexBufferSize, 0);
-    _indexBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::INDEX, nullptr, caps->indexBufferSize, 0);
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::VERTEX,
+        (cpuword)nullptr,
+        caps->vertexBufferSize,
+        0
+    ));
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::INDEX,
+        (cpuword)nullptr,
+        caps->indexBufferSize,
+        0
+    ));
     _vertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->vertexBufferSize);
     _indexBufferCPU = _context->Create<XDataBuffer>(_context, caps->indexBufferSize);
     
@@ -38,9 +49,21 @@ void triton::XGeometryStorage::Free()
     _context->Destroy<XDataBuffer>(_indexBufferCPU);
     _context->Destroy<XDataBuffer>(_vertexBufferCPU);
 
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    gfxResourceBackend->DestroyBuffer(_indexBuffer);
-    gfxResourceBackend->DestroyBuffer(_vertexBuffer);
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_indexBuffer,
+        0,
+        0,
+        0
+    ));
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_vertexBuffer,
+        0,
+        0,
+        0
+    ));
 
     /*gfxResourceBackend->DestroyBuffer(_transparentTextureAtlasTexturesBuffer);
     gfxResourceBackend->DestroyBuffer(_opaqueTextureAtlasTexturesBuffer);
