@@ -23,7 +23,9 @@ namespace triton
 		DRAW,
 		CREATE_BUFFER,
 		WRITE_BUFFER,
-		DESTROY_BUFFER
+		DESTROY_BUFFER,
+		CREATE_TEXTURE,
+		CREATE_RENDER_TARGET
 	};
 
 	enum class EFrameState
@@ -34,20 +36,40 @@ namespace triton
 
 	struct SRenderCommandArgs
 	{
-		SRenderCommandArgs(types::cpuword argA_, types::cpuword argB_, types::cpuword argC_, types::cpuword argD_) : _argA(argA_), _argB(argB_), _argC(argC_), _argD(argD_) {}
+		SRenderCommandArgs(
+			types::cpuword argA_ = 0,
+			types::cpuword argB_ = 0,
+			types::cpuword argC_ = 0,
+			types::cpuword argD_ = 0,
+			types::cpuword argE_ = 0,
+			types::cpuword argF_ = 0,
+			types::cpuword argG_ = 0
+		) : _argA(argA_), _argB(argB_), _argC(argC_), _argD(argD_), _argE(argE_), _argF(argF_), _argG(argG_) {}
 
 		types::cpuword _argA = 0;
 		types::cpuword _argB = 0;
 		types::cpuword _argC = 0;
 		types::cpuword _argD = 0;
+		types::cpuword _argE = 0;
+		types::cpuword _argF = 0;
+		types::cpuword _argG = 0;
 	};
 
 	struct SRenderCommand
 	{
-		SRenderCommand(ERenderCommand command_, types::cpuword argA_, types::cpuword argB_, types::cpuword argC_, types::cpuword argD_) : _command(command_), _args(argA_, argB_, argC_, argD_) {}
+		SRenderCommand(
+			ERenderCommand command_,
+			types::cpuword argA_ = 0,
+			types::cpuword argB_ = 0,
+			types::cpuword argC_ = 0,
+			types::cpuword argD_ = 0,
+			types::cpuword argE_ = 0,
+			types::cpuword argF_ = 0,
+			types::cpuword argG_ = 0
+		) : _command(command_), _args(argA_, argB_, argC_, argD_, argE_, argF_, argG_) {}
 
 		ERenderCommand _command = ERenderCommand::NONE;
-		SRenderCommandArgs _args = SRenderCommandArgs(0, 0, 0, 0);
+		SRenderCommandArgs _args = {};
 	};
 
 	class alignas(64) CRenderFrame final
