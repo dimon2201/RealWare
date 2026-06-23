@@ -32,6 +32,7 @@ namespace triton
         TRITON_OBJECT(CGPUShader)
 
     public:
+        explicit CGPUShader(cContext* context) : cGPUResource(context, 0, 0) {}
         explicit CGPUShader(cContext* context, types::usize instance, types::usize viewInstance) : cGPUResource(context, instance, viewInstance) {}
         ~CGPUShader() override = default;
     };

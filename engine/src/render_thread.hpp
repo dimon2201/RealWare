@@ -48,7 +48,7 @@ namespace triton
 
 			_synchronization->WaitForResult(cv, this);
 
-			TResult r = {};
+			TResult r = TResult(_context);
 			memcpy(&r, &_resultBuffer[0], sizeof(TResult));
 
 			return r;
