@@ -6,7 +6,7 @@
 
 using namespace types;
 
-triton::XShader::XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFuncStr, const std::string& fragmentCustomFuncStr, const std::vector<SShaderDefine>&& defines) : iObject(context)
+triton::XShader::XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFuncStr, const std::string& fragmentCustomFuncStr, std::vector<SShaderDefine>&& defines) : iObject(context)
 {
 	XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
 	renderSubsystem->PushCommand(SRenderCommand(
