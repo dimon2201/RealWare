@@ -3,6 +3,7 @@
 #include "graphics_pipeline_backend.hpp"
 #include "context.hpp"
 #include "render_subsystem.hpp"
+#include "graphics.hpp"
 
 using namespace types;
 
