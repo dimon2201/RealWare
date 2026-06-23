@@ -8,6 +8,7 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
+#include "render_subsystem.hpp"
 
 using namespace types;
 
@@ -30,22 +31,29 @@ triton::cTextureAtlas::cTextureAtlas(cContext* context) : iObject(context) {}
 
 void triton::cTextureAtlas::Initialize(const cVector3& size)
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    _atlas = gfxResourceBackend->CreateTexture(
-        cVector3(size.GetX(), size.GetY(), size.GetZ()),
-        cTexture::eDimension::TEXTURE_2D_ARRAY,
-        cTexture::eFormat::RGBA8_MIPS,
-        nullptr,
+    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_TEXTURE,
+        size.GetX(),
+        size.GetY(),
+        size.GetZ(),
+        (cpuword)cTexture::eDimension::TEXTURE_2D_ARRAY,
+        (cpuword)cTexture::eFormat::RGBA8_MIPS,
+        (cpuword)nullptr,
         0
-    );
+    ));
+    _atlas = renderSubsystem->FetchResult<cTexture*>();
     _atlas->SetSlot(0);
 }
 
 void triton::cTextureAtlas::Shutdown()
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
     if (_atlas)
-        gfxResourceBackend->DestroyTexture(_atlas);
+        renderSubsystem->PushCommand(SRenderCommand(
+            ERenderCommand::DESTROY_TEXTURE,
+            (cpuword)_atlas
+        ));
 }
 
 // TODO: New implementation of texture creation

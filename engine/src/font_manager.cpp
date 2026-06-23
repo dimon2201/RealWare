@@ -11,6 +11,7 @@
 #include "log.hpp"
 #include "graphics_resource_backend.hpp"
 #include "stack.hpp"
+#include "render_subsystem.hpp"
 
 using namespace types;
 
@@ -57,13 +58,16 @@ triton::cFontFace::cFontFace(cContext* context) : iObject(context) {}
 triton::cFontFace::~cFontFace()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
 
     for (const auto& glyph : _alphabet)
         memoryAllocator->Deallocate(glyph.second._bitmapData);
     _alphabet.clear();
 
-    gfxResourceBackend->DestroyTexture(_atlas);
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_TEXTURE,
+        (cpuword)_atlas
+    ));
 
     FT_Done_Face(_font);
 }
@@ -128,7 +132,7 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
 {
     const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
 
     usize maxGlyphHeight = 0;
 
@@ -169,13 +173,17 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         }
     }
 
-    _atlas = gfxResourceBackend->CreateTexture(
-        cVector3(atlasWidth, atlasHeight, 0),
-        cTexture::eDimension::TEXTURE_2D,
-        cTexture::eFormat::R8,
-        (types::u8*)atlasPixels,
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_TEXTURE,
+        atlasWidth,
+        atlasHeight,
+        0,
+        (cpuword)cTexture::eDimension::TEXTURE_2D,
+        (cpuword)cTexture::eFormat::R8,
+        (cpuword)atlasPixels,
         0
-    );
+    ));
+    _atlas = renderSubsystem->FetchResult<cTexture*>();
 
     memoryAllocator->Deallocate(atlasPixels);
 }
