@@ -8,6 +8,7 @@
 #include "filesystem_manager.hpp"
 #include "application.hpp"
 #include "instance_buffer.hpp"
+#include "graphics.hpp"
 
 using namespace types;
 
