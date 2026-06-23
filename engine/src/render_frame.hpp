@@ -18,6 +18,7 @@ namespace triton
 	enum class ERenderCommand
 	{
 		NONE = 0,
+		RESIZE_RENDER_TARGETS,
 		RESIZE_RENDER_TARGET_COLORS,
 		RESIZE_RENDER_TARGET_DEPTH,
 		RESIZE_TEXTURE,
