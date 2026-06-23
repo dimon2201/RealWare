@@ -26,7 +26,6 @@ namespace triton
 		XEngineMTSynchronization* _synchronization = nullptr;
 		XRenderSubsystem* _renderSubsystem = nullptr;
 		std::atomic<types::boolean> _initialized = types::K_FALSE;
-		std::atomic<types::boolean> _isFrameFinished = types::K_FALSE;
 		std::mutex _threadMutex;
 		std::condition_variable _cv;
 
@@ -48,7 +47,8 @@ namespace triton
 
 			_synchronization->WaitForFreeFrame(cv);
 			_synchronization->ProduceFrame(EFrameState::EXECUTE_COMMANDS);
-			_synchronization->WaitForFrameFinish(cv, this);
+			NotifyThread();
+			_synchronization->WaitForLoopFinish(cv);
 
 			TResult r = TResult(_context);
 			memcpy(&r, &_resultBuffer[0], sizeof(TResult));
@@ -59,11 +59,6 @@ namespace triton
 		inline types::boolean IsInitialized() const
 		{
 			return _initialized.load();
-		}
-
-		inline types::boolean IsFrameFinished() const
-		{
-			return _isFrameFinished.load();
 		}
 	};
 }

@@ -122,6 +122,7 @@ namespace triton
 	class SFrameDoubleBufferSnapshot
 	{
 	public:
+		types::boolean _isLoopFinished = types::K_FALSE;
 		types::boolean _stopSync = types::K_FALSE;
 		EFrameState _frames[2] = { EFrameState::FREE, EFrameState::FREE };
 	};
@@ -129,7 +130,7 @@ namespace triton
 	class XEngineMTSynchronization final : public iObject
 	{
 		TRITON_OBJECT(XEngineMTSynchronization)
-
+	public:
 		XRenderSubsystem* _renderSubsystem = nullptr;
 		SFrameDoubleBuffer _swapChain = {};
 		SFrameDoubleBufferSnapshot _mainThreadSwapChainSnapshot = {}; // TODO: this one needs only _stopSync && _frameState (READY, BUSY)
@@ -144,9 +145,11 @@ namespace triton
 		void ReleaseFrame(types::u32 frameIndex);
 		void WaitForFreeFrame(std::condition_variable& cv);
 		void WaitForProducedFrame(std::condition_variable& cv);
-		void WaitForFrameFinish(std::condition_variable& cv, cRenderThread* renderThread);
+		void WaitForLoopFinish(std::condition_variable& cv);
 		types::boolean IsAlive();
 		const triton::CRenderFrame* AcquireProducedFrame();
 		void Kill();
+		void LoopStart();
+		void LoopFinish();
 	};
 }

@@ -98,13 +98,13 @@ void triton::XEngineMTSynchronization::WaitForProducedFrame(std::condition_varia
 	});
 }
 
-void triton::XEngineMTSynchronization::WaitForFrameFinish(std::condition_variable& cv, cRenderThread* renderThread)
+void triton::XEngineMTSynchronization::WaitForLoopFinish(std::condition_variable& cv)
 {
 	CThreadGuard::AssertMain();
 
 	std::unique_lock<std::mutex> lock(_mutex);
-	cv.wait(lock, [renderThread] {
-		return renderThread->IsFrameFinished();
+	cv.wait(lock, [this] {
+		return _mainThreadSwapChainSnapshot._isLoopFinished == K_TRUE;
 	});
 }
 
@@ -143,5 +143,27 @@ void triton::XEngineMTSynchronization::Kill()
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
 		_renderThreadSwapChainSnapshot._stopSync = K_TRUE;
+	}
+}
+
+void triton::XEngineMTSynchronization::LoopStart()
+{
+	CThreadGuard::AssertRender();
+
+	_renderThreadSwapChainSnapshot._isLoopFinished = K_FALSE;
+	{
+		std::lock_guard<std::mutex> lock(_mutex);
+		_mainThreadSwapChainSnapshot._isLoopFinished = K_FALSE;
+	}
+}
+
+void triton::XEngineMTSynchronization::LoopFinish()
+{
+	CThreadGuard::AssertRender();
+
+	_renderThreadSwapChainSnapshot._isLoopFinished = K_TRUE;
+	{
+		std::lock_guard<std::mutex> lock(_mutex);
+		_mainThreadSwapChainSnapshot._isLoopFinished = K_TRUE;
 	}
 }
