@@ -61,11 +61,12 @@ void triton::cEngine::Initialize()
 	_context->RegisterBackend<iGraphicsDrawcallBackend>(new cGraphicsDrawcallBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 
-	// Register subsystems
+	// Register subsystems (order matters)
 	_context->RegisterSubsystem(this);
-	_context->RegisterSubsystem(new XRenderSubsystem(_context));
 	_context->RegisterSubsystem(new cInput(_context));
 	_context->GetSubsystem<cInput>()->Initialize();
+	_context->RegisterSubsystem(new XRenderSubsystem(_context));
+	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
 	_context->RegisterSubsystem(new cAudio(_context));
 	_context->RegisterSubsystem(new cTextureAtlas(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
@@ -84,7 +85,6 @@ void triton::cEngine::Initialize()
 	// Initialize subsystems
 	// NOTE: order matters
 	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
-	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
 	_context->GetSubsystem<XECSSubsystem>()->Initialize();
 
 	// Create systems
