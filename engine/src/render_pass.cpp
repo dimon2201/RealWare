@@ -1,31 +1,65 @@
 #include "render_pass.hpp"
 #include "context.hpp"
 #include "engine.hpp"
-#include "graphics_resource_backend.hpp"
-#include "graphics_pipeline_backend.hpp"
 #include "instance_buffer.hpp"
 #include "components.hpp"
 #include "stack.hpp"
 #include "application.hpp"
+#include "render_subsystem.hpp"
+#include "graphics.hpp"
 
 using namespace triton::ecs::components;
 using namespace types;
 
 triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
+    
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance),
+        0
+    ));
+    cBuffer* instanceBufferStatic = renderSubsystem->FetchResult<cBuffer*>();
     _instanceBufferStatic = _context->Create<XInstanceBuffer>(
         _context,
-        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance), 0)
+        instanceBufferStatic
     );
+
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance),
+        0
+    ));
+    cBuffer* instanceBufferDynamic = renderSubsystem->FetchResult<cBuffer*>();
     _instanceBufferDynamic = _context->Create<XInstanceBuffer>(
         _context,
-        gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance), 0)
+        instanceBufferDynamic
     );
-    _materialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
-    _textureBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
+
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxRenderMaterialCount,
+        1
+    ));
+    _materialBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxRenderTextureAtlasTextureCount,
+        3
+    ));
+    _textureBuffer = renderSubsystem->FetchResult<cBuffer*>();
     
     sChunkAllocatorDescriptor cad = {};
     cad.chunkByteSize = caps->hashTableChunkByteSize;
@@ -72,19 +106,24 @@ void triton::XRenderPass::ResizeViewport(const cVector2& size)
 
 void triton::XRenderPass::ResizeColorAttachments(const cVector2& size)
 {
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    gfxPipelineBackend->ResizeRenderTargetColors(_renderTarget, glm::vec2(size.GetX(), size.GetY()));
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::RESIZE_RENDER_TARGET_COLORS,
+        (cpuword)_renderTarget,
+        size.GetX(),
+        size.GetY()
+    ));
 }
 
 void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    _renderTarget->SetDepthAttachment(
-        gfxResourceBackend->ResizeTexture(
-            _renderTarget->GetDepthAttachment(),
-            size
-        )
-    );
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::RESIZE_RENDER_TARGET_DEPTH,
+        (cpuword)_renderTarget,
+        size.GetX(),
+        size.GetY()
+    ));
 }
 
 triton::SShaderDefine triton::XRenderPass::SetInputTexture(types::usize slot, const SRenderPassTexture& texture)

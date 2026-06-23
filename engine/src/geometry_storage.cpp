@@ -3,7 +3,6 @@
 #include "geometry_storage.hpp"
 #include "application.hpp"
 #include "context.hpp"
-#include "graphics_resource_backend.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "data_buffer.hpp"
 #include "engine.hpp"
@@ -23,6 +22,7 @@ void triton::XGeometryStorage::Initialize()
         caps->vertexBufferSize,
         0
     ));
+    _vertexBuffer = renderSubsystem->FetchResult<cBuffer*>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::INDEX,
@@ -30,6 +30,7 @@ void triton::XGeometryStorage::Initialize()
         caps->indexBufferSize,
         0
     ));
+    _indexBuffer = renderSubsystem->FetchResult<cBuffer*>();
     _vertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->vertexBufferSize);
     _indexBufferCPU = _context->Create<XDataBuffer>(_context, caps->indexBufferSize);
     

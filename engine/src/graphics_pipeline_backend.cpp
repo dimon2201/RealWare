@@ -1,25 +1,32 @@
 // graphics_pipeline_backend.cpp
 
-#include "graphics_resource_backend.hpp"
 #include "graphics_pipeline_backend.hpp"
 #include "context.hpp"
+#include "render_subsystem.hpp"
 
 using namespace types;
 
 triton::XShader::XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFuncStr, const std::string& fragmentCustomFuncStr, const std::vector<SShaderDefine>&& defines) : iObject(context)
 {
-	_gpuShader = _context->GetBackend<iGraphicsPipelineBackend>()->CreateShader(
-		vertexStr,
-		fragmentStr,
-		vertexCustomFuncStr,
-		fragmentCustomFuncStr,
-		defines
-	);
+	XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::CREATE_SHADER,
+		(cpuword)vertexStr.c_str(),
+		(cpuword)fragmentStr.c_str(),
+		(cpuword)vertexCustomFuncStr.c_str(),
+		(cpuword)fragmentCustomFuncStr.c_str(),
+		defines.size(),
+		(cpuword)defines.data()
+	));
+	_gpuShader = renderSubsystem->FetchResult<CGPUShader>();
 }
 
 triton::XShader::~XShader()
 {
-	_context->GetBackend<iGraphicsPipelineBackend>()->DestroyShader(_gpuShader);
+	_context->GetSubsystem<XRenderSubsystem>()->PushCommand(SRenderCommand(
+		ERenderCommand::DESTROY_SHADER,
+		(cpuword)&_gpuShader
+	));
 }
 
 triton::CVertexArray::CVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}

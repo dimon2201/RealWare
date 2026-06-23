@@ -1072,20 +1072,37 @@ void triton::cGraphics::DestroyGeometryStorage()
 
 void triton::cGraphics::DestroyDefaultRenderTargets()
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     if (_opaqueRenderTarget->GetColorAttachments()[0])
-        gfxResourceBackend->DestroyTexture(_opaqueRenderTarget->GetColorAttachments()[0]);
+        renderSubsystem->PushCommand(SRenderCommand(
+            ERenderCommand::DESTROY_TEXTURE,
+            (cpuword)_opaqueRenderTarget->GetColorAttachments()[0]
+        ));
     if (_transparentRenderTarget->GetColorAttachments()[0])
-        gfxResourceBackend->DestroyTexture(_transparentRenderTarget->GetColorAttachments()[0]);
+        renderSubsystem->PushCommand(SRenderCommand(
+            ERenderCommand::DESTROY_TEXTURE,
+            (cpuword)_transparentRenderTarget->GetColorAttachments()[0]
+        ));
     if (_transparentRenderTarget->GetColorAttachments()[1])
-        gfxResourceBackend->DestroyTexture(_transparentRenderTarget->GetColorAttachments()[1]);
+        renderSubsystem->PushCommand(SRenderCommand(
+            ERenderCommand::DESTROY_TEXTURE,
+            (cpuword)_transparentRenderTarget->GetColorAttachments()[1]
+        ));
     if (_opaqueRenderTarget->GetDepthAttachment())
-        gfxResourceBackend->DestroyTexture(_opaqueRenderTarget->GetDepthAttachment());
+        renderSubsystem->PushCommand(SRenderCommand(
+            ERenderCommand::DESTROY_TEXTURE,
+            (cpuword)_opaqueRenderTarget->GetDepthAttachment()
+        ));
     if (_transparentRenderTarget)
-        gfxPipelineBackend->DestroyRenderTarget(_transparentRenderTarget);
+        renderSubsystem->PushCommand(SRenderCommand(
+            ERenderCommand::DESTROY_RENDER_TARGET,
+            (cpuword)_transparentRenderTarget
+        ));
     if (_opaqueRenderTarget)
-        gfxPipelineBackend->DestroyRenderTarget(_opaqueRenderTarget);
+        renderSubsystem->PushCommand(SRenderCommand(
+            ERenderCommand::DESTROY_RENDER_TARGET,
+            (cpuword)_opaqueRenderTarget
+        ));
 }
 
 void triton::cGraphics::DestroyDefaultRenderPasses()
