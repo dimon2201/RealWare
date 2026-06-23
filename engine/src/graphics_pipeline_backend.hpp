@@ -27,15 +27,6 @@ namespace triton
         virtual ~CVertexArray() override = default;
     };
 
-    class SShaderDefine final
-    {
-    public:
-        SShaderDefine(const std::string& name_, types::usize index_) : name(name_), index(index_) {}
-
-        std::string name = "";
-        types::usize index = 0;
-    };
-
     class CGPUShader : public cGPUResource
     {
         TRITON_OBJECT(CGPUShader)
