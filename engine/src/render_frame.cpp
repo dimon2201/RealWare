@@ -28,15 +28,16 @@ std::optional<const triton::SRenderCommand*> triton::CRenderFrame::Next() const
 	return &_commands.data()[_nextCommandIndex++];
 }
 
-void triton::CRenderFrame::CopyScratchFrame(types::u32 indexInSwapChain, CRenderFrame& scratchFrame)
+void triton::CRenderFrame::CopyScratchFrame(types::u32 indexInSwapChain, EFrameState state, CRenderFrame& scratchFrame)
 {
+	_state = state;
 	_indexInSwapChain = indexInSwapChain;
 	_window = scratchFrame._window;
 	_commands = scratchFrame._commands;
 	_nextCommandIndex = scratchFrame._nextCommandIndex;
 }
 
-void triton::XEngineMTSynchronization::ProduceFrame()
+void triton::XEngineMTSynchronization::ProduceFrame(EFrameState state)
 {
 	CThreadGuard::AssertMain();
 
@@ -44,31 +45,31 @@ void triton::XEngineMTSynchronization::ProduceFrame()
 	u32 writeIndex = 0;
 	for (usize i = 0; i < 2; i++)
 	{
-		if (_mainThreadSwapChainSnapshot._frames[i] == EFrameState::READY)
+		if (_mainThreadSwapChainSnapshot._frames[i] == EFrameState::FREE)
 		{
 			writeIndex = i;
 			break;
 		}
 	}
-	_mainThreadSwapChainSnapshot._frames[writeIndex] = EFrameState::BUSY;
+	_mainThreadSwapChainSnapshot._frames[writeIndex] = state;
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
-		_renderThreadSwapChainSnapshot._frames[writeIndex] = EFrameState::BUSY;
+		_renderThreadSwapChainSnapshot._frames[writeIndex] = state;
 	}
 
 	// Publish frame
 	_swapChain._frames[writeIndex].Reset();
-	_swapChain._frames[writeIndex].CopyScratchFrame(writeIndex, _renderSubsystem->GetScratchFrame());
+	_swapChain._frames[writeIndex].CopyScratchFrame(writeIndex, _mainThreadSwapChainSnapshot._frames[writeIndex], _renderSubsystem->GetScratchFrame());
 }
 
 void triton::XEngineMTSynchronization::ReleaseFrame(types::u32 frameIndex)
 {
 	CThreadGuard::AssertRender();
 
-	_renderThreadSwapChainSnapshot._frames[frameIndex] = EFrameState::READY;
+	_renderThreadSwapChainSnapshot._frames[frameIndex] = EFrameState::FREE;
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
-		_mainThreadSwapChainSnapshot._frames[frameIndex] = EFrameState::READY;
+		_mainThreadSwapChainSnapshot._frames[frameIndex] = EFrameState::FREE;
 	}
 }
 
@@ -78,8 +79,8 @@ void triton::XEngineMTSynchronization::WaitForFreeFrame(std::condition_variable&
 
 	std::unique_lock<std::mutex> lock(_mutex);
 	cv.wait(lock, [this] {
-		return _mainThreadSwapChainSnapshot._frames[0] == EFrameState::READY ||
-			_mainThreadSwapChainSnapshot._frames[1] == EFrameState::READY;
+		return _mainThreadSwapChainSnapshot._frames[0] == EFrameState::FREE ||
+			_mainThreadSwapChainSnapshot._frames[1] == EFrameState::FREE;
 	});
 }
 
@@ -90,18 +91,20 @@ void triton::XEngineMTSynchronization::WaitForProducedFrame(std::condition_varia
 	std::unique_lock<std::mutex> lock(_mutex);
 	cv.wait(lock, [this] {
 		return _renderThreadSwapChainSnapshot._stopSync == K_TRUE ||
-			_renderThreadSwapChainSnapshot._frames[0] == EFrameState::BUSY ||
-			_renderThreadSwapChainSnapshot._frames[1] == EFrameState::BUSY;
+			_renderThreadSwapChainSnapshot._frames[0] == EFrameState::EXECUTE_FULL ||
+			_renderThreadSwapChainSnapshot._frames[1] == EFrameState::EXECUTE_FULL ||
+			_renderThreadSwapChainSnapshot._frames[0] == EFrameState::EXECUTE_COMMANDS ||
+			_renderThreadSwapChainSnapshot._frames[1] == EFrameState::EXECUTE_COMMANDS;
 	});
 }
 
-void triton::XEngineMTSynchronization::WaitForResult(std::condition_variable& cv, cRenderThread* renderThread)
+void triton::XEngineMTSynchronization::WaitForFrameFinish(std::condition_variable& cv, cRenderThread* renderThread)
 {
 	CThreadGuard::AssertMain();
 
 	std::unique_lock<std::mutex> lock(_mutex);
 	cv.wait(lock, [renderThread] {
-		return renderThread->IsFrameDone();
+		return renderThread->IsFrameFinished();
 	});
 }
 
@@ -119,7 +122,8 @@ const triton::CRenderFrame* triton::XEngineMTSynchronization::AcquireProducedFra
 	u32 readIndex = 0;
 	for (usize i = 0; i < 2; i++)
 	{
-		if (_renderThreadSwapChainSnapshot._frames[i] == EFrameState::BUSY)
+		if (_renderThreadSwapChainSnapshot._frames[i] == EFrameState::EXECUTE_FULL ||
+			_renderThreadSwapChainSnapshot._frames[i] == EFrameState::EXECUTE_COMMANDS)
 		{
 			readIndex = i;
 			break;

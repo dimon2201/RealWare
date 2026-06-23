@@ -49,7 +49,7 @@ void triton::cRenderThread::ThreadFunction()
 
 	while (K_TRUE)
 	{
-		_frameDone.store(K_FALSE);
+		_isFrameFinished.store(K_FALSE);
 		_renderSubsystem->NotifyMainThread();
 
 		_synchronization->WaitForProducedFrame(_cv);
@@ -58,18 +58,30 @@ void triton::cRenderThread::ThreadFunction()
 			break;
 
 		const CRenderFrame* renderFrame = _synchronization->AcquireProducedFrame();
+		EFrameState renderFrameState = renderFrame->GetState();
 
-		// Execute render passes
-		gfx->ExecuteDefaultRenderPasses();
+		if (renderFrameState == EFrameState::EXECUTE_FULL)
+		{
+			// Full job
 
-		// Core events
-		MakeContextCurrent(renderFrame, gfxContextBackend);
-		ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfx);
-		Present(renderFrame, gfxContextBackend);
+			// Execute render passes
+			gfx->ExecuteDefaultRenderPasses();
+
+			// Core events
+			MakeContextCurrent(renderFrame, gfxContextBackend);
+			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfx);
+			Present(renderFrame, gfxContextBackend);
+		}
+		else if (renderFrameState == EFrameState::EXECUTE_COMMANDS)
+		{
+			// Execute render commands only
+			MakeContextCurrent(renderFrame, gfxContextBackend);
+			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfx);
+		}
 
 		_synchronization->ReleaseFrame(renderFrame->GetIndexInSwapChain());
 
-		_frameDone.store(K_TRUE);
+		_isFrameFinished.store(K_TRUE);
 
 		_renderSubsystem->NotifyMainThread();
 	}

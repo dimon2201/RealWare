@@ -37,8 +37,9 @@ namespace triton
 
 	enum class EFrameState
 	{
-		READY = 0,
-		BUSY
+		FREE,
+		EXECUTE_FULL,
+		EXECUTE_COMMANDS
 	};
 
 	struct SRenderCommandArgs
@@ -81,6 +82,7 @@ namespace triton
 
 	class alignas(64) CRenderFrame final
 	{
+		EFrameState _state = EFrameState::FREE;
 		types::u32 _indexInSwapChain = 0;
 		cInputWindow* _window = nullptr;
 		std::vector<SRenderCommand> _commands;
@@ -93,7 +95,12 @@ namespace triton
 		void Reset(cInputWindow* window = nullptr);
 		void PushCommand(const SRenderCommand& command);
 		std::optional<const SRenderCommand*> Next() const;
-		void CopyScratchFrame(types::u32 indexInSwapChain, CRenderFrame& scratchFrame);
+		void CopyScratchFrame(types::u32 indexInSwapChain, EFrameState state, CRenderFrame& scratchFrame);
+
+		inline EFrameState GetState() const
+		{
+			return _state;
+		}
 
 		inline types::u32 GetIndexInSwapChain() const
 		{
@@ -116,7 +123,7 @@ namespace triton
 	{
 	public:
 		types::boolean _stopSync = types::K_FALSE;
-		EFrameState _frames[2] = { EFrameState::READY, EFrameState::READY };
+		EFrameState _frames[2] = { EFrameState::FREE, EFrameState::FREE };
 	};
 
 	class XEngineMTSynchronization final : public iObject
@@ -133,11 +140,11 @@ namespace triton
 		explicit XEngineMTSynchronization(cContext* context, XRenderSubsystem* renderSubsystem) : iObject(context), _renderSubsystem(renderSubsystem) {}
 		virtual ~XEngineMTSynchronization() override = default;
 
-		void ProduceFrame();
+		void ProduceFrame(EFrameState state);
 		void ReleaseFrame(types::u32 frameIndex);
 		void WaitForFreeFrame(std::condition_variable& cv);
 		void WaitForProducedFrame(std::condition_variable& cv);
-		void WaitForResult(std::condition_variable& cv, cRenderThread* renderThread);
+		void WaitForFrameFinish(std::condition_variable& cv, cRenderThread* renderThread);
 		types::boolean IsAlive();
 		const triton::CRenderFrame* AcquireProducedFrame();
 		void Kill();

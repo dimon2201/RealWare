@@ -27,8 +27,8 @@ void triton::XRenderSubsystem::Initialize()
 	_synchronization = _context->Create<XEngineMTSynchronization>(_context, this);
 	for (usize i = 0; i < 2; i++)
 	{
-		_synchronization->_mainThreadSwapChainSnapshot._frames[i] = EFrameState::READY;
-		_synchronization->_renderThreadSwapChainSnapshot._frames[i] = EFrameState::READY;
+		_synchronization->_mainThreadSwapChainSnapshot._frames[i] = EFrameState::FREE;
+		_synchronization->_renderThreadSwapChainSnapshot._frames[i] = EFrameState::FREE;
 	}
 	
 	// Create render thread
@@ -114,7 +114,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			}
 		}
 
-		_synchronization->ProduceFrame();
+		_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
 
 		_renderThread->NotifyThread();
 	}
