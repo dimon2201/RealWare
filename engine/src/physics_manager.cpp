@@ -1,5 +1,6 @@
 // physics_manager.cpp
-
+/*
+#define NOMINMAX
 #include <windows.h>
 #include <cooking/PxCooking.h>
 #include "application.hpp"
@@ -151,7 +152,7 @@ cCacheObject<cPhysicsActor> cPhysics::CreateActor(const cTag& id, eCategory stat
 
     return _actors->Create(id, gameObject, actor, staticOrDynamic);
 }*/
-
+/*
 void triton::cPhysics::MoveController(const cPhysicsController* controller, const glm::vec3& position, f32 minStep)
 {
     cTime* time = _context->GetSubsystem<cTime>();

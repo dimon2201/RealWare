@@ -177,6 +177,7 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 				cmd->_args._argG
 			);
 			memcpy(&_resultBuffer[0], &result, sizeof(cTexture*));
+			cTexture* t = (cTexture*)&_resultBuffer[0];
 			break;
 		}
 	}

@@ -66,9 +66,9 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
     
 triton::cGraphics::cGraphics(cContext* context) : iObject(context)
 {
-    CreateGeometryStorage();
+    //CreateGeometryStorage();
     CreateDefaultRenderTargets();
-    CreateDefaultRenderPasses();
+    //CreateDefaultRenderPasses();
 }
 
 triton::cGraphics::~cGraphics()
