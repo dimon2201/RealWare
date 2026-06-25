@@ -39,3 +39,10 @@ target_link_libraries(
     freetype
     assimp-vc143-mtd
 )
+
+#target_compile_options(TritonEngine PRIVATE
+#    /fsanitize=address
+#)
+#target_link_options(TritonEngine PRIVATE
+#    /fsanitize=address
+#)

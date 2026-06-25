@@ -45,7 +45,7 @@ namespace triton
 			return _renderThread->FetchCommandResult<TResult>(_cv);
 		}
 
-		inline CRenderFrame GetScratchFrame() const
+		inline const CRenderFrame& GetScratchFrame() const
 		{
 			return _scratchFrame;
 		}

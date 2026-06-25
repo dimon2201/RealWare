@@ -2,8 +2,6 @@
 
 #pragma once
 
-#define NOMINMAX
-#include <windows.h>
 #include <chrono>
 #include "object.hpp"
 #include "capabilities.hpp"

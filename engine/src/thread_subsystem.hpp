@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <condition_variable>
 #include <thread>
 #include <queue>
 #include <functional>

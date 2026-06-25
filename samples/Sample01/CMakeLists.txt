@@ -33,3 +33,10 @@ add_custom_command(
     "${CMAKE_SOURCE_DIR}/runtime"
     "${CMAKE_CURRENT_BINARY_DIR}"
 )
+
+#target_compile_options(TritonSample01 PRIVATE
+#    /fsanitize=address
+#)
+#target_link_options(TritonSample01 PRIVATE
+#    /fsanitize=address
+#)

@@ -860,7 +860,7 @@ void triton::cGraphics::CreateGeometryStorage()
 
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
 
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
     renderSubsystem->PushCommand(SRenderCommand(

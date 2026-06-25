@@ -174,7 +174,7 @@ namespace triton
 		const types::boolean isLastChunk = chunkIndex == lastChunkIndex;
 
 		if (chunkIndex >= _chunkCount || (isLastChunk == types::K_TRUE && localPosition >= lastChunkObjectCount))
-			return SValue();
+			return SStackValue<TValue>();
 
 		_chunkValues[chunkIndex][localPosition].~TValue();
 

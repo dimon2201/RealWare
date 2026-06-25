@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstring>
 #include <type_traits>
 #include "application.hpp"
 #include "object.hpp"

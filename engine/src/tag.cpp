@@ -1,5 +1,6 @@
 // tag.cpp
 
+#include <cstring>
 #include "tag.hpp"
 
 using namespace types;

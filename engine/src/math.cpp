@@ -1,6 +1,15 @@
 // math.cpp
 
+#include <cstring>
 #include "math.hpp"
+
+#if defined(_MSC_VER)
+#include <intrin.h>
+#define LZCNT32(x) __lzcnt(x)
+#else
+#include <immintrin.h>
+#define LZCNT32(x) __builtin_clz(x)
+#endif
 
 using namespace types;
 
@@ -203,7 +212,7 @@ f32 triton::cMath::DegreesToRadians(f32 degrees)
 
 qword triton::cMath::MakeHashMask(usize size)
 {
-	unsigned int count = __lzcnt((unsigned int)size);
+	unsigned int count = LZCNT32((unsigned int)size);
 	qword mask = (qword)((1 << (31 - count)) - 1);
 
 	return mask;

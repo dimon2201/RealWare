@@ -3,8 +3,6 @@
 #pragma once
 
 #include <string>
-#define NOMINMAX
-#include <windows.h>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "backend.hpp"
 #include "input_backend_window.hpp"
