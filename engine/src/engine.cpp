@@ -72,7 +72,7 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cFileSystem(_context));
 	//_context->RegisterSubsystem(new cTime(_context));
 	//_context->RegisterSubsystem(new cThreadSubsystem(_context));
-	//_context->RegisterSubsystem(new XECSSubsystem(_context));
+	_context->RegisterSubsystem(new XECSSubsystem(_context));
 	_context->RegisterSubsystem(new cGraphics(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
