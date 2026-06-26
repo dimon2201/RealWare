@@ -73,7 +73,7 @@ namespace triton
 
     public:
         explicit XRenderPass(cContext* context);
-        virtual ~XRenderPass() override = default;
+        ~XRenderPass() override;
 
         void WriteStaticInstanceToGPU(SInstanceBufferHandle& instance);
         void Execute();

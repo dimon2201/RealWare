@@ -68,6 +68,33 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
     _dirtyStaticInstances = _context->Create<cStack<SInstanceBufferHandle>>(_context, cad);
 }
 
+triton::XRenderPass::~XRenderPass()
+{
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    
+    _context->Destroy<cStack<SInstanceBufferHandle>>(_dirtyStaticInstances);
+
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_textureBuffer
+    ));
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_materialBuffer
+    ));
+
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        _instanceBufferDynamic->GetInstance()
+    ));
+    _context->Destroy<XInstanceBuffer>(_instanceBufferDynamic);
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        _instanceBufferStatic->GetInstance()
+    ));
+    _context->Destroy<XInstanceBuffer>(_instanceBufferStatic);
+}
+
 void triton::XRenderPass::WriteDirtyStaticInstancesToGPU()
 {
     while (_dirtyStaticInstances->IsEmpty())
