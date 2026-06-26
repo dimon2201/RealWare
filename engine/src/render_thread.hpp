@@ -16,6 +16,7 @@ namespace triton
 	class iGraphicsContextBackend;
 	class iGraphicsDrawcallBackend;
 	class iGraphicsResourceBackend;
+	class iGraphicsPipelineBackend;
 	class cInputWindow;
 	class XEngineMTSynchronization;
 	class cGraphics;
@@ -33,7 +34,7 @@ namespace triton
 
 		void NotifyThread();
 		void MakeContextCurrent(const CRenderFrame* renderFrame, iGraphicsContextBackend* contextBackend);
-		void ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, iGraphicsResourceBackend* resourceBackend, cGraphics* gfx);
+		void ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, iGraphicsResourceBackend* resourceBackend, iGraphicsPipelineBackend* pipelineBackend, cGraphics* gfx);
 		void Present(const CRenderFrame* renderFrame, iGraphicsContextBackend* contextBackend);
 
 	public:
@@ -49,11 +50,19 @@ namespace triton
 
 			_synchronization->WaitForFreeFrame(cv);
 			_synchronization->ProduceFrame(EFrameState::EXECUTE_COMMANDS);
+			_renderSubsystem->ResetScratchFrame();
 			NotifyThread();
 			_synchronization->WaitForLoopFinish(cv);
-
-			TResult r = TResult(_context);
-			memcpy(&r, &_resultBuffer[0], sizeof(TResult));
+			_synchronization->_mainThreadSwapChainSnapshot._isLoopFinished = K_FALSE;
+			{
+				std::lock_guard<std::mutex> lock(_synchronization->_mutex);
+				_synchronization->_renderThreadSwapChainSnapshot._isLoopFinished = K_TRUE;
+			}
+			
+			TResult* pr = (TResult*)&_resultBuffer[0];
+			TResult r = *(TResult*)&_resultBuffer[0];
+			//memcpy(&r, &_resultBuffer[0], sizeof(TResult));
+			//r = *(TResult*)&_resultBuffer[0];
 
 			return r;
 		}

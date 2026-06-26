@@ -83,6 +83,7 @@ namespace triton
 
 	class alignas(64) CRenderFrame final
 	{
+	public:
 		EFrameState _state = EFrameState::FREE;
 		types::u32 _indexInSwapChain = 0;
 		cInputWindow* _window = nullptr;
@@ -125,6 +126,7 @@ namespace triton
 	public:
 		types::boolean _isLoopFinished = types::K_FALSE;
 		types::boolean _stopSync = types::K_FALSE;
+		EFrameState _mainThreadSignal = EFrameState::FREE;
 		EFrameState _frames[2] = { EFrameState::FREE, EFrameState::FREE };
 	};
 
@@ -145,10 +147,10 @@ namespace triton
 		void ProduceFrame(EFrameState state);
 		void ReleaseFrame(types::u32 frameIndex);
 		void WaitForFreeFrame(std::condition_variable& cv);
-		void WaitForProducedFrame(std::condition_variable& cv);
+		EFrameState WaitForProducedFrame(std::condition_variable& cv);
 		void WaitForLoopFinish(std::condition_variable& cv);
 		types::boolean IsAlive();
-		const triton::CRenderFrame* AcquireProducedFrame();
+		const triton::CRenderFrame* AcquireProducedFrame(EFrameState mainThreadSignal);
 		void Kill();
 		void LoopStart();
 		void LoopFinish();

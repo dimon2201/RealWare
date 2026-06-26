@@ -115,6 +115,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		}
 
 		_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
+		ResetScratchFrame();
 
 		_renderThread->NotifyThread();
 	}

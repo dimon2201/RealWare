@@ -53,39 +53,21 @@ void triton::cRenderThread::ThreadFunction()
 	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+	iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 
 	while (K_TRUE)
 	{
-		_synchronization->LoopStart();
-		_renderSubsystem->NotifyMainThread();
+		//_synchronization->LoopStart();
+		//_renderSubsystem->NotifyMainThread();
 
-		{
-			std::lock_guard<std::mutex> lg(mtx);
-			if (_synchronization->_renderThreadSwapChainSnapshot._frames[0] == EFrameState::EXECUTE_FULL)
-				std::cout << "Full\n";
-			if (_synchronization->_renderThreadSwapChainSnapshot._frames[0] == EFrameState::EXECUTE_COMMANDS)
-				std::cout << "Commands\n";
-			if (_synchronization->_renderThreadSwapChainSnapshot._frames[1] == EFrameState::EXECUTE_FULL)
-				std::cout << "Full\n";
-			if (_synchronization->_renderThreadSwapChainSnapshot._frames[1] == EFrameState::EXECUTE_COMMANDS)
-				std::cout << "Commands\n\n";
-		}
+		EFrameState mainThreadSignal = _synchronization->WaitForProducedFrame(_cv);
 
-		_synchronization->WaitForProducedFrame(_cv);
-
-		{ std::lock_guard<std::mutex> lg(mtx); std::cout << "Render thread renders\n"; }
-		
 		if (!_synchronization->IsAlive())
 			break;
 
-		{ std::lock_guard<std::mutex> lg(mtx); std::cout << "A\n"; }
+		const CRenderFrame* renderFrame = _synchronization->AcquireProducedFrame(mainThreadSignal);
 
-		const CRenderFrame* renderFrame = _synchronization->AcquireProducedFrame();
-		EFrameState renderFrameState = renderFrame->GetState();
-
-		{ std::lock_guard<std::mutex> lg(mtx); std::cout << "B\n"; }
-
-		if (renderFrameState == EFrameState::EXECUTE_FULL)
+		if (mainThreadSignal == EFrameState::EXECUTE_FULL)
 		{
 			// Full job
 
@@ -94,29 +76,20 @@ void triton::cRenderThread::ThreadFunction()
 
 			// Core events
 			MakeContextCurrent(renderFrame, gfxContextBackend);
-			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfx);
+			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
 			Present(renderFrame, gfxContextBackend);
 		}
-		else if (renderFrameState == EFrameState::EXECUTE_COMMANDS)
+		else if (mainThreadSignal == EFrameState::EXECUTE_COMMANDS)
 		{
 			// Execute render commands only
 			MakeContextCurrent(renderFrame, gfxContextBackend);
-			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfx);
+			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
 		}
-
-		{ std::lock_guard<std::mutex> lg(mtx); std::cout << "C\n"; }
 
 		_synchronization->ReleaseFrame(renderFrame->GetIndexInSwapChain());
 
-		{ std::lock_guard<std::mutex> lg(mtx); std::cout << "D\n"; }
-
 		_synchronization->LoopFinish();
-
-		{ std::lock_guard<std::mutex> lg(mtx); std::cout << "E\n"; }
-
 		_renderSubsystem->NotifyMainThread();
-
-		{ std::lock_guard<std::mutex> lg(mtx); std::cout << "F\n"; }
 	}
 }
 
@@ -130,7 +103,7 @@ void triton::cRenderThread::MakeContextCurrent(const CRenderFrame* renderFrame, 
 	contextBackend->MakeWindowGraphicsContextCurrent(renderFrame->GetWindow()->GetBackendWindow());
 }
 
-void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, iGraphicsResourceBackend* resourceBackend, cGraphics* gfx)
+void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGraphicsDrawcallBackend* drawcallBackend, iGraphicsResourceBackend* resourceBackend, iGraphicsPipelineBackend* pipelineBackend, cGraphics* gfx)
 {
 	while (auto result = renderFrame->Next())
 	{
@@ -138,47 +111,71 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 
 		switch (cmd->_command)
 		{
-		case ERenderCommand::RESIZE_RENDER_TARGETS:
-			gfx->ResizeRenderTargets(cVector2(
-				cmd->_args._argA,
-				cmd->_args._argB
-			));
-			break;
-		case ERenderCommand::CLEAR:
-			drawcallBackend->ClearColor(cVector4(
-				cmd->_args._argA,
-				cmd->_args._argB,
-				cmd->_args._argC,
-				cmd->_args._argD
-			));
-			break;
-		case ERenderCommand::DRAW:
-			drawcallBackend->Draw(
-				cmd->_args._argA,
-				cmd->_args._argB,
-				cmd->_args._argC,
-				cmd->_args._argD
-			);
-			break;
-		case ERenderCommand::WRITE_BUFFER:
-			resourceBackend->WriteBuffer(
-				(cBuffer*)cmd->_args._argA,
-				cmd->_args._argB,
-				cmd->_args._argC,
-				(const u8*)cmd->_args._argD
-			);
-			break;
-		case ERenderCommand::CREATE_TEXTURE:
-			cTexture* result = resourceBackend->CreateTexture(
-				cVector3(cmd->_args._argA, cmd->_args._argB, cmd->_args._argC),
-				(cTexture::eDimension)cmd->_args._argD,
-				(cTexture::eFormat)cmd->_args._argE,
-				(u8*)cmd->_args._argF,
-				cmd->_args._argG
-			);
-			memcpy(&_resultBuffer[0], &result, sizeof(cTexture*));
-			cTexture* t = (cTexture*)&_resultBuffer[0];
-			break;
+			case ERenderCommand::RESIZE_RENDER_TARGETS:
+			{
+				gfx->ResizeRenderTargets(cVector2(
+					cmd->_args._argA,
+					cmd->_args._argB
+				));
+				break;
+			}
+			case ERenderCommand::CLEAR:
+			{
+				drawcallBackend->ClearColor(cVector4(
+					cmd->_args._argA,
+					cmd->_args._argB,
+					cmd->_args._argC,
+					cmd->_args._argD
+				));
+				break;
+			}
+			case ERenderCommand::DRAW:
+			{
+				drawcallBackend->Draw(
+					cmd->_args._argA,
+					cmd->_args._argB,
+					cmd->_args._argC,
+					cmd->_args._argD
+				);
+				break;
+			}
+			case ERenderCommand::WRITE_BUFFER:
+			{
+				resourceBackend->WriteBuffer(
+					(cBuffer*)cmd->_args._argA,
+					cmd->_args._argB,
+					cmd->_args._argC,
+					(const u8*)cmd->_args._argD
+				);
+				break;
+			}
+			case ERenderCommand::CREATE_TEXTURE:
+			{
+				cTexture* resultTexture = resourceBackend->CreateTexture(
+					cVector3(cmd->_args._argA, cmd->_args._argB, cmd->_args._argC),
+					(cTexture::eDimension)cmd->_args._argD,
+					(cTexture::eFormat)cmd->_args._argE,
+					(u8*)cmd->_args._argF,
+					cmd->_args._argG
+				);
+				memcpy(&_resultBuffer[0], &resultTexture, sizeof(cTexture*));
+				break;
+			}
+			case ERenderCommand::CREATE_RENDER_TARGET:
+			{
+				usize attachmentCount = cmd->_args._argA;
+				cTexture** attachments = (cTexture**)cmd->_args._argB;
+				std::vector<cTexture*> attachmentsVec;
+				for (usize i = 0; i < attachmentCount; i++)
+					attachmentsVec.push_back(attachments[i]);
+				XRenderTarget* resultRT = pipelineBackend->CreateRenderTarget(
+					attachmentsVec,
+					(cTexture*)cmd->_args._argC
+				);
+				memcpy(&_resultBuffer[0], &resultRT, sizeof(XRenderTarget*));
+				XRenderTarget* pr = (XRenderTarget*)&_resultBuffer[0];
+				break;
+			}
 		}
 	}
 }

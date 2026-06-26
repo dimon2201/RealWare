@@ -11,7 +11,7 @@ void triton::CRenderFrame::Reset(cInputWindow* window)
 {
 	if (window != nullptr)
 		_window = window;
-	_commands.shrink_to_fit();
+	_commands.clear();
 	_nextCommandIndex = 0;
 }
 
@@ -51,9 +51,11 @@ void triton::XEngineMTSynchronization::ProduceFrame(EFrameState state)
 			break;
 		}
 	}
+	_mainThreadSwapChainSnapshot._mainThreadSignal = state;
 	_mainThreadSwapChainSnapshot._frames[writeIndex] = state;
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
+		_renderThreadSwapChainSnapshot._mainThreadSignal = state;
 		_renderThreadSwapChainSnapshot._frames[writeIndex] = state;
 	}
 
@@ -84,7 +86,7 @@ void triton::XEngineMTSynchronization::WaitForFreeFrame(std::condition_variable&
 	});
 }
 
-void triton::XEngineMTSynchronization::WaitForProducedFrame(std::condition_variable& cv)
+triton::EFrameState triton::XEngineMTSynchronization::WaitForProducedFrame(std::condition_variable& cv)
 {
 	CThreadGuard::AssertRender();
 
@@ -96,6 +98,8 @@ void triton::XEngineMTSynchronization::WaitForProducedFrame(std::condition_varia
 			_renderThreadSwapChainSnapshot._frames[0] == EFrameState::EXECUTE_COMMANDS ||
 			_renderThreadSwapChainSnapshot._frames[1] == EFrameState::EXECUTE_COMMANDS;
 	});
+	
+	return _renderThreadSwapChainSnapshot._mainThreadSignal;
 }
 
 void triton::XEngineMTSynchronization::WaitForLoopFinish(std::condition_variable& cv)
@@ -115,15 +119,14 @@ types::boolean triton::XEngineMTSynchronization::IsAlive()
 	return _renderThreadSwapChainSnapshot._stopSync == K_FALSE ? K_TRUE : K_FALSE;
 }
 
-const triton::CRenderFrame* triton::XEngineMTSynchronization::AcquireProducedFrame()
+const triton::CRenderFrame* triton::XEngineMTSynchronization::AcquireProducedFrame(EFrameState mainThreadSignal)
 {
 	CThreadGuard::AssertRender();
 
 	u32 readIndex = 0;
 	for (usize i = 0; i < 2; i++)
 	{
-		if (_renderThreadSwapChainSnapshot._frames[i] == EFrameState::EXECUTE_FULL ||
-			_renderThreadSwapChainSnapshot._frames[i] == EFrameState::EXECUTE_COMMANDS)
+		if (_renderThreadSwapChainSnapshot._frames[i] == mainThreadSignal)
 		{
 			readIndex = i;
 			break;

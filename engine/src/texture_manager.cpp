@@ -31,7 +31,7 @@ triton::cTextureAtlas::cTextureAtlas(cContext* context) : iObject(context) {}
 
 void triton::cTextureAtlas::Initialize(const cVector3& size)
 {
-    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
@@ -48,7 +48,7 @@ void triton::cTextureAtlas::Initialize(const cVector3& size)
 
 void triton::cTextureAtlas::Shutdown()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     if (_atlas)
         renderSubsystem->PushCommand(SRenderCommand(
             ERenderCommand::DESTROY_TEXTURE,

@@ -66,9 +66,9 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
     
 triton::cGraphics::cGraphics(cContext* context) : iObject(context)
 {
-    //CreateGeometryStorage();
+    CreateGeometryStorage();
     CreateDefaultRenderTargets();
-    //CreateDefaultRenderPasses();
+    CreateDefaultRenderPasses();
 }
 
 triton::cGraphics::~cGraphics()
@@ -907,6 +907,7 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         0
     ));
     cTexture* depth = renderSubsystem->FetchResult<cTexture*>();
+    
     cTexture* opaqueColorAttachments[1] = { color };
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
@@ -1028,17 +1029,17 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeTransparentBlendState.factorCount = 1;
     compositeTransparentBlendState.srcFactors[0] = EBlendFactor::SRC_ALPHA;
     compositeTransparentBlendState.dstFactors[0] = EBlendFactor::INV_SRC_ALPHA;
-    _opaque = _context->Create<XRenderPass>(_context);
-    _opaque->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
-    _opaque->SetInputTextures({
+    _compositeTransparent = _context->Create<XRenderPass>(_context);
+    _compositeTransparent->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
+    _compositeTransparent->SetInputTextures({
         SRenderPassTexture("AccumulationTexture", _transparentRenderTarget->GetColorAttachments()[0]),
         SRenderPassTexture("RevealageTexture", _transparentRenderTarget->GetColorAttachments()[1])
     });
-    _opaque->SetShader(compositeTransparentShader);
-    _opaque->SetViewport(viewport);
-    _opaque->SetDepthState(SDepthState(K_FALSE, K_FALSE));
-    _opaque->SetBlendState(compositeTransparentBlendState);
-    _opaque->SetRenderTarget(_opaqueRenderTarget);
+    _compositeTransparent->SetShader(compositeTransparentShader);
+    _compositeTransparent->SetViewport(viewport);
+    _compositeTransparent->SetDepthState(SDepthState(K_FALSE, K_FALSE));
+    _compositeTransparent->SetBlendState(compositeTransparentBlendState);
+    _compositeTransparent->SetRenderTarget(_opaqueRenderTarget);
 
     // Composite final render pass
     XShader* compositeFinalShader = _context->Create<XShader>(
@@ -1052,16 +1053,16 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeFinalBlendState.factorCount = 1;
     compositeFinalBlendState.srcFactors[0] = EBlendFactor::ONE;
     compositeFinalBlendState.dstFactors[0] = EBlendFactor::ZERO;
-    _opaque = _context->Create<XRenderPass>(_context);
-    _opaque->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
-    _opaque->SetInputTextures({
+    _compositeFinal = _context->Create<XRenderPass>(_context);
+    _compositeFinal->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
+    _compositeFinal->SetInputTextures({
         SRenderPassTexture("ColorTexture", _opaqueRenderTarget->GetColorAttachments()[0]),
     });
-    _opaque->SetShader(compositeTransparentShader);
-    _opaque->SetViewport(viewport);
-    _opaque->SetDepthState(SDepthState(K_FALSE, K_FALSE));
-    _opaque->SetBlendState(compositeFinalBlendState);
-    _opaque->SetRenderTarget(nullptr);
+    _compositeFinal->SetShader(compositeTransparentShader);
+    _compositeFinal->SetViewport(viewport);
+    _compositeFinal->SetDepthState(SDepthState(K_FALSE, K_FALSE));
+    _compositeFinal->SetBlendState(compositeFinalBlendState);
+    _compositeFinal->SetRenderTarget(nullptr);
 }
 
 void triton::cGraphics::DestroyGeometryStorage()

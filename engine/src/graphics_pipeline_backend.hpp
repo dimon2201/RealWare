@@ -50,7 +50,7 @@ namespace triton
 
     class XRenderTarget : public cGPUResource
     {
-        TRITON_OBJECT(CRenderTarget)
+        TRITON_OBJECT(XRenderTarget)
 
         mutable std::vector<cTexture*> _colorAttachments = {};
         cTexture* _depthAttachment = nullptr;

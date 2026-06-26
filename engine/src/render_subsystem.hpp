@@ -49,5 +49,10 @@ namespace triton
 		{
 			return _scratchFrame;
 		}
+
+		inline void ResetScratchFrame()
+		{
+			_scratchFrame.Reset();
+		}
 	};
 }
