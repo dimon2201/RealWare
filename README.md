@@ -9,7 +9,7 @@ Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 - Disk file IO
 - TrueType fonts
 - Memory allocator (UE4-like)
-- Multithreading (separate thread for rendering, double buffering)
+- Multithreading (separate thread for rendering with double buffering, work queue)
 - Event subscription/sending
 - PhysX 5.3 physics
 - OpenGL 4.3 rendering
