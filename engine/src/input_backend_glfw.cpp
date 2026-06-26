@@ -3,8 +3,6 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
 #include "input_backend_glfw.hpp"
 #include "input.hpp"
 #include "context.hpp"
@@ -89,7 +87,7 @@ void* triton::cInputBackendGLFW::GetWindowWin32Handle(sInputBackendWindow& windo
     if (window.instance == 0)
         return nullptr;
 
-    return (void*)glfwGetWin32Window((GLFWwindow*)window.instance);
+    return nullptr; //(void*)glfwGetWin32Window((GLFWwindow*)window.instance);
 }
 
 triton::cInputWindow::eRunState triton::cInputBackendGLFW::GetWindowRunState(sInputBackendWindow& window)
@@ -140,7 +138,7 @@ void triton::cInputBackendGLFW::SetWindowSwapInterval(types::usize interval)
 
 triton::cVector2 triton::cInputBackendGLFW::GetMonitorSize()
 {
-    return cVector2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+    return cVector2(0.0f); //cVector2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 }
 
 types::boolean triton::cInputBackendGLFW::IsWindowFocused()

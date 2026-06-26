@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <windows.h>
 #include <chrono>
 #include "object.hpp"
 #include "capabilities.hpp"

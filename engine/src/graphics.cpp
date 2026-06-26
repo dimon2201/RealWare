@@ -66,9 +66,9 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
     
 triton::cGraphics::cGraphics(cContext* context) : iObject(context)
 {
-    CreateGeometryStorage();
+    //CreateGeometryStorage();
     CreateDefaultRenderTargets();
-    CreateDefaultRenderPasses();
+    //CreateDefaultRenderPasses();
 }
 
 triton::cGraphics::~cGraphics()
@@ -860,7 +860,7 @@ void triton::cGraphics::CreateGeometryStorage()
 
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
 
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
     renderSubsystem->PushCommand(SRenderCommand(

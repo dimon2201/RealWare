@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <string>
+#include <cstring>
 #include <array>
 #include "log.hpp"
 #include "event_types.hpp"

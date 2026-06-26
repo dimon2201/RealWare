@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "application.hpp"
 #include "object.hpp"
 #include "buffer_view.hpp"
 #include "linear_array.hpp"

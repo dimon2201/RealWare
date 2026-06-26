@@ -67,12 +67,12 @@ void triton::cEngine::Initialize()
 	_context->GetSubsystem<cInput>()->Initialize();
 	_context->RegisterSubsystem(new XRenderSubsystem(_context));
 	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
-	_context->RegisterSubsystem(new cAudio(_context));
-	_context->RegisterSubsystem(new cTextureAtlas(_context));
-	_context->RegisterSubsystem(new cFileSystem(_context));
-	_context->RegisterSubsystem(new cTime(_context));
-	_context->RegisterSubsystem(new cThreadSubsystem(_context));
-	_context->RegisterSubsystem(new XECSSubsystem(_context));
+	//_context->RegisterSubsystem(new cAudio(_context));
+	//_context->RegisterSubsystem(new cTextureAtlas(_context));
+	//_context->RegisterSubsystem(new cFileSystem(_context));
+	//_context->RegisterSubsystem(new cTime(_context));
+	//_context->RegisterSubsystem(new cThreadSubsystem(_context));
+	//_context->RegisterSubsystem(new XECSSubsystem(_context));
 	_context->RegisterSubsystem(new cGraphics(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
@@ -84,8 +84,8 @@ void triton::cEngine::Initialize()
 
 	// Initialize subsystems
 	// NOTE: order matters
-	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
-	_context->GetSubsystem<XECSSubsystem>()->Initialize();
+	//_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
+	//_context->GetSubsystem<XECSSubsystem>()->Initialize();
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);

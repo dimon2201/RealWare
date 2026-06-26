@@ -28,7 +28,7 @@ std::optional<const triton::SRenderCommand*> triton::CRenderFrame::Next() const
 	return &_commands.data()[_nextCommandIndex++];
 }
 
-void triton::CRenderFrame::CopyScratchFrame(types::u32 indexInSwapChain, EFrameState state, CRenderFrame& scratchFrame)
+void triton::CRenderFrame::CopyScratchFrame(types::u32 indexInSwapChain, EFrameState state, const CRenderFrame& scratchFrame)
 {
 	_state = state;
 	_indexInSwapChain = indexInSwapChain;

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <condition_variable>
 #include <vector>
 #include <optional>
 #include <mutex>
@@ -95,7 +96,7 @@ namespace triton
 		void Reset(cInputWindow* window = nullptr);
 		void PushCommand(const SRenderCommand& command);
 		std::optional<const SRenderCommand*> Next() const;
-		void CopyScratchFrame(types::u32 indexInSwapChain, EFrameState state, CRenderFrame& scratchFrame);
+		void CopyScratchFrame(types::u32 indexInSwapChain, EFrameState state, const CRenderFrame& scratchFrame);
 
 		inline EFrameState GetState() const
 		{

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstring>
 #include "data_buffer.hpp"
 #include "capabilities.hpp"
 #include "context.hpp"

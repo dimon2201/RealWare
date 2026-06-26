@@ -144,6 +144,9 @@ void triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
 	usize resultByteSize = 0;
 	switch (command._command)
 	{
+		case ERenderCommand::CREATE_BUFFER:
+			resultByteSize = sizeof(cBuffer*);
+			break;
 		case ERenderCommand::CREATE_TEXTURE:
 			resultByteSize = sizeof(cTexture*);
 			break;
@@ -152,6 +155,7 @@ void triton::XRenderSubsystem::PushCommand(const SRenderCommand& command)
 			break;
 	}
 
+	auto c = _context;
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 	if (resultByteSize >= caps->futureResultBufferByteSize)
 	{

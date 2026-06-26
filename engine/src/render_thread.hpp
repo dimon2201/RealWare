@@ -2,11 +2,13 @@
 
 #pragma once
 
+#include <cstring>
 #include <atomic>
 #include <cassert>
 #include <thread>
 #include "thread_subsystem.hpp"
 #include "render_frame.hpp"
+#include "thread_guard.hpp"
 
 namespace triton
 {
