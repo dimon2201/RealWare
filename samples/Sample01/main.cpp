@@ -5,6 +5,7 @@
 #include "ecs_subsystem.hpp"
 #include "components.hpp"
 #include "graphics.hpp"
+#include "vertex.hpp"
 
 using namespace triton;
 using namespace triton::ecs;
@@ -30,10 +31,22 @@ public:
         entity ent = scene1->CreateEntity();
         STransformComponent* entTransform = scene1->CreateTransformComponent(ent);
         SRenderInstanceComponent* entRender = scene1->CreateRenderInstanceComponent(ent);
+        SGeometryComponent* entGeometry = scene1->CreateGeometryComponent(ent);
         entTransform->_world = cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
-        
-        SRenderData renderDataStatic = scene1->BuildRenderDataStatic();
-        XRenderPass* opaqueRenderPass = _context->GetSubsystem<cGraphics>()->GetOpaqueRenderPass();
+
+        constexpr int kVertexCount = 3;
+        SVertex vertices[kVertexCount] = {};
+        vertices[0].position = cVector3(-1.0f, -1.0f, 0.0f);
+        vertices[1].position = cVector3(0.0f, 1.0f, 0.0f);
+        vertices[2].position = cVector3(1.0f, -1.0f, 0.0f);
+        usize indices[3] = { 0, 1, 2 };
+        entGeometry->geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
+            EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3,
+            (u8*)&vertices[0],
+            sizeof(SVertex) * kVertexCount,
+            (u8*)&indices[0],
+            sizeof(usize) * kVertexCount
+        );
     }
 
     virtual void Stop() override final

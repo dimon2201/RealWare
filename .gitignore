@@ -6,3 +6,9 @@
 *.obj
 build
 build_vs
+logo/*
+GhostWare.zip
+names.txt
+TritonEngine.7z
+TritonEngine.zip
+/DvlErrLog.txt
