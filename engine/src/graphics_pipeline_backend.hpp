@@ -18,13 +18,24 @@ namespace triton
     class XRenderPass;
     class XInstanceBuffer;
 
-    class CVertexArray : public cGPUResource
+    class CGPUVertexArray : public cGPUResource
     {
-        TRITON_OBJECT(CVertexArray)
+        TRITON_OBJECT(CGPUVertexArray)
 
     public:
-        explicit CVertexArray(cContext* context, types::qword instance);
-        virtual ~CVertexArray() override = default;
+        explicit CGPUVertexArray(cContext* context, types::qword instance) : cGPUResource(context, instance, 0) {}
+        ~CGPUVertexArray() override = default;
+    };
+
+    class XVertexArray : public iObject
+    {
+        TRITON_OBJECT(XVertexArray)
+
+        CGPUVertexArray _gpuVertexArray = CGPUVertexArray(nullptr, 0);
+
+    public:
+        explicit XVertexArray(cContext* context, const std::vector<cBuffer*>& buffersToBind);
+        ~XVertexArray() override;
     };
 
     class CGPUShader : public cGPUResource
@@ -116,11 +127,11 @@ namespace triton
             const std::string& textureName,
             types::u32 slot
         ) = 0;
-        virtual CVertexArray* CreateVertexArray() = 0;
-        virtual void BindVertexArray(const CVertexArray* vertexArray) = 0;
+        virtual CGPUVertexArray CreateVertexArray() = 0;
+        virtual void BindVertexArray(const CGPUVertexArray& vertexArray) = 0;
         virtual void BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind) = 0;
         virtual void UnbindVertexArray() = 0;
-        virtual void DestroyVertexArray(CVertexArray* vertexArray) = 0;
+        virtual void DestroyVertexArray(const CGPUVertexArray& vertexArray) = 0;
         virtual CGPURenderPass CreateRenderPass() = 0;
         virtual void BindRenderPass(const XRenderPass* renderPass, CGPUShader* customShader = nullptr) = 0;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) = 0;

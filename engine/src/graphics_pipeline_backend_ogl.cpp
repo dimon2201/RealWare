@@ -177,25 +177,23 @@ void triton::cGraphicsPipelineBackendOGL::BindTextureNamed(
     }
 }
 
-triton::CVertexArray* triton::cGraphicsPipelineBackendOGL::CreateVertexArray()
+triton::CGPUVertexArray triton::cGraphicsPipelineBackendOGL::CreateVertexArray()
 {
     GLuint instance = 0;
-
     glGenVertexArrays(1, (GLuint*)&instance);
 
-    CVertexArray* vertexArray = _context->Create<CVertexArray>(_context, instance);
-
-    return vertexArray;
+    return CGPUVertexArray(_context, instance);
 }
 
-void triton::cGraphicsPipelineBackendOGL::BindVertexArray(const CVertexArray* vertexArray)
+void triton::cGraphicsPipelineBackendOGL::BindVertexArray(const CGPUVertexArray& vertexArray)
 {
-    glBindVertexArray((GLuint)vertexArray->GetInstance());
+    glBindVertexArray((GLuint)vertexArray.GetInstance());
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind)
 {
-    iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    // TODO: do something with this method
+    /*iGraphicsResourceBackend* resourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 
     static CVertexArray* vertexArray = nullptr;
 
@@ -210,7 +208,7 @@ void triton::cGraphicsPipelineBackendOGL::BindDefaultVertexArray(const std::vect
         UnbindVertexArray();
     }
 
-    BindVertexArray(vertexArray);
+    BindVertexArray(vertexArray);*/
 }
 
 void triton::cGraphicsPipelineBackendOGL::UnbindVertexArray()
@@ -218,13 +216,10 @@ void triton::cGraphicsPipelineBackendOGL::UnbindVertexArray()
     glBindVertexArray(0);
 }
 
-void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(CVertexArray* vertexArray)
+void triton::cGraphicsPipelineBackendOGL::DestroyVertexArray(const CGPUVertexArray& vertexArray)
 {
-    GLuint instance = vertexArray->GetInstance();
+    GLuint instance = vertexArray.GetInstance();
     glDeleteVertexArrays(1, (GLuint*)&instance);
-
-    if (vertexArray != nullptr)
-        _context->Destroy<CVertexArray>(vertexArray);
 }
 
 triton::CGPURenderPass triton::cGraphicsPipelineBackendOGL::CreateRenderPass()

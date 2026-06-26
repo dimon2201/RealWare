@@ -183,7 +183,8 @@ void triton::cGraphics::ExecuteDefaultRenderPasses()
 
 triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
 {
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    // TODO: do something with this method
+    /*iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     cGraphics* gfx = _context->GetSubsystem<cGraphics>();
     CVertexArray* vertexArray = gfxPipelineBackend->CreateVertexArray();
@@ -195,7 +196,8 @@ triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
     gfxPipelineBackend->BindDefaultInputLayout();
     gfxPipelineBackend->UnbindVertexArray();
 
-    return vertexArray;
+    return vertexArray;*/
+    return nullptr;
 }
 
 std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize)

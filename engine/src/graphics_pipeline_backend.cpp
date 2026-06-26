@@ -30,7 +30,23 @@ triton::XShader::~XShader()
 	));
 }
 
-triton::CVertexArray::CVertexArray(cContext* context, qword instance) : cGPUResource(context, instance, 0) {}
+triton::XVertexArray::XVertexArray(cContext* context, const std::vector<cBuffer*>& buffersToBind) : iObject(context)
+{
+	iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+	_gpuVertexArray = gfxPipelineBackend->CreateVertexArray();
+	gfxPipelineBackend->BindVertexArray(_gpuVertexArray);
+	for (auto buffer : buffersToBind)
+		gfxResourceBackend->BindBuffer(buffer);
+	gfxPipelineBackend->BindDefaultInputLayout();
+	gfxPipelineBackend->UnbindVertexArray();
+}
+
+triton::XVertexArray::~XVertexArray()
+{
+	iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+	gfxPipelineBackend->DestroyVertexArray(_gpuVertexArray);
+}
 
 triton::XRenderTarget::XRenderTarget(
 	cContext* context,
