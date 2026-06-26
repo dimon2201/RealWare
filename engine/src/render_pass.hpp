@@ -25,7 +25,7 @@ namespace triton
     class XRenderTarget;
     class XRenderPassGPU;
     class XShader;
-    class CVertexArray;
+    class XVertexArray;
     class SShaderDefine;
 
     enum class EBuiltinRenderPassType
@@ -52,7 +52,7 @@ namespace triton
         TRITON_OBJECT(XRenderPass)
 
         EGraphicsBufferFormat           _inputVertexFormat = EGraphicsBufferFormat::NONE;
-        CVertexArray*                   _vertexArray = nullptr;
+        XVertexArray*                   _vertexArray = nullptr;
         std::vector<cBuffer*>           _inputBuffers = {};
         std::vector<SRenderPassTexture> _inputTextures = {};
         EBuiltinRenderPassType          _shaderRenderPath = EBuiltinRenderPassType::NONE;
@@ -98,7 +98,7 @@ namespace triton
             _inputBuffers = buffers;
         }
 
-        inline void SetVertexArray(CVertexArray* vertexArray)
+        inline void SetVertexArray(XVertexArray* vertexArray)
         {
             _vertexArray = vertexArray;
         }
