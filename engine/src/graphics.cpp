@@ -960,12 +960,15 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     opaqueBlendState.factorCount = 1;
     opaqueBlendState.srcFactors[0] = EBlendFactor::ONE;
     opaqueBlendState.dstFactors[0] = EBlendFactor::ZERO;
-    _opaque = _context->Create<XRenderPass>(_context);
-    _opaque->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
-    _opaque->SetInputBuffers({
+    const std::vector<cBuffer*> opaqueInputBuffers = {
         _geometryStorage->GetVertexBuffer(),
         _geometryStorage->GetIndexBuffer()
-    });
+    };
+    XVertexArray* opaqueVertexArray = _context->Create<XVertexArray>(_context, opaqueInputBuffers);
+    _opaque = _context->Create<XRenderPass>(_context);
+    _opaque->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
+    _opaque->SetVertexArray(opaqueVertexArray);
+    _opaque->SetInputBuffers(opaqueInputBuffers);
     _opaque->SetInputTextures({
         SRenderPassTexture("TextureAtlas", textureAtlas->GetAtlas())
     });
