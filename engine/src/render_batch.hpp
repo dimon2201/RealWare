@@ -2,17 +2,21 @@
 
 #pragma once
 
+#include "object.hpp"
 #include "geometry_view.hpp"
 #include "render_instance.hpp"
 #include "types.hpp"
 
 namespace triton
 {
+	class cContext;
 	class XInstanceBuffer;
 	class SInstanceBufferHandle;
 
-	class CRenderBatch final
+	class XRenderBatch final : public iObject
 	{
+		TRITON_OBJECT(XRenderBatch)
+
 		SGeometryView _geometry = {};
 		XInstanceBuffer* _staticInstances = nullptr;
 		XInstanceBuffer* _dynamicInstances = nullptr;
@@ -20,8 +24,8 @@ namespace triton
 		types::usize _globalDynamicInstanceOffset = 0;
 
 	public:
-		explicit CRenderBatch(const SGeometryView& geometry);
-		~CRenderBatch();
+		explicit XRenderBatch(cContext* context, const SGeometryView& geometry);
+		~XRenderBatch();
 
 		SInstanceBufferHandle Add(SRenderInstance::EUsage usage, SRenderInstance& instance);
 		SRenderInstance* Get(SInstanceBufferHandle& handle);
