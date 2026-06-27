@@ -211,6 +211,9 @@ namespace triton
         std::optional<triton::SGeometryView> StoreGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
         std::optional<SRenderBatchHandle> CreateBatch(const SGeometryView& geometry);
         void RemoveBatch(const SRenderBatchHandle& handle);
+        std::optional<SInstanceBufferHandle> CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch);
+        void RemoveInstance(const SInstanceBufferHandle& instance);
+        void DestroyInstance(const SInstanceBufferHandle& instance);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
 
