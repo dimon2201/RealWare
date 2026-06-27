@@ -36,6 +36,8 @@ namespace triton
         explicit cBuffer(cContext* context, types::qword instance, eType type, types::usize byteSize, types::s32 slot);
         virtual ~cBuffer() override = default;
 
+        void Write(types::usize byteOffset, types::u8* data, types::usize byteSize);
+
         inline eType GetBufferType() const { return _type; }
         inline types::usize GetByteSize() const { return _byteSize; }
         inline types::s32 GetSlot() const { return _slot; }

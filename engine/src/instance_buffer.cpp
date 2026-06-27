@@ -49,30 +49,3 @@ void triton::XInstanceBuffer::Remove(SInstanceBufferHandle& handle)
 {
 	_instances->Destroy(handle);
 }
-
-void triton::XInstanceBuffer::Write(const SInstanceBufferHandle& handle)
-{
-	CThreadGuard::AssertRender();
-
-	_context->GetBackend<iGraphicsResourceBackend>()->WriteBuffer(
-		this,
-		handle._indexInArray * sizeof(SRenderInstance),
-		sizeof(SRenderInstance),
-		(const u8*)_instances->Get(handle)
-	);
-}
-
-void triton::XInstanceBuffer::WriteAll()
-{
-	CThreadGuard::AssertRender();
-
-	SBufferView bufferView = _instances->GetData();
-	if (bufferView._byteSize == 0)
-		return;
-	_context->GetBackend<iGraphicsResourceBackend>()->WriteBuffer(
-		this,
-		0,
-		bufferView._byteSize,
-		(const u8*)bufferView._data
-	);
-}

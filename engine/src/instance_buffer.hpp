@@ -61,7 +61,5 @@ namespace triton
 		SInstanceBufferHandle Add(SRenderInstance& instance);
 		SRenderInstance* Get(SInstanceBufferHandle& handle);
 		void Remove(SInstanceBufferHandle& handle);
-		void Write(const SInstanceBufferHandle& handle);
-		void WriteAll();
 	};
 }
