@@ -54,7 +54,7 @@ void triton::XRenderPass::Bind()
 {
     CThreadGuard::AssertRender();
 
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetSubsystem<iGraphicsPipelineBackend>();
+    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
 }
 
