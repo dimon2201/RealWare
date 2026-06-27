@@ -4,6 +4,7 @@
 
 #include <optional>
 #include "object.hpp"
+#include "render_instance.hpp"
 
 namespace triton
 {
@@ -29,5 +30,7 @@ namespace triton
 
         std::optional<SRenderBatchHandle> Create(const SGeometryView& geometry);
         void Remove(const SRenderBatchHandle& batch);
+        std::optional<SInstanceBufferHandle> AddInstance(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage);
+        void RemoveInstance(const SInstanceBufferHandle& instance);
     };
 }
