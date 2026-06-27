@@ -36,6 +36,11 @@ namespace triton
     public:
         explicit XVertexArray(cContext* context, const std::vector<cBuffer*>& buffersToBind);
         ~XVertexArray() override;
+
+        inline const CGPUVertexArray& GetGPUVertexArray() const
+        {
+            return _gpuVertexArray;
+        }
     };
 
     class CGPUShader : public cGPUResource
