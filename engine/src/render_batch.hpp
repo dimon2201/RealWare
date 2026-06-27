@@ -30,8 +30,6 @@ namespace triton
 		SGeometryView _geometry = {};
 		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>* _staticInstances = nullptr;
 		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>* _dynamicInstances = nullptr;
-		XInstanceBuffer* _staticInstanceBuffer = nullptr;
-		XInstanceBuffer* _dynamicInstanceBuffer = nullptr;
 		types::usize _globalStaticInstanceOffset = 0;
 		types::usize _globalDynamicInstanceOffset = 0;
 
