@@ -43,9 +43,9 @@ namespace triton
 			return _elementCount;
 		}
 
-		inline SBufferView GetData() const
+		inline SBufferView<TValue> GetData() const
 		{
-			return SBufferView((void*)_data, _elementCount * sizeof(TValue));
+			return SBufferView(_data, _elementCount * sizeof(TValue));
 		}
 	};
 }
