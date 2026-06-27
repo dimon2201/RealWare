@@ -5,6 +5,8 @@
 #include <optional>
 #include "object.hpp"
 #include "render_instance.hpp"
+#include "buffer_view.hpp"
+#include "handle_allocator.hpp"
 
 namespace triton
 {
@@ -12,11 +14,10 @@ namespace triton
     struct SRenderBatchSlot;
     struct SRenderBatchHandle;
     template <typename TValue>
-    class cStack;
+    class XLinearArray;
     class XRenderBatch;
     class SGeometryView;
-    template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
-    class XHandleAllocator;
+    class SInstanceBufferHandle;
 
     class XBatchStorage : public iObject
     {
