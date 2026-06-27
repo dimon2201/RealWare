@@ -9,6 +9,7 @@
 triton::XBatchStorage::XBatchStorage(cContext* context) : iObject(context)
 {
 	_batches = _context->Create<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>>(_context);
+	_batches->Initialize();
 }
 
 triton::XBatchStorage::~XBatchStorage()

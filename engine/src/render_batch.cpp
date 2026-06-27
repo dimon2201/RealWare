@@ -8,7 +8,9 @@
 triton::XRenderBatch::XRenderBatch(cContext* context, const SGeometryView& geometry) : iObject(context), _geometry(geometry)
 {
 	_staticInstances = _context->Create<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_context);
+	_staticInstances->Initialize();
 	_dynamicInstances = _context->Create<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_context);
+	_dynamicInstances->Initialize();
 	_staticInstanceBuffer = _context->Create<XInstanceBuffer>(_context, SRenderInstance::EUsage::STATIC);
 	_dynamicInstanceBuffer = _context->Create<XInstanceBuffer>(_context, SRenderInstance::EUsage::DYNAMIC);
 }
@@ -17,7 +19,9 @@ triton::XRenderBatch::~XRenderBatch()
 {
 	_context->Destroy<XInstanceBuffer>(_dynamicInstanceBuffer);
 	_context->Destroy<XInstanceBuffer>(_staticInstanceBuffer);
+	_dynamicInstances->Free();
 	_context->Destroy<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_dynamicInstances);
+	_staticInstances->Free();
 	_context->Destroy<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_staticInstances);
 }
 
