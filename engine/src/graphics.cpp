@@ -30,6 +30,7 @@
 #include "render_subsystem.hpp"
 #include "render_batch.hpp"
 #include "handle_allocator.hpp"
+#include "batch_storage.hpp"
 
 using namespace types;
 
@@ -213,12 +214,12 @@ std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsB
 
 std::optional<triton::SRenderBatchHandle> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
 {
-    return _batches->Create(SRenderBatchHandle(), _context, geometry);
+    return _batchStorage->Create(geometry);
 }
 
 void triton::cGraphics::RemoveBatch(const SRenderBatchHandle& handle)
 {
-    _batches->Destroy(handle);
+    _batchStorage->Remove(handle);
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
