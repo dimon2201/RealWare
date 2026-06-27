@@ -13,6 +13,7 @@ namespace triton
 {
 	class cContext;
 	class XInstanceBuffer;
+	class SInstanceBufferSlot;
 	class SInstanceBufferHandle;
 	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
 	class XHandleAllocator;
