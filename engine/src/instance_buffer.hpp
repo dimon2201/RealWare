@@ -52,6 +52,6 @@ namespace triton
 	public:
 		explicit XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage);
 		explicit XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage, cBuffer* buffer);
-		~XInstanceBuffer() override;
+		~XInstanceBuffer() override = default;
 	};
 }
