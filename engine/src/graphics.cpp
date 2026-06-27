@@ -28,6 +28,7 @@
 #include "render_pass.hpp"
 #include "stack.hpp"
 #include "render_subsystem.hpp"
+#include "render_batch.hpp"
 
 using namespace types;
 
@@ -205,6 +206,11 @@ triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
 std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize)
 {
     return _geometryStorage->Store(format, vertices, verticesByteSize, indices, indicesByteSize);
+}
+
+std::optional<triton::CRenderBatch> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
+{
+    return std::nullopt;
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
