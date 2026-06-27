@@ -33,7 +33,7 @@ std::optional<triton::SInstanceBufferHandle> triton::XRenderBatch::Add(const SRe
 	return std::nullopt;
 }
 
-triton::SRenderInstance* triton::XRenderBatch::Get(SInstanceBufferHandle& handle)
+triton::SRenderInstance* triton::XRenderBatch::Get(const SInstanceBufferHandle& handle)
 {
 	if (handle._usage == SRenderInstance::EUsage::STATIC)
 		return _staticInstances->Get(handle);
@@ -43,7 +43,7 @@ triton::SRenderInstance* triton::XRenderBatch::Get(SInstanceBufferHandle& handle
 	return nullptr;
 }
 
-void triton::XRenderBatch::Remove(SInstanceBufferHandle& handle)
+void triton::XRenderBatch::Remove(const SInstanceBufferHandle& handle)
 {
 	if (handle._usage == SRenderInstance::EUsage::STATIC)
 		return _staticInstances->Destroy(handle);
