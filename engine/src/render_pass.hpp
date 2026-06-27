@@ -65,7 +65,6 @@ namespace triton
         XShader*                        _shader = nullptr;
         cBuffer*                        _materialBuffer = nullptr;
         cBuffer*                        _textureBuffer = nullptr;
-        cStack<SInstanceBufferHandle>*  _dirtyStaticInstances = nullptr;
 
         void WriteDirtyStaticInstancesToGPU();
         void WriteDynamicInstancesToGPU();
