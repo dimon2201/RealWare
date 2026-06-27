@@ -210,7 +210,10 @@ std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsB
 
 std::optional<triton::CRenderBatch> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
 {
-    return std::nullopt;
+    CRenderBatch rb = CRenderBatch(geometry);
+    _batches.push_back(rb);
+
+    return rb;
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)

@@ -182,6 +182,7 @@ namespace triton
         XRenderPass* _compositeFinal = nullptr;
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
+        std::vector<CRenderBatch> _batches = {};
 
         void CreateGeometryStorage();
         void CreateDefaultRenderTargets();
