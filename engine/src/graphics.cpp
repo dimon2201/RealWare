@@ -208,9 +208,9 @@ std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsB
     return _geometryStorage->Store(format, vertices, verticesByteSize, indices, indicesByteSize);
 }
 
-std::optional<triton::CRenderBatch> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
+std::optional<triton::XRenderBatch> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
 {
-    CRenderBatch rb = CRenderBatch(geometry);
+    XRenderBatch rb = XRenderBatch(geometry);
     _batches.push_back(rb);
 
     return rb;

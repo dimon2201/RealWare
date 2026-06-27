@@ -36,7 +36,7 @@ namespace triton
     struct sShader;
     class XGeometryStorage;
     class XRenderPassExecutor;
-    class CRenderBatch;
+    class XRenderBatch;
 
     using index = types::u32;
 
@@ -182,7 +182,7 @@ namespace triton
         XRenderPass* _compositeFinal = nullptr;
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
-        std::vector<CRenderBatch> _batches = {};
+        std::vector<XRenderBatch> _batches = {};
 
         void CreateGeometryStorage();
         void CreateDefaultRenderTargets();
@@ -207,7 +207,7 @@ namespace triton
         void ExecuteDefaultRenderPasses();
         CVertexArray* CreateDefaultVertexArray();
         std::optional<triton::SGeometryView> StoreGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
-        std::optional<CRenderBatch> CreateBatch(const SGeometryView& geometry);
+        std::optional<XRenderBatch> CreateBatch(const SGeometryView& geometry);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
 
