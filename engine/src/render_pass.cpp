@@ -27,6 +27,7 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
     cBuffer* instanceBufferStatic = renderSubsystem->FetchResult<cBuffer*>();
     _instanceBufferStatic = _context->Create<XInstanceBuffer>(
         _context,
+        SRenderInstance::EUsage::STATIC,
         instanceBufferStatic
     );
 
@@ -40,6 +41,7 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
     cBuffer* instanceBufferDynamic = renderSubsystem->FetchResult<cBuffer*>();
     _instanceBufferDynamic = _context->Create<XInstanceBuffer>(
         _context,
+        SRenderInstance::EUsage::DYNAMIC,
         instanceBufferDynamic
     );
 
@@ -115,7 +117,7 @@ void triton::XRenderPass::WriteDynamicInstancesToGPU()
 
 triton::SInstanceBufferHandle triton::XRenderPass::AddInstance(SRenderInstance::EUsage usage, const XRenderBatch& batch, SRenderInstance& instance)
 {
-    SInstanceBufferHandle ibh;
+    SInstanceBufferHandle ibh = SInstanceBufferHandle(SRenderInstance::EUsage::NONE);
     if (usage == SRenderInstance::EUsage::STATIC)
     {
         ibh = _instanceBufferStatic->Add(instance);

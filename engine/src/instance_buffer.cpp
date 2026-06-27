@@ -13,12 +13,12 @@
 using namespace triton::ecs::components;
 using namespace types;
 
-triton::XInstanceBuffer::XInstanceBuffer(cContext* context) : cBuffer(context, 0, cBuffer::eType::NONE, 0, 0), _isCpuOnly(K_TRUE)
+triton::XInstanceBuffer::XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage) : cBuffer(context, 0, cBuffer::eType::NONE, 0, 0), _usage(usage), _isCpuOnly(K_TRUE)
 {
 	Initialize();
 }
 
-triton::XInstanceBuffer::XInstanceBuffer(cContext* context, cBuffer* buffer) : cBuffer(context, buffer->GetInstance(), buffer->GetBufferType(), buffer->GetByteSize(), buffer->GetSlot()), _isCpuOnly(K_FALSE)
+triton::XInstanceBuffer::XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage, cBuffer* buffer) : cBuffer(context, buffer->GetInstance(), buffer->GetBufferType(), buffer->GetByteSize(), buffer->GetSlot()), _usage(usage), _isCpuOnly(K_FALSE)
 {
 	Initialize();
 }
@@ -37,7 +37,7 @@ void triton::XInstanceBuffer::Initialize()
 
 triton::SInstanceBufferHandle triton::XInstanceBuffer::Add(SRenderInstance& instance)
 {
-	return _instances->Create(std::move(instance));
+	return _instances->Create(SInstanceBufferHandle(_usage), std::move(instance));
 }
 
 triton::SRenderInstance* triton::XInstanceBuffer::Get(SInstanceBufferHandle& handle)
