@@ -40,6 +40,6 @@ namespace triton
 		std::optional<triton::SInstanceBufferHandle> Add(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage, SRenderInstance& instance);
 		SRenderInstance* Get(SInstanceBufferHandle& handle);
 		void Remove(SInstanceBufferHandle& handle);
-		void Write(SRenderInstance::EUsage usage, types::usize offset, types::u8* destination);
+		types::usize Write(SRenderInstance::EUsage usage, types::usize offset, types::u8* destination);
 	};
 }

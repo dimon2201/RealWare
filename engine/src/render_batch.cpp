@@ -5,6 +5,8 @@
 #include "instance_buffer.hpp"
 #include "handle_allocator.hpp"
 
+using namespace types;
+
 triton::XRenderBatch::XRenderBatch(cContext* context, const SGeometryView& geometry) : iObject(context), _geometry(geometry)
 {
 	_staticInstances = _context->Create<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_context);
@@ -49,18 +51,23 @@ void triton::XRenderBatch::Remove(SInstanceBufferHandle& handle)
 		return _dynamicInstances->Destroy(handle);
 }
 
-void triton::XRenderBatch::Write(SRenderInstance::EUsage usage, types::usize offset, types::u8* destination)
+types::usize triton::XRenderBatch::Write(SRenderInstance::EUsage usage, types::usize offset, types::u8* destination)
 {
+	usize nextOffset;
 	if (usage == SRenderInstance::EUsage::STATIC)
 	{
 		_staticOffset = offset;
 		SBufferView bufferView = _staticInstances->GetData();
-		memcpy(&destination[0], bufferView._data, bufferView._byteSize);
+		memcpy(&destination[offset], bufferView._data, bufferView._byteSize);
+		nextOffset = offset + bufferView._byteSize;
 	}
 	else if (usage == SRenderInstance::EUsage::DYNAMIC)
 	{
 		_dynamicOffset = offset;
 		SBufferView bufferView = _dynamicInstances->GetData();
-		memcpy(&destination[0], bufferView._data, bufferView._byteSize);
+		memcpy(&destination[offset], bufferView._data, bufferView._byteSize);
+		nextOffset = offset + bufferView._byteSize;
 	}
+
+	return newOffset;
 }
