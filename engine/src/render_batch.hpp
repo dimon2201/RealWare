@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "geometry_view.hpp"
+
 namespace triton
 {
-	class SGeometryView;
-
 	class CRenderBatch final
 	{
 		SGeometryView _geometry = {};
