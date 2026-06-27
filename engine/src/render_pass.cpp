@@ -16,34 +16,6 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-    
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::STORAGE,
-        (cpuword)nullptr,
-        caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance),
-        0
-    ));
-    cBuffer* instanceBufferStatic = renderSubsystem->FetchResult<cBuffer*>();
-    _instanceBufferStatic = _context->Create<XInstanceBuffer>(
-        _context,
-        SRenderInstance::EUsage::STATIC,
-        instanceBufferStatic
-    );
-
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::STORAGE,
-        (cpuword)nullptr,
-        caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance),
-        0
-    ));
-    cBuffer* instanceBufferDynamic = renderSubsystem->FetchResult<cBuffer*>();
-    _instanceBufferDynamic = _context->Create<XInstanceBuffer>(
-        _context,
-        SRenderInstance::EUsage::DYNAMIC,
-        instanceBufferDynamic
-    );
 
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
@@ -84,17 +56,6 @@ triton::XRenderPass::~XRenderPass()
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)_materialBuffer
     ));
-
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        _instanceBufferDynamic->GetInstance()
-    ));
-    _context->Destroy<XInstanceBuffer>(_instanceBufferDynamic);
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        _instanceBufferStatic->GetInstance()
-    ));
-    _context->Destroy<XInstanceBuffer>(_instanceBufferStatic);
 }
 
 void triton::XRenderPass::WriteDirtyStaticInstancesToGPU()
