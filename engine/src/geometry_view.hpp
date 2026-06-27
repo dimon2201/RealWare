@@ -10,8 +10,10 @@ namespace triton
 	public:
 		types::u32 _vertexCount = 0;
 		types::u32 _indexCount = 0;
-		types::u8* _vertexAddress = nullptr;
-		types::u8* _indexAddress = nullptr;
+		types::u32 _vertexElementOffset = 0;
+		types::u32 _indexElementOffset = 0;
+		types::u8* _vertexData = nullptr;
+		types::u8* _indexData = nullptr;
 		EGraphicsBufferFormat _format = EGraphicsBufferFormat::NONE;
 	};
 }

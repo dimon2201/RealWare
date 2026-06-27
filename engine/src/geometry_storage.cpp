@@ -107,28 +107,36 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Store(EGraphicsBu
         (cpuword)indices
     ));
 
-    usize vertexCount = verticesByteSize;
+    usize vertexCount;
     usize indexCount = indicesByteSize / sizeof(u32);
-    usize vertexOffset = vertexBufferByteSize;
-    usize indexOffset = indexBufferByteSize;
+    usize vertexElementOffset;
+    usize indexElementOffset = indexBufferByteSize / sizeof(u32);
     switch (format)
     {
-    case EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3:
-        vertexCount /= 32;
-        vertexOffset /= 32;
-        break;
+        case EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3:
+        {
+            const usize kVertexByteSize = 32;
+            vertexCount = verticesByteSize / kVertexByteSize;
+            vertexElementOffset = vertexBufferByteSize / kVertexByteSize;
+            break;
+        }
 
-    default:
-        Print("Error: unsupported vertex buffer format!");
-        return std::nullopt;
+        default:
+        {
+            Print("Error: unsupported vertex buffer format!");
+            return std::nullopt;
+        }
     }
-    u8* vertexAddress = &_vertexBufferCPU->GetData()[vertexBufferByteSize];
-    u8* indexAddress = &_indexBufferCPU->GetData()[indexBufferByteSize];
+    u8* vertexData = &_vertexBufferCPU->GetData()[vertexBufferByteSize];
+    u8* indexData = &_indexBufferCPU->GetData()[indexBufferByteSize];
+
     SGeometryView geometry;
     geometry._vertexCount = vertexCount;
     geometry._indexCount = indexCount;
-    geometry._vertexAddress = vertexAddress;
-    geometry._indexAddress = indexAddress;
+    geometry._vertexElementOffset = vertexElementOffset;
+    geometry._indexElementOffset = indexElementOffset;
+    geometry._vertexData = vertexData;
+    geometry._indexData = indexData;
     geometry._format = format;
 
     return geometry;
