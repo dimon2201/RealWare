@@ -16,6 +16,8 @@ namespace triton
 	class SInstanceBufferHandle;
 	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
 	class XHandleAllocator;
+	template <typename TValue>
+	class XLinearArray;
 
 	struct SRenderBatchSlot final : public SSlot {};
 
