@@ -222,6 +222,21 @@ void triton::cGraphics::RemoveBatch(const SRenderBatchHandle& handle)
     _batchStorage->Remove(handle);
 }
 
+std::optional<triton::SInstanceBufferHandle> triton::cGraphics::CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch)
+{
+    return _batchStorage->AddInstance(batch, usage);
+}
+
+void triton::cGraphics::RemoveInstance(const SInstanceBufferHandle& instance)
+{
+    _batchStorage->RemoveInstance(instance);
+}
+
+void triton::cGraphics::DestroyInstance(const SInstanceBufferHandle& instance)
+{
+    _batchStorage->DestroyInstance(instance);
+}
+
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
