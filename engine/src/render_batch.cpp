@@ -2,6 +2,7 @@
 
 #include "render_batch.hpp"
 #include "context.hpp"
+#include "instance_buffer.hpp"
 
 triton::XRenderBatch::XRenderBatch(cContext* context, const SGeometryView& geometry) : iObject(context), _geometry(geometry)
 {
