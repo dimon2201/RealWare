@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <optional>
 #include "object.hpp"
 #include "geometry_view.hpp"
 #include "render_instance.hpp"
@@ -27,7 +28,7 @@ namespace triton
 		explicit XRenderBatch(cContext* context, const SGeometryView& geometry);
 		~XRenderBatch();
 
-		SInstanceBufferHandle Add(SRenderInstance::EUsage usage, SRenderInstance& instance);
+		std::optional<triton::SInstanceBufferHandle> Add(SRenderInstance::EUsage usage, SRenderInstance& instance);
 		SRenderInstance* Get(SInstanceBufferHandle& handle);
 		void Remove(SInstanceBufferHandle& handle);
 	};
