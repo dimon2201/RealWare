@@ -14,6 +14,8 @@ namespace triton
 	class cContext;
 	class XInstanceBuffer;
 	class SInstanceBufferHandle;
+	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
+	class XHandleAllocator;
 
 	struct SRenderBatchSlot final : public SSlot {};
 
@@ -24,8 +26,10 @@ namespace triton
 		TRITON_OBJECT(XRenderBatch)
 
 		SGeometryView _geometry = {};
-		XInstanceBuffer* _staticInstances = nullptr;
-		XInstanceBuffer* _dynamicInstances = nullptr;
+		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>* _staticInstances = nullptr;
+		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>* _dynamicInstances = nullptr;
+		XInstanceBuffer* _staticInstanceBuffer = nullptr;
+		XInstanceBuffer* _dynamicInstanceBuffer = nullptr;
 		types::usize _globalStaticInstanceOffset = 0;
 		types::usize _globalDynamicInstanceOffset = 0;
 
