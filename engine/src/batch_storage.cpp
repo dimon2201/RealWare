@@ -5,26 +5,27 @@
 #include "stack.hpp"
 #include "render_batch.hpp"
 #include "handle_allocator.hpp"
+#include "instance_buffer.hpp"
 
 triton::XBatchStorage::XBatchStorage(cContext* context) : iObject(context)
 {
-	_batches = _context->Create<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>>(_context);
+	_batches = _context->Create<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, XLinearArray<XRenderBatch>, XRenderBatch>>(_context);
 	_batches->Initialize();
 }
 
 triton::XBatchStorage::~XBatchStorage()
 {
-	_context->Destroy<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>>(_batches);
+	_context->Destroy<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, XLinearArray<XRenderBatch>, XRenderBatch>>(_batches);
 }
 
 std::optional<triton::SRenderBatchHandle> triton::XBatchStorage::Create(const SGeometryView& geometry)
 {
-	return _batches->Create(_context, geometry);
+	return _batches->Create(SRenderBatchHandle(), _context, geometry);
 }
 
 void triton::XBatchStorage::Remove(const SRenderBatchHandle& batch)
 {
-	_batches->Remove(batch);
+	_batches->Destroy(batch);
 }
 
 std::optional<triton::SInstanceBufferHandle> triton::XBatchStorage::AddInstance(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage)
@@ -36,6 +37,6 @@ std::optional<triton::SInstanceBufferHandle> triton::XBatchStorage::AddInstance(
 
 void triton::XBatchStorage::RemoveInstance(const SInstanceBufferHandle& instance)
 {
-	XRenderBatch* currentBatch = _batches->Get(batch);
+	XRenderBatch* currentBatch = _batches->Get(instance._batch);
 	currentBatch->Remove(instance);
 }
