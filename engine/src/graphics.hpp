@@ -13,6 +13,7 @@
 #include "graphics_buffer_formats.hpp"
 #include "geometry_view.hpp"
 #include "render_pass.hpp"
+#include "render_batch.hpp"
 
 namespace triton
 {
@@ -36,7 +37,8 @@ namespace triton
     struct sShader;
     class XGeometryStorage;
     class XRenderPassExecutor;
-    class XRenderBatch;
+    template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
+    class XHandleAllocator;
 
     using index = types::u32;
 
@@ -182,7 +184,7 @@ namespace triton
         XRenderPass* _compositeFinal = nullptr;
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
-        std::vector<XRenderBatch> _batches = {};
+        XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>* _batches = nullptr;
 
         void CreateGeometryStorage();
         void CreateDefaultRenderTargets();

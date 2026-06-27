@@ -6,6 +6,7 @@
 #include "object.hpp"
 #include "geometry_view.hpp"
 #include "render_instance.hpp"
+#include "handle.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -13,6 +14,10 @@ namespace triton
 	class cContext;
 	class XInstanceBuffer;
 	class SInstanceBufferHandle;
+
+	struct SRenderBatchSlot final : public SSlot {};
+
+	struct SRenderBatchHandle final : public SHandle {};
 
 	class XRenderBatch final : public iObject
 	{
