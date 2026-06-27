@@ -34,20 +34,12 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
         3
     ));
     _textureBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    
-    sChunkAllocatorDescriptor cad = {};
-    cad.chunkByteSize = caps->hashTableChunkByteSize;
-    cad.maxChunkCount = caps->hashTableMaxChunkCount;
-    cad.hashTableSize = caps->hashTableSize;
-    _dirtyStaticInstances = _context->Create<cStack<SInstanceBufferHandle>>(_context, cad);
 }
 
 triton::XRenderPass::~XRenderPass()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     
-    _context->Destroy<cStack<SInstanceBufferHandle>>(_dirtyStaticInstances);
-
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)_textureBuffer
@@ -58,29 +50,6 @@ triton::XRenderPass::~XRenderPass()
     ));
 }
 
-void triton::XRenderPass::WriteDirtyStaticInstancesToGPU()
-{
-    CThreadGuard::AssertRender();
-
-    while (!_dirtyStaticInstances->IsEmpty())
-    {
-        SInstanceBufferHandle handle = *_dirtyStaticInstances->Pop().data;
-        _instanceBufferStatic->Write(handle);
-    }
-}
-
-void triton::XRenderPass::WriteDynamicInstancesToGPU()
-{
-    CThreadGuard::AssertRender();
-
-    _instanceBufferDynamic->WriteAll();
-}
-
-void triton::XRenderPass::WriteStaticInstanceToGPU(SInstanceBufferHandle& instance)
-{
-    _dirtyStaticInstances->Push(std::move(instance));
-}
-
 void triton::XRenderPass::Bind()
 {
     CThreadGuard::AssertRender();
@@ -89,19 +58,10 @@ void triton::XRenderPass::Bind()
     gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
 }
 
-void triton::XRenderPass::SynchronizeWithGPU()
-{
-    CThreadGuard::AssertRender();
-
-    WriteDirtyStaticInstancesToGPU();
-    WriteDynamicInstancesToGPU();
-}
-
 void triton::XRenderPass::Execute()
 {
     CThreadGuard::AssertRender();
 
-    SynchronizeWithGPU();
     Bind();
 }
 

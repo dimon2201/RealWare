@@ -66,15 +66,10 @@ namespace triton
         cBuffer*                        _materialBuffer = nullptr;
         cBuffer*                        _textureBuffer = nullptr;
 
-        void WriteDirtyStaticInstancesToGPU();
-        void WriteDynamicInstancesToGPU();
-        void SynchronizeWithGPU();
-
     public:
         explicit XRenderPass(cContext* context);
         ~XRenderPass() override;
 
-        void WriteStaticInstanceToGPU(SInstanceBufferHandle& instance);
         void Bind();
         void Execute();
         void ResizeViewport(const cVector2& size);
