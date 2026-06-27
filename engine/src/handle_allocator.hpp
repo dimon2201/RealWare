@@ -51,14 +51,16 @@ namespace triton
 				_freeSlots = _context->Create<cStack<types::usize>>(_context, cad);
 			if (!_reverseMap)
 				_reverseMap = _context->Create<cStack<types::usize>>(_context, cad);
+			sChunkAllocatorDescriptor cadObjects = {};
+			cadObjects.chunkByteSize = caps->handleAllocatorObjectCount * sizeof(TObject);
 			if (!_objects)
-				_objects = _context->Create<cStack<TObject>>(_context, cad);
+				_objects = _context->Create<TDataStructure>(_context, cadObjects);
 		}
 
 		void Free()
 		{
 			if (_objects)
-				_context->Destroy<cStack<TObject>>(_objects);
+				_context->Destroy<TDataStructure>(_objects);
 			if (_reverseMap)
 				_context->Destroy<cStack<types::usize>>(_reverseMap);
 			if (_freeSlots)

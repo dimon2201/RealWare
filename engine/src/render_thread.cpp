@@ -50,7 +50,6 @@ void triton::cRenderThread::ThreadFunction()
 	}
 
 
-	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 	iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
@@ -72,6 +71,7 @@ void triton::cRenderThread::ThreadFunction()
 			// Full job
 
 			// Execute render passes
+			cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 			gfx->ExecuteDefaultRenderPasses();
 
 			// Core events
@@ -82,6 +82,7 @@ void triton::cRenderThread::ThreadFunction()
 		else if (mainThreadSignal == EFrameState::EXECUTE_COMMANDS)
 		{
 			// Execute render commands only
+			cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 			MakeContextCurrent(renderFrame, gfxContextBackend);
 			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
 		}

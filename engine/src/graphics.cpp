@@ -178,6 +178,8 @@ void Shutdown()
 
 void triton::cGraphics::ExecuteDefaultRenderPasses()
 {
+    CThreadGuard::AssertRender();
+
     _opaque->Execute();
 }
 

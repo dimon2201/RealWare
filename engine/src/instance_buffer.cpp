@@ -13,16 +13,16 @@
 using namespace triton::ecs::components;
 using namespace types;
 
-void triton::XInstanceBuffer::Initialize()
+triton::XInstanceBuffer::XInstanceBuffer(cContext* context, cBuffer* buffer) : cBuffer(context, buffer->GetInstance(), buffer->GetBufferType(), buffer->GetByteSize(), buffer->GetSlot())
 {
-	if (!_instances)
-		_instances = _context->Create<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_context);
+	_instances = _context->Create<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_context);
+	_instances->Initialize();
 }
 
-void triton::XInstanceBuffer::Free()
+triton::XInstanceBuffer::~XInstanceBuffer()
 {
-	if (_instances)
-		_context->Destroy<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_instances);
+	_instances->Free();
+	_context->Destroy<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_instances);
 }
 
 triton::SInstanceBufferHandle triton::XInstanceBuffer::Add(SRenderInstance& instance)
@@ -42,25 +42,27 @@ void triton::XInstanceBuffer::Remove(SInstanceBufferHandle& handle)
 
 void triton::XInstanceBuffer::Write(const SInstanceBufferHandle& handle)
 {
-	SRenderCommand cmd = SRenderCommand(
-		ERenderCommand::WRITE_BUFFER,
-		(cpuword)this,
+	CThreadGuard::AssertRender();
+
+	_context->GetBackend<iGraphicsResourceBackend>()->WriteBuffer(
+		this,
 		handle._indexInArray * sizeof(SRenderInstance),
 		sizeof(SRenderInstance),
-		(cpuword)_instances->Get(handle)
+		(const u8*)_instances->Get(handle)
 	);
-	_context->GetSubsystem<XRenderSubsystem>()->PushCommand(cmd);
 }
 
 void triton::XInstanceBuffer::WriteAll()
 {
+	CThreadGuard::AssertRender();
+
 	SBufferView bufferView = _instances->GetData();
-	SRenderCommand cmd = SRenderCommand(
-		ERenderCommand::WRITE_BUFFER,
-		(cpuword)this,
+	if (bufferView._byteSize == 0)
+		return;
+	_context->GetBackend<iGraphicsResourceBackend>()->WriteBuffer(
+		this,
 		0,
 		bufferView._byteSize,
-		(cpuword)bufferView._data
+		(const u8*)bufferView._data
 	);
-	_context->GetSubsystem<XRenderSubsystem>()->PushCommand(cmd);
 }

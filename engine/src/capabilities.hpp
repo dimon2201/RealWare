@@ -40,5 +40,6 @@ namespace triton
         types::usize hashTableMaxChunkCount = 256;
         types::usize hashTableSize = 4096;
         types::usize futureResultBufferByteSize = 16 * 1024;
+        types::usize handleAllocatorObjectCount = 16 * 1024;
     };
 }

@@ -22,7 +22,7 @@ namespace triton
 		TValue* _data = nullptr;
 
 	public:
-		explicit XLinearArray(cContext* context, types::usize maxByteSize);
+		explicit XLinearArray(cContext* context, const sChunkAllocatorDescriptor& cad);
 		virtual ~XLinearArray() override final;
 
 		template<typename... Args>
@@ -45,27 +45,24 @@ namespace triton
 
 		inline SBufferView GetData() const
 		{
-			return SBufferView((void*)_data, _elementCount * sizeof(XLinearArray));
+			return SBufferView((void*)_data, _elementCount * sizeof(TValue));
 		}
 	};
 }
 
 template <typename TValue>
-triton::XLinearArray<TValue>::XLinearArray(cContext* context, types::usize maxByteSize) : iObject(context)
+triton::XLinearArray<TValue>::XLinearArray(cContext* context, const sChunkAllocatorDescriptor& cad) : iObject(context)
 {
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-	_data = (TValue*)memoryAllocator->Allocate(maxByteSize, caps->memoryAlignment);
+	_data = (TValue*)memoryAllocator->Allocate(cad.chunkByteSize, caps->memoryAlignment);
 }
 
 template <typename TValue>
 triton::XLinearArray<TValue>::~XLinearArray()
 {
-	for (types::usize i = 0; i < _elementCount; i++)
-		Pop();
-
-	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-	memoryAllocator->Deallocate(_data);
+	Clear();
+	_context->GetMemoryAllocator()->Deallocate(_data);
 }
 
 template <typename TValue>
