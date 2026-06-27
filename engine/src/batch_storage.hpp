@@ -32,5 +32,6 @@ namespace triton
         void Remove(const SRenderBatchHandle& batch);
         std::optional<SInstanceBufferHandle> AddInstance(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage);
         void RemoveInstance(const SInstanceBufferHandle& instance);
+        void DestroyInstance(const SInstanceBufferHandle& instance);
     };
 }
