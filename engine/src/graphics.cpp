@@ -1229,3 +1229,37 @@ void triton::cGraphics::MarkStaticBufferDirty()
 {
     _isStaticBufferDirty = K_TRUE;
 }
+
+void triton::cGraphics::WriteBatchInstances(SRenderInstance::EUsage usage)
+{
+    usize instanceBufferByteSize;
+    if (usage == SRenderInstance::EUsage::STATIC)
+        instanceBufferByteSize = _instanceBufferStatic->GetByteSize();
+    else if (usage == SRenderInstance::EUsage::DYNAMIC)
+        instanceBufferByteSize = _instanceBufferDynamic->GetByteSize();
+
+    u8* tempCpuBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(instanceBufferByteSize, 64);
+    SBufferView<XRenderBatch> batchBuffer = _batchStorage->GetBatches();
+    usize nextOffset = 0;
+    for (usize i = 0; i < batchBuffer._elementCount; i++)
+    {
+        XRenderBatch& batch = batchBuffer._elements[i];
+        nextOffset += batch.Write(usage, nextOffset, &tempCpuBuffer[0]);
+    }
+    if (usage == SRenderInstance::EUsage::STATIC)
+        _instanceBufferStatic->Write(0, &tempCpuBuffer[0], nextOffset);
+    else if (usage == SRenderInstance::EUsage::DYNAMIC)
+        _instanceBufferDynamic->Write(0, &tempCpuBuffer[0], nextOffset);
+    _context->GetMemoryAllocator()->Deallocate(tempCpuBuffer);
+}
+
+void triton::cGraphics::WriteDirtyStaticInstances()
+{
+    if (_isStaticBufferDirty == K_TRUE)
+        WriteBatchInstances(SRenderInstance::EUsage::STATIC);
+}
+
+void triton::cGraphics::WriteDynamicInstances()
+{
+    WriteBatchInstances(SRenderInstance::EUsage::DYNAMIC);
+}

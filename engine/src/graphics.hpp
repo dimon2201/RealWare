@@ -199,6 +199,7 @@ namespace triton
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
         void MarkStaticBufferDirty();
+        void WriteBatchInstances(SRenderInstance::EUsage usage);
         void WriteDirtyStaticInstances();
         void WriteDynamicInstances();
 
