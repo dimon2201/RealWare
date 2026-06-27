@@ -212,7 +212,7 @@ namespace triton
         std::optional<SRenderBatchHandle> CreateBatch(const SGeometryView& geometry);
         void RemoveBatch(const SRenderBatchHandle& handle);
         std::optional<SInstanceBufferHandle> CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch);
-        void RemoveInstance(const SInstanceBufferHandle& instance);
+        void DestroyInstance(const SInstanceBufferHandle& instance);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
 
