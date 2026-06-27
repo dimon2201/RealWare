@@ -58,16 +58,16 @@ types::usize triton::XRenderBatch::Write(SRenderInstance::EUsage usage, types::u
 	{
 		_staticOffset = offset;
 		SBufferView bufferView = _staticInstances->GetData();
-		memcpy(&destination[offset], bufferView._data, bufferView._byteSize);
+		memcpy(&destination[offset], bufferView._elements, bufferView._byteSize);
 		nextOffset = offset + bufferView._byteSize;
 	}
 	else if (usage == SRenderInstance::EUsage::DYNAMIC)
 	{
 		_dynamicOffset = offset;
 		SBufferView bufferView = _dynamicInstances->GetData();
-		memcpy(&destination[offset], bufferView._data, bufferView._byteSize);
+		memcpy(&destination[offset], bufferView._elements, bufferView._byteSize);
 		nextOffset = offset + bufferView._byteSize;
 	}
 
-	return newOffset;
+	return nextOffset;
 }
