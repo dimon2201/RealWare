@@ -77,7 +77,6 @@ namespace triton
         explicit XRenderPass(cContext* context);
         ~XRenderPass() override;
 
-        SInstanceBufferHandle AddInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch, SRenderInstance& instance);
         void WriteStaticInstanceToGPU(SInstanceBufferHandle& instance);
         void Bind();
         void Execute();
