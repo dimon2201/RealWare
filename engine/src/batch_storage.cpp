@@ -26,3 +26,22 @@ void triton::XBatchStorage::Remove(const SRenderBatchHandle& batch)
 {
 	_batches->Remove(batch);
 }
+
+std::optional<triton::SInstanceBufferHandle> triton::XBatchStorage::AddInstance(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage)
+{
+	XRenderBatch* currentBatch = _batches->Get(batch);
+
+	return currentBatch->Add(batch, usage, SRenderInstance());
+}
+
+void triton::XBatchStorage::RemoveInstance(const SInstanceBufferHandle& instance)
+{
+	XRenderBatch* currentBatch = _batches->Get(batch);
+	currentBatch->Remove(instance);
+}
+
+void triton::XBatchStorage::DestroyInstance(const SInstanceBufferHandle& instance)
+{
+	XRenderBatch* currentBatch = _batches->Get(batch);
+	currentBatch->Destroy(instance);
+}
