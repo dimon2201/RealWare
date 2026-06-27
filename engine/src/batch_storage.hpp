@@ -33,7 +33,7 @@ namespace triton
         std::optional<SInstanceBufferHandle> AddInstance(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage);
         void RemoveInstance(const SInstanceBufferHandle& instance);
 
-        inline SBufferView GetBatchData() const
+        inline SBufferView<XRenderBatch> GetBatches() const
         {
             return _batches->GetData();
         }
