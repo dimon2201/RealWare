@@ -20,10 +20,9 @@ namespace triton
         SRenderInstance() = default;
         SRenderInstance(types::s32 materialIndex, const cTransform& transform);
 
-        EUsage _usage = EUsage::NONE;
         types::f32 _use2D = 0.0f;
         types::s32 _materialIndex = -1;
-        types::dword _pad = {};
+        types::dword _pad[2] = {};
         cMatrix4 _world = cMatrix4(1.0f);
     };
 }
