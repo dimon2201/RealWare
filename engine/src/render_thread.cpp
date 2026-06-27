@@ -150,6 +150,17 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 				);
 				break;
 			}
+			case ERenderCommand::CREATE_BUFFER:
+			{
+				cBuffer* resultBuffer = resourceBackend->CreateBuffer(
+					(cBuffer::eType)cmd->_args._argA,
+					(u8*)cmd->_args._argB,
+					cmd->_args._argC,
+					cmd->_args._argD
+				);
+				memcpy(&_resultBuffer[0], &resultBuffer, sizeof(cBuffer*));
+				break;
+			}
 			case ERenderCommand::CREATE_TEXTURE:
 			{
 				cTexture* resultTexture = resourceBackend->CreateTexture(
