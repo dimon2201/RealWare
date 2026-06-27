@@ -1237,6 +1237,8 @@ void triton::cGraphics::WriteBatchInstances(SRenderInstance::EUsage usage)
         instanceBufferByteSize = _instanceBufferStatic->GetByteSize();
     else if (usage == SRenderInstance::EUsage::DYNAMIC)
         instanceBufferByteSize = _instanceBufferDynamic->GetByteSize();
+    else
+        return;
 
     u8* tempCpuBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(instanceBufferByteSize, 64);
     SBufferView<XRenderBatch> batchBuffer = _batchStorage->GetBatches();
