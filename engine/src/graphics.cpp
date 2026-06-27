@@ -29,6 +29,7 @@
 #include "stack.hpp"
 #include "render_subsystem.hpp"
 #include "render_batch.hpp"
+#include "handle_allocator.hpp"
 
 using namespace types;
 
@@ -67,6 +68,7 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
     
 triton::cGraphics::cGraphics(cContext* context) : iObject(context)
 {
+    _batches = _context->Create<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>>(_context);
     CreateGeometryStorage();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
@@ -74,9 +76,10 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context)
 
 triton::cGraphics::~cGraphics()
 {
-    DestroyGeometryStorage();
-    DestroyDefaultRenderTargets();
     DestroyDefaultRenderPasses();
+    DestroyDefaultRenderTargets();
+    DestroyGeometryStorage();
+    _context->Destroy<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>>(_batches);
 }
 
 void Initialize()
@@ -208,12 +211,14 @@ std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsB
     return _geometryStorage->Store(format, vertices, verticesByteSize, indices, indicesByteSize);
 }
 
-std::optional<triton::XRenderBatch> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
+std::optional<triton::SRenderBatchHandle> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
 {
-    XRenderBatch rb = XRenderBatch(_context, geometry);
-    _batches.push_back(rb);
+    return _batches->Create(SRenderBatchHandle(), _context, geometry);
+}
 
-    return rb;
+void triton::cGraphics::RemoveBatch(const SRenderBatchHandle& handle)
+{
+    _batches->Destroy(handle);
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)

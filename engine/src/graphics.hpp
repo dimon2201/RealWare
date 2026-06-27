@@ -209,7 +209,8 @@ namespace triton
         void ExecuteDefaultRenderPasses();
         CVertexArray* CreateDefaultVertexArray();
         std::optional<triton::SGeometryView> StoreGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
-        std::optional<XRenderBatch> CreateBatch(const SGeometryView& geometry);
+        std::optional<SRenderBatchHandle> CreateBatch(const SGeometryView& geometry);
+        void RemoveBatch(const SRenderBatchHandle& handle);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
 
