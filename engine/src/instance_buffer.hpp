@@ -41,9 +41,13 @@ namespace triton
 	{
 		TRITON_OBJECT(XInstanceBuffer)
 
+		types::boolean _isCpuOnly = types::K_FALSE;
 		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>* _instances = nullptr;
 
+		void Initialize();
+
 	public:
+		explicit XInstanceBuffer(cContext* context);
 		explicit XInstanceBuffer(cContext* context, cBuffer* buffer);
 		~XInstanceBuffer() override;
 

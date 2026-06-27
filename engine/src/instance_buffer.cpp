@@ -13,16 +13,26 @@
 using namespace triton::ecs::components;
 using namespace types;
 
-triton::XInstanceBuffer::XInstanceBuffer(cContext* context, cBuffer* buffer) : cBuffer(context, buffer->GetInstance(), buffer->GetBufferType(), buffer->GetByteSize(), buffer->GetSlot())
+triton::XInstanceBuffer::XInstanceBuffer(cContext* context) : cBuffer(context, 0, cBuffer::eType::NONE, 0, 0), _isCpuOnly(K_TRUE)
 {
-	_instances = _context->Create<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_context);
-	_instances->Initialize();
+	Initialize();
+}
+
+triton::XInstanceBuffer::XInstanceBuffer(cContext* context, cBuffer* buffer) : cBuffer(context, buffer->GetInstance(), buffer->GetBufferType(), buffer->GetByteSize(), buffer->GetSlot()), _isCpuOnly(K_FALSE)
+{
+	Initialize();
 }
 
 triton::XInstanceBuffer::~XInstanceBuffer()
 {
 	_instances->Free();
 	_context->Destroy<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_instances);
+}
+
+void triton::XInstanceBuffer::Initialize()
+{
+	_instances = _context->Create<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_context);
+	_instances->Initialize();
 }
 
 triton::SInstanceBufferHandle triton::XInstanceBuffer::Add(SRenderInstance& instance)
