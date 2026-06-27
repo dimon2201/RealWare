@@ -992,12 +992,15 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     transparentBlendState.dstFactors[0] = EBlendFactor::ONE;
     transparentBlendState.srcFactors[1] = EBlendFactor::ZERO;
     transparentBlendState.dstFactors[1] = EBlendFactor::INV_SRC_COLOR;
-    _transparent = _context->Create<XRenderPass>(_context);
-    _transparent->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
-    _transparent->SetInputBuffers({
+    const std::vector<cBuffer*> transparentInputBuffers = {
         _geometryStorage->GetVertexBuffer(),
         _geometryStorage->GetIndexBuffer()
-    });
+    };
+    XVertexArray* transparentVertexArray = _context->Create<XVertexArray>(_context, transparentInputBuffers);
+    _transparent = _context->Create<XRenderPass>(_context);
+    _transparent->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
+    _transparent->SetVertexArray(transparentVertexArray);
+    _transparent->SetInputBuffers(transparentInputBuffers);
     _transparent->SetInputTextures({
         SRenderPassTexture("TextureAtlas", textureAtlas->GetAtlas())
     });
