@@ -35,7 +35,11 @@ namespace triton
 
 	class SInstanceBufferSlot final : public SSlot {};
 
-	class SInstanceBufferHandle final : public SHandle {};
+	class SInstanceBufferHandle final : public SHandle
+	{
+	public:
+		SRenderInstance::EUsage _usage = SRenderInstance::EUsage::NONE;
+	};
 
 	class XInstanceBuffer final : public cBuffer
 	{
