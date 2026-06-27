@@ -185,9 +185,11 @@ namespace triton
         XRenderTarget* _transparentRenderTarget = nullptr;
 
         void CreateGeometryStorage();
+        void CreateBatchStorage();
         void CreateDefaultRenderTargets();
         void CreateDefaultRenderPasses();
         void DestroyGeometryStorage();
+        void DestroyBatchStorage();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
 

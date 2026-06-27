@@ -68,8 +68,8 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
     
 triton::cGraphics::cGraphics(cContext* context) : iObject(context)
 {
-    _batches = _context->Create<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>>(_context);
     CreateGeometryStorage();
+    CreateBatchStorage();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
 }
@@ -78,8 +78,8 @@ triton::cGraphics::~cGraphics()
 {
     DestroyDefaultRenderPasses();
     DestroyDefaultRenderTargets();
+    DestroyBatchStorage();
     DestroyGeometryStorage();
-    _context->Destroy<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>>(_batches);
 }
 
 void Initialize()
@@ -876,6 +876,11 @@ void triton::cGraphics::CreateGeometryStorage()
     _geometryStorage->Initialize();
 }
 
+void triton::cGraphics::CreateBatchStorage()
+{
+    _batchStorage = _context->Create<XBatchStorage>(_context);
+}
+
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
@@ -1093,6 +1098,12 @@ void triton::cGraphics::DestroyGeometryStorage()
 {
     if (_geometryStorage)
         _context->Destroy<XGeometryStorage>(_geometryStorage);
+}
+
+void triton::cGraphics::DestroyBatchStorage()
+{
+    if (_batchStorage)
+        _context->Destroy<XBatchStorage>(_batchStorage);
 }
 
 void triton::cGraphics::DestroyDefaultRenderTargets()
