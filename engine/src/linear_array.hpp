@@ -69,7 +69,7 @@ template <typename TValue>
 template <typename... Args>
 triton::SStackValue<TValue> triton::XLinearArray<TValue>::Push(Args&&... args)
 {
-	TValue* object = _context->Create<TValue>((types::u8*)_data, _elementCount, std::forward<Args>(args)...);
+	TValue* object = _context->Create<TValue>((types::u8*)_data, (types::u32)_elementCount, std::forward<Args>(args)...);
 	_elementCount += 1;
 
 	SStackValue<TValue> sv = {};
