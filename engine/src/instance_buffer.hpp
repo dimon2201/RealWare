@@ -7,6 +7,7 @@
 #include "tag.hpp"
 #include "render_data.hpp"
 #include "handle.hpp"
+#include "render_batch.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -38,9 +39,10 @@ namespace triton
 	class SInstanceBufferHandle final : public SHandle
 	{
 	public:
+		SRenderBatchHandle _batch = SRenderBatchHandle();
 		SRenderInstance::EUsage _usage = SRenderInstance::EUsage::NONE;
 
-		SInstanceBufferHandle(SRenderInstance::EUsage usage) : SHandle(), _usage(usage) {}
+		SInstanceBufferHandle(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage) : SHandle(), _batch(batch), _usage(usage) {}
 	};
 
 	class XInstanceBuffer final : public cBuffer
