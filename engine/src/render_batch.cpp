@@ -21,12 +21,12 @@ triton::XRenderBatch::~XRenderBatch()
 	_context->Destroy<XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>>(_staticInstances);
 }
 
-std::optional<triton::SInstanceBufferHandle> triton::XRenderBatch::Add(SRenderInstance::EUsage usage, SRenderInstance& instance)
+std::optional<triton::SInstanceBufferHandle> triton::XRenderBatch::Add(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage, SRenderInstance& instance)
 {
 	if (usage == SRenderInstance::EUsage::STATIC)
-		return _staticInstances->Create(SInstanceBufferHandle(usage), instance);
+		return _staticInstances->Create(SInstanceBufferHandle(batch, usage), instance);
 	else if (usage == SRenderInstance::EUsage::DYNAMIC)
-		return _dynamicInstances->Create(SInstanceBufferHandle(usage), instance);
+		return _dynamicInstances->Create(SInstanceBufferHandle(batch, usage), instance);
 
 	return std::nullopt;
 }

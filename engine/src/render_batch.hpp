@@ -37,7 +37,7 @@ namespace triton
 		explicit XRenderBatch(cContext* context, const SGeometryView& geometry);
 		~XRenderBatch();
 
-		std::optional<triton::SInstanceBufferHandle> Add(SRenderInstance::EUsage usage, SRenderInstance& instance);
+		std::optional<triton::SInstanceBufferHandle> Add(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage, SRenderInstance& instance);
 		SRenderInstance* Get(SInstanceBufferHandle& handle);
 		void Remove(SInstanceBufferHandle& handle);
 	};
