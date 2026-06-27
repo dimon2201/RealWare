@@ -48,18 +48,10 @@ namespace triton
 		TRITON_OBJECT(XInstanceBuffer)
 
 		SRenderInstance::EUsage _usage = SRenderInstance::EUsage::NONE;
-		types::boolean _isCpuOnly = types::K_FALSE;
-		XHandleAllocator<SInstanceBufferSlot, SInstanceBufferHandle, XLinearArray<SRenderInstance>, SRenderInstance>* _instances = nullptr;
-
-		void Initialize();
 
 	public:
 		explicit XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage);
 		explicit XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage, cBuffer* buffer);
 		~XInstanceBuffer() override;
-
-		SInstanceBufferHandle Add(SRenderInstance& instance);
-		SRenderInstance* Get(SInstanceBufferHandle& handle);
-		void Remove(SInstanceBufferHandle& handle);
 	};
 }
