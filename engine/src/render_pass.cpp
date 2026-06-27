@@ -134,6 +134,14 @@ void triton::XRenderPass::WriteStaticInstanceToGPU(SInstanceBufferHandle& instan
     _dirtyStaticInstances->Push(std::move(instance));
 }
 
+void triton::XRenderPass::Bind()
+{
+    CThreadGuard::AssertRender();
+
+    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetSubsystem<iGraphicsPipelineBackend>();
+    gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
+}
+
 void triton::XRenderPass::SynchronizeWithGPU()
 {
     CThreadGuard::AssertRender();
@@ -147,6 +155,7 @@ void triton::XRenderPass::Execute()
     CThreadGuard::AssertRender();
 
     SynchronizeWithGPU();
+    Bind();
 }
 
 void triton::XRenderPass::ResizeViewport(const cVector2& size)

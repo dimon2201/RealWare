@@ -77,6 +77,7 @@ namespace triton
 
         SInstanceBufferHandle AddInstance(SRenderInstance::EUsage usage, SRenderInstance& instance);
         void WriteStaticInstanceToGPU(SInstanceBufferHandle& instance);
+        void Bind();
         void Execute();
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
