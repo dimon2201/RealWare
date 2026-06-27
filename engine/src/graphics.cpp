@@ -71,6 +71,7 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context)
 {
     CreateGeometryStorage();
     CreateBatchStorage();
+    CreateInstanceBuffers();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
 }
@@ -79,6 +80,7 @@ triton::cGraphics::~cGraphics()
 {
     DestroyDefaultRenderPasses();
     DestroyDefaultRenderTargets();
+    DestroyInstanceBuffers();
     DestroyBatchStorage();
     DestroyGeometryStorage();
 }
@@ -892,6 +894,39 @@ void triton::cGraphics::CreateBatchStorage()
     _batchStorage = _context->Create<XBatchStorage>(_context);
 }
 
+void triton::cGraphics::CreateInstanceBuffers()
+{
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    const sCapabilities* caps = app->GetCapabilities();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance),
+        0
+    ));
+    cBuffer* instanceBufferStatic = renderSubsystem->FetchResult<cBuffer*>();
+    _instanceBufferStatic = _context->Create<XInstanceBuffer>(
+        _context,
+        SRenderInstance::EUsage::STATIC,
+        instanceBufferStatic
+    );
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance),
+        0
+    ));
+    cBuffer* instanceBufferDynamic = renderSubsystem->FetchResult<cBuffer*>();
+    _instanceBufferDynamic = _context->Create<XInstanceBuffer>(
+        _context,
+        SRenderInstance::EUsage::DYNAMIC,
+        instanceBufferDynamic
+    );
+}
+
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
@@ -1115,6 +1150,21 @@ void triton::cGraphics::DestroyBatchStorage()
 {
     if (_batchStorage)
         _context->Destroy<XBatchStorage>(_batchStorage);
+}
+
+void triton::cGraphics::DestroyInstanceBuffers()
+{
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        _instanceBufferDynamic->GetInstance()
+    ));
+    _context->Destroy<XInstanceBuffer>(_instanceBufferDynamic);
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        _instanceBufferStatic->GetInstance()
+    ));
+    _context->Destroy<XInstanceBuffer>(_instanceBufferStatic);
 }
 
 void triton::cGraphics::DestroyDefaultRenderTargets()

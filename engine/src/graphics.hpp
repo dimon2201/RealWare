@@ -37,6 +37,7 @@ namespace triton
     class XGeometryStorage;
     class XRenderPassExecutor;
     class XBatchStorage;
+    class XInstanceBuffer;
 
     using index = types::u32;
 
@@ -176,6 +177,8 @@ namespace triton
         XGeometryStorage* _geometryStorage = nullptr;
         XBatchStorage* _batchStorage = nullptr;
         XRenderPassExecutor* _renderPassExecutor = nullptr;
+        XInstanceBuffer* _instanceBufferStatic = nullptr;
+        XInstanceBuffer* _instanceBufferDynamic = nullptr;
         XRenderPass* _opaque = nullptr;
         XRenderPass* _transparent = nullptr;
         XRenderPass* _text = nullptr;
@@ -186,10 +189,12 @@ namespace triton
 
         void CreateGeometryStorage();
         void CreateBatchStorage();
+        void CreateInstanceBuffers();
         void CreateDefaultRenderTargets();
         void CreateDefaultRenderPasses();
         void DestroyGeometryStorage();
         void DestroyBatchStorage();
+        void DestroyInstanceBuffers();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
 
