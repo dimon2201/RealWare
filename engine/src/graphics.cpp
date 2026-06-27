@@ -226,11 +226,17 @@ void triton::cGraphics::RemoveBatch(const SRenderBatchHandle& handle)
 
 std::optional<triton::SInstanceBufferHandle> triton::cGraphics::CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch)
 {
+    if (usage == SRenderInstance::EUsage::STATIC)
+        MarkStaticBufferDirty();
+
     return _batchStorage->AddInstance(batch, usage);
 }
 
 void triton::cGraphics::DestroyInstance(const SInstanceBufferHandle& instance)
 {
+    if (instance._usage == SRenderInstance::EUsage::STATIC)
+        MarkStaticBufferDirty();
+
     _batchStorage->RemoveInstance(instance);
 }
 
@@ -1214,4 +1220,9 @@ void triton::cGraphics::DestroyDefaultRenderPasses()
         _context->Destroy<XRenderPass>(_transparent);
     if (_opaque)
         _context->Destroy<XRenderPass>(_opaque);
+}
+
+void triton::cGraphics::MarkStaticBufferDirty()
+{
+    _isStaticBufferDirty = K_TRUE;
 }

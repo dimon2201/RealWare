@@ -179,6 +179,7 @@ namespace triton
         XRenderPassExecutor* _renderPassExecutor = nullptr;
         XInstanceBuffer* _instanceBufferStatic = nullptr;
         XInstanceBuffer* _instanceBufferDynamic = nullptr;
+        types::boolean _isStaticBufferDirty = types::K_FALSE;
         XRenderPass* _opaque = nullptr;
         XRenderPass* _transparent = nullptr;
         XRenderPass* _text = nullptr;
@@ -197,6 +198,7 @@ namespace triton
         void DestroyInstanceBuffers();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
+        void MarkStaticBufferDirty();
 
 	public:
         enum class eAPI
