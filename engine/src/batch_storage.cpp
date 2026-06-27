@@ -39,9 +39,3 @@ void triton::XBatchStorage::RemoveInstance(const SInstanceBufferHandle& instance
 	XRenderBatch* currentBatch = _batches->Get(batch);
 	currentBatch->Remove(instance);
 }
-
-void triton::XBatchStorage::DestroyInstance(const SInstanceBufferHandle& instance)
-{
-	XRenderBatch* currentBatch = _batches->Get(batch);
-	currentBatch->Destroy(instance);
-}

@@ -227,14 +227,9 @@ std::optional<triton::SInstanceBufferHandle> triton::cGraphics::CreateInstance(S
     return _batchStorage->AddInstance(batch, usage);
 }
 
-void triton::cGraphics::RemoveInstance(const SInstanceBufferHandle& instance)
-{
-    _batchStorage->RemoveInstance(instance);
-}
-
 void triton::cGraphics::DestroyInstance(const SInstanceBufferHandle& instance)
 {
-    _batchStorage->DestroyInstance(instance);
+    _batchStorage->RemoveInstance(instance);
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
