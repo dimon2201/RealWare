@@ -113,6 +113,22 @@ void triton::XRenderPass::WriteDynamicInstancesToGPU()
     _instanceBufferDynamic->WriteAll();
 }
 
+triton::SInstanceBufferHandle triton::XRenderPass::AddInstance(SRenderInstance::EUsage usage, SRenderInstance& instance)
+{
+    SInstanceBufferHandle ibh;
+    if (usage == SRenderInstance::EUsage::STATIC)
+    {
+        ibh = _instanceBufferStatic->Add(instance);
+        _dirtyStaticInstances->Push(ibh);
+    }
+    else if (usage == SRenderInstance::EUsage::DYNAMIC)
+    {
+        ibh = _instanceBufferDynamic->Add(instance);
+    }
+
+    return ibh;
+}
+
 void triton::XRenderPass::WriteStaticInstanceToGPU(SInstanceBufferHandle& instance)
 {
     _dirtyStaticInstances->Push(std::move(instance));
