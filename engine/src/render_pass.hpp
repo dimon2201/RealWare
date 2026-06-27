@@ -27,6 +27,7 @@ namespace triton
     class XShader;
     class XVertexArray;
     class SShaderDefine;
+    class CRenderBatch;
 
     enum class EBuiltinRenderPassType
     {
