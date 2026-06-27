@@ -6,12 +6,14 @@
 
 namespace triton
 {
+	template <typename TValue>
 	class SBufferView
 	{
 	public:
-		SBufferView(void* data, types::usize byteSize) : _data(data), _byteSize(byteSize) {}
+		SBufferView(TValue* elements, types::usize byteSize) : _elements(elements), _byteSize(byteSize), _elementCount(byteSize / sizeof(TValue)) {}
 
-		void* _data = nullptr;
+		TValue* _elements = nullptr;
 		types::usize _byteSize = 0;
+		types::usize _elementCount = 0;
 	};
 }
