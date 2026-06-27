@@ -22,7 +22,7 @@ namespace triton
     {
         TRITON_OBJECT(XBatchStorage)
 
-        XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, cStack<XRenderBatch>, XRenderBatch>* _batches = nullptr;
+        XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, XLinearArray<XRenderBatch>, XRenderBatch>* _batches = nullptr;
 
     public:
         explicit XBatchStorage(cContext* context);
