@@ -199,6 +199,8 @@ namespace triton
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
         void MarkStaticBufferDirty();
+        void WriteDirtyStaticInstances();
+        void WriteDynamicInstances();
 
 	public:
         enum class eAPI

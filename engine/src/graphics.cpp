@@ -187,6 +187,9 @@ void triton::cGraphics::ExecuteDefaultRenderPasses()
 {
     CThreadGuard::AssertRender();
 
+    WriteDirtyStaticInstances();
+    WriteDynamicInstances();
+
     _opaque->Execute();
 }
 
