@@ -1258,7 +1258,10 @@ void triton::cGraphics::WriteBatchInstances(SRenderInstance::EUsage usage)
 void triton::cGraphics::WriteDirtyStaticInstances()
 {
     if (_isStaticBufferDirty == K_TRUE)
+    {
         WriteBatchInstances(SRenderInstance::EUsage::STATIC);
+        _isStaticBufferDirty = K_FALSE;
+    }
 }
 
 void triton::cGraphics::WriteDynamicInstances()
