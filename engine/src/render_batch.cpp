@@ -48,3 +48,19 @@ void triton::XRenderBatch::Remove(SInstanceBufferHandle& handle)
 	else if (handle._usage == SRenderInstance::EUsage::DYNAMIC)
 		return _dynamicInstances->Destroy(handle);
 }
+
+void triton::XRenderBatch::Write(SRenderInstance::EUsage usage, types::usize offset, types::u8* destination)
+{
+	if (usage == SRenderInstance::EUsage::STATIC)
+	{
+		_staticOffset = offset;
+		SBufferView bufferView = _staticInstances->GetData();
+		memcpy(&destination[0], bufferView._data, bufferView._byteSize);
+	}
+	else if (usage == SRenderInstance::EUsage::DYNAMIC)
+	{
+		_dynamicOffset = offset;
+		SBufferView bufferView = _dynamicInstances->GetData();
+		memcpy(&destination[0], bufferView._data, bufferView._byteSize);
+	}
+}
