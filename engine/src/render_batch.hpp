@@ -3,14 +3,28 @@
 #pragma once
 
 #include "geometry_view.hpp"
+#include "render_instance.hpp"
+#include "types.hpp"
 
 namespace triton
 {
+	class XInstanceBuffer;
+	class SInstanceBufferHandle;
+
 	class CRenderBatch final
 	{
 		SGeometryView _geometry = {};
+		XInstanceBuffer* _staticInstances = nullptr;
+		XInstanceBuffer* _dynamicInstances = nullptr;
+		types::usize _globalStaticInstanceOffset = 0;
+		types::usize _globalDynamicInstanceOffset = 0;
 
 	public:
 		explicit CRenderBatch(const SGeometryView& geometry);
+		~CRenderBatch();
+
+		SInstanceBufferHandle Add(SRenderInstance::EUsage usage, SRenderInstance& instance);
+		SRenderInstance* Get(SInstanceBufferHandle& handle);
+		void Remove(SInstanceBufferHandle& handle);
 	};
 }
