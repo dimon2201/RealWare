@@ -28,6 +28,7 @@ namespace triton
     class XVertexArray;
     class SShaderDefine;
     class XRenderBatch;
+    struct SRenderBatchHandle;
 
     enum class EBuiltinRenderPassType
     {
@@ -76,7 +77,7 @@ namespace triton
         explicit XRenderPass(cContext* context);
         ~XRenderPass() override;
 
-        SInstanceBufferHandle AddInstance(SRenderInstance::EUsage usage, const XRenderBatch& batch, SRenderInstance& instance);
+        SInstanceBufferHandle AddInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch, SRenderInstance& instance);
         void WriteStaticInstanceToGPU(SInstanceBufferHandle& instance);
         void Bind();
         void Execute();
