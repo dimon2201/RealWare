@@ -63,8 +63,6 @@ namespace triton
         SViewport                       _viewport = {};
         XRenderTarget*                  _renderTarget = nullptr;
         XShader*                        _shader = nullptr;
-        XInstanceBuffer*                _instanceBufferStatic = nullptr;
-        XInstanceBuffer*                _instanceBufferDynamic = nullptr;
         cBuffer*                        _materialBuffer = nullptr;
         cBuffer*                        _textureBuffer = nullptr;
         cStack<SInstanceBufferHandle>*  _dirtyStaticInstances = nullptr;
