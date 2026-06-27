@@ -192,7 +192,7 @@ namespace triton
 			slot->_generation += 1;
 		}
 
-		inline SBufferView GetData() const
+		inline SBufferView<TObject> GetData() const
 		{
 			return _objects->GetData();
 		}
