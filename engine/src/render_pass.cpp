@@ -8,6 +8,7 @@
 #include "render_subsystem.hpp"
 #include "graphics.hpp"
 #include "buffer_view.hpp"
+#include "camera.hpp"
 
 using namespace triton::ecs::components;
 using namespace types;
@@ -63,15 +64,24 @@ void triton::XRenderPass::Draw()
 {
     CThreadGuard::AssertRender();
 
+    cGraphics* gfx = _context->GetSubsystem<cGraphics>();
+    iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
+    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+
     SBufferView<XRenderBatch> batchBuffer = _context->GetSubsystem<cGraphics>()->GetBatches();
 
-    iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
     for (usize i = 0; i < batchBuffer._elementCount; i++)
     {
         const XRenderBatch& batch = batchBuffer._elements[i];
         const SGeometryView geometry = batch.GetGeometry();
+        XCamera* camera = gfx->GetCamera(_camera);
+        CGPUShader shader = _shader->GetGPUShader();
+        
+        camera->Bind(this);
 
         // Static
+        gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 0);
+        gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::STATIC));
         gfxDrawcallBackend->Draw(
             geometry._indexCount,
             geometry._vertexElementOffset,
@@ -80,6 +90,8 @@ void triton::XRenderPass::Draw()
         );
 
         // Dynamic
+        gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 1);
+        gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::DYNAMIC));
         gfxDrawcallBackend->Draw(
             geometry._indexCount,
             geometry._vertexElementOffset,
