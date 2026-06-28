@@ -188,6 +188,19 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 				XRenderTarget* pr = (XRenderTarget*)&_resultBuffer[0];
 				break;
 			}
+			case ERenderCommand::CREATE_SHADER:
+			{
+				CGPUShader resultGPUShader = pipelineBackend->CreateShader(
+					(const char*)cmd->_args._argA,
+					(const char*)cmd->_args._argB,
+					(const char*)cmd->_args._argC,
+					(const char*)cmd->_args._argD,
+					cmd->_args._argE,
+					(const SShaderDefine*)cmd->_args._argF
+				);
+				memcpy(&_resultBuffer[0], &resultGPUShader, sizeof(CGPUShader));
+				break;
+			}
 		}
 	}
 }
