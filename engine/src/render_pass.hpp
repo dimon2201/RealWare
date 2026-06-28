@@ -45,6 +45,7 @@ namespace triton
     {
         NONE,
         BATCH,
+        TEXT,
         QUAD
     };
 
