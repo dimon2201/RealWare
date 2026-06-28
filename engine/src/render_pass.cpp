@@ -7,6 +7,7 @@
 #include "application.hpp"
 #include "render_subsystem.hpp"
 #include "graphics.hpp"
+#include "buffer_view.hpp"
 
 using namespace triton::ecs::components;
 using namespace types;
@@ -58,11 +59,42 @@ void triton::XRenderPass::Bind()
     gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
 }
 
+void triton::XRenderPass::Draw()
+{
+    CThreadGuard::AssertRender();
+
+    SBufferView<XRenderBatch> batchBuffer = _context->GetSubsystem<cGraphics>()->GetBatches();
+
+    iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
+    for (usize i = 0; i < batchBuffer._elementCount; i++)
+    {
+        const XRenderBatch& batch = batchBuffer._elements[i];
+        const SGeometryView geometry = batch.GetGeometry();
+
+        // Static
+        gfxDrawcallBackend->Draw(
+            geometry._indexCount,
+            geometry._vertexElementOffset,
+            geometry._indexElementOffset,
+            batch.GetInstanceCount(SRenderInstance::EUsage::STATIC)
+        );
+
+        // Dynamic
+        gfxDrawcallBackend->Draw(
+            geometry._indexCount,
+            geometry._vertexElementOffset,
+            geometry._indexElementOffset,
+            batch.GetInstanceCount(SRenderInstance::EUsage::DYNAMIC)
+        );
+    }
+}
+
 void triton::XRenderPass::Execute()
 {
     CThreadGuard::AssertRender();
 
     Bind();
+    Draw();
 }
 
 void triton::XRenderPass::ResizeViewport(const cVector2& size)

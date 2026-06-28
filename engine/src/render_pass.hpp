@@ -71,6 +71,7 @@ namespace triton
         ~XRenderPass() override;
 
         void Bind();
+        void Draw();
         void Execute();
         void ResizeViewport(const cVector2& size);
         void ResizeColorAttachments(const cVector2& size);
