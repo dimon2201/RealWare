@@ -30,6 +30,7 @@ namespace triton
         ~XBatchStorage() override;
 
         std::optional<SRenderBatchHandle> Create(const SGeometryView& geometry);
+        XRenderBatch* Get(const SRenderBatchHandle& batch);
         void Remove(const SRenderBatchHandle& batch);
         std::optional<SInstanceBufferHandle> AddInstance(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage);
         void RemoveInstance(const SInstanceBufferHandle& instance);

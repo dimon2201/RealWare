@@ -23,6 +23,11 @@ std::optional<triton::SRenderBatchHandle> triton::XBatchStorage::Create(const SG
 	return _batches->Create(SRenderBatchHandle(), _context, geometry);
 }
 
+triton::XRenderBatch* triton::XBatchStorage::Get(const SRenderBatchHandle& batch)
+{
+	return _batches->Get(batch);
+}
+
 void triton::XBatchStorage::Remove(const SRenderBatchHandle& batch)
 {
 	_batches->Destroy(batch);
