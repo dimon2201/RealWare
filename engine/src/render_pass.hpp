@@ -41,6 +41,13 @@ namespace triton
         QUAD_PATH
     };
 
+    enum class ERenderPassDispatch
+    {
+        NONE,
+        BATCH,
+        QUAD
+    };
+
     class SRenderPassTexture final
     {
     public:
