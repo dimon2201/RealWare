@@ -97,7 +97,8 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 					1.0f,
 					0.0f,
 					0.0f,
-					0.0f
+					0.0f,
+					1.0f
 				);
 				PushCommand(cmd);
 			}

@@ -129,6 +129,9 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 					cmd->_args._argC,
 					cmd->_args._argD
 				));
+				drawcallBackend->ClearDepth(
+					cmd->_args._argE
+				);
 				break;
 			}
 			case ERenderCommand::DRAW:
