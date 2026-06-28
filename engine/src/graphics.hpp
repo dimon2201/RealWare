@@ -13,6 +13,8 @@
 #include "graphics_buffer_formats.hpp"
 #include "geometry_view.hpp"
 #include "render_pass.hpp"
+#include "buffer_view.hpp"
+#include "batch_storage.hpp"
 
 namespace triton
 {
@@ -36,7 +38,6 @@ namespace triton
     struct sShader;
     class XGeometryStorage;
     class XRenderPassExecutor;
-    class XBatchStorage;
     class XInstanceBuffer;
 
     using index = types::u32;
@@ -259,6 +260,11 @@ namespace triton
 
         cBuffer* GetVertexBuffer() const;
         cBuffer* GetIndexBuffer() const;
+
+        inline SBufferView<XRenderBatch> GetBatches() const
+        {
+            return _batchStorage->GetBatches();
+        }
 
         inline XRenderPass* GetOpaqueRenderPass() const
         {
