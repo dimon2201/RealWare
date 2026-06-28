@@ -67,8 +67,8 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
         0.0f
     );
 }
-    
-triton::cGraphics::cGraphics(cContext* context) : iObject(context)
+
+void triton::cGraphics::Init()
 {
     CreateGeometryStorage();
     CreateBatchStorage();
@@ -78,7 +78,7 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context)
     CreateCameraAllocator();
 }
 
-triton::cGraphics::~cGraphics()
+void triton::cGraphics::Free()
 {
     DestroyDefaultRenderPasses();
     DestroyDefaultRenderTargets();
@@ -1171,6 +1171,11 @@ void triton::cGraphics::CreateCameraAllocator()
 {
     _cameras = _context->Create<XHandleAllocator<SCameraSlot, SCameraHandle, XLinearArray<XCamera>, XCamera>>(_context);
     _cameras->Initialize();
+}
+
+void triton::cGraphics::BindVertexIndexBuffers()
+{
+    _geometryStorage->Bind();
 }
 
 void triton::cGraphics::BindInstanceBuffers()

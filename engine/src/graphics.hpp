@@ -213,6 +213,7 @@ namespace triton
         void WriteBatchInstances(SRenderInstance::EUsage usage);
         void WriteDirtyStaticInstances();
         void WriteDynamicInstances();
+        void BindVertexIndexBuffers();
         void BindInstanceBuffers();
 
 	public:
@@ -223,8 +224,11 @@ namespace triton
             D3D11
         };
 
-		explicit cGraphics(cContext* context);
-		~cGraphics() override;
+		explicit cGraphics(cContext* context) : iObject(context) {}
+        ~cGraphics() override = default;
+
+        void Init();
+        void Free();
 
         // TODO: Remove material creation from cGraphics
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
