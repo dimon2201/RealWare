@@ -34,8 +34,8 @@ void triton::cGraphicsDrawcallBackendOGL::ClearFramebufferDepth(f32 depth)
 
 void triton::cGraphicsDrawcallBackendOGL::Draw(
     usize indexCount,
-    usize vertexOffset,
-    usize indexOffset,
+    usize vertexElementOffset,
+    usize indexElementOffset,
     usize instanceCount
 )
 {
@@ -43,9 +43,9 @@ void triton::cGraphicsDrawcallBackendOGL::Draw(
         GL_TRIANGLES,
         indexCount,
         GL_UNSIGNED_INT,
-        (const void*)indexOffset,
+        (const void*)(indexElementOffset * sizeof(u32)),
         instanceCount,
-        vertexOffset
+        vertexElementOffset
     );
 }
 

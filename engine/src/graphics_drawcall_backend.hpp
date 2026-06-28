@@ -24,8 +24,8 @@ namespace triton
         virtual void ClearFramebufferDepth(types::f32 depth) = 0;
         virtual void Draw(
             types::usize indexCount,
-            types::usize vertexOffset,
-            types::usize indexOffset,
+            types::usize vertexElementOffset,
+            types::usize indexElementOffset,
             types::usize instanceCount
         ) = 0;
         virtual void DrawQuad() = 0;
