@@ -42,5 +42,18 @@ namespace triton
 		SRenderInstance* Get(const SInstanceBufferHandle& handle);
 		void Remove(const SInstanceBufferHandle& handle);
 		types::usize Write(SRenderInstance::EUsage usage, types::usize offset, types::u8* destination);
+
+		inline SGeometryView GetGeometry() const
+		{
+			return _geometry;
+		}
+
+		inline types::usize GetInstanceCount(SRenderInstance::EUsage usage) const
+		{
+			if (usage == SRenderInstance::EUsage::STATIC)
+				return _staticInstances->GetSize();
+			else if (usage == SRenderInstance::EUsage::DYNAMIC)
+				return _dynamicInstances->GetSize();
+		}
 	};
 }
