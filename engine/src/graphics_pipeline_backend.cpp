@@ -32,10 +32,14 @@ triton::XShader::~XShader()
 
 triton::XVertexArray::XVertexArray(cContext* context, const std::vector<cBuffer*>& buffersToBind) : iObject(context)
 {
+	CThreadGuard::AssertRender();
+
 	iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
 	_gpuVertexArray = gfxPipelineBackend->CreateVertexArray();
 	gfxPipelineBackend->BindVertexArray(_gpuVertexArray);
+	_context->GetSubsystem<cGraphics>()->BindVertexIndexBuffers();
+	_context->GetSubsystem<cGraphics>()->BindInstanceBuffers();
 	for (auto buffer : buffersToBind)
 		gfxResourceBackend->BindBuffer(buffer);
 	gfxPipelineBackend->BindDefaultInputLayout();
