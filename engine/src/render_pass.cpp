@@ -58,7 +58,8 @@ void triton::XRenderPass::Bind()
 
     CGPUShader shader = _shader->GetGPUShader();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
+    if (_vertexArray)
+        gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
     gfxPipelineBackend->BindShader(&shader);
 }
 
