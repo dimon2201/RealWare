@@ -70,36 +70,47 @@ void triton::XRenderPass::Draw()
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 
-    SBufferView<XRenderBatch> batchBuffer = _context->GetSubsystem<cGraphics>()->GetBatches();
-
-    for (usize i = 0; i < batchBuffer._elementCount; i++)
+    switch (_dispatch)
     {
-        const XRenderBatch& batch = batchBuffer._elements[i];
-        const SGeometryView geometry = batch.GetGeometry();
-        XCamera* camera = gfx->GetCamera(_camera);
-        CGPUShader shader = _shader->GetGPUShader();
-        
-        camera->Bind(this);
+        case ERenderPassDispatch::BATCH:
+        {
+            SBufferView<XRenderBatch> batchBuffer = _context->GetSubsystem<cGraphics>()->GetBatches();
+            for (usize i = 0; i < batchBuffer._elementCount; i++)
+            {
+                const XRenderBatch& batch = batchBuffer._elements[i];
+                const SGeometryView geometry = batch.GetGeometry();
+                XCamera* camera = gfx->GetCamera(_camera);
+                CGPUShader shader = _shader->GetGPUShader();
 
-        // Static
-        gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 0);
-        gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::STATIC));
-        gfxDrawcallBackend->Draw(
-            geometry._indexCount,
-            geometry._vertexElementOffset,
-            geometry._indexElementOffset,
-            batch.GetInstanceCount(SRenderInstance::EUsage::STATIC)
-        );
+                camera->Bind(this);
 
-        // Dynamic
-        gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 1);
-        gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::DYNAMIC));
-        gfxDrawcallBackend->Draw(
-            geometry._indexCount,
-            geometry._vertexElementOffset,
-            geometry._indexElementOffset,
-            batch.GetInstanceCount(SRenderInstance::EUsage::DYNAMIC)
-        );
+                // Static
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 0);
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::STATIC));
+                gfxDrawcallBackend->Draw(
+                    geometry._indexCount,
+                    geometry._vertexElementOffset,
+                    geometry._indexElementOffset,
+                    batch.GetInstanceCount(SRenderInstance::EUsage::STATIC)
+                );
+
+                // Dynamic
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 1);
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::DYNAMIC));
+                gfxDrawcallBackend->Draw(
+                    geometry._indexCount,
+                    geometry._vertexElementOffset,
+                    geometry._indexElementOffset,
+                    batch.GetInstanceCount(SRenderInstance::EUsage::DYNAMIC)
+                );
+            }
+            break;
+        }
+        case ERenderPassDispatch::QUAD:
+        {
+            gfxDrawcallBackend->DrawQuad();
+            break;
+        }
     }
 }
 
