@@ -7,6 +7,7 @@
 #include "geometry_view.hpp"
 #include "render_instance.hpp"
 #include "handle.hpp"
+#include "handle_allocator.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -15,8 +16,6 @@ namespace triton
 	class XInstanceBuffer;
 	class SInstanceBufferSlot;
 	class SInstanceBufferHandle;
-	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
-	class XHandleAllocator;
 	template <typename TValue>
 	class XLinearArray;
 
