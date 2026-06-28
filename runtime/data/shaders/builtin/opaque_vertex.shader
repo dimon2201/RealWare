@@ -7,6 +7,8 @@ out vec2 TexcoordOrig;
 flat out vec4 DiffuseColor;
 
 uniform mat4 ViewProjection;
+uniform uint InstanceBatchType;
+uniform uint InstanceOffset;
 
 struct Instance
 {
