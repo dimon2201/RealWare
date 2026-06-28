@@ -87,26 +87,6 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Store(EGraphicsBu
     _vertexBufferPointer += verticesByteSize;
     _indexBufferPointer += indicesByteSize;
 
-    // CPU write
-    _vertexBufferCPU->Write(vertices, verticesByteSize, vertexBufferByteSize);
-    _indexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
-
-    // GPU write
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::WRITE_BUFFER,
-        (cpuword)_vertexBuffer,
-        vertexBufferByteSize,
-        verticesByteSize,
-        (cpuword)vertices
-    ));
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::WRITE_BUFFER,
-        (cpuword)_indexBuffer,
-        indexBufferByteSize,
-        indicesByteSize,
-        (cpuword)indices
-    ));
-
     usize vertexCount;
     usize indexCount = indicesByteSize / sizeof(u32);
     usize vertexElementOffset;
@@ -129,6 +109,26 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Store(EGraphicsBu
     }
     u8* vertexData = &_vertexBufferCPU->GetData()[vertexBufferByteSize];
     u8* indexData = &_indexBufferCPU->GetData()[indexBufferByteSize];
+
+    // CPU write
+    _vertexBufferCPU->Write(vertices, verticesByteSize, vertexBufferByteSize);
+    _indexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
+
+    // GPU write
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::WRITE_BUFFER,
+        (cpuword)_vertexBuffer,
+        vertexBufferByteSize,
+        verticesByteSize,
+        (cpuword)vertexData
+    ));
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::WRITE_BUFFER,
+        (cpuword)_indexBuffer,
+        indexBufferByteSize,
+        indicesByteSize,
+        (cpuword)indexData
+    ));
 
     SGeometryView geometry;
     geometry._vertexCount = vertexCount;
