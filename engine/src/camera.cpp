@@ -8,15 +8,15 @@
 
 using namespace types;
 
-void XCamera::Bind(XRenderPass* pass)
+void triton::XCamera::Bind(XRenderPass* pass)
 {
     CGPUShader shader = pass->GetShader()->GetGPUShader();
 
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    gfxPipelineBackend->SetShaderUniform(shader, "ViewProjection", _viewProjection);
+    gfxPipelineBackend->SetShaderUniform(&shader, "ViewProjection", _viewProjectionMatrix.Get());
 }
 
-void XCamera::Update(const cVector2& screenCursorPosition, usize screenWidth, usize screenHeight, f32 zNear, f32 zFar, f32 mouseSensitivity)
+void triton::XCamera::Update(const cVector2& screenCursorPosition, usize screenWidth, usize screenHeight, f32 fov, f32 zNear, f32 zFar, f32 mouseSensitivity)
 {
     const cTime* time = _context->GetSubsystem<cTime>();
     const cMath* math = _context->GetSubsystem<cMath>();
@@ -32,7 +32,7 @@ void XCamera::Update(const cVector2& screenCursorPosition, usize screenWidth, us
     _worldDirection = quatZ * quatY * quatX * cVector3(0.0f, 0.0f, -1.0f);
 
     _viewMatrix = cMatrix4(_worldPosition, _worldDirection + _worldDirection, cVector3(0.0f, 1.0f, 0.0f));
-    _projectionMatrix = cMatrix4(cMath::DegreesToRadians(_fov), (f32)screenWidth / screenHeight, zNear, zFar);
+    _projectionMatrix = cMatrix4(cMath::DegreesToRadians(fov), (f32)screenWidth / screenHeight, zNear, zFar);
     _viewProjectionMatrix = _projectionMatrix * _viewMatrix;
     _previousCursorPosition = _cursorPosition;
     _cursorPosition = screenCursorPosition;
@@ -59,7 +59,7 @@ void XCamera::Update(const cVector2& screenCursorPosition, usize screenWidth, us
     }*/
 }
 
-void XCamera::AddEuler(cMath::EEulerAngle angle, f32 value)
+void triton::XCamera::AddEuler(cMath::EEulerAngle angle, f32 value)
 {
     if (angle == cMath::EEulerAngle::PITCH)
         _eulerAngles.AddX(value);
@@ -69,20 +69,20 @@ void XCamera::AddEuler(cMath::EEulerAngle angle, f32 value)
         _eulerAngles.AddX(value);
 }
 
-void XCamera::Move(f32 value)
+void triton::XCamera::Move(f32 value)
 {
-    _position += _worldDirection * value;
+    _worldPosition = _worldPosition + _worldDirection * value;
 }
 
-void XCamera::Strafe(f32 value)
+void triton::XCamera::Strafe(f32 value)
 {
     const cVector3 up = cVector3(0.0f, 1.0f, 0.0f);
-    const cVector3 right = _direction.Cross(up);
-    _position += right * value;
+    const cVector3 right = _worldDirection.Cross(up);
+    _worldPosition = _worldPosition + right * value;
 }
 
-void XCamera::Lift(f32 value)
+void triton::XCamera::Lift(f32 value)
 {
     const cVector3 up = cVector3(0.0f, 1.0f, 0.0f);
-    _position += up * value;
+    _worldPosition = _worldPosition + up * value;
 }
