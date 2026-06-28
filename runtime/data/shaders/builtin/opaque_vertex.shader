@@ -30,7 +30,8 @@ struct Material
 	vec4 HighlightColor;
 };
 
-layout(std430, binding = 0) buffer InstanceBuffer { Instance instances[1024]; };
+layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance instances[1024]; };
+layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance instances[1024]; };
 layout(std430, binding = 1) buffer MaterialBuffer { Material materials[1024]; };
 
 void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)

@@ -944,7 +944,7 @@ void triton::cGraphics::CreateInstanceBuffers()
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance),
-        0
+        1
     ));
     cBuffer* instanceBufferDynamic = renderSubsystem->FetchResult<cBuffer*>();
     _instanceBufferDynamic = _context->Create<XInstanceBuffer>(
