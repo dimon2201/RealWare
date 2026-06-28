@@ -5,11 +5,14 @@
 #include "time.hpp"
 #include "graphics_pipeline_backend.hpp"
 #include "render_pass.hpp"
+#include "thread_guard.hpp"
 
 using namespace types;
 
 void triton::XCamera::Bind(XRenderPass* pass)
 {
+    CThreadGuard::AssertRender();
+
     CGPUShader shader = pass->GetShader()->GetGPUShader();
 
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
