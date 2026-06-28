@@ -30,8 +30,8 @@ struct Material
 	vec4 HighlightColor;
 };
 
-layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance instances[1024]; };
-layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance instances[1024]; };
+layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[1024]; };
+layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[1024]; };
 layout(std430, binding = 1) buffer MaterialBuffer { Material materials[1024]; };
 
 void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
@@ -52,7 +52,11 @@ void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in 
 
 void main()
 {
-	Instance instance = instances[gl_InstanceID];
+	Instance instance;
+	if (InstanceBatchType == 0)
+		instance = staticInstances[gl_InstanceID];
+	else if (InstanceBatchType == 1)
+		instance = dynamicInstances[gl_InstanceID];
 	Material material = materials[instance.MaterialIndex];
 
 	TexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.DiffuseTextureLayerInfo);
