@@ -239,6 +239,11 @@ std::optional<triton::SInstanceBufferHandle> triton::cGraphics::CreateInstance(S
     return _batchStorage->AddInstance(batch, usage);
 }
 
+void triton::cGraphics::SetInstance(const SInstanceBufferHandle& instance, const SRenderInstance& renderInstance)
+{
+    _batchStorage->Get(instance._batch)->Set(instance, renderInstance);
+}
+
 void triton::cGraphics::DestroyInstance(const SInstanceBufferHandle& instance)
 {
     if (instance._usage == SRenderInstance::EUsage::STATIC)
@@ -1163,10 +1168,11 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _compositeFinal = _context->Create<XRenderPass>(_context);
     _compositeFinal->SetDispatch(ERenderPassDispatch::QUAD);
     _compositeFinal->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
+    _compositeFinal->SetVertexArray(opaqueVertexArray);
     _compositeFinal->SetInputTextures({
         SRenderPassTexture("ColorTexture", _opaqueRenderTarget->GetColorAttachments()[0]),
     });
-    _compositeFinal->SetShader(compositeTransparentShader);
+    _compositeFinal->SetShader(compositeFinalShader);
     _compositeFinal->SetViewport(viewport);
     _compositeFinal->SetDepthState(SDepthState(K_FALSE, K_FALSE));
     _compositeFinal->SetBlendState(compositeFinalBlendState);

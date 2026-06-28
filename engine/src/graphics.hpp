@@ -236,6 +236,7 @@ namespace triton
         std::optional<SRenderBatchHandle> CreateBatch(const SGeometryView& geometry);
         void RemoveBatch(const SRenderBatchHandle& handle);
         std::optional<SInstanceBufferHandle> CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch);
+        void SetInstance(const SInstanceBufferHandle& instance, const SRenderInstance& renderInstance); // TODO: remove this temporary method completely
         void DestroyInstance(const SInstanceBufferHandle& instance);
         std::optional<SCameraHandle> CreateCamera();
         XCamera* GetCamera(const SCameraHandle& camera);
