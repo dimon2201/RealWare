@@ -43,6 +43,14 @@ triton::SRenderInstance* triton::XRenderBatch::Get(const SInstanceBufferHandle& 
 	return nullptr;
 }
 
+void triton::XRenderBatch::Set(const SInstanceBufferHandle& handle, const SRenderInstance& instance)
+{
+	if (handle._usage == SRenderInstance::EUsage::STATIC)
+		*_staticInstances->Get(handle) = instance;
+	else if (handle._usage == SRenderInstance::EUsage::DYNAMIC)
+		*_dynamicInstances->Get(handle) = instance;
+}
+
 void triton::XRenderBatch::Remove(const SInstanceBufferHandle& handle)
 {
 	if (handle._usage == SRenderInstance::EUsage::STATIC)
