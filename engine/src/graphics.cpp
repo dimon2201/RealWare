@@ -1173,6 +1173,12 @@ void triton::cGraphics::CreateCameraAllocator()
     _cameras->Initialize();
 }
 
+void triton::cGraphics::BindInstanceBuffers()
+{
+    _instanceBufferStatic->Bind();
+    _instanceBufferDynamic->Bind();
+}
+
 void triton::cGraphics::DestroyGeometryStorage()
 {
     if (_geometryStorage)
