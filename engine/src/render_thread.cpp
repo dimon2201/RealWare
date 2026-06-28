@@ -69,14 +69,15 @@ void triton::cRenderThread::ThreadFunction()
 		if (mainThreadSignal == EFrameState::EXECUTE_FULL)
 		{
 			// Full job
-
-			// Execute render passes
 			cGraphics* gfx = _context->GetSubsystem<cGraphics>();
-			gfx->ExecuteDefaultRenderPasses();
 
 			// Core events
 			MakeContextCurrent(renderFrame, gfxContextBackend);
 			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
+
+			// Execute render passes
+			gfx->ExecuteDefaultRenderPasses();
+
 			Present(renderFrame, gfxContextBackend);
 		}
 		else if (mainThreadSignal == EFrameState::EXECUTE_COMMANDS)
@@ -161,6 +162,35 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 				memcpy(&_resultBuffer[0], &resultBuffer, sizeof(cBuffer*));
 				break;
 			}
+			case ERenderCommand::BIND_BUFFER:
+			{
+				cBuffer* buffer = (cBuffer*)cmd->_args._argA;
+				resourceBackend->BindBuffer(buffer);
+				break;
+			}
+			case ERenderCommand::CREATE_VERTEX_ARRAY:
+			{
+				CGPUVertexArray resultVertexArray = pipelineBackend->CreateVertexArray();
+				memcpy(&_resultBuffer[0], &resultVertexArray, sizeof(CGPUVertexArray));
+				break;
+			}
+			case ERenderCommand::BIND_VERTEX_ARRAY:
+			{
+				CGPUVertexArray* vertexArray = (CGPUVertexArray*)cmd->_args._argA;
+				pipelineBackend->BindVertexArray(*vertexArray);
+				break;
+			}
+			case ERenderCommand::UNBIND_VERTEX_ARRAY:
+			{
+				pipelineBackend->UnbindVertexArray();
+				break;
+			}
+			case ERenderCommand::DESTROY_VERTEX_ARRAY:
+			{
+				CGPUVertexArray* vertexArray = (CGPUVertexArray*)cmd->_args._argA;
+				pipelineBackend->DestroyVertexArray(*vertexArray);
+				break;
+			}
 			case ERenderCommand::CREATE_TEXTURE:
 			{
 				cTexture* resultTexture = resourceBackend->CreateTexture(
@@ -199,6 +229,11 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 					(const SShaderDefine*)cmd->_args._argF
 				);
 				memcpy(&_resultBuffer[0], &resultGPUShader, sizeof(CGPUShader));
+				break;
+			}
+			case ERenderCommand::BIND_DEFAULT_INPUT_LAYOUT:
+			{
+				pipelineBackend->BindDefaultInputLayout();
 				break;
 			}
 		}
