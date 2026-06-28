@@ -5,7 +5,6 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "input.hpp"
-#include "camera_system.hpp"
 #include "texture_manager.hpp"
 #include "filesystem_manager.hpp"
 #include "font_manager.hpp"
