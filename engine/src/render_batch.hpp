@@ -55,5 +55,13 @@ namespace triton
 			else if (usage == SRenderInstance::EUsage::DYNAMIC)
 				return _dynamicInstances->GetSize();
 		}
+
+		inline types::usize GetInstanceOffset(SRenderInstance::EUsage usage) const
+		{
+			if (usage == SRenderInstance::EUsage::STATIC)
+				return _staticOffset;
+			else if (usage == SRenderInstance::EUsage::DYNAMIC)
+				return _dynamicOffset;
+		}
 	};
 }
