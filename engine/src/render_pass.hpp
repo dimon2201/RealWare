@@ -61,6 +61,7 @@ namespace triton
     {
         TRITON_OBJECT(XRenderPass)
 
+        ERenderPassDispatch             _dispatch = ERenderPassDispatch::NONE;
         EGraphicsBufferFormat           _inputVertexFormat = EGraphicsBufferFormat::NONE;
         XVertexArray*                   _vertexArray = nullptr;
         std::vector<cBuffer*>           _inputBuffers = {};
@@ -96,6 +97,11 @@ namespace triton
         inline XShader* GetShader() const
         {
             return _shader;
+        }
+
+        inline void SetDispatch(ERenderPassDispatch dispatch)
+        {
+            _dispatch = dispatch;
         }
 
         inline void SetInputBuffers(const std::vector<cBuffer*>& buffers)
