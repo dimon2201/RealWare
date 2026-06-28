@@ -32,24 +32,58 @@ triton::XShader::~XShader()
 
 triton::XVertexArray::XVertexArray(cContext* context, const std::vector<cBuffer*>& buffersToBind) : iObject(context)
 {
-	CThreadGuard::AssertRender();
+	XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 
-	iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-	_gpuVertexArray = gfxPipelineBackend->CreateVertexArray();
-	gfxPipelineBackend->BindVertexArray(_gpuVertexArray);
-	_context->GetSubsystem<cGraphics>()->BindVertexIndexBuffers();
-	_context->GetSubsystem<cGraphics>()->BindInstanceBuffers();
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::CREATE_VERTEX_ARRAY
+	));
+	_gpuVertexArray = renderSubsystem->FetchResult<CGPUVertexArray>();
+
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::BIND_VERTEX_ARRAY,
+		(cpuword)&_gpuVertexArray
+	));
+
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::BIND_BUFFER,
+		(cpuword)gfx->GetVertexBuffer()
+	));
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::BIND_BUFFER,
+		(cpuword)gfx->GetIndexBuffer()
+	));
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::BIND_BUFFER,
+		(cpuword)gfx->GetStaticInstanceBuffer()
+	));
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::BIND_BUFFER,
+		(cpuword)gfx->GetDynamicInstanceBuffer()
+	));
+
 	for (auto buffer : buffersToBind)
-		gfxResourceBackend->BindBuffer(buffer);
-	gfxPipelineBackend->BindDefaultInputLayout();
-	gfxPipelineBackend->UnbindVertexArray();
+		renderSubsystem->PushCommand(SRenderCommand(
+			ERenderCommand::BIND_BUFFER,
+			(cpuword)buffer
+		));
+
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::BIND_DEFAULT_INPUT_LAYOUT
+	));
+
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::UNBIND_VERTEX_ARRAY
+	));
 }
 
 triton::XVertexArray::~XVertexArray()
 {
-	iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-	gfxPipelineBackend->DestroyVertexArray(_gpuVertexArray);
+	XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+	renderSubsystem->PushCommand(SRenderCommand(
+		ERenderCommand::DESTROY_VERTEX_ARRAY,
+		(cpuword)&_gpuVertexArray
+	));
 }
 
 triton::XRenderTarget::XRenderTarget(
