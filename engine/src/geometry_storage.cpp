@@ -141,3 +141,11 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Store(EGraphicsBu
 
     return geometry;
 }
+
+void triton::XGeometryStorage::Bind()
+{
+    CThreadGuard::AssertRender();
+
+    _vertexBuffer->Bind();
+    _indexBuffer->Bind();
+}

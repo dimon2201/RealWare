@@ -46,7 +46,8 @@ namespace triton
         void Initialize();
         void Free();
         std::optional<triton::SGeometryView> Store(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
-    
+        void Bind();
+
         inline cBuffer* GetVertexBuffer() const
         {
             return _vertexBuffer;
