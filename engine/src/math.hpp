@@ -154,6 +154,11 @@ namespace triton
 		~cMatrix4() = default;
 
 		cMatrix4 operator*(const cMatrix4& mat) const;
+
+		inline const glm::mat4 Get() const
+		{
+			return _mat;
+		}
 	};
 
 	class cTransform
