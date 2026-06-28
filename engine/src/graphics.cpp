@@ -250,6 +250,11 @@ std::optional<triton::SCameraHandle> triton::cGraphics::CreateCamera()
     return _cameras->Create(SCameraHandle(), _context);
 }
 
+triton::XCamera* triton::cGraphics::GetCamera(const SCameraHandle& camera)
+{
+    return _cameras->Get(camera);
+}
+
 void triton::cGraphics::DestroyCamera(const SCameraHandle& camera)
 {
     _cameras->Destroy(camera);

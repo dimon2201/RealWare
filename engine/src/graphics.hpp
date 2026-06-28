@@ -237,6 +237,7 @@ namespace triton
         std::optional<SInstanceBufferHandle> CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch);
         void DestroyInstance(const SInstanceBufferHandle& instance);
         std::optional<SCameraHandle> CreateCamera();
+        XCamera* GetCamera(const SCameraHandle& camera);
         void DestroyCamera(const SCameraHandle& camera);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
