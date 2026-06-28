@@ -177,7 +177,9 @@ namespace triton
 
 			if (removeIndex != lastIndex)
 			{
-				*(_objects->At(removeIndex).data) = std::move(*(_objects->At(lastIndex).data));
+				// TODO: figure out what to do here
+				//*(_objects->At(removeIndex).data) = std::move(*(_objects->At(lastIndex).data));
+				new (_objects->At(removeIndex).data) TObject(std::move(*(_objects->At(lastIndex).data)));
 
 				types::usize movedSlotIndex = *_reverseMap->At(lastIndex).data;
 				*_reverseMap->At(removeIndex).data = movedSlotIndex;
