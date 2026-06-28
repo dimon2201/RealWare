@@ -194,6 +194,7 @@ void triton::cGraphics::ExecuteDefaultRenderPasses()
     WriteDynamicInstances();
 
     _opaque->Execute();
+    _compositeFinal->Execute();
 }
 
 triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
