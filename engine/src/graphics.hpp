@@ -279,6 +279,16 @@ namespace triton
         cBuffer* GetVertexBuffer() const;
         cBuffer* GetIndexBuffer() const;
 
+        inline cBuffer* GetStaticInstanceBuffer() const
+        {
+            return _instanceBufferStatic;
+        }
+
+        inline cBuffer* GetDynamicInstanceBuffer() const
+        {
+            return _instanceBufferDynamic;
+        }
+
         inline SBufferView<XRenderBatch> GetBatches() const
         {
             return _batchStorage->GetBatches();
