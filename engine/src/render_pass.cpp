@@ -58,6 +58,8 @@ void triton::XRenderPass::Bind()
 
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
+
+    _context->GetSubsystem<cGraphics>()->BindInstanceBuffers();
 }
 
 void triton::XRenderPass::Draw()
