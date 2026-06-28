@@ -56,10 +56,10 @@ void triton::XRenderPass::Bind()
 {
     CThreadGuard::AssertRender();
 
+    CGPUShader shader = _shader->GetGPUShader();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
-
-    _context->GetSubsystem<cGraphics>()->BindInstanceBuffers();
+    gfxPipelineBackend->BindShader(&shader);
 }
 
 void triton::XRenderPass::Draw()
