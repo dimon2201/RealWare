@@ -16,6 +16,7 @@
 #include "buffer_view.hpp"
 #include "batch_storage.hpp"
 #include "handle.hpp"
+#include "camera_handle.hpp"
 
 namespace triton
 {
@@ -165,9 +166,6 @@ namespace triton
         std::string name = "";
         types::usize index = 0;
     };
-
-    struct SCameraSlot : public SSlot {};
-    struct SCameraHandle : public SHandle {};
 
 	class cGraphics : public iObject
 	{

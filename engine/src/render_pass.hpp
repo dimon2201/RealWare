@@ -11,7 +11,7 @@
 #include "render_data.hpp"
 #include "instance_buffer.hpp"
 #include "graphics_buffer_formats.hpp"
-#include "graphics.hpp"
+#include "camera_handle.hpp"
 
 namespace triton
 {
