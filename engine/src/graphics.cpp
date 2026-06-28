@@ -74,6 +74,7 @@ triton::cGraphics::cGraphics(cContext* context) : iObject(context)
     CreateInstanceBuffers();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
+    CreateCameraAllocator();
 }
 
 triton::cGraphics::~cGraphics()
@@ -83,6 +84,7 @@ triton::cGraphics::~cGraphics()
     DestroyInstanceBuffers();
     DestroyBatchStorage();
     DestroyGeometryStorage();
+    DestroyCameraAllocator();
 }
 
 void Initialize()
@@ -241,6 +243,16 @@ void triton::cGraphics::DestroyInstance(const SInstanceBufferHandle& instance)
         MarkStaticBufferDirty();
 
     _batchStorage->RemoveInstance(instance);
+}
+
+std::optional<triton::SCameraHandle> triton::cGraphics::CreateCamera()
+{
+    return _cameras->Create(SCameraHandle(), _context);
+}
+
+void triton::cGraphics::DestroyCamera(const SCameraHandle& camera)
+{
+    _cameras->Destroy(camera);
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
@@ -1149,6 +1161,12 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _compositeFinal->SetRenderTarget(nullptr);
 }
 
+void triton::cGraphics::CreateCameraAllocator()
+{
+    _cameras = _context->Create<XHandleAllocator<SCameraSlot, SCameraHandle, XLinearArray<XCamera>, XCamera>>(_context);
+    _cameras->Initialize();
+}
+
 void triton::cGraphics::DestroyGeometryStorage()
 {
     if (_geometryStorage)
@@ -1223,6 +1241,15 @@ void triton::cGraphics::DestroyDefaultRenderPasses()
         _context->Destroy<XRenderPass>(_transparent);
     if (_opaque)
         _context->Destroy<XRenderPass>(_opaque);
+}
+
+void triton::cGraphics::DestroyCameraAllocator()
+{
+    if (_cameras)
+    {
+        _cameras->Free();
+        _context->Destroy<XHandleAllocator<SCameraSlot, SCameraHandle, XLinearArray<XCamera>, XCamera>>(_cameras);
+    }
 }
 
 void triton::cGraphics::MarkStaticBufferDirty()

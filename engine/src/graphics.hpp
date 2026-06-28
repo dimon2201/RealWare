@@ -15,6 +15,7 @@
 #include "render_pass.hpp"
 #include "buffer_view.hpp"
 #include "batch_storage.hpp"
+#include "handle.hpp"
 
 namespace triton
 {
@@ -39,6 +40,11 @@ namespace triton
     class XGeometryStorage;
     class XRenderPassExecutor;
     class XInstanceBuffer;
+    template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
+    class XHandleAllocator;
+    template <typename TValue>
+    class XLinearArray;
+    class XCamera;
 
     using index = types::u32;
 
@@ -160,6 +166,9 @@ namespace triton
         types::usize index = 0;
     };
 
+    struct SCameraSlot : public SSlot {};
+    struct SCameraHandle : public SHandle {};
+
 	class cGraphics : public iObject
 	{
         TRITON_OBJECT(cGraphics)
@@ -188,17 +197,20 @@ namespace triton
         XRenderPass* _compositeFinal = nullptr;
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
+        XHandleAllocator<SCameraSlot, SCameraHandle, XLinearArray<XCamera>, XCamera>* _cameras = nullptr;
 
         void CreateGeometryStorage();
         void CreateBatchStorage();
         void CreateInstanceBuffers();
         void CreateDefaultRenderTargets();
         void CreateDefaultRenderPasses();
+        void CreateCameraAllocator();
         void DestroyGeometryStorage();
         void DestroyBatchStorage();
         void DestroyInstanceBuffers();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
+        void DestroyCameraAllocator();
         void MarkStaticBufferDirty();
         void WriteBatchInstances(SRenderInstance::EUsage usage);
         void WriteDirtyStaticInstances();
@@ -224,6 +236,8 @@ namespace triton
         void RemoveBatch(const SRenderBatchHandle& handle);
         std::optional<SInstanceBufferHandle> CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch);
         void DestroyInstance(const SInstanceBufferHandle& instance);
+        std::optional<SCameraHandle> CreateCamera();
+        void DestroyCamera(const SCameraHandle& camera);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
 
