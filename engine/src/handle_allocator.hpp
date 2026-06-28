@@ -196,5 +196,10 @@ namespace triton
 		{
 			return _objects->GetData();
 		}
+
+		inline types::usize GetSize() const
+		{
+			return _objects->GetSize();
+		}
 	};
 }
