@@ -23,11 +23,12 @@ namespace triton
         virtual void BindShader(const CGPUShader* shader) override final;
         virtual void UnbindShader() override final;
         virtual CGPUShader CreateShader(
-            const std::string& vertexStr,
-            const std::string& fragmentStr,
-            const std::string& vertexCustomFuncStr,
-            const std::string& fragmentCustomFuncStr,
-            const std::vector<SShaderDefine>& defines = {}
+            const char* vertexStr,
+            const char* fragmentStr,
+            const char* vertexCustomFuncStr,
+            const char* fragmentCustomFuncStr,
+            types::usize defineCount,
+            const SShaderDefine* defines
         ) override final;
         virtual void DestroyShader(const CGPUShader& shader) override final;
         virtual void SetShaderUniform(const CGPUShader* shader, const std::string& name, const glm::mat4& matrix) override final;

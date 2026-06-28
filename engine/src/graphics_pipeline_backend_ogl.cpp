@@ -55,11 +55,12 @@ void triton::cGraphicsPipelineBackendOGL::UnbindShader()
 }
 
 triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
-    const std::string& vertexStr,
-    const std::string& fragmentStr,
-    const std::string& vertexCustomFuncStr,
-    const std::string& fragmentCustomFuncStr,
-    const std::vector<SShaderDefine>& defines
+    const char* vertexStr,
+    const char* fragmentStr,
+    const char* vertexCustomFuncStr,
+    const char* fragmentCustomFuncStr,
+    types::usize defineCount,
+    const SShaderDefine* defines
 )
 {
     std::string finalVertexStr = vertexStr;
@@ -71,7 +72,7 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     const std::string fragmentFuncDefinition = "void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";
     const std::string fragmentFuncPassthroughCall = "Fragment_Passthrough(textureColor, DiffuseColor, fragColor);";
 
-    if (!vertexCustomFuncStr.empty() && !fragmentCustomFuncStr.empty())
+    if (!vertexCustomFuncStr && !fragmentCustomFuncStr)
     {
         const usize vertexFuncDefinitionPos = finalVertexStr.find(vertexFuncDefinition);
         if (vertexFuncDefinitionPos != std::string::npos)
@@ -90,7 +91,10 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     finalVertexStr = CleanShaderSource(finalVertexStr);
     finalFragmentStr = CleanShaderSource(finalFragmentStr);
 
-    DefineInShader(finalVertexStr, finalFragmentStr, defines);
+    std::vector<SShaderDefine> definesVec = {};
+    for (usize i = 0; i < defineCount; i++)
+        definesVec.push_back(defines[i]);
+    DefineInShader(finalVertexStr, finalFragmentStr, definesVec);
 
     finalVertexStr = appendStr + finalVertexStr;
     finalFragmentStr = appendStr + finalFragmentStr;
