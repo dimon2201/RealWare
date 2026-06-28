@@ -62,6 +62,11 @@ namespace triton
     public:
         explicit XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFunc, const std::string& fragmentCustomFunc, std::vector<SShaderDefine>&& defines = {});
         ~XShader() override;
+
+        inline CGPUShader GetGPUShader() const
+        {
+            return _gpuShader;
+        }
     };
 
     class XRenderTarget : public cGPUResource
