@@ -182,6 +182,13 @@ namespace triton
 	{
 		TRITON_OBJECT(cMath)
 
+		enum class EEulerAngle
+		{
+			PITCH,
+			YAW,
+			ROLL
+		};
+
 		static types::qword HashBytes(const types::u8* data, types::usize dataByteSize, types::qword mask);
 
 	public:
