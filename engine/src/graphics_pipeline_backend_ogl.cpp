@@ -151,6 +151,11 @@ void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const CGPUShader* sha
     glUniform4fv(glGetUniformLocation(shader->GetInstance(), name.c_str()), count, &values[0]);
 }
 
+void triton::cGraphicsPipelineBackendOGL::SetShaderUniform(const CGPUShader* shader, const std::string& name, types::u32 value)
+{
+    glUniform1ui(glGetUniformLocation(shader->GetInstance(), name.c_str()), value);
+}
+
 void triton::cGraphicsPipelineBackendOGL::BindTextureNamed(
     CGPUShader* shader,
     cTexture* texture,

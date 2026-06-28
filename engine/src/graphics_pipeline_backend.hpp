@@ -131,6 +131,11 @@ namespace triton
             types::usize count,
             const types::f32* values
         ) = 0;
+        virtual void SetShaderUniform(
+            const CGPUShader* shader,
+            const std::string& name,
+            types::u32 value
+        ) = 0;
         virtual void BindTextureNamed(
             CGPUShader* shader,
             cTexture* texture,
