@@ -155,7 +155,7 @@ namespace triton
 
 		cMatrix4 operator*(const cMatrix4& mat) const;
 
-		inline const glm::mat4 Get() const
+		inline const glm::mat4& Get() const
 		{
 			return _mat;
 		}
