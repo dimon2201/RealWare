@@ -213,8 +213,6 @@ namespace triton
         void WriteBatchInstances(SRenderInstance::EUsage usage);
         void WriteDirtyStaticInstances();
         void WriteDynamicInstances();
-        void BindVertexIndexBuffers();
-        void BindInstanceBuffers();
 
 	public:
         enum class eAPI
