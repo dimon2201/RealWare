@@ -31,6 +31,7 @@
 #include "render_batch.hpp"
 #include "handle_allocator.hpp"
 #include "batch_storage.hpp"
+#include "camera.hpp"
 
 using namespace types;
 
