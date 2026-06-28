@@ -58,9 +58,32 @@ void triton::XRenderPass::Bind()
 
     CGPUShader shader = _shader->GetGPUShader();
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+    gfxPipelineBackend->BindShader(&shader);
+    gfxPipelineBackend->Viewport(_viewport);
+    gfxPipelineBackend->BindDepthMode(_depthState);
+    gfxPipelineBackend->BindBlendMode(_blendState);
+    for (auto& tex : _inputTextures)
+        gfxPipelineBackend->BindTextureNamed(&shader, tex._texture, tex._name, -1);
     if (_vertexArray)
         gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
-    gfxPipelineBackend->BindShader(&shader);
+    if (_renderTarget)
+        gfxPipelineBackend->BindRenderTarget(_renderTarget);
+}
+
+void triton::XRenderPass::Unbind()
+{
+    CThreadGuard::AssertRender();
+
+    CGPUShader shader = _shader->GetGPUShader();
+    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
+    gfxPipelineBackend->UnbindShader();
+    for (auto& tex : _inputTextures)
+        gfxResourceBackend->UnbindTexture(tex._texture);
+    if (_vertexArray)
+        gfxPipelineBackend->UnbindVertexArray();
+    if (_renderTarget)
+        gfxPipelineBackend->UnbindRenderTarget();
 }
 
 void triton::XRenderPass::Draw()
@@ -85,6 +108,9 @@ void triton::XRenderPass::Draw()
 
                 camera->Bind(this);
 
+                gfxDrawcallBackend->ClearColor(cVector4(0.45f, 0.0f, 0.8f, 1.0f));
+                gfxDrawcallBackend->ClearDepth(1.0f);
+
                 // Static
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 0);
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::STATIC));
@@ -96,14 +122,14 @@ void triton::XRenderPass::Draw()
                 );
 
                 // Dynamic
-                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 1);
+                /*gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 1);
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::DYNAMIC));
                 gfxDrawcallBackend->Draw(
                     geometry._indexCount,
                     geometry._vertexElementOffset,
                     geometry._indexElementOffset,
                     batch.GetInstanceCount(SRenderInstance::EUsage::DYNAMIC)
-                );
+                );*/
             }
             break;
         }
@@ -121,6 +147,7 @@ void triton::XRenderPass::Execute()
 
     Bind();
     Draw();
+    Unbind();
 }
 
 void triton::XRenderPass::ResizeViewport(const cVector2& size)
@@ -163,6 +190,8 @@ triton::SShaderDefine triton::XRenderPass::SetInputTexture(types::usize slot, co
 
 std::vector<triton::SShaderDefine> triton::XRenderPass::SetInputTextures(const std::vector<triton::SRenderPassTexture>& textures)
 {
+    _inputTextures = textures;
+
     std::vector<SShaderDefine> defines = {};
     for (usize i = 0; i < textures.size(); i++)
     {
