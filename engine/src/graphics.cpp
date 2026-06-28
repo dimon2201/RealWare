@@ -1061,6 +1061,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     };
     XVertexArray* opaqueVertexArray = _context->Create<XVertexArray>(_context, opaqueInputBuffers);
     _opaque = _context->Create<XRenderPass>(_context);
+    _opaque->SetDispatch(ERenderPassDispatch::BATCH);
     _opaque->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
     _opaque->SetVertexArray(opaqueVertexArray);
     _opaque->SetInputBuffers(opaqueInputBuffers);
@@ -1093,6 +1094,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     };
     XVertexArray* transparentVertexArray = _context->Create<XVertexArray>(_context, transparentInputBuffers);
     _transparent = _context->Create<XRenderPass>(_context);
+    _transparent->SetDispatch(ERenderPassDispatch::BATCH);
     _transparent->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
     _transparent->SetVertexArray(transparentVertexArray);
     _transparent->SetInputBuffers(transparentInputBuffers);
@@ -1114,6 +1116,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
         ""
     );
     _text = _context->Create<XRenderPass>(_context);
+    _text->SetDispatch(ERenderPassDispatch::TEXT);
     _text->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
     _text->SetShader(textShader);
     _text->SetViewport(viewport);
@@ -1133,6 +1136,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeTransparentBlendState.srcFactors[0] = EBlendFactor::SRC_ALPHA;
     compositeTransparentBlendState.dstFactors[0] = EBlendFactor::INV_SRC_ALPHA;
     _compositeTransparent = _context->Create<XRenderPass>(_context);
+    _compositeTransparent->SetDispatch(ERenderPassDispatch::QUAD);
     _compositeTransparent->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
     _compositeTransparent->SetInputTextures({
         SRenderPassTexture("AccumulationTexture", _transparentRenderTarget->GetColorAttachments()[0]),
@@ -1157,6 +1161,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeFinalBlendState.srcFactors[0] = EBlendFactor::ONE;
     compositeFinalBlendState.dstFactors[0] = EBlendFactor::ZERO;
     _compositeFinal = _context->Create<XRenderPass>(_context);
+    _compositeFinal->SetDispatch(ERenderPassDispatch::QUAD);
     _compositeFinal->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
     _compositeFinal->SetInputTextures({
         SRenderPassTexture("ColorTexture", _opaqueRenderTarget->GetColorAttachments()[0]),
