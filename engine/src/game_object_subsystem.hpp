@@ -3,19 +3,39 @@
 #pragma once
 
 #include "object.hpp"
-#include "storage.hpp"
+#include "subsystem.hpp"
 #include "game_object.hpp"
+#include "handles.hpp"
 
 namespace triton
 {
     template <typename TValue>
     class XLinearArray;
+    class cVector3;
+    struct SBatchInstance;
 
-    using HGameObject = SHandle;
+    struct SDirtyBufferItem
+    {
+        SBatchInstance renderable;
+        SRenderInstance renderInstance;
+    };
 
-    class XGameObjectSubsystem : public XStorage<HGameObject, SGameObject, XLinearArray<SGameObject>>
+    class XGameObjectSubsystem : public ISubsystem<HGameObject, SGameObject, XLinearArray<SGameObject>>
     {
         TRITON_OBJECT(XGameObjectSubsystem)
-        TRITON_STORAGE
+        TRITON_SUBSYSTEM
+
+        std::vector<SDirtyBufferItem> _dirtyBuffer = {};
+
+    public:
+        void Init() override;
+        void Free() override;
+        void Update() override;
+        void AddRenderable(const HGameObject& gameObject);
+        void SetWorldPosition(const HGameObject& gameObject, const cVector3& worldPosition);
+
+    private:
+        void AddDirty(const SBatchInstance& renderable);
+        void WriteDirty();
     };
 }
