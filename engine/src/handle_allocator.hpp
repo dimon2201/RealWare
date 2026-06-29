@@ -70,14 +70,14 @@ namespace triton
 		}
 
 		template <typename... Args>
-		THandle Create(THandle&& handleFrom, Args&&... args)
+		THandle Create(Args&&... args)
 		{
 			types::usize arrayIndex;
 			types::usize slotIndex;
 			types::usize generation;
 			
 			arrayIndex = _objects->GetSize();
-			THandle handle = std::move(handleFrom);
+			THandle handle;
 
 			if (_freeSlots->IsEmpty())
 			{
@@ -113,14 +113,14 @@ namespace triton
 			return handle;
 		}
 
-		THandle Create(THandle&& handleFrom, TObject&& object)
+		THandle Create(TObject&& object)
 		{
 			types::usize arrayIndex;
 			types::usize slotIndex;
 			types::usize generation;
 
 			arrayIndex = _objects->GetSize();
-			THandle handle = std::move(handleFrom);
+			THandle handle;
 
 			if (_freeSlots->IsEmpty())
 			{

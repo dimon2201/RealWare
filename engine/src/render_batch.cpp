@@ -26,9 +26,9 @@ triton::XRenderBatch::~XRenderBatch()
 std::optional<triton::SInstanceBufferHandle> triton::XRenderBatch::Add(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage, SRenderInstance& instance)
 {
 	if (usage == SRenderInstance::EUsage::STATIC)
-		return _staticInstances->Create(SInstanceBufferHandle(batch, usage), std::move(instance));
+		return _staticInstances->Create(std::move(instance));
 	else if (usage == SRenderInstance::EUsage::DYNAMIC)
-		return _dynamicInstances->Create(SInstanceBufferHandle(batch, usage), std::move(instance));
+		return _dynamicInstances->Create(std::move(instance));
 
 	return std::nullopt;
 }

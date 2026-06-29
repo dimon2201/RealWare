@@ -253,7 +253,7 @@ void triton::cGraphics::DestroyInstance(const SInstanceBufferHandle& instance)
 
 std::optional<triton::SCameraHandle> triton::cGraphics::CreateCamera()
 {
-    return _cameras->Create(SCameraHandle(), _context);
+    return _cameras->Create(_context);
 }
 
 triton::XCamera* triton::cGraphics::GetCamera(const SCameraHandle& camera)

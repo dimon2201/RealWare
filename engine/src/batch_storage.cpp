@@ -20,7 +20,7 @@ triton::XBatchStorage::~XBatchStorage()
 
 std::optional<triton::SRenderBatchHandle> triton::XBatchStorage::Create(const SGeometryView& geometry)
 {
-	return _batches->Create(SRenderBatchHandle(), _context, geometry);
+	return _batches->Create(_context, geometry);
 }
 
 triton::XRenderBatch* triton::XBatchStorage::Get(const SRenderBatchHandle& batch)
