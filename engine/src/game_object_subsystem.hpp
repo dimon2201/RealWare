@@ -11,7 +11,9 @@ namespace triton
     template <typename TValue>
     class XLinearArray;
 
-    class XGameObjectSubsystem : public XStorage<SSlot, SGameObject, XLinearArray<SGameObject>>
+    using HGameObject = SHandle;
+
+    class XGameObjectSubsystem : public XStorage<HGameObject, SGameObject, XLinearArray<SGameObject>>
     {
         TRITON_OBJECT(XGameObjectSubsystem)
         TRITON_STORAGE
