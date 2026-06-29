@@ -12,6 +12,7 @@
 #include "stack.hpp"
 #include "capabilities.hpp"
 #include "log.hpp"
+#include "game_object_subsystem.hpp"
 
 using namespace types;
 
@@ -114,6 +115,8 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 				break;
 			}
 		}
+
+		_context->GetSubsystem<XGameObjectSubsystem>()->Update();
 
 		_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
 		ResetScratchFrame();
