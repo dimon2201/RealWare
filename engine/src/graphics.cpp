@@ -54,17 +54,6 @@ triton::cMaterialInstance::cMaterialInstance(s32 materialIndex, const cMaterial*
 
 triton::sLightInstance::sLightInstance(const cGameObject* object)
 {
-    const sLight* light = object->GetLight();
-    // TODO: Overload constructors for cVector4
-    //_position = cVector4(object->GetTransform()->_position, 0.0f);
-    //_color = cVector4(light->_color, 0.0f);
-    //_directionAndScale = cVector4(light->_direction, light->_scale);
-    _attenuation = cVector4(
-        light->_attenuationConstant,
-        light->_attenuationLinear,
-        light->_attenuationQuadratic,
-        0.0f
-    );
 }
 
 void triton::cGraphics::Init()
