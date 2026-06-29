@@ -7,33 +7,39 @@
 #include "render_instance.hpp"
 #include "buffer_view.hpp"
 #include "handle_allocator.hpp"
+#include "handles.hpp"
 
 namespace triton
 {
     class cContext;
     struct SRenderBatchSlot;
-    struct SRenderBatchHandle;
     template <typename TValue>
     class XLinearArray;
     class XRenderBatch;
     class SGeometryView;
-    class SInstanceBufferHandle;
+
+    struct SBatchInstance
+    {
+        SRenderInstance::EUsage usage = SRenderInstance::EUsage::NONE;
+        HBatch batch;
+        HRenderInstance instance;
+    };
 
     class XBatchStorage : public iObject
     {
         TRITON_OBJECT(XBatchStorage)
 
-        XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, XLinearArray<XRenderBatch>, XRenderBatch>* _batches = nullptr;
+        XHandleAllocator<SRenderBatchSlot, HBatch, XLinearArray<XRenderBatch>, XRenderBatch>* _batches = nullptr;
 
     public:
         explicit XBatchStorage(cContext* context);
         ~XBatchStorage() override;
 
-        std::optional<SRenderBatchHandle> Create(const SGeometryView& geometry);
-        XRenderBatch* Get(const SRenderBatchHandle& batch);
-        void Remove(const SRenderBatchHandle& batch);
-        std::optional<SInstanceBufferHandle> AddInstance(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage);
-        void RemoveInstance(const SInstanceBufferHandle& instance);
+        std::optional<HBatch> Create(const SGeometryView& geometry);
+        XRenderBatch* Get(const HBatch& batch);
+        void Remove(const HBatch& batch);
+        std::optional<SBatchInstance> AddInstance(const HBatch& batch, SRenderInstance::EUsage usage);
+        void RemoveInstance(const SBatchInstance& instance);
 
         inline SBufferView<XRenderBatch> GetBatches() const
         {

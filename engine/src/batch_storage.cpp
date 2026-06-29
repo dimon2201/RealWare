@@ -9,39 +9,39 @@
 
 triton::XBatchStorage::XBatchStorage(cContext* context) : iObject(context)
 {
-	_batches = _context->Create<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, XLinearArray<XRenderBatch>, XRenderBatch>>(_context);
+	_batches = _context->Create<XHandleAllocator<SRenderBatchSlot, HBatch, XLinearArray<XRenderBatch>, XRenderBatch>>(_context);
 	_batches->Initialize();
 }
 
 triton::XBatchStorage::~XBatchStorage()
 {
-	_context->Destroy<XHandleAllocator<SRenderBatchSlot, SRenderBatchHandle, XLinearArray<XRenderBatch>, XRenderBatch>>(_batches);
+	_context->Destroy<XHandleAllocator<SRenderBatchSlot, HBatch, XLinearArray<XRenderBatch>, XRenderBatch>>(_batches);
 }
 
-std::optional<triton::SRenderBatchHandle> triton::XBatchStorage::Create(const SGeometryView& geometry)
+std::optional<triton::HBatch> triton::XBatchStorage::Create(const SGeometryView& geometry)
 {
 	return _batches->Create(_context, geometry);
 }
 
-triton::XRenderBatch* triton::XBatchStorage::Get(const SRenderBatchHandle& batch)
+triton::XRenderBatch* triton::XBatchStorage::Get(const HBatch& batch)
 {
 	return _batches->Get(batch);
 }
 
-void triton::XBatchStorage::Remove(const SRenderBatchHandle& batch)
+void triton::XBatchStorage::Remove(const HBatch& batch)
 {
 	_batches->Destroy(batch);
 }
 
-std::optional<triton::SInstanceBufferHandle> triton::XBatchStorage::AddInstance(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage)
+std::optional<triton::SBatchInstance> triton::XBatchStorage::AddInstance(const HBatch& batch, SRenderInstance::EUsage usage)
 {
 	XRenderBatch* currentBatch = _batches->Get(batch);
 
 	return currentBatch->Add(batch, usage, SRenderInstance());
 }
 
-void triton::XBatchStorage::RemoveInstance(const SInstanceBufferHandle& instance)
+void triton::XBatchStorage::RemoveInstance(const SBatchInstance& instance)
 {
-	XRenderBatch* currentBatch = _batches->Get(instance._batch);
+	XRenderBatch* currentBatch = _batches->Get(instance.batch);
 	currentBatch->Remove(instance);
 }
