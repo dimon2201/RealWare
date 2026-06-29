@@ -1,4 +1,4 @@
-// storage.hpp
+// subsystem.hpp
 
 #pragma once
 
@@ -10,20 +10,24 @@
 namespace triton
 {
 	template <typename THandle, typename TObject, typename TAllocator>
-	class XStorage : public iObject
+	class ISubsystem : public iObject
 	{
-		TRITON_OBJECT(XStorage)
+		TRITON_OBJECT(ISubsystem)
 
 		XHandleAllocator<SSlot, THandle, TAllocator, TObject>* _objects = nullptr;
 
 	public:
-		explicit XStorage(cContext* context) : iObject(context)
+		virtual void Init() = 0;
+		virtual void Free() = 0;
+		virtual void Update() = 0;
+
+		explicit ISubsystem(cContext* context) : iObject(context)
 		{
 			_objects = _context->Create<XHandleAllocator<SSlot, THandle, TAllocator, TObject>>(_context);
 			_objects->Initialize();
 		}
 
-		~XStorage()
+		virtual ~ISubsystem()
 		{
 			_objects->Free();
 			_context->Destroy<XHandleAllocator<SSlot, THandle, TAllocator, TObject>>(_objects);
@@ -51,5 +55,5 @@ namespace triton
 		}
 	};
 
-	#define TRITON_STORAGE using XStorage::XStorage;
+	#define TRITON_SUBSYSTEM using ISubsystem::ISubsystem;
 }
