@@ -6,6 +6,9 @@
 #include "subsystem.hpp"
 #include "game_object.hpp"
 #include "handles.hpp"
+#include "graphics_buffer_formats.hpp"
+#include "render_instance.hpp"
+#include "types.hpp"
 
 namespace triton
 {
@@ -28,14 +31,22 @@ namespace triton
         std::vector<SDirtyBufferItem> _dirtyBuffer = {};
 
     public:
+        inline HGameObject CreateGameObject(const std::string& name)
+        {
+            HGameObject gameObject = Create();
+            Get(gameObject).name = name;
+            
+            return gameObject;
+        }
+
         void Init() override;
         void Free() override;
         void Update() override;
-        void AddRenderable(const HGameObject& gameObject);
+        void AddRenderable(const HGameObject& gameObject, SRenderInstance::EUsage usage, EGraphicsBufferFormat format, const types::u8* vertexBytes, types::usize vertexBytesCount, const types::u8* indexBytes, types::usize indexBytesCount);
         void SetWorldPosition(const HGameObject& gameObject, const cVector3& worldPosition);
 
     private:
-        void AddDirty(const SBatchInstance& renderable);
+        void AddDirty(const SGameObject& gameObject);
         void WriteDirty();
     };
 }
