@@ -28,6 +28,7 @@
 #include "ecs_subsystem.hpp"
 #include "instance_buffer.hpp"
 #include "handle_allocator.hpp"
+#include "game_object_subsystem.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -75,6 +76,8 @@ void triton::cEngine::Initialize()
 	_context->GetSubsystem<XECSSubsystem>()->Initialize();
 	_context->RegisterSubsystem(new cGraphics(_context));
 	_context->GetSubsystem<cGraphics>()->Init();
+	_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
+	_context->GetSubsystem<XGameObjectSubsystem>()->Init();
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
