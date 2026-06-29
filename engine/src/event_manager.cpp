@@ -4,7 +4,6 @@
 
 #include "application.hpp"
 #include "context.hpp"
-#include "gameobject_manager.hpp"
 #include "engine.hpp"
 #include "event_manager.hpp"
 #include "data_buffer.hpp"

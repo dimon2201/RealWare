@@ -13,7 +13,6 @@
 #include "graphics.hpp"
 #include "engine.hpp"
 #include "texture_manager.hpp"
-#include "gameobject_manager.hpp"
 #include "font_manager.hpp"
 #include "filesystem_manager.hpp"
 #include "application.hpp"
