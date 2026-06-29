@@ -209,17 +209,17 @@ std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsB
     return _geometryStorage->Store(format, vertices, verticesByteSize, indices, indicesByteSize);
 }
 
-std::optional<triton::SRenderBatchHandle> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
+std::optional<triton::HBatch> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
 {
     return _batchStorage->Create(geometry);
 }
 
-void triton::cGraphics::RemoveBatch(const SRenderBatchHandle& handle)
+void triton::cGraphics::RemoveBatch(const HBatch& handle)
 {
     _batchStorage->Remove(handle);
 }
 
-std::optional<triton::SInstanceBufferHandle> triton::cGraphics::CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch)
+std::optional<triton::SBatchInstance> triton::cGraphics::CreateInstance(SRenderInstance::EUsage usage, const HBatch& batch)
 {
     if (usage == SRenderInstance::EUsage::STATIC)
         MarkStaticBufferDirty();
@@ -227,30 +227,30 @@ std::optional<triton::SInstanceBufferHandle> triton::cGraphics::CreateInstance(S
     return _batchStorage->AddInstance(batch, usage);
 }
 
-void triton::cGraphics::SetInstance(const SInstanceBufferHandle& instance, const SRenderInstance& renderInstance)
+void triton::cGraphics::SetInstance(const SBatchInstance& instance, const SRenderInstance& renderInstance)
 {
-    _batchStorage->Get(instance._batch)->Set(instance, renderInstance);
+    _batchStorage->Get(instance.batch)->Set(instance, renderInstance);
 }
 
-void triton::cGraphics::DestroyInstance(const SInstanceBufferHandle& instance)
+void triton::cGraphics::DestroyInstance(const SBatchInstance& instance)
 {
-    if (instance._usage == SRenderInstance::EUsage::STATIC)
+    if (instance.usage == SRenderInstance::EUsage::STATIC)
         MarkStaticBufferDirty();
 
     _batchStorage->RemoveInstance(instance);
 }
 
-std::optional<triton::SCameraHandle> triton::cGraphics::CreateCamera()
+std::optional<triton::HCamera> triton::cGraphics::CreateCamera()
 {
     return _cameras->Create(_context);
 }
 
-triton::XCamera* triton::cGraphics::GetCamera(const SCameraHandle& camera)
+triton::XCamera* triton::cGraphics::GetCamera(const HCamera& camera)
 {
     return _cameras->Get(camera);
 }
 
-void triton::cGraphics::DestroyCamera(const SCameraHandle& camera)
+void triton::cGraphics::DestroyCamera(const HCamera& camera)
 {
     _cameras->Destroy(camera);
 }
@@ -1169,7 +1169,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 
 void triton::cGraphics::CreateCameraAllocator()
 {
-    _cameras = _context->Create<XHandleAllocator<SCameraSlot, SCameraHandle, XLinearArray<XCamera>, XCamera>>(_context);
+    _cameras = _context->Create<XHandleAllocator<SCameraSlot, HCamera, XLinearArray<XCamera>, XCamera>>(_context);
     _cameras->Initialize();
 }
 
@@ -1254,7 +1254,7 @@ void triton::cGraphics::DestroyCameraAllocator()
     if (_cameras)
     {
         _cameras->Free();
-        _context->Destroy<XHandleAllocator<SCameraSlot, SCameraHandle, XLinearArray<XCamera>, XCamera>>(_cameras);
+        _context->Destroy<XHandleAllocator<SCameraSlot, HCamera, XLinearArray<XCamera>, XCamera>>(_cameras);
     }
 }
 

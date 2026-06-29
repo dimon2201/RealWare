@@ -7,5 +7,4 @@
 namespace triton
 {
 	class SCameraSlot : public SSlot {};
-	class SCameraHandle : public SHandle {};
 }

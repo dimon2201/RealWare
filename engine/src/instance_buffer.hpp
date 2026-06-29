@@ -36,15 +36,6 @@ namespace triton
 
 	class SInstanceBufferSlot final : public SSlot {};
 
-	class SInstanceBufferHandle final : public SHandle
-	{
-	public:
-		SRenderBatchHandle _batch = SRenderBatchHandle();
-		SRenderInstance::EUsage _usage = SRenderInstance::EUsage::NONE;
-
-		SInstanceBufferHandle(const SRenderBatchHandle& batch, SRenderInstance::EUsage usage) : SHandle(), _batch(batch), _usage(usage) {}
-	};
-
 	class XInstanceBuffer final : public cBuffer
 	{
 		TRITON_OBJECT(XInstanceBuffer)

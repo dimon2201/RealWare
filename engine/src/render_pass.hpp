@@ -29,7 +29,6 @@ namespace triton
     class XVertexArray;
     class SShaderDefine;
     class XRenderBatch;
-    struct SRenderBatchHandle;
 
     enum class EBuiltinRenderPassType
     {
@@ -75,7 +74,7 @@ namespace triton
         XShader*                        _shader = nullptr;
         cBuffer*                        _materialBuffer = nullptr;
         cBuffer*                        _textureBuffer = nullptr;
-        SCameraHandle                   _camera = {};
+        HCamera                   _camera = {};
 
     public:
         explicit XRenderPass(cContext* context);
@@ -146,7 +145,7 @@ namespace triton
             _shader = shader;
         }
 
-        inline void SetCamera(const SCameraHandle& camera)
+        inline void SetCamera(const HCamera& camera)
         {
             _camera = camera;
         }

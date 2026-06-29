@@ -9,4 +9,5 @@ namespace triton
 	using HRenderInstance = SHandle;
 	using HBatch = SHandle;
 	using HCamera = SHandle;
+	using HScene = SHandle;
 }

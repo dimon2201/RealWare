@@ -7,6 +7,4 @@
 namespace triton
 {
 	class SSceneSlot final : public SSlot {};
-
-	class SSceneHandle final : public SHandle {};
 }

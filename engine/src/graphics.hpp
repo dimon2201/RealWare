@@ -17,6 +17,7 @@
 #include "batch_storage.hpp"
 #include "handle.hpp"
 #include "camera_handle.hpp"
+#include "batch_storage.hpp"
 
 namespace triton
 {
@@ -195,7 +196,7 @@ namespace triton
         XRenderPass* _compositeFinal = nullptr;
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
-        XHandleAllocator<SCameraSlot, SCameraHandle, XLinearArray<XCamera>, XCamera>* _cameras = nullptr;
+        XHandleAllocator<SCameraSlot, HCamera, XLinearArray<XCamera>, XCamera>* _cameras = nullptr;
 
         void CreateGeometryStorage();
         void CreateBatchStorage();
@@ -233,14 +234,14 @@ namespace triton
         void ExecuteDefaultRenderPasses();
         CVertexArray* CreateDefaultVertexArray();
         std::optional<triton::SGeometryView> StoreGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
-        std::optional<SRenderBatchHandle> CreateBatch(const SGeometryView& geometry);
-        void RemoveBatch(const SRenderBatchHandle& handle);
-        std::optional<SInstanceBufferHandle> CreateInstance(SRenderInstance::EUsage usage, const SRenderBatchHandle& batch);
-        void SetInstance(const SInstanceBufferHandle& instance, const SRenderInstance& renderInstance); // TODO: remove this temporary method completely
-        void DestroyInstance(const SInstanceBufferHandle& instance);
-        std::optional<SCameraHandle> CreateCamera();
-        XCamera* GetCamera(const SCameraHandle& camera);
-        void DestroyCamera(const SCameraHandle& camera);
+        std::optional<HBatch> CreateBatch(const SGeometryView& geometry);
+        void RemoveBatch(const HBatch& handle);
+        std::optional<SBatchInstance> CreateInstance(SRenderInstance::EUsage usage, const HBatch& batch);
+        void SetInstance(const SBatchInstance& instance, const SRenderInstance& renderInstance); // TODO: remove this temporary method completely
+        void DestroyInstance(const SBatchInstance& instance);
+        std::optional<HCamera> CreateCamera();
+        XCamera* GetCamera(const HCamera& camera);
+        void DestroyCamera(const HCamera& camera);
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
 
