@@ -172,6 +172,7 @@ namespace triton
 	{
         TRITON_OBJECT(cGraphics)
 
+    public: // TODO: remove this 'public'
         void* _lights = nullptr;
         types::usize _lightsByteSize = 0;
         void* _opaqueTextureAtlasTextures = nullptr;
