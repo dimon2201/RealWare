@@ -11,7 +11,5 @@ namespace triton
     class XMaterialUploader final : public iObject
     {
         TRITON_OBJECT(XMaterialUploader)
-
-        cBuffer* _materialBuffer = nullptr;
     };
 }
