@@ -11,4 +11,5 @@ namespace triton
 	using HCamera = SHandle;
 	using HScene = SHandle;
 	using HGameObject = SHandle;
+	using HMaterial = SHandle;
 }
