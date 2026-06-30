@@ -4,7 +4,7 @@
 #include "context.hpp"
 #include "linear_array.hpp"
 
-triton::XMaterialUploader::XMaterialUploader(cContext* context)
+triton::XMaterialUploader::XMaterialUploader(cContext* context) : iObject(context)
 {
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 	_buffer = (SMaterialLayout*)_context->GetMemoryAllocator()->Allocate(caps->maxRenderMaterialCount * sizeof(SMaterialLayout), 64);
