@@ -18,21 +18,22 @@ struct Instance
 	mat4 World;
 };
 
+struct Texture
+{
+	uint AtlasLayer;
+	vec2 AtlasNormOffset;
+	vec2 AtlasNormSize;
+};
+
 struct Material
 {
-	int BufferIndex;
-	float DiffuseTextureLayerInfo;
-	float MetallicTextureLayerInfo;
-	float RoughnessTextureLayerInfo;
-	float UserData[4];
-	vec4 DiffuseTextureInfo;
+	Texture Diffuse;
 	vec4 DiffuseColor;
-	vec4 HighlightColor;
 };
 
 layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[1024]; };
 layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[1024]; };
-layout(std430, binding = 1) buffer MaterialBuffer { Material materials[1024]; };
+layout(std430, binding = 2) buffer MaterialBuffer { Material materials[1024]; };
 
 void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
 {
@@ -59,12 +60,17 @@ void main()
 		instance = dynamicInstances[gl_InstanceID];
 	Material material = materials[instance.MaterialIndex];
 
-	TexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.DiffuseTextureLayerInfo);
-	TexcoordAtlas.xy *= vec2(material.DiffuseTextureInfo.zw);
-	TexcoordAtlas.xy += material.DiffuseTextureInfo.xy;
+	TexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Diffuse.AtlasLayer);
+	TexcoordAtlas.xy *= vec2(material.Diffuse.AtlasNormSize);
+	TexcoordAtlas.xy += material.Diffuse.AtlasNormOffset;
 	TexcoordOrig = InTexcoord;
 	DiffuseColor = material.DiffuseColor;
 
 	Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);
 	Vertex_Func(InPositionLocal, TexcoordOrig, InNormal, gl_InstanceID, instance, material, instance.Use2D, gl_Position);
+
+
+	//if (gl_VertexID == 0) { gl_Position = vec4(-1.0, -1.0, 0.0, 1.0); }
+	//if (gl_VertexID == 1) { gl_Position = vec4(-1.0, 1.0, 0.0, 1.0); }
+	//if (gl_VertexID == 2) { gl_Position = vec4(1.0, -1.0, 0.0, 1.0); }
 }
