@@ -9,7 +9,7 @@ namespace triton
 {
     struct SMaterial
     {
-        cTextureAtlasTexture diffuseTexture;
+        HTexture diffuseTexture;
         cVector4 diffuseColor = cVector4(0.0f);
     };
 }
