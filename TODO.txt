@@ -1,0 +1,3 @@
+1. Rewrite how graphics backend returns data
+2. Move texture atlas to separate file from XTextureSubsystem
+3. Move cTexture::eFormat texture format to "texture.hpp"
