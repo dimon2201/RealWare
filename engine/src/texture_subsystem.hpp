@@ -46,11 +46,13 @@ namespace triton
     class XTextureSubsystem : public ISubsystem<HTexture, STexture, XLinearArray<STexture>>
     {
         TRITON_OBJECT(XTextureSubsystem)
-        TRITON_SUBSYSTEM
 
         cTexture* _atlas = nullptr;
 
     public:
+        explicit XTextureSubsystem(cContext* context, const cVector3& size);
+        ~XTextureSubsystem() override;
+
         inline HTexture CreateTexture(const std::string& filePath)
         {
             HTexture texture = Create();
@@ -58,9 +60,9 @@ namespace triton
             return texture;
         }
 
-        void Init() override;
-        void Free() override;
-        void Update() override;
+        void Init() override {}
+        void Free() override {}
+        void Update() override {}
 
     private:
         HTexture CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);

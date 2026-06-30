@@ -27,9 +27,7 @@ triton::cTextureAtlasTexture::cTextureAtlasTexture(cContext* context, types::boo
     }
 }
 
-triton::XTextureSubsystem::cTextureAtlas(cContext* context) : iObject(context) {}
-
-void triton::XTextureSubsystem::Init(const cVector3& size)
+triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& size) : ISubsystem(context)
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
@@ -43,44 +41,28 @@ void triton::XTextureSubsystem::Init(const cVector3& size)
         0
     ));
     _atlas = renderSubsystem->FetchResult<cTexture*>();
-    _atlas->SetSlot(0);
 }
 
-void triton::XTextureSubsystem::Shutdown()
+triton::XTextureSubsystem::~XTextureSubsystem()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    if (_atlas)
-        renderSubsystem->PushCommand(SRenderCommand(
-            ERenderCommand::DESTROY_TEXTURE,
-            (cpuword)_atlas
-        ));
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_TEXTURE,
+        (cpuword)_atlas
+    ));
 }
 
 HTexture triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
 {
-}
-
-HTexture triton::XTextureSubsystem::CreateTexture(const std::string& filePath)
-{
-}
-
-void triton::XTextureSubsystem::DestroyTexture(const HTexture& texture)
-{
-}
-
-// TODO: New implementation of texture creation
-/*cTextureAtlasTexture* cTextureAtlas::CreateTexture(const std::string& id, const glm::vec2& size, usize channels, const u8* data)
-{
-    const usize width = size.x;
-    const usize height = size.y;
-
-    if (data == nullptr || channels != 4)
+    if (data == nullptr || format != cTexture::eFormat::RGBA8)
     {
-        Print("Error: you can only create texture with 4 channels in RGBA format!");
+        Print("Error: you can only create texture atlas with 4 channels in RGBA format!");
 
         return nullptr;
     }
 
+    const usize width = size.GetX();
+    const usize height = size.GetY();
     const auto textures = _textures.GetElements();
     const usize texturesCount = _textures.GetElementCount();
     for (usize layer = 0; layer < _atlas->GetDepth(); layer++)
@@ -146,7 +128,7 @@ void triton::XTextureSubsystem::DestroyTexture(const HTexture& texture)
     return nullptr;
 }
 
-cTextureAtlasTexture* cTextureAtlas::CreateTexture(const std::string& id, const std::string& filename)
+triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& filePath)
 {
     const usize channelsRequired = 4;
 
@@ -156,35 +138,5 @@ cTextureAtlasTexture* cTextureAtlas::CreateTexture(const std::string& id, const 
     u8* data = nullptr;
     data = stbi_load(filename.c_str(), &width, &height, &channels, channelsRequired);
 
-    return CreateTexture(id, glm::vec2(width, height), channelsRequired, data);
-}
-
-cTextureAtlasTexture* cTextureAtlas::FindTexture(const std::string& id)
-{
-    return _textures.Find(id);
-}
-
-void cTextureAtlas::DestroyTexture(const std::string& id)
-{
-    _textures.Delete(id);
-}*/
-
-triton::cTexture* triton::cTextureAtlas::GetAtlas() const
-{
-    return _atlas;
-}
-
-usize triton::cTextureAtlas::GetWidth() const
-{
-    return _atlas->GetWidth();
-}
-
-usize triton::cTextureAtlas::GetHeight() const
-{
-    return _atlas->GetHeight();
-}
-
-usize triton::cTextureAtlas::GetDepth() const
-{
-    return _atlas->GetDepth();
+    return CreateTexture(cTexture::eFormat::RGBA8, cVector2(width, height), data);
 }
