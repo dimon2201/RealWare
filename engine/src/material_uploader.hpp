@@ -7,8 +7,6 @@
 namespace triton
 {
     class cContext;
-    template <typename TValue>
-    class XLinearArray;
     class cBuffer;
     struct SMaterial;
 
@@ -31,15 +29,13 @@ namespace triton
     {
         TRITON_OBJECT(XMaterialUploader)
 
-        XLinearArray<SMaterialLayout>* _buffer = nullptr;
+        SMaterialLayout* _buffer = nullptr;
 
     public:
         explicit XMaterialUploader(cContext* context);
         ~XMaterialUploader() override;
 
-        void Add(const SMaterial& material);
         void Set(types::usize index, const SMaterial& material);
-        void Remove(types::usize index);
         void Upload(cBuffer* materialBuffer);
     };
 }

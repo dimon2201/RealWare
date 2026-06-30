@@ -7,14 +7,18 @@
 triton::XMaterialUploader::XMaterialUploader(cContext* context)
 {
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-	sChunkAllocatorDescriptor cad;
-	cad.chunkByteSize = caps->hashTableChunkByteSize;
-	cad.hashTableSize = caps->hashTableSize;
-	cad.maxChunkCount = caps->hashTableMaxChunkCount;
-	_buffer = _context->Create<XLinearArray<SMaterialLayout>>(_context, cad);
+	_buffer = (SMaterialLayout*)_context->GetMemoryAllocator()->Allocate(caps->maxRenderMaterialCount * sizeof(SMaterialLayout), 64);
 }
 
 triton::XMaterialUploader::~XMaterialUploader()
 {
-	_context->Destroy<XLinearArray<SMaterialLayout>>(_buffer);
+	_context->GetMemoryAllocator()->Deallocate(_buffer);
+}
+
+void triton::XMaterialUploader::Set(types::usize index, const SMaterial& material)
+{
+}
+
+void triton::XMaterialUploader::Upload(cBuffer* materialBuffer)
+{
 }
