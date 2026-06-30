@@ -4,7 +4,6 @@
 #include "context.hpp"
 #include "engine.hpp"
 #include "input.hpp"
-#include "texture_manager.hpp"
 #include "graphics.hpp"
 #include "graphics_context_backend.hpp"
 #include "graphics_resource_backend.hpp"

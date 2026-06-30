@@ -5,7 +5,7 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "input.hpp"
-#include "texture_manager.hpp"
+#include "texture_subsystem.hpp"
 #include "filesystem_manager.hpp"
 #include "font_manager.hpp"
 #include "physics_manager.hpp"
@@ -67,8 +67,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new XRenderSubsystem(_context));
 	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
 	//_context->RegisterSubsystem(new cAudio(_context));
-	_context->RegisterSubsystem(new cTextureAtlas(_context));
-	_context->GetSubsystem<cTextureAtlas>()->Initialize(cVector3(1024, 1024, 16));
+	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(1024, 1024, 16)));
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	_context->RegisterSubsystem(new cTime(_context));
 	//_context->RegisterSubsystem(new cThreadSubsystem(_context));
@@ -108,7 +107,6 @@ void triton::cEngine::Initialize()
 
 void triton::cEngine::Shutdown()
 {
-	_context->GetSubsystem<cTextureAtlas>()->Shutdown();
 	_context->GetSubsystem<cInput>()->Shutdown();
 	_context->GetSubsystem<XECSSubsystem>()->Shutdown();
 	_context->GetSubsystem<XRenderSubsystem>()->Shutdown();

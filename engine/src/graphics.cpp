@@ -12,7 +12,7 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "engine.hpp"
-#include "texture_manager.hpp"
+#include "texture_subsystem.hpp"
 #include "font_manager.hpp"
 #include "filesystem_manager.hpp"
 #include "application.hpp"
@@ -43,8 +43,8 @@ triton::cMaterialInstance::cMaterialInstance(s32 materialIndex, const cMaterial*
     const cTextureAtlasTexture* diffuse = material->GetDiffuseTexture();
     if (diffuse)
     {
-        _diffuseTextureLayerInfo = diffuse->GetOffset().z;
-        _diffuseTextureInfo = glm::vec4(diffuse->GetOffset().x, diffuse->GetOffset().y, diffuse->GetSize().x, diffuse->GetSize().y);
+        //_diffuseTextureLayerInfo = diffuse->GetOffset().z;
+        //_diffuseTextureInfo = glm::vec4(diffuse->GetOffset().x, diffuse->GetOffset().y, diffuse->GetSize().x, diffuse->GetSize().y);
     }
     else
     {
@@ -1019,7 +1019,7 @@ void triton::cGraphics::CreateDefaultRenderTargets()
 void triton::cGraphics::CreateDefaultRenderPasses()
 {
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
-    cTextureAtlas* textureAtlas = _context->GetSubsystem<cTextureAtlas>();
+    XTextureSubsystem* textureSubsystem = _context->GetSubsystem<XTextureSubsystem>();
     cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
 
     SViewport viewport;
@@ -1059,7 +1059,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _opaque->SetVertexArray(opaqueVertexArray);
     _opaque->SetInputBuffers(opaqueInputBuffers);
     _opaque->SetInputTextures({
-        SRenderPassTexture("TextureAtlas", textureAtlas->GetAtlas())
+        SRenderPassTexture("TextureAtlas", textureSubsystem->GetAtlas())
     });
     _opaque->SetShader(opaqueShader);
     _opaque->SetViewport(viewport);
@@ -1092,7 +1092,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _transparent->SetVertexArray(transparentVertexArray);
     _transparent->SetInputBuffers(transparentInputBuffers);
     _transparent->SetInputTextures({
-        SRenderPassTexture("TextureAtlas", textureAtlas->GetAtlas())
+        SRenderPassTexture("TextureAtlas", textureSubsystem->GetAtlas())
     });
     _transparent->SetShader(transparentShader);
     _transparent->SetViewport(viewport);
