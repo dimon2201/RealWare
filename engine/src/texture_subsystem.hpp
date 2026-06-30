@@ -40,7 +40,7 @@ namespace triton
         inline HTexture CreateTexture(const std::string& filePath)
         {
             HTexture texture = Create();
-            _objects[texture._indexInArray] = CreateTexture(filePath);
+            *_objects->Get(texture) = *CreateTextureFromFile(filePath);
 
             return texture;
         }
@@ -49,9 +49,14 @@ namespace triton
         void Free() override {}
         void Update() override {}
 
+        inline cTexture* GetAtlas() const
+        {
+            return _atlas;
+        }
+
     private:
         std::optional<STexture> CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
-        std::optional<STexture> CreateTexture(const std::string& filePath);
+        std::optional<STexture> CreateTextureFromFile(const std::string& filePath);
         types::boolean IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture);
     };
 }

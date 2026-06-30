@@ -13,21 +13,6 @@
 
 using namespace types;
 
-triton::cTextureAtlasTexture::cTextureAtlasTexture(cContext* context, types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size, cTexture* atlas)
-    : iObject(context), _isNormalized(isNormalized)
-{
-    if (isNormalized == K_TRUE)
-    {
-        _offset = glm::vec3(offset.x / atlas->GetWidth(), offset.y / atlas->GetHeight(), offset.z);
-        _size = glm::vec2(size.x / atlas->GetWidth(), size.y / atlas->GetHeight());
-    }
-    else
-    {
-        _offset = offset;
-        _size = size;
-    }
-}
-
 triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& size) : ISubsystem(context)
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
@@ -59,15 +44,15 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
     {
         Print("Error: you can only create texture atlas with 4 channels in RGBA format!");
 
-        return nullptr;
+        return std::nullopt;
     }
 
     const usize width = size.GetX();
     const usize height = size.GetY();
     const SBufferView<STexture> textureBuffer = _objects->GetData();
-    const STexture textures = textureBuffer._elements;
+    const STexture* textures = textureBuffer._elements;
     const usize textureCount = textureBuffer._elementCount;
-    const STexture candidateTexture;
+    STexture candidateTexture;
     for (usize layer = 0; layer < _atlas->GetDepth(); layer++)
     {
         for (usize y = 0; y < _atlas->GetHeight(); y++)
@@ -101,7 +86,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
                         pixelOffset.GetX(),
                         pixelOffset.GetY(),
                         pixelSize.GetX(),
-                        pixelSize.GetY()
+                        pixelSize.GetY(),
                         (cpuword)data
                     ));
                     if (format == cTexture::eFormat::RGBA8_MIPS)
@@ -126,15 +111,15 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
     return std::nullopt;
 }
 
-std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(const std::string& filePath)
+std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile(const std::string& filePath)
 {
     const usize channelsRequired = 4;
 
-    usize width = 0;
-    usize height = 0;
-    usize channels = 0;
-    u8* data = nullptr;
-    data = stbi_load(filename.c_str(), &width, &height, &channels, channelsRequired);
+    int width = 0;
+    int height = 0;
+    int channels = 0;
+    stbi_uc* data = nullptr;
+    data = stbi_load(filePath.c_str(), &width, &height, &channels, channelsRequired);
 
     return CreateTexture(cTexture::eFormat::RGBA8, cVector2(width, height), data);
 }
@@ -147,7 +132,7 @@ types::boolean triton::XTextureSubsystem::IsOverlapping(const STexture& candidat
         candidateTexture.normOffset.GetY() <= atlasTexture.normSize.GetY() &&
         candidateTexture.normOffset.GetY() + candidateTexture.normSize.GetY() >= atlasTexture.normOffset.GetY())
         ||
-        (candidateTexture.normSize.GetX() > 1.0f || candidateTexture.normSize.GetY() > 1.0f)))
+        (candidateTexture.normSize.GetX() > 1.0f || candidateTexture.normSize.GetY() > 1.0f))
         return K_TRUE;
     else
         return K_FALSE;
