@@ -1,4 +1,4 @@
-// texture_manager.hpp
+// texture_subsystem.hpp
 
 #pragma once
 
@@ -6,6 +6,11 @@
 #include <vector>
 #include "object.hpp"
 #include "math.hpp"
+#include "linear_array.hpp"
+#include "subsystem.hpp"
+#include "handles.hpp"
+#include "graphics_resource_backend.hpp"
+#include "texture.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -38,29 +43,28 @@ namespace triton
         types::f32 _textureLayerInfo = 0.0f;
     };
 
-    class cTextureAtlas : public iObject
+    class XTextureSubsystem : public ISubsystem<HTexture, STexture, XLinearArray<STexture>>
     {
-        TRITON_OBJECT(cTextureAtlas)
+        TRITON_OBJECT(XTextureSubsystem)
+        TRITON_SUBSYSTEM
 
-    protected:
         cTexture* _atlas = nullptr;
 
     public:
-        explicit cTextureAtlas(cContext* context);
-        virtual ~cTextureAtlas() override final = default;
+        inline HTexture CreateTexture(const std::string& filePath)
+        {
+            HTexture texture = Create();
 
-        void Initialize(const cVector3& size);
-        void Shutdown();
+            return texture;
+        }
 
-        // TODO: New implementation of texture creation
-        //cTextureAtlasTexture* CreateTexture(const std::string& id, const glm::vec2& size, types::usize channels, const types::u8* data);
-        //cTextureAtlasTexture* CreateTexture(const std::string& id, const std::string& filename);
-        //cTextureAtlasTexture* FindTexture(const std::string& id);
-        //void DestroyTexture(const std::string& id);
+        void Init() override;
+        void Free() override;
+        void Update() override;
 
-        cTexture* GetAtlas() const;
-        types::usize GetWidth() const;
-        types::usize GetHeight() const;
-        types::usize GetDepth() const;
+    private:
+        HTexture CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
+        HTexture CreateTexture(const std::string& filePath);
+        void DestroyTexture(const HTexture& texture);
     };
 }

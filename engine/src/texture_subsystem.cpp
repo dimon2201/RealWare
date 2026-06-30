@@ -1,6 +1,6 @@
-// texture_manager.cpp
+// texture_subsystem.cpp
 
-#include "texture_manager.hpp"
+#include "texture_subsystem.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../thirdparty/stb-master/stb_image.h"
 #include "application.hpp"
@@ -27,9 +27,9 @@ triton::cTextureAtlasTexture::cTextureAtlasTexture(cContext* context, types::boo
     }
 }
 
-triton::cTextureAtlas::cTextureAtlas(cContext* context) : iObject(context) {}
+triton::XTextureSubsystem::cTextureAtlas(cContext* context) : iObject(context) {}
 
-void triton::cTextureAtlas::Initialize(const cVector3& size)
+void triton::XTextureSubsystem::Init(const cVector3& size)
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
@@ -46,7 +46,7 @@ void triton::cTextureAtlas::Initialize(const cVector3& size)
     _atlas->SetSlot(0);
 }
 
-void triton::cTextureAtlas::Shutdown()
+void triton::XTextureSubsystem::Shutdown()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     if (_atlas)
@@ -54,6 +54,18 @@ void triton::cTextureAtlas::Shutdown()
             ERenderCommand::DESTROY_TEXTURE,
             (cpuword)_atlas
         ));
+}
+
+HTexture triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
+{
+}
+
+HTexture triton::XTextureSubsystem::CreateTexture(const std::string& filePath)
+{
+}
+
+void triton::XTextureSubsystem::DestroyTexture(const HTexture& texture)
+{
 }
 
 // TODO: New implementation of texture creation
