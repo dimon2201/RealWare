@@ -8,7 +8,7 @@
 #include "handles.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "render_instance.hpp"
-#include "materia.hpp"
+#include "material.hpp"
 #include "types.hpp"
 
 namespace triton
