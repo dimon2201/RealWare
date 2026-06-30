@@ -7,6 +7,8 @@
 #include "render_instance.hpp"
 #include "buffer_view.hpp"
 #include "handle_allocator.hpp"
+#include "batch_instance.hpp"
+#include "render_batch.hpp"
 #include "handles.hpp"
 
 namespace triton
@@ -15,15 +17,8 @@ namespace triton
     struct SRenderBatchSlot;
     template <typename TValue>
     class XLinearArray;
-    class XRenderBatch;
     class SGeometryView;
-
-    struct SBatchInstance
-    {
-        SRenderInstance::EUsage usage = SRenderInstance::EUsage::NONE;
-        HBatch batch;
-        HRenderInstance instance;
-    };
+    class XRenderBatch;
 
     class XBatchStorage : public iObject
     {
