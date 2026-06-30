@@ -15,21 +15,6 @@ namespace triton
 {
     class XMaterialUploader;
 
-    struct SMaterialTextureLayout
-    {
-        types::u32 atlasLayer = 0;
-        types::u32 _pad = 0;
-        cVector2 atlasNormOffset = cVector2(0.0f);
-        cVector2 atlasNormSize = cVector2(0.0f);
-    };
-
-    struct SMaterialLayout
-    {
-        SMaterialTextureLayout diffuse;
-        types::u32 _pad[2];
-        cVector4 diffuseColor = cVector4(0.0f);
-    };
-
     class XMaterialSubsystem : public ISubsystem<HMaterial, SMaterial, XLinearArray<SGameObject>>
     {
         TRITON_OBJECT(XMaterialSubsystem)
