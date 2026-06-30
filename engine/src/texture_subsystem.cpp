@@ -9,6 +9,7 @@
 #include "graphics.hpp"
 #include "log.hpp"
 #include "render_subsystem.hpp"
+#include "handle_allocator.hpp"
 
 using namespace types;
 
@@ -52,9 +53,9 @@ triton::XTextureSubsystem::~XTextureSubsystem()
     ));
 }
 
-HTexture triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
+std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
 {
-    if (data == nullptr || format != cTexture::eFormat::RGBA8)
+    if (data == nullptr || (format != cTexture::eFormat::RGBA8 || format != cTexture::eFormat::RGBA8_MIPS))
     {
         Print("Error: you can only create texture atlas with 4 channels in RGBA format!");
 
@@ -63,80 +64,91 @@ HTexture triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, cons
 
     const usize width = size.GetX();
     const usize height = size.GetY();
-    const auto textures = _textures.GetElements();
-    const usize texturesCount = _textures.GetElementCount();
+    const SBufferView<STexture> textureBuffer = _objects->GetData();
+    const STexture textures = textureBuffer._elements;
+    const usize textureCount = textureBuffer._elementCount;
+    const STexture candidateTexture;
     for (usize layer = 0; layer < _atlas->GetDepth(); layer++)
     {
         for (usize y = 0; y < _atlas->GetHeight(); y++)
         {
             for (usize x = 0; x < _atlas->GetWidth(); x++)
             {
-                types::boolean isIntersecting = K_FALSE;
+                const cVector2 offset = cVector2((f32)x / _atlas->GetWidth(), (f32)y / _atlas->GetWidth());
+                const cVector2 size = cVector2(size.GetX() / _atlas->GetWidth(), size.GetY() / _atlas->GetHeight());
 
-                for (usize i = 0; i < texturesCount; i++)
+                types::boolean isOverlapping = K_FALSE;
+                for (usize i = 0; i < textureCount; i++)
                 {
-                    const auto& area = textures[i];
-
-                    if (area.IsNormalized() == K_FALSE)
+                    candidateTexture.normOffset = offset;
+                    candidateTexture.normSize = size;
+                    if (IsOverlapping(candidateTexture, textures[i]))
                     {
-                        const glm::vec4 textureRect = glm::vec4(
-                            x, y, x + width, y + height
-                        );
-                        if ((area.GetOffset().z == layer &&
-                            area.GetOffset().x <= textureRect.z && area.GetOffset().x + area.GetSize().x >= textureRect.x &&
-                            area.GetOffset().y <= textureRect.w && area.GetOffset().y + area.GetSize().y >= textureRect.y) ||
-                            (x + width > _atlas->GetWidth() || y + height > _atlas->GetHeight()))
-                        {
-                            isIntersecting = K_FALSE;
-                            break;
-                        }
-                    }
-                    else if (area.IsNormalized() == K_TRUE)
-                    {
-                        const glm::vec4 textureRectNorm = glm::vec4(
-                            (f32)x / (f32)_atlas->GetWidth(), (f32)y / (f32)_atlas->GetHeight(),
-                            ((f32)x + (f32)width) / (f32)_atlas->GetWidth(), ((f32)y + (f32)height) / (f32)_atlas->GetHeight()
-                        );
-                        if ((area.GetOffset().z == layer &&
-                            area.GetOffset().x <= textureRectNorm.z && area.GetOffset().x + area.GetSize().x >= textureRectNorm.x &&
-                            area.GetOffset().y <= textureRectNorm.w && area.GetOffset().y + area.GetSize().y >= textureRectNorm.y) ||
-                            (textureRectNorm.z > 1.0f || textureRectNorm.w > 1.0f))
-                        {
-                            isIntersecting = true;
-                            break;
-                        }
+                        isOverlapping = K_TRUE;
+                        break;
                     }
                 }
 
-                if (!isIntersecting)
+                if (isOverlapping == K_FALSE)
                 {
-                    const glm::vec3 offset = glm::vec3(x, y, layer);
-                    const glm::vec2 size = glm::vec2(width, height);
+                    const cVector2 pixelOffset = cVector2(x, y);
+                    const cVector2 pixelSize = size;
 
-                    _gfx->WriteTexture(_atlas, offset, size, data);
-                    if (_atlas->GetFormat() == cTexture::eFormat::RGBA8_MIPS)
-                        _gfx->GenerateTextureMips(_atlas);
+                    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+                    renderSubsystem->PushCommand(SRenderCommand(
+                        ERenderCommand::WRITE_TEXTURE,
+                        (cpuword)_atlas,
+                        pixelOffset.GetX(),
+                        pixelOffset.GetY(),
+                        pixelSize.GetX(),
+                        pixelSize.GetY()
+                        (cpuword)data
+                    ));
+                    if (format == cTexture::eFormat::RGBA8_MIPS)
+                        renderSubsystem->PushCommand(SRenderCommand(
+                            ERenderCommand::GENERATE_TEXTURE_MIPS,
+                            (cpuword)_atlas
+                        ));
 
-                    cTextureAtlasTexture* newTex = _textures.Add(_context, K_TRUE, offset, size);
+                    STexture readyTexture;
+                    readyTexture.layer = layer;
+                    readyTexture.normOffset = candidateTexture.normOffset;
+                    readyTexture.normSize = candidateTexture.normSize;
+                    readyTexture.pixelOffset = pixelOffset;
+                    readyTexture.pixelSize = pixelSize;
 
-                    return newTex;
+                    return readyTexture;
                 }
             }
         }
     }
 
-    return nullptr;
+    return std::nullopt;
 }
 
-triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& filePath)
+std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(const std::string& filePath)
 {
     const usize channelsRequired = 4;
 
-    s32 width = 0;
-    s32 height = 0;
-    s32 channels = 0;
+    usize width = 0;
+    usize height = 0;
+    usize channels = 0;
     u8* data = nullptr;
     data = stbi_load(filename.c_str(), &width, &height, &channels, channelsRequired);
 
     return CreateTexture(cTexture::eFormat::RGBA8, cVector2(width, height), data);
+}
+
+types::boolean triton::XTextureSubsystem::IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture)
+{
+    if ((candidateTexture.layer == atlasTexture.layer &&
+        candidateTexture.normOffset.GetX() <= atlasTexture.normSize.GetX() &&
+        candidateTexture.normOffset.GetX() + candidateTexture.normSize.GetX() >= atlasTexture.normOffset.GetX() &&
+        candidateTexture.normOffset.GetY() <= atlasTexture.normSize.GetY() &&
+        candidateTexture.normOffset.GetY() + candidateTexture.normSize.GetY() >= atlasTexture.normOffset.GetY())
+        ||
+        (candidateTexture.normSize.GetX() > 1.0f || candidateTexture.normSize.GetY() > 1.0f)))
+        return K_TRUE;
+    else
+        return K_FALSE;
 }

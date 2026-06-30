@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include "object.hpp"
 #include "math.hpp"
 #include "linear_array.hpp"
@@ -19,23 +20,6 @@ namespace triton
     class iGraphicsBackend;
     class cApplication;
     class cTexture;
-
-    class cTextureAtlasTexture : public iObject
-    {
-        TRITON_OBJECT(cTextureAtlasTexture)
-
-        types::boolean _isNormalized = types::K_FALSE;
-        glm::vec3 _offset = glm::vec3(0.0f);
-        glm::vec2 _size = glm::vec2(0.0f);
-
-    public:
-        cTextureAtlasTexture(cContext* context, types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size, cTexture* atlas = nullptr);
-        ~cTextureAtlasTexture() = default;
-
-        inline types::boolean IsNormalized() const { return _isNormalized; }
-        inline const glm::vec3& GetOffset() const { return _offset; }
-        inline const glm::vec2& GetSize() const { return _size; }
-    };
 
     struct sTextureAtlasTextureGPU
     {
@@ -56,6 +40,7 @@ namespace triton
         inline HTexture CreateTexture(const std::string& filePath)
         {
             HTexture texture = Create();
+            _objects[texture._indexInArray] = CreateTexture(filePath);
 
             return texture;
         }
@@ -65,8 +50,8 @@ namespace triton
         void Update() override {}
 
     private:
-        HTexture CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
-        HTexture CreateTexture(const std::string& filePath);
-        void DestroyTexture(const HTexture& texture);
+        std::optional<STexture> CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
+        std::optional<STexture> CreateTexture(const std::string& filePath);
+        types::boolean IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture);
     };
 }
