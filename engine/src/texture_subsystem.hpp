@@ -37,14 +37,7 @@ namespace triton
         explicit XTextureSubsystem(cContext* context, const cVector3& size);
         ~XTextureSubsystem() override;
 
-        inline HTexture CreateTexture(const std::string& filePath)
-        {
-            HTexture texture = Create();
-            *_objects->Get(texture) = *CreateTextureFromFile(filePath);
-
-            return texture;
-        }
-
+        HTexture CreateTexture(const std::string& filePath);
         void Init() override {}
         void Free() override {}
         void Update() override {}

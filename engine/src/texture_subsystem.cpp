@@ -38,9 +38,17 @@ triton::XTextureSubsystem::~XTextureSubsystem()
     ));
 }
 
+triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& filePath)
+{
+    HTexture texture = Create();
+    *_objects->Get(texture) = *CreateTextureFromFile(filePath);
+
+    return texture;
+}
+
 std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
 {
-    if (data == nullptr || (format != cTexture::eFormat::RGBA8 || format != cTexture::eFormat::RGBA8_MIPS))
+    if (data == nullptr || (format != cTexture::eFormat::RGBA8 && format != cTexture::eFormat::RGBA8_MIPS))
     {
         Print("Error: you can only create texture atlas with 4 channels in RGBA format!");
 
@@ -59,14 +67,14 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
         {
             for (usize x = 0; x < _atlas->GetWidth(); x++)
             {
-                const cVector2 offset = cVector2((f32)x / _atlas->GetWidth(), (f32)y / _atlas->GetWidth());
-                const cVector2 size = cVector2(size.GetX() / _atlas->GetWidth(), size.GetY() / _atlas->GetHeight());
+                const cVector2 normOffset = cVector2((f32)x / _atlas->GetWidth(), (f32)y / _atlas->GetWidth());
+                const cVector2 normSize = cVector2(size.GetX() / _atlas->GetWidth(), size.GetY() / _atlas->GetHeight());
 
                 types::boolean isOverlapping = K_FALSE;
                 for (usize i = 0; i < textureCount; i++)
                 {
-                    candidateTexture.normOffset = offset;
-                    candidateTexture.normSize = size;
+                    candidateTexture.normOffset = normOffset;
+                    candidateTexture.normSize = normSize;
                     if (IsOverlapping(candidateTexture, textures[i]))
                     {
                         isOverlapping = K_TRUE;
