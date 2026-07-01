@@ -199,6 +199,7 @@ namespace triton
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
         XHandleAllocator<SCameraSlot, HCamera, XLinearArray<XCamera>, XCamera>* _cameras = nullptr;
+        types::u8* _tempBuffer = nullptr;
 
         void CreateGeometryStorage();
         void CreateBatchStorage();

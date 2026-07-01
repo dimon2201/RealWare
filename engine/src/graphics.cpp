@@ -955,6 +955,7 @@ void triton::cGraphics::CreateInstanceBuffers()
         SRenderInstance::EUsage::DYNAMIC,
         instanceBufferDynamic
     );
+    _tempBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance), 64);
 }
 
 void triton::cGraphics::CreateMaterialBuffer()
@@ -1212,6 +1213,7 @@ void triton::cGraphics::DestroyBatchStorage()
 void triton::cGraphics::DestroyInstanceBuffers()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    _context->GetMemoryAllocator()->Deallocate(_tempBuffer);
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         _instanceBufferDynamic->GetInstance()
@@ -1346,20 +1348,17 @@ void triton::cGraphics::WriteBatchInstances(SRenderInstance::EUsage usage)
     else
         return;
 
-    // TODO: get rid of every frame memory allocation, optimize
-    u8* tempCpuBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(instanceBufferByteSize, 64);
     SBufferView<XRenderBatch> batchBuffer = _batchStorage->GetBatches();
     usize nextOffset = 0;
     for (usize i = 0; i < batchBuffer._elementCount; i++)
     {
         XRenderBatch& batch = batchBuffer._elements[i];
-        nextOffset += batch.Write(usage, nextOffset, &tempCpuBuffer[0]);
+        nextOffset += batch.Write(usage, nextOffset, &_tempBuffer[0]);
     }
     if (usage == SRenderInstance::EUsage::STATIC)
-        _instanceBufferStatic->Write(0, &tempCpuBuffer[0], nextOffset);
+        _instanceBufferStatic->Write(0, &_tempBuffer[0], nextOffset);
     else if (usage == SRenderInstance::EUsage::DYNAMIC)
-        _instanceBufferDynamic->Write(0, &tempCpuBuffer[0], nextOffset);
-    _context->GetMemoryAllocator()->Deallocate(tempCpuBuffer);
+        _instanceBufferDynamic->Write(0, &_tempBuffer[0], nextOffset);
 }
 
 void triton::cGraphics::WriteDirtyStaticInstances()
