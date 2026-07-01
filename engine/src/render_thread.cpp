@@ -205,6 +205,23 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 				memcpy(&_resultBuffer[0], &resultTexture, sizeof(cTexture*));
 				break;
 			}
+			case ERenderCommand::WRITE_TEXTURE:
+			{
+				resourceBackend->WriteTexture(
+					(cTexture*)cmd->_args._argA,
+					cVector3(cmd->_args._argB, cmd->_args._argC, cmd->_args._argD),
+					cVector2(cmd->_args._argE, cmd->_args._argF),
+					(u8*)cmd->_args._argG
+				);
+				break;
+			}
+			case ERenderCommand::GENERATE_TEXTURE_MIPS:
+			{
+				resourceBackend->GenerateTextureMips(
+					(cTexture*)cmd->_args._argA
+				);
+				break;
+			}
 			case ERenderCommand::CREATE_RENDER_TARGET:
 			{
 				usize attachmentCount = cmd->_args._argA;
