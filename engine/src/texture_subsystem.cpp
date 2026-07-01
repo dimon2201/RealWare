@@ -93,6 +93,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
                         (cpuword)_atlas,
                         pixelOffset.GetX(),
                         pixelOffset.GetY(),
+                        layer,
                         pixelSize.GetX(),
                         pixelSize.GetY(),
                         (cpuword)data
