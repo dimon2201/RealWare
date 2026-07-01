@@ -105,7 +105,7 @@ namespace triton
 	SStackValue<TValue> cStack<TValue>::Push(Args&&... args)
 	{
 		SStackIndex si = New();
-		TValue* object = _context->Create<TValue>((types::u8*)_chunkValues[si.chunkIndex], si.localPosition, std::forward<Args>(args)...);
+		TValue* object = _context->Create<TValue>(_chunkValues[si.chunkIndex], si.localPosition, std::forward<Args>(args)...);
 		_chunkIndices[si.chunkIndex][si.localPosition] = si;
 
 		SStackValue<TValue> returnValue = {};
