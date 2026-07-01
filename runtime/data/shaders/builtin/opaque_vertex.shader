@@ -70,7 +70,6 @@ void main()
 	if (gl_VertexID == 1) { TexcoordAtlas = vec3(0.0, 1.0, 0.0); }
 	if (gl_VertexID == 2) { TexcoordAtlas = vec3(1.0, 0.0, 0.0); }
 
-	if (gl_VertexID == 0) { gl_Position = vec4(-1.0, -1.0, 0.0, 1.0); }
-	if (gl_VertexID == 1) { gl_Position = vec4(0.0, 1.0, 0.0, 1.0); }
-	if (gl_VertexID == 2) { gl_Position = vec4(1.0, -1.0, 0.0, 1.0); }
+	Vertex_Passthrough(InPositionLocal, instance, 0, gl_Position);
+	Vertex_Func(InPositionLocal, vec2(TexcoordAtlas.xy), InNormal, gl_InstanceID, instance, material, 0, gl_Position);
 }
