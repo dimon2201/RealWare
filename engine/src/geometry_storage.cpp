@@ -8,6 +8,7 @@
 #include "engine.hpp"
 #include "render_subsystem.hpp"
 #include "graphics_resource_backend.hpp"
+#include "vertex.hpp"
 
 using namespace types;
 
@@ -93,9 +94,9 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Store(EGraphicsBu
     usize indexElementOffset = indexBufferByteSize / sizeof(u32);
     switch (format)
     {
-        case EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3:
+        case EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4:
         {
-            const usize kVertexByteSize = 32;
+            const usize kVertexByteSize = sizeof(SVertex);
             vertexCount = verticesByteSize / kVertexByteSize;
             vertexElementOffset = vertexBufferByteSize / kVertexByteSize;
             break;

@@ -11,5 +11,6 @@ namespace triton
 		cVector3 position = cVector3(0.0f);
 		cVector2 texcoord = cVector2(0.0f);
 		cVector3 normal = cVector3(0.0f);
+		cVector4 tangent = cVector4(0.0f);
 	};
 }

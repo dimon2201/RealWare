@@ -34,6 +34,7 @@ namespace triton
         virtual cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) = 0;
         virtual types::boolean GetKeyPressed(types::qword keyCode) = 0;
         virtual types::boolean GetMouseKeyPressed(types::qword keyCode) = 0;
+        virtual cVector2 GetCursorPosition(sInputBackendWindow& window) = 0;
         virtual void SetKeyPressed(types::qword keyCode, types::boolean isPressed) = 0;
         virtual void SetMouseKeyPressed(types::qword keyCode, types::boolean isPressed) = 0;
         virtual void SetWindowFocus(types::boolean isFocused) = 0;

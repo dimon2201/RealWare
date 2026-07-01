@@ -111,6 +111,18 @@ types::boolean triton::cInputBackendGLFW::GetMouseKeyPressed(qword keyCode)
     return _mouseKeys[keyCode];
 }
 
+triton::cVector2 triton::cInputBackendGLFW::GetCursorPosition(sInputBackendWindow& window)
+{
+    double xpos = 0, ypos = 0;
+    glfwGetCursorPos(
+        (GLFWwindow*)window.instance,
+        &xpos,
+        &ypos
+    );
+
+    return cVector2(xpos, ypos);
+}
+
 void triton::cInputBackendGLFW::SetKeyPressed(qword keyCode, types::boolean isPressed)
 {
     _keys[keyCode] = isPressed;

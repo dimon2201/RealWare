@@ -44,6 +44,7 @@ namespace triton
         virtual triton::cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) override final;
         virtual types::boolean GetKeyPressed(types::qword keyCode) override final;
         virtual types::boolean GetMouseKeyPressed(types::qword keyCode) override final;
+        virtual cVector2 GetCursorPosition(sInputBackendWindow& window) override final;
         virtual void SetKeyPressed(types::qword keyCode, types::boolean isPressed) override final;
         virtual void SetMouseKeyPressed(types::qword keyCode, types::boolean isPressed) override final;
         virtual void SetWindowFocus(types::boolean isFocused) override final;

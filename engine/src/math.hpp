@@ -69,6 +69,7 @@ namespace triton
 		cVector3 operator/(types::f32 val) const;
 
 		cVector3 Cross(const cVector3& axis);
+		void Normalize();
 
 		inline types::f32 GetX() const { return _vec.x; }
 		inline types::f32 GetY() const { return _vec.y; }
@@ -101,6 +102,8 @@ namespace triton
 		cVector4 operator-(types::f32 val) const;
 		cVector4 operator*(types::f32 val) const;
 		cVector4 operator/(types::f32 val) const;
+
+		void Normalize();
 
 		inline types::f32 GetX() const { return _vec.x; }
 		inline types::f32 GetY() const { return _vec.y; }

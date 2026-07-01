@@ -28,9 +28,16 @@ void triton::XMaterialUploader::Set(XTextureSubsystem* textureSubsystem, types::
 	diffuseTextureLayout.normOffset = diffuseTexture.normOffset;
 	diffuseTextureLayout.normSize = diffuseTexture.normSize;
 
+	const STexture& normalTexture = textureSubsystem->Get(material.normalTexture);
+	STextureLayout normalTextureLayout;
+	normalTextureLayout.layer = normalTexture.layer;
+	normalTextureLayout.normOffset = normalTexture.normOffset;
+	normalTextureLayout.normSize = normalTexture.normSize;
+
 	SMaterialLayout materialLayout;
 	materialLayout.diffuseColor = material.diffuseColor;
 	materialLayout.diffuseTextureLayout = diffuseTextureLayout;
+	materialLayout.normalTextureLayout = normalTextureLayout;
 
 	_stagingBuffer[index] = materialLayout;
 

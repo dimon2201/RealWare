@@ -1079,7 +1079,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     XVertexArray* opaqueVertexArray = _context->Create<XVertexArray>(_context, opaqueInputBuffers);
     _opaque = _context->Create<XRenderPass>(_context);
     _opaque->SetDispatch(ERenderPassDispatch::BATCH);
-    _opaque->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
+    _opaque->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4);
     _opaque->SetVertexArray(opaqueVertexArray);
     _opaque->SetInputBuffers(opaqueInputBuffers);
     _opaque->SetInputTextures({
@@ -1112,7 +1112,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     XVertexArray* transparentVertexArray = _context->Create<XVertexArray>(_context, transparentInputBuffers);
     _transparent = _context->Create<XRenderPass>(_context);
     _transparent->SetDispatch(ERenderPassDispatch::BATCH);
-    _transparent->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3);
+    _transparent->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4);
     _transparent->SetVertexArray(transparentVertexArray);
     _transparent->SetInputBuffers(transparentInputBuffers);
     _transparent->SetInputTextures({

@@ -23,7 +23,7 @@ namespace triton
     struct SMaterialLayout
     {
         STextureLayout diffuseTextureLayout;
-        types::u32 _pad[2];
+        STextureLayout normalTextureLayout;
         cVector4 diffuseColor = cVector4(0.0f);
     };
 

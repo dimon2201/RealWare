@@ -97,6 +97,13 @@ void triton::cInput::ResizeWindows(const cVector2& newSize)
         input->ResizeWindow(_windows->At(i).data->GetBackendWindow(), newSize);
 }
 
+triton::cVector2 triton::cInput::GetCursorPosition(cInputWindow* window)
+{
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
+    
+    return input->GetCursorPosition(window->GetBackendWindow());
+}
+
 triton::cVector2 triton::cInput::GetMonitorSize() const
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();

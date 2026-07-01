@@ -107,9 +107,14 @@ triton::cVector3 triton::cVector3::operator/(f32 val) const
 
 triton::cVector3 triton::cVector3::Cross(const cVector3& axis)
 {
-	_vec = glm::cross(_vec, axis._vec);
+	glm::vec3 vec = glm::cross(_vec, axis._vec);
 
-	return cVector3(_vec);
+	return cVector3(vec);
+}
+
+void triton::cVector3::Normalize()
+{
+	_vec = glm::normalize(_vec);
 }
 
 triton::cVector4::cVector4(const glm::vec4& vec) : _vec(vec) {}
@@ -156,6 +161,11 @@ triton::cVector4 triton::cVector4::operator*(f32 val) const
 triton::cVector4 triton::cVector4::operator/(f32 val) const
 {
 	return cVector4(_vec / val);
+}
+
+void triton::cVector4::Normalize()
+{
+	_vec = glm::normalize(_vec);
 }
 
 triton::cQuaternion::cQuaternion(const glm::quat& quat) : _quat(quat) {}

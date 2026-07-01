@@ -9,8 +9,9 @@
 #include "graphics.hpp"
 #include "buffer_view.hpp"
 #include "camera.hpp"
+#include "input.hpp"
 
-#include <GL/glew.h>
+#include <GL/glew.h> // TODO: remove this include
 
 using namespace triton::ecs::components;
 using namespace types;
@@ -93,6 +94,12 @@ void triton::XRenderPass::Draw()
                 const SGeometryView geometry = batch.GetGeometry();
                 XCamera* camera = gfx->GetCamera(_camera);
                 CGPUShader shader = _shader->GetGPUShader();
+
+                // TODO: remove this line
+                cInputWindow* ibw = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data;
+                cVector2 cursorPos = _context->GetSubsystem<cInput>()->GetCursorPosition(ibw);
+                camera->Update(cursorPos, 800, 600, 65.0f, 0.01f, 10000.0f, 0.1f);
+                ///////////////////////////////////////////////////////////////////////////
 
                 camera->Bind(this);
 
