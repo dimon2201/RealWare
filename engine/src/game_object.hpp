@@ -3,7 +3,8 @@
 #pragma once
 
 #include <string>
-#include "batch_storage.hpp"
+#include "batch_instance.hpp"
+#include "material.hpp"
 
 namespace triton
 {
@@ -11,5 +12,6 @@ namespace triton
     {
         std::string name = {};
         SBatchInstance renderable;
+        HMaterial material;
     };
 }

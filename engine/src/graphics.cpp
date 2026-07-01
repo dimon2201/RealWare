@@ -61,6 +61,7 @@ void triton::cGraphics::Init()
     CreateGeometryStorage();
     CreateBatchStorage();
     CreateInstanceBuffers();
+    CreateMaterialBuffer();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
     CreateCameraAllocator();
@@ -70,6 +71,7 @@ void triton::cGraphics::Free()
 {
     DestroyDefaultRenderPasses();
     DestroyDefaultRenderTargets();
+    DestroyMaterialBuffer();
     DestroyInstanceBuffers();
     DestroyBatchStorage();
     DestroyGeometryStorage();
@@ -174,15 +176,22 @@ void Shutdown()
     return _materialsCPU->Create(id, diffuseTexture, diffuseColor, highlightColor, customShader);
 }*/
 
-void triton::cGraphics::ExecuteDefaultRenderPasses()
+void triton::cGraphics::ExecutePasses()
 {
     CThreadGuard::AssertRender();
 
     WriteDirtyStaticInstances();
     WriteDynamicInstances();
 
-    _opaque->Execute();
-    _compositeFinal->Execute();
+    BindVertexIndexBuffers();
+    BindInstanceBuffers();
+    BindMaterialBuffer();
+
+    ExecuteDefaultPasses();
+
+    UnbindVertexIndexBuffers();
+    UnbindInstanceBuffers();
+    UnbindMaterialBuffer();
 }
 
 triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
@@ -948,6 +957,21 @@ void triton::cGraphics::CreateInstanceBuffers()
     );
 }
 
+void triton::cGraphics::CreateMaterialBuffer()
+{
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    const sCapabilities* caps = app->GetCapabilities();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxRenderMaterialCount,
+        2
+    ));
+    _materialBuffer = renderSubsystem->FetchResult<cBuffer*>();
+}
+
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
@@ -1200,6 +1224,15 @@ void triton::cGraphics::DestroyInstanceBuffers()
     _context->Destroy<XInstanceBuffer>(_instanceBufferStatic);
 }
 
+void triton::cGraphics::DestroyMaterialBuffer()
+{
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_materialBuffer
+    ));
+}
+
 void triton::cGraphics::DestroyDefaultRenderTargets()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
@@ -1256,6 +1289,46 @@ void triton::cGraphics::DestroyCameraAllocator()
         _cameras->Free();
         _context->Destroy<XHandleAllocator<SCameraSlot, HCamera, XLinearArray<XCamera>, XCamera>>(_cameras);
     }
+}
+
+void triton::cGraphics::BindVertexIndexBuffers()
+{
+    _geometryStorage->GetVertexBuffer()->Bind();
+    _geometryStorage->GetIndexBuffer()->Bind();
+}
+
+void triton::cGraphics::BindInstanceBuffers()
+{
+    _instanceBufferStatic->Bind();
+    _instanceBufferDynamic->Bind();
+}
+
+void triton::cGraphics::BindMaterialBuffer()
+{
+    _materialBuffer->Bind();
+}
+
+void triton::cGraphics::UnbindVertexIndexBuffers()
+{
+    _geometryStorage->GetVertexBuffer()->Unbind();
+    _geometryStorage->GetIndexBuffer()->Unbind();
+}
+
+void triton::cGraphics::UnbindInstanceBuffers()
+{
+    _instanceBufferStatic->Unbind();
+    _instanceBufferDynamic->Unbind();
+}
+
+void triton::cGraphics::UnbindMaterialBuffer()
+{
+    _materialBuffer->Unbind();
+}
+
+void triton::cGraphics::ExecuteDefaultPasses()
+{
+    _opaque->Execute();
+    _compositeFinal->Execute();
 }
 
 void triton::cGraphics::MarkStaticBufferDirty()

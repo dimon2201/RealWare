@@ -72,7 +72,6 @@ namespace triton
         SViewport                       _viewport = {};
         XRenderTarget*                  _renderTarget = nullptr;
         XShader*                        _shader = nullptr;
-        cBuffer*                        _materialBuffer = nullptr;
         cBuffer*                        _textureBuffer = nullptr;
         HCamera                   _camera = {};
 

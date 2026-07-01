@@ -11,7 +11,7 @@ struct TextureAtlasTexture
 };
 layout(std430, binding = 3) buffer TextureAtlasTexturesBuffer { TextureAtlasTexture textureAtlasTextures[1024]; };
 
-uniform sampler2DArray TextureAtlas;
+layout(binding = 0) uniform sampler2DArray TextureAtlas;
 
 void Fragment_Passthrough(in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor)
 {
@@ -27,5 +27,5 @@ void main()
 	
 	Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
 	Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
-	FragColor = fragColor;
+	FragColor = textureColor; //fragColor;
 }

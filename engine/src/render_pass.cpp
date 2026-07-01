@@ -10,6 +10,8 @@
 #include "buffer_view.hpp"
 #include "camera.hpp"
 
+#include <GL/glew.h>
+
 using namespace triton::ecs::components;
 using namespace types;
 
@@ -18,16 +20,6 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::STORAGE,
-        (cpuword)nullptr,
-        caps->maxRenderMaterialCount,
-        1
-    ));
-    _materialBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
@@ -41,14 +33,9 @@ triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
 triton::XRenderPass::~XRenderPass()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)_textureBuffer
-    ));
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_materialBuffer
     ));
 }
 
@@ -78,8 +65,9 @@ void triton::XRenderPass::Unbind()
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
     gfxPipelineBackend->UnbindShader();
-    for (auto& tex : _inputTextures)
-        gfxResourceBackend->UnbindTexture(tex._texture);
+    // TODO: uncomment this after debug
+    //for (auto& tex : _inputTextures)
+    //    gfxResourceBackend->UnbindTexture(tex._texture);
     if (_vertexArray)
         gfxPipelineBackend->UnbindVertexArray();
     if (_renderTarget)
@@ -112,7 +100,7 @@ void triton::XRenderPass::Draw()
                 gfxDrawcallBackend->ClearDepth(1.0f);
 
                 // Static
-                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 0);
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", (u32)0);
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::STATIC));
                 gfxDrawcallBackend->Draw(
                     geometry._indexCount,

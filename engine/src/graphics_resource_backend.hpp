@@ -37,6 +37,7 @@ namespace triton
         virtual ~cBuffer() override = default;
 
         void Bind();
+        void Unbind();
         void Write(types::usize byteOffset, types::u8* data, types::usize byteSize);
 
         inline eType GetBufferType() const { return _type; }

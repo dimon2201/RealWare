@@ -43,11 +43,16 @@ namespace triton
             const std::string& name,
             types::u32 value
         ) override final;
+        virtual void SetShaderUniform(
+            const CGPUShader* shader,
+            const std::string& name,
+            types::s32 value
+        ) override final;
         virtual void BindTextureNamed(
             CGPUShader* shader,
             cTexture* texture,
             const std::string& textureName,
-            types::u32 slot
+            types::s32 slot
         ) override final;
         virtual CGPUVertexArray CreateVertexArray() override final;
         virtual void BindVertexArray(const CGPUVertexArray& vertexArray) override final;

@@ -75,7 +75,7 @@ void triton::cRenderThread::ThreadFunction()
 			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
 
 			// Execute render passes
-			gfx->ExecuteDefaultRenderPasses();
+			gfx->ExecutePasses();
 
 			Present(renderFrame, gfxContextBackend);
 		}

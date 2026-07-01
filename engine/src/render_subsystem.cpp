@@ -13,6 +13,7 @@
 #include "capabilities.hpp"
 #include "log.hpp"
 #include "game_object_subsystem.hpp"
+#include "material_subsystem.hpp"
 
 using namespace types;
 
@@ -117,6 +118,8 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		}
 
 		_context->GetSubsystem<XGameObjectSubsystem>()->Update();
+		_context->GetSubsystem<XMaterialSubsystem>()->Update();
+		_context->GetSubsystem<XTextureSubsystem>()->Update();
 
 		_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
 		ResetScratchFrame();

@@ -43,9 +43,14 @@ namespace triton
 			return _elementCount;
 		}
 
+		inline types::usize GetByteSize() const
+		{
+			return _elementCount * sizeof(TValue);
+		}
+
 		inline SBufferView<TValue> GetData() const
 		{
-			return SBufferView(_data, _elementCount * sizeof(TValue));
+			return SBufferView(_data, GetByteSize());
 		}
 	};
 }

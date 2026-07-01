@@ -137,11 +137,16 @@ namespace triton
             const std::string& name,
             types::u32 value
         ) = 0;
+        virtual void SetShaderUniform(
+            const CGPUShader* shader,
+            const std::string& name,
+            types::s32 value
+        ) = 0;
         virtual void BindTextureNamed(
             CGPUShader* shader,
             cTexture* texture,
             const std::string& textureName,
-            types::u32 slot
+            types::s32 slot
         ) = 0;
         virtual CGPUVertexArray CreateVertexArray() = 0;
         virtual void BindVertexArray(const CGPUVertexArray& vertexArray) = 0;

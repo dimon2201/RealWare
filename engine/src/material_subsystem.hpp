@@ -15,28 +15,23 @@ namespace triton
 {
     class XMaterialUploader;
 
-    class XMaterialSubsystem : public ISubsystem<HMaterial, SMaterial, XLinearArray<SGameObject>>
+    class XMaterialSubsystem : public ISubsystem<HMaterial, SMaterial, XLinearArray<SMaterial>>
     {
         TRITON_OBJECT(XMaterialSubsystem)
-        TRITON_SUBSYSTEM
 
         XMaterialUploader* _uploader = nullptr;
 
     public:
-        inline HMaterial CreateMaterial(const std::string& diffuseTextureFilePath)
-        {
-            HMaterial material = Create();
-            Get(material).name = name;
+        explicit XMaterialSubsystem(cContext* context);
+        ~XMaterialSubsystem() override;
 
-            return gameObject;
-        }
-
+        HMaterial CreateMaterial(const cVector4& diffuseColor, const HTexture& diffuseTexture);
+        void Set(types::usize materialIndex, const SMaterial& materialData);
         void Init() override;
         void Free() override;
         void Update() override;
 
     private:
         void MarkDirty();
-        void WriteDirty();
     };
 }

@@ -19,6 +19,15 @@ void triton::cBuffer::Bind()
     );
 }
 
+void triton::cBuffer::Unbind()
+{
+    CThreadGuard::AssertRender();
+
+    _context->GetBackend<iGraphicsResourceBackend>()->UnbindBuffer(
+        this
+    );
+}
+
 void triton::cBuffer::Write(types::usize byteOffset, types::u8* data, types::usize byteSize)
 {
     CThreadGuard::AssertRender();

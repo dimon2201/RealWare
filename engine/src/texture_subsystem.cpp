@@ -103,6 +103,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
                             ERenderCommand::GENERATE_TEXTURE_MIPS,
                             (cpuword)_atlas
                         ));
+                    renderSubsystem->FetchResult<void*>(); // TODO: do proper synchronization here
 
                     STexture readyTexture;
                     readyTexture.layer = layer;
@@ -130,7 +131,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile
     stbi_uc* data = nullptr;
     data = stbi_load(filePath.c_str(), &width, &height, &channels, channelsRequired);
 
-    return CreateTexture(cTexture::eFormat::RGBA8, cVector2(width, height), data);
+    return CreateTexture(cTexture::eFormat::RGBA8_MIPS, cVector2(width, height), data);
 }
 
 types::boolean triton::XTextureSubsystem::IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture)

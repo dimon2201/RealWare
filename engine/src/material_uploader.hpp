@@ -10,33 +10,35 @@ namespace triton
     class cContext;
     class cBuffer;
     struct SMaterial;
+    class XTextureSubsystem;
 
-    struct SMaterialTextureLayout
+    struct STextureLayout
     {
-        types::u32 atlasLayer = 0;
+        types::u32 layer = 0;
         types::u32 _pad = 0;
-        cVector2 atlasNormOffset = cVector2(0.0f);
-        cVector2 atlasNormSize = cVector2(0.0f);
+        cVector2 normOffset = cVector2(0.0f);
+        cVector2 normSize = cVector2(0.0f);
     };
 
     struct SMaterialLayout
     {
-        SMaterialTextureLayout diffuse;
+        STextureLayout diffuseTextureLayout;
         types::u32 _pad[2];
         cVector4 diffuseColor = cVector4(0.0f);
     };
 
-    class XMaterialUploader final : public iObject
+    class XMaterialUploader final
     {
-        TRITON_OBJECT(XMaterialUploader)
-
-        SMaterialLayout* _buffer = nullptr;
+        cContext* _context = nullptr;
+        types::boolean _bIsDirty = types::K_FALSE;
+        SMaterialLayout* _stagingBuffer = nullptr;
 
     public:
         explicit XMaterialUploader(cContext* context);
-        ~XMaterialUploader() override;
+        ~XMaterialUploader();
 
-        void Set(types::usize index, const SMaterial& material);
-        void Upload(cBuffer* materialBuffer);
+        void Set(XTextureSubsystem* textureSubsystem, types::usize index, const SMaterial& material);
+        void MarkDirty();
+        void Upload(cBuffer* materialBuffer, types::usize byteSizeToUpload);
     };
 }

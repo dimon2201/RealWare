@@ -29,6 +29,7 @@
 #include "instance_buffer.hpp"
 #include "handle_allocator.hpp"
 #include "game_object_subsystem.hpp"
+#include "material_subsystem.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -67,7 +68,8 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new XRenderSubsystem(_context));
 	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
 	//_context->RegisterSubsystem(new cAudio(_context));
-	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(1024, 1024, 16)));
+	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(1025, 1025, 16)));
+	_context->RegisterSubsystem(new XMaterialSubsystem(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	_context->RegisterSubsystem(new cTime(_context));
 	//_context->RegisterSubsystem(new cThreadSubsystem(_context));

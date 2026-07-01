@@ -203,5 +203,10 @@ namespace triton
 		{
 			return _objects->GetSize();
 		}
+
+		inline types::usize GetByteSize() const
+		{
+			return _objects->GetByteSize();
+		}
 	};
 }

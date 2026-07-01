@@ -3,6 +3,7 @@
 #include "game_object_subsystem.hpp"
 #include "batch_storage.hpp"
 #include "graphics.hpp"
+#include "material_subsystem.hpp"
 
 using namespace types;
 
@@ -33,17 +34,34 @@ void triton::XGameObjectSubsystem::AddRenderable(const HGameObject& gameObject, 
 		usage,
 		batchHandle
 	);
+	SRenderInstance ri;
 	
 	SGameObject& go = *_objects->Get(gameObject);
 	go.renderable = bi;
 
-	AddDirty(go);
+	AddDirty(bi, ri);
 }
 
-void triton::XGameObjectSubsystem::AddDirty(const SGameObject& gameObject)
+void triton::XGameObjectSubsystem::SetMaterial(const HGameObject& gameObject, const HMaterial& material)
+{
+	SGameObject& go = *_objects->Get(gameObject);
+	go.material = material;
+
+	XMaterialSubsystem* materialSubsystem = _context->GetSubsystem<XMaterialSubsystem>();
+	const SMaterial& materialData = materialSubsystem->Get(material);
+	materialSubsystem->Set(material._indexInArray, materialData);
+
+	SRenderInstance ri;
+	ri._materialIndex = material._indexInArray;
+
+	AddDirty(go.renderable, ri);
+}
+
+void triton::XGameObjectSubsystem::AddDirty(const SBatchInstance& batchInstance, const SRenderInstance& renderInstance)
 {
 	SDirtyBufferItem dbi;
-	dbi.renderable = gameObject.renderable;
+	dbi.renderable = batchInstance;
+	dbi.renderInstance = renderInstance;
 	_dirtyBuffer.push_back(dbi);
 }
 

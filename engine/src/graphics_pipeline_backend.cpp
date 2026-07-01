@@ -45,23 +45,6 @@ triton::XVertexArray::XVertexArray(cContext* context, const std::vector<cBuffer*
 		(cpuword)&_gpuVertexArray
 	));
 
-	renderSubsystem->PushCommand(SRenderCommand(
-		ERenderCommand::BIND_BUFFER,
-		(cpuword)gfx->GetVertexBuffer()
-	));
-	renderSubsystem->PushCommand(SRenderCommand(
-		ERenderCommand::BIND_BUFFER,
-		(cpuword)gfx->GetIndexBuffer()
-	));
-	renderSubsystem->PushCommand(SRenderCommand(
-		ERenderCommand::BIND_BUFFER,
-		(cpuword)gfx->GetStaticInstanceBuffer()
-	));
-	renderSubsystem->PushCommand(SRenderCommand(
-		ERenderCommand::BIND_BUFFER,
-		(cpuword)gfx->GetDynamicInstanceBuffer()
-	));
-
 	for (auto buffer : buffersToBind)
 		renderSubsystem->PushCommand(SRenderCommand(
 			ERenderCommand::BIND_BUFFER,

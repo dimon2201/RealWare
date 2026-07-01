@@ -66,11 +66,11 @@ void main()
 	TexcoordOrig = InTexcoord;
 	DiffuseColor = material.DiffuseColor;
 
-	Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);
-	Vertex_Func(InPositionLocal, TexcoordOrig, InNormal, gl_InstanceID, instance, material, instance.Use2D, gl_Position);
+	if (gl_VertexID == 0) { TexcoordAtlas = vec3(0.0, 0.0, 0.0); }
+	if (gl_VertexID == 1) { TexcoordAtlas = vec3(0.0, 1.0, 0.0); }
+	if (gl_VertexID == 2) { TexcoordAtlas = vec3(1.0, 0.0, 0.0); }
 
-
-	//if (gl_VertexID == 0) { gl_Position = vec4(-1.0, -1.0, 0.0, 1.0); }
-	//if (gl_VertexID == 1) { gl_Position = vec4(-1.0, 1.0, 0.0, 1.0); }
-	//if (gl_VertexID == 2) { gl_Position = vec4(1.0, -1.0, 0.0, 1.0); }
+	if (gl_VertexID == 0) { gl_Position = vec4(-1.0, -1.0, 0.0, 1.0); }
+	if (gl_VertexID == 1) { gl_Position = vec4(0.0, 1.0, 0.0, 1.0); }
+	if (gl_VertexID == 2) { gl_Position = vec4(1.0, -1.0, 0.0, 1.0); }
 }

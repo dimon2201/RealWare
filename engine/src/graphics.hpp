@@ -189,6 +189,7 @@ namespace triton
         XRenderPassExecutor* _renderPassExecutor = nullptr;
         XInstanceBuffer* _instanceBufferStatic = nullptr;
         XInstanceBuffer* _instanceBufferDynamic = nullptr;
+        cBuffer* _materialBuffer = nullptr;
         types::boolean _isStaticBufferDirty = types::K_FALSE;
         XRenderPass* _opaque = nullptr;
         XRenderPass* _transparent = nullptr;
@@ -202,15 +203,24 @@ namespace triton
         void CreateGeometryStorage();
         void CreateBatchStorage();
         void CreateInstanceBuffers();
+        void CreateMaterialBuffer();
         void CreateDefaultRenderTargets();
         void CreateDefaultRenderPasses();
         void CreateCameraAllocator();
         void DestroyGeometryStorage();
         void DestroyBatchStorage();
         void DestroyInstanceBuffers();
+        void DestroyMaterialBuffer();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
         void DestroyCameraAllocator();
+        void BindVertexIndexBuffers();
+        void BindInstanceBuffers();
+        void BindMaterialBuffer();
+        void UnbindVertexIndexBuffers();
+        void UnbindInstanceBuffers();
+        void UnbindMaterialBuffer();
+        void ExecuteDefaultPasses();
         void MarkStaticBufferDirty();
         void WriteBatchInstances(SRenderInstance::EUsage usage);
         void WriteDirtyStaticInstances();
@@ -232,7 +242,7 @@ namespace triton
 
         // TODO: Remove material creation from cGraphics
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
-        void ExecuteDefaultRenderPasses();
+        void ExecutePasses();
         CVertexArray* CreateDefaultVertexArray();
         std::optional<triton::SGeometryView> StoreGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
         std::optional<HBatch> CreateBatch(const SGeometryView& geometry);
@@ -288,6 +298,11 @@ namespace triton
         inline cBuffer* GetDynamicInstanceBuffer() const
         {
             return _instanceBufferDynamic;
+        }
+
+        inline cBuffer* GetMaterialBuffer() const
+        {
+            return _materialBuffer;
         }
 
         inline SBufferView<XRenderBatch> GetBatches() const

@@ -10,6 +10,7 @@
 #include "handle_allocator.hpp"
 #include "handles.hpp"
 #include "batch_instance.hpp"
+#include "material.hpp"
 #include "types.hpp"
 
 namespace triton
