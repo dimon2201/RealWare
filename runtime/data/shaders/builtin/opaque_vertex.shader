@@ -14,7 +14,6 @@ struct Instance
 {
 	float Use2D;
 	int MaterialIndex;
-	uint _pad[2];
 	mat4 World;
 };
 
@@ -65,10 +64,6 @@ void main()
 	TexcoordAtlas.xy += material.Diffuse.AtlasNormOffset;
 	TexcoordOrig = InTexcoord;
 	DiffuseColor = material.DiffuseColor;
-
-	if (gl_VertexID == 0) { TexcoordAtlas = vec3(0.0, 0.0, 0.0); }
-	if (gl_VertexID == 1) { TexcoordAtlas = vec3(0.0, 1.0, 0.0); }
-	if (gl_VertexID == 2) { TexcoordAtlas = vec3(1.0, 0.0, 0.0); }
 
 	Vertex_Passthrough(InPositionLocal, instance, 0, gl_Position);
 	Vertex_Func(InPositionLocal, vec2(TexcoordAtlas.xy), InNormal, gl_InstanceID, instance, material, 0, gl_Position);

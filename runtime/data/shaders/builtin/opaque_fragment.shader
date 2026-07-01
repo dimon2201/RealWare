@@ -27,5 +27,5 @@ void main()
 	
 	Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
 	Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
-	FragColor = textureColor; //fragColor;
+	FragColor = fragColor;
 }
