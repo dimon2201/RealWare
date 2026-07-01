@@ -73,6 +73,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
                 types::boolean isOverlapping = K_FALSE;
                 for (usize i = 0; i < textureCount; i++)
                 {
+                    candidateTexture.layer = layer;
                     candidateTexture.normOffset = normOffset;
                     candidateTexture.normSize = normSize;
                     if (IsOverlapping(candidateTexture, textures[i]))

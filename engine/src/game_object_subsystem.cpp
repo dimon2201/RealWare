@@ -47,10 +47,6 @@ void triton::XGameObjectSubsystem::SetMaterial(const HGameObject& gameObject, co
 	SGameObject& go = *_objects->Get(gameObject);
 	go.material = material;
 
-	XMaterialSubsystem* materialSubsystem = _context->GetSubsystem<XMaterialSubsystem>();
-	const SMaterial& materialData = materialSubsystem->Get(material);
-	materialSubsystem->Set(material._indexInArray, materialData);
-
 	SRenderInstance ri;
 	ri._materialIndex = material._indexInArray;
 

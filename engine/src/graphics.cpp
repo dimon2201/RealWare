@@ -966,7 +966,7 @@ void triton::cGraphics::CreateMaterialBuffer()
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
-        caps->maxRenderMaterialCount,
+        caps->maxRenderMaterialCount * sizeof(SRenderInstance),
         2
     ));
     _materialBuffer = renderSubsystem->FetchResult<cBuffer*>();
@@ -1346,6 +1346,7 @@ void triton::cGraphics::WriteBatchInstances(SRenderInstance::EUsage usage)
     else
         return;
 
+    // TODO: get rid of every frame memory allocation, optimize
     u8* tempCpuBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(instanceBufferByteSize, 64);
     SBufferView<XRenderBatch> batchBuffer = _batchStorage->GetBatches();
     usize nextOffset = 0;

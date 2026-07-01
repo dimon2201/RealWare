@@ -33,6 +33,8 @@ void triton::XMaterialUploader::Set(XTextureSubsystem* textureSubsystem, types::
 	materialLayout.diffuseTextureLayout = diffuseTextureLayout;
 
 	_stagingBuffer[index] = materialLayout;
+
+	MarkDirty();
 }
 
 void triton::XMaterialUploader::MarkDirty()
@@ -52,6 +54,7 @@ void triton::XMaterialUploader::Upload(cBuffer* materialBuffer, usize byteSizeTo
 			byteSizeToUpload,
 			(cpuword)&_stagingBuffer[0]
 		));
+
 		_bIsDirty = K_FALSE;
 	}
 }

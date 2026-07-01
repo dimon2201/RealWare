@@ -22,9 +22,9 @@ triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(const cVector4& dif
     SMaterial materialData;
     materialData.diffuseColor = diffuseColor;
     materialData.diffuseTexture = diffuseTexture;
-    *_objects->Get(material) = materialData;
 
-    MarkDirty();
+    *_objects->Get(material) = materialData;
+    Set(material._indexInArray, materialData);
 
     return material;
 }
@@ -32,7 +32,6 @@ triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(const cVector4& dif
 void triton::XMaterialSubsystem::Set(types::usize materialIndex, const SMaterial& materialData)
 {
     _uploader->Set(_context->GetSubsystem<XTextureSubsystem>(), materialIndex, materialData);
-    _uploader->MarkDirty();
 }
 
 void triton::XMaterialSubsystem::Init()
@@ -46,7 +45,8 @@ void triton::XMaterialSubsystem::Free()
 void triton::XMaterialSubsystem::Update()
 {
     cGraphics* gfx = _context->GetSubsystem<cGraphics>();
-    _uploader->Upload(gfx->GetMaterialBuffer(), _objects->GetByteSize());
+    const usize byteSizeToUpload = _objects->GetSize() * sizeof(SMaterialLayout);
+    _uploader->Upload(gfx->GetMaterialBuffer(), byteSizeToUpload);
 }
 
 void triton::XMaterialSubsystem::MarkDirty()
