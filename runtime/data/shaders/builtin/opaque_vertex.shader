@@ -2,6 +2,7 @@ layout(location = 0) in vec3 InPositionLocal;
 layout(location = 1) in vec2 InTexcoord;
 layout(location = 2) in vec3 InNormal;
 layout(location = 3) in vec4 InTangent;
+layout(location = 4) in int InMaterialIndex;
 
 out vec3 DiffuseTexcoordAtlas;
 out vec3 NormalTexcoordAtlas;

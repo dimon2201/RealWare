@@ -112,11 +112,13 @@ void triton::XModel3DBackendAssimp::ParseVertexData(const aiScene* scene, SVerte
             const aiVector3D normal = mesh->HasNormals() ? mesh->mNormals[vertexIndex] : aiVector3D(0.0f);
             const aiVector3D tangent = mesh->HasTangentsAndBitangents() ? mesh->mTangents[vertexIndex] : aiVector3D(0.0f);
             const aiVector3D bitangent = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[vertexIndex] : aiVector3D(0.0f);
-            
+            const s32 materialIndex = mesh->mMaterialIndex;
+
             vertexData[globalVertexIndex].position = cVector3(position.x, position.y, position.z);
             vertexData[globalVertexIndex].texcoord = cVector2(texcoord.x, texcoord.y);
             vertexData[globalVertexIndex].normal = cVector3(normal.x, normal.y, normal.z);
             vertexData[globalVertexIndex].tangent = cVector4(tangent.x, tangent.y, tangent.z, 0.0f);
+            vertexData[globalVertexIndex].materialIndex = materialIndex;
             bitangents[globalVertexIndex] = cVector3(bitangent.x, bitangent.y, bitangent.z);
             
             globalVertexIndex += 1;
