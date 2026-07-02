@@ -20,13 +20,14 @@ namespace triton
 
     struct SModel3DMaterialData final
     {
+        types::s32 absoluteMaterialIndex = -1;
         std::string diffuseTextureFilePath = {};
         std::string normalTextureFilePath = {};
     };
 
     class XModel3DBackendAssimp final : public IModel3DBackend
     {
-        TRITON_OBJECT(CModel3DBackendAssimp)
+        TRITON_OBJECT(XModel3DBackendAssimp)
 
     public:
         explicit XModel3DBackendAssimp(cContext* context) : IModel3DBackend(context) {}
@@ -45,6 +46,7 @@ namespace triton
         void ParseIndexData(const aiScene* scene, types::u32* indexData, const std::vector<types::usize>& indexOffsets);
         void ParseMaterialData(const aiScene* scene, std::vector<SModel3DMaterialData>& materials);
         void CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials);
+        void SetAbsoluteMaterialIndices(SVertex*& vertexData, types::usize vertexCount, const std::vector<HMaterial>& modelMaterials);
         void DeallocateTempBitangentBuffer(cVector3* bitangents);
         SModel3DBackendResource PrepareResult(const SVertex* vertexData, const types::u32* indexData, types::usize vertexCount, types::usize indexCount, const std::vector<HMaterial>& modelMaterials);
     };

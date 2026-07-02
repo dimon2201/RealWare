@@ -45,6 +45,7 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
         materials,
         modelMaterials
     );
+    SetAbsoluteMaterialIndices(vertexData, vertexCount, modelMaterials);
 
     ParseIndexData(scene, indexData, indexOffsets);
 
@@ -199,6 +200,12 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
         HTexture diffuseTexture = textureSubsystem->CreateTexture(diffuseTextureFilePath);
         modelMaterials.push_back(materialSubsystem->CreateMaterial(cVector4(0.0f), diffuseTexture, {}));
     }
+}
+
+void triton::XModel3DBackendAssimp::SetAbsoluteMaterialIndices(SVertex*& vertexData, usize vertexCount, const std::vector<HMaterial>& modelMaterials)
+{
+    for (usize i = 0; i < vertexCount; i++)
+        vertexData[i].materialIndex = modelMaterials.at(vertexData[i].materialIndex)._indexInArray;
 }
 
 void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bitangents)
