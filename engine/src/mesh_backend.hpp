@@ -3,14 +3,14 @@
 #pragma once
 
 #include <string>
+#include <optional>
 #include "backend.hpp"
 #include "mesh_formats.hpp"
 
 namespace triton
 {
-    struct SMeshBackendResource
-    {
-    };
+    struct SVertex;
+    struct SMeshBackendResource;
 
     class IMeshBackend : public iBackend
     {
@@ -20,7 +20,7 @@ namespace triton
         explicit IMeshBackend(cContext* context) : iBackend(context) {}
         ~IMeshBackend() override = default;
 
-        virtual SMeshBackendResource CreateMesh(EMeshFormat& format, const std::string& filePath) = 0;
+        virtual std::optional<SMeshBackendResource> CreateMesh(const std::string& filePath) = 0;
         virtual void DestroyMesh(SMeshBackendResource& mesh) = 0;
     };
 }

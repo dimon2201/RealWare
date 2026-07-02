@@ -1,15 +1,24 @@
 // mesh_subsystem.cpp
 
 #include "mesh_subsystem.hpp"
+#include "mesh_backend.hpp"
 
-triton::XMeshSubsystem::XMeshSubsystem(cContext* context) : ISubsystem(context)
+std::optional<triton::HMesh> triton::XMeshSubsystem::CreateMesh(const std::string& filePath)
 {
+	auto result = _context->GetBackend<IMeshBackend>()->CreateMesh(filePath);
+	if (!result)
+		return std::nullopt;
+
+	SMeshBackendResource mbr = *result;
+	HMesh mesh = Create();
+	Get(mesh).resource = mbr;
+
+	return mesh;
 }
 
-triton::XMeshSubsystem::~XMeshSubsystem()
+void triton::XMeshSubsystem::DestroyMesh(const HMesh& mesh)
 {
-}
-
-void triton::XMeshSubsystem::CreateMesh(const std::string& filePath);
-{
+	SMeshData& meshData = Get(mesh);
+	_context->GetBackend<IMeshBackend>()->DestroyMesh(meshData.resource);
+	Destroy(mesh);
 }

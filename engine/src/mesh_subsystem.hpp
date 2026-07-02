@@ -14,9 +14,10 @@ namespace triton
         TRITON_OBJECT(XMeshSubsystem)
 
     public:
-        explicit XMeshSubsystem(cContext* context);
-        ~XMeshSubsystem() override;
+        explicit XMeshSubsystem(cContext* context) : ISubsystem(context) {}
+        ~XMeshSubsystem() override = default;
 
         std::optional<HMesh> CreateMesh(const std::string& filePath);
+        void DestroyMesh(const HMesh& mesh);
     };
 }
