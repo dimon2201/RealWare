@@ -5,6 +5,7 @@
 #include <string>
 #include "batch_instance.hpp"
 #include "material.hpp"
+#include "math.hpp"
 
 namespace triton
 {
@@ -13,5 +14,7 @@ namespace triton
         std::string name = {};
         SBatchInstance renderable;
         HMaterial material;
+        cVector3 worldPosition = cVector3(0.0f);
+        cVector3 worldRotation = cVector3(0.0f);
     };
 }

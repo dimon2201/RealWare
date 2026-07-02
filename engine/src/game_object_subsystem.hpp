@@ -44,10 +44,11 @@ namespace triton
         void Update() override;
         void AddRenderable(const HGameObject& gameObject, SRenderInstance::EUsage usage, EGraphicsBufferFormat format, const types::u8* vertexBytes, types::usize vertexBytesCount, const types::u8* indexBytes, types::usize indexBytesCount);
         void SetWorldPosition(const HGameObject& gameObject, const cVector3& worldPosition);
+        void SetWorldRotation(const HGameObject& gameObject, const cVector3& worldRotation);
         void SetMaterial(const HGameObject& gameObject, const HMaterial& material);
 
     private:
-        void AddDirty(const SBatchInstance& batchInstance, const SRenderInstance& renderInstance);
+        void AddDirty(const SBatchInstance& batchInstance, const SRenderInstance& renderInstance, const cVector3& worldPosition, const cVector3& worldRotation);
         void WriteDirty();
     };
 }
