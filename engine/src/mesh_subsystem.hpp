@@ -19,5 +19,9 @@ namespace triton
 
         std::optional<HMesh> CreateMesh(const std::string& filePath);
         void DestroyMesh(const HMesh& mesh);
+
+        void Init() override {}
+        void Free() override {}
+        void Update() override {}
     };
 }

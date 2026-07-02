@@ -1,9 +1,5 @@
 // mesh_backend_assimp.cpp
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/mesh.h>
-#include <assimp/postprocess.h>
 #include "mesh_backend_assimp.hpp"
 #include "mesh_backend_resource.hpp"
 #include "context.hpp"

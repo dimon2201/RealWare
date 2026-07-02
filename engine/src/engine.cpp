@@ -30,6 +30,9 @@
 #include "handle_allocator.hpp"
 #include "game_object_subsystem.hpp"
 #include "material_subsystem.hpp"
+#include "mesh_backend.hpp"
+#include "mesh_backend_assimp.hpp"
+#include "mesh_subsystem.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -60,6 +63,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterBackend<iGraphicsContextBackend>(new cGraphicsContextBackendOGL(_context));
 	_context->RegisterBackend<iGraphicsDrawcallBackend>(new cGraphicsDrawcallBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
+	_context->RegisterBackend<IMeshBackend>(new CMeshBackendAssimp(_context));
 
 	// Register subsystems (order matters)
 	_context->RegisterSubsystem(this);
@@ -79,6 +83,7 @@ void triton::cEngine::Initialize()
 	_context->GetSubsystem<cGraphics>()->Init();
 	_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
 	_context->GetSubsystem<XGameObjectSubsystem>()->Init();
+	_context->RegisterSubsystem(new XMeshSubsystem(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
