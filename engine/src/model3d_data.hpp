@@ -1,13 +1,13 @@
-// mesh_data.hpp
+// model3d_data.hpp
 
 #pragma once
 
-#include "mesh_backend_resource.hpp"
+#include "model3d_backend_resource.hpp"
 
 namespace triton
 {
-	struct SMeshData final
+	struct SModel3DData final
 	{
-		SMeshBackendResource resource;
+		SModel3DBackendResource resource;
 	};
 }

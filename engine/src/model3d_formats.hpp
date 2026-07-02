@@ -1,10 +1,10 @@
-// mesh_formats.hpp
+// model3d_formats.hpp
 
 #pragma once
 
 namespace triton
 {
-	enum class EMeshFormat
+	enum class EModel3DFormat
 	{
 		None,
 		FBX

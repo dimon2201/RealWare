@@ -1,4 +1,4 @@
-// mesh_backend_assimp.hpp
+// model3d_backend_assimp.hpp
 
 #pragma once
 
@@ -8,23 +8,32 @@
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <vector>
-#include "mesh_backend.hpp"
+#include "model3d_backend.hpp"
+#include "handles.hpp"
 
 namespace triton
 {
     struct SVertex;
     class cVector3;
+    class XTextureSubsystem;
+    class XMaterialSubsystem;
 
-    class CMeshBackendAssimp final : public IMeshBackend
+    struct SModel3DMaterialData final
     {
-        TRITON_OBJECT(CMeshBackendAssimp)
+        std::string diffuseTextureFilePath = {};
+        std::string normalTextureFilePath = {};
+    };
+
+    class XModel3DBackendAssimp final : public IModel3DBackend
+    {
+        TRITON_OBJECT(CModel3DBackendAssimp)
 
     public:
-        explicit CMeshBackendAssimp(cContext* context) : IMeshBackend(context) {}
-        ~CMeshBackendAssimp() override = default;
+        explicit XModel3DBackendAssimp(cContext* context) : IModel3DBackend(context) {}
+        ~XModel3DBackendAssimp() override = default;
 
-        std::optional<SMeshBackendResource> CreateMesh(const std::string& filePath) override final;
-        void DestroyMesh(SMeshBackendResource& sound) override final;
+        std::optional<SModel3DBackendResource> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath) override final;
+        void DestroyModel(SModel3DBackendResource& model) override final;
 
     private:
         void ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath);
@@ -34,7 +43,9 @@ namespace triton
         void ParseVertexData(const aiScene* scene, SVertex* vertexData, cVector3* bitangents);
         void CalculateHandedness(SVertex* vertexData, cVector3* bitangents, types::usize vertexCount);
         void ParseIndexData(const aiScene* scene, types::u32* indexData, const std::vector<types::usize>& indexOffsets);
+        void ParseMaterialData(const aiScene* scene, std::vector<SModel3DMaterialData>& materials);
+        void CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials);
         void DeallocateTempBitangentBuffer(cVector3* bitangents);
-        SMeshBackendResource PrepareResult(const SVertex* vertexData, const types::u32* indexData, types::usize vertexCount, types::usize indexCount);
+        SModel3DBackendResource PrepareResult(const SVertex* vertexData, const types::u32* indexData, types::usize vertexCount, types::usize indexCount, const std::vector<HMaterial>& modelMaterials);
     };
 }

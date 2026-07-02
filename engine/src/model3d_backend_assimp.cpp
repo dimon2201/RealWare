@@ -1,39 +1,57 @@
-// mesh_backend_assimp.cpp
+// model3d_backend_assimp.cpp
 
-#include "mesh_backend_assimp.hpp"
-#include "mesh_backend_resource.hpp"
+#include <filesystem>
+#include "model3d_backend_assimp.hpp"
+#include "model3d_backend_resource.hpp"
 #include "context.hpp"
 #include "vertex.hpp"
 #include "math.hpp"
+#include "material_subsystem.hpp"
 
 using namespace types;
 
-std::optional<triton::SMeshBackendResource> triton::CMeshBackendAssimp::CreateMesh(const std::string& filePath)
+std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath)
 {
     Assimp::Importer importer;
     const aiScene* scene = nullptr;
-    ImportScene(importer, scene, filePath);
+
+    ImportScene(importer, scene, modelFolderPath + "/" + modelLocalPath);
+
     if (!scene)
         return std::nullopt;
     
-    SVertex* vertexData = nullptr;
-    u32* indexData = nullptr;
-    cVector3* bitangents = nullptr;
     usize vertexCount = 0;
     usize indexCount = 0;
     std::vector<usize> indexOffsets = {};
+    SVertex* vertexData = nullptr;
+    u32* indexData = nullptr;
+    cVector3* bitangents = nullptr;
+    std::vector<SModel3DMaterialData> materials = {};
+    std::vector<HMaterial> modelMaterials = {};
+
     CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
+
     AllocateVertexIndexBuffers(vertexData, indexData, vertexCount, indexCount);
     AllocateTempBitangentBuffer(bitangents, vertexCount);
     ParseVertexData(scene, vertexData, bitangents);
     CalculateHandedness(vertexData, bitangents, vertexCount);
     DeallocateTempBitangentBuffer(bitangents);
+
+    ParseMaterialData(scene, materials);
+    CreateMaterials(
+        modelFolderPath,
+        _context->GetSubsystem<XTextureSubsystem>(),
+        _context->GetSubsystem<XMaterialSubsystem>(), 
+        materials,
+        modelMaterials
+    );
+
     ParseIndexData(scene, indexData, indexOffsets);
 
-    return PrepareResult(vertexData, indexData, vertexCount, indexCount);
+    return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials);
 }
 
-void triton::CMeshBackendAssimp::DestroyMesh(SMeshBackendResource& mesh)
+void triton::XModel3DBackendAssimp::DestroyModel(SModel3DBackendResource& mesh)
 {
     mesh.vertexCount = 0;
     mesh.indexCount = 0;
@@ -43,7 +61,7 @@ void triton::CMeshBackendAssimp::DestroyMesh(SMeshBackendResource& mesh)
         _context->GetMemoryAllocator()->Deallocate((void*)mesh.vertexData);
 }
 
-void triton::CMeshBackendAssimp::ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath)
+void triton::XModel3DBackendAssimp::ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath)
 {
     scene = importer.ReadFile(
         filePath.c_str(),
@@ -57,7 +75,7 @@ void triton::CMeshBackendAssimp::ImportScene(Assimp::Importer& importer, const a
         Print("Error: can't load mesh from file '" + filePath + "'");
 }
 
-void triton::CMeshBackendAssimp::CountVerticesIndices(const aiScene* scene, usize& vertexCount, usize& indexCount, std::vector<usize>& indexOffsets)
+void triton::XModel3DBackendAssimp::CountVerticesIndices(const aiScene* scene, usize& vertexCount, usize& indexCount, std::vector<usize>& indexOffsets)
 {
     for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
     {
@@ -70,18 +88,18 @@ void triton::CMeshBackendAssimp::CountVerticesIndices(const aiScene* scene, usiz
                 indexCount += scene->mMeshes[meshIndex]->mFaces[faceIndex].mNumIndices;
 }
 
-void triton::CMeshBackendAssimp::AllocateVertexIndexBuffers(SVertex*& vertexData, u32*& indices, usize vertexCount, usize indexCount)
+void triton::XModel3DBackendAssimp::AllocateVertexIndexBuffers(SVertex*& vertexData, u32*& indices, usize vertexCount, usize indexCount)
 {
     vertexData = (SVertex*)_context->GetMemoryAllocator()->Allocate(vertexCount * sizeof(SVertex), 64);
     indices = (u32*)_context->GetMemoryAllocator()->Allocate(indexCount * sizeof(u32), 64);
 }
 
-void triton::CMeshBackendAssimp::AllocateTempBitangentBuffer(cVector3*& bitangents, usize vertexCount)
+void triton::XModel3DBackendAssimp::AllocateTempBitangentBuffer(cVector3*& bitangents, usize vertexCount)
 {
     bitangents = (cVector3*)_context->GetMemoryAllocator()->Allocate(vertexCount * sizeof(cVector3), 64);
 }
 
-void triton::CMeshBackendAssimp::ParseVertexData(const aiScene* scene, SVertex* vertexData, cVector3* bitangents)
+void triton::XModel3DBackendAssimp::ParseVertexData(const aiScene* scene, SVertex* vertexData, cVector3* bitangents)
 {
     usize globalVertexIndex = 0;
     for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
@@ -106,7 +124,7 @@ void triton::CMeshBackendAssimp::ParseVertexData(const aiScene* scene, SVertex* 
     }
 }
 
-void triton::CMeshBackendAssimp::CalculateHandedness(SVertex* vertexData, cVector3* bitangents, usize vertexCount)
+void triton::XModel3DBackendAssimp::CalculateHandedness(SVertex* vertexData, cVector3* bitangents, usize vertexCount)
 {
     for (usize i = 0; i < vertexCount; i++)
     {
@@ -119,7 +137,7 @@ void triton::CMeshBackendAssimp::CalculateHandedness(SVertex* vertexData, cVecto
     }
 }
 
-void triton::CMeshBackendAssimp::ParseIndexData(const aiScene* scene, u32* indexData, const std::vector<usize>& indexOffsets)
+void triton::XModel3DBackendAssimp::ParseIndexData(const aiScene* scene, u32* indexData, const std::vector<usize>& indexOffsets)
 {
     usize globalIndicesIndex = 0;
     for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
@@ -140,18 +158,60 @@ void triton::CMeshBackendAssimp::ParseIndexData(const aiScene* scene, u32* index
     }
 }
 
-void triton::CMeshBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bitangents)
+void triton::XModel3DBackendAssimp::ParseMaterialData(const aiScene* scene, std::vector<SModel3DMaterialData>& materials)
+{
+    for (usize materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
+    {
+        const aiMaterial* material = scene->mMaterials[materialIndex];
+        aiString diffuseTexturePath = aiString("");
+        material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseTexturePath);
+
+        SModel3DMaterialData m3dmd;
+        m3dmd.diffuseTextureFilePath = diffuseTexturePath.C_Str();
+        materials.push_back(m3dmd);
+    }
+}
+
+void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials)
+{
+    for (auto& material : materials)
+    {
+        std::string diffuseTextureFilePath;
+
+        std::filesystem::path diffusePath(material.diffuseTextureFilePath);
+        if (material.diffuseTextureFilePath.length() > 0 && material.diffuseTextureFilePath.at(0) == '*')
+        {
+            Print("Error: embedded textures are not supported, model folder path: " + modelFolderPath);
+            return;
+        }
+        else if (diffusePath.is_absolute())
+        {
+            diffuseTextureFilePath = diffusePath.generic_string();
+        }
+        else
+        {
+            diffusePath = modelFolderPath / diffusePath;
+            diffuseTextureFilePath = diffusePath.generic_string();
+        }
+
+        HTexture diffuseTexture = textureSubsystem->CreateTexture(diffuseTextureFilePath);
+        modelMaterials.push_back(materialSubsystem->CreateMaterial(cVector4(0.0f), diffuseTexture, {}));
+    }
+}
+
+void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bitangents)
 {
     _context->GetMemoryAllocator()->Deallocate(bitangents);
 }
 
-triton::SMeshBackendResource triton::CMeshBackendAssimp::PrepareResult(const SVertex* vertexData, const u32* indexData, usize vertexCount, usize indexCount)
+triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(const SVertex* vertexData, const u32* indexData, usize vertexCount, usize indexCount, const std::vector<HMaterial>& modelMaterials)
 {
-    SMeshBackendResource mbr;
+    SModel3DBackendResource mbr;
     mbr.vertexData = vertexData;
     mbr.indexData = indexData;
     mbr.vertexCount = vertexCount;
     mbr.indexCount = indexCount;
+    mbr.materials = modelMaterials;
 
     return mbr;
 }

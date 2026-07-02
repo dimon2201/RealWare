@@ -1,24 +1,24 @@
-// mesh_subsystem.hpp
+// model3d_subsystem.hpp
 
 #pragma once
 
 #include <optional>
 #include "subsystem.hpp"
 #include "handles.hpp"
-#include "mesh_data.hpp"
+#include "model3d_data.hpp"
 
 namespace triton
 {
-    class XMeshSubsystem : public ISubsystem<HMesh, SMeshData, XLinearArray<SMeshData>>
+    class XModel3DSubsystem : public ISubsystem<HModel3D, SModel3DData, XLinearArray<SModel3DData>>
     {
-        TRITON_OBJECT(XMeshSubsystem)
+        TRITON_OBJECT(XModel3DSubsystem)
 
     public:
-        explicit XMeshSubsystem(cContext* context) : ISubsystem(context) {}
-        ~XMeshSubsystem() override = default;
+        explicit XModel3DSubsystem(cContext* context) : ISubsystem(context) {}
+        ~XModel3DSubsystem() override = default;
 
-        std::optional<HMesh> CreateMesh(const std::string& filePath);
-        void DestroyMesh(const HMesh& mesh);
+        std::optional<HModel3D> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath);
+        void DestroyModel(const HModel3D& model);
 
         void Init() override {}
         void Free() override {}

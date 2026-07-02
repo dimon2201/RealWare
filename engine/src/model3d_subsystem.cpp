@@ -1,24 +1,24 @@
-// mesh_subsystem.cpp
+// model3d_subsystem.cpp
 
-#include "mesh_subsystem.hpp"
-#include "mesh_backend.hpp"
+#include "model3d_subsystem.hpp"
+#include "model3d_backend.hpp"
 
-std::optional<triton::HMesh> triton::XMeshSubsystem::CreateMesh(const std::string& filePath)
+std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath)
 {
-	auto result = _context->GetBackend<IMeshBackend>()->CreateMesh(filePath);
+	auto result = _context->GetBackend<IModel3DBackend>()->CreateModel(modelFolderPath, modelLocalPath);
 	if (!result)
 		return std::nullopt;
 
-	SMeshBackendResource mbr = *result;
-	HMesh mesh = Create();
-	Get(mesh).resource = mbr;
+	SModel3DBackendResource mbr = *result;
+	HModel3D model = Create();
+	Get(model).resource = mbr;
 
-	return mesh;
+	return model;
 }
 
-void triton::XMeshSubsystem::DestroyMesh(const HMesh& mesh)
+void triton::XModel3DSubsystem::DestroyModel(const HModel3D& model)
 {
-	SMeshData& meshData = Get(mesh);
-	_context->GetBackend<IMeshBackend>()->DestroyMesh(meshData.resource);
-	Destroy(mesh);
+	SModel3DData& modelData = Get(model);
+	_context->GetBackend<IModel3DBackend>()->DestroyModel(modelData.resource);
+	Destroy(model);
 }
