@@ -85,7 +85,7 @@ void triton::XRenderPass::Draw()
 
     switch (_dispatch)
     {
-        case ERenderPassDispatch::BATCH:
+        case ERenderPassDispatch::GEOMETRY:
         {
             SBufferView<XRenderBatch> batchBuffer = _context->GetSubsystem<cGraphics>()->GetBatches();
             for (usize i = 0; i < batchBuffer._elementCount; i++)
@@ -128,7 +128,7 @@ void triton::XRenderPass::Draw()
             }
             break;
         }
-        case ERenderPassDispatch::QUAD:
+        case ERenderPassDispatch::PROCESSING:
         {
             gfxDrawcallBackend->DrawQuad();
             break;

@@ -43,9 +43,10 @@ namespace triton
     enum class ERenderPassDispatch
     {
         NONE,
-        BATCH,
+        GEOMETRY,
         TEXT,
-        QUAD
+        COMPUTE,
+        PROCESSING
     };
 
     class SRenderPassTexture final
