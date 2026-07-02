@@ -10,8 +10,9 @@ using namespace types;
 
 std::optional<triton::SMeshBackendResource> triton::CMeshBackendAssimp::CreateMesh(const std::string& filePath)
 {
+    Assimp::Importer importer;
     const aiScene* scene = nullptr;
-    ImportScene(scene, filePath);
+    ImportScene(importer, scene, filePath);
     if (!scene)
         return std::nullopt;
     
@@ -20,13 +21,14 @@ std::optional<triton::SMeshBackendResource> triton::CMeshBackendAssimp::CreateMe
     cVector3* bitangents = nullptr;
     usize vertexCount = 0;
     usize indexCount = 0;
-    CountVerticesIndices(scene, vertexCount, indexCount);
+    std::vector<usize> indexOffsets = {};
+    CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
     AllocateVertexIndexBuffers(vertexData, indexData, vertexCount, indexCount);
     AllocateTempBitangentBuffer(bitangents, vertexCount);
     ParseVertexData(scene, vertexData, bitangents);
     CalculateHandedness(vertexData, bitangents, vertexCount);
     DeallocateTempBitangentBuffer(bitangents);
-    ParseIndexData(scene, indexData);
+    ParseIndexData(scene, indexData, indexOffsets);
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount);
 }
@@ -41,13 +43,13 @@ void triton::CMeshBackendAssimp::DestroyMesh(SMeshBackendResource& mesh)
         _context->GetMemoryAllocator()->Deallocate((void*)mesh.vertexData);
 }
 
-void triton::CMeshBackendAssimp::ImportScene(const aiScene*& scene, const std::string& filePath)
+void triton::CMeshBackendAssimp::ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath)
 {
-    Assimp::Importer importer;
     scene = importer.ReadFile(
         filePath.c_str(),
         aiProcess_JoinIdenticalVertices |
         aiProcess_CalcTangentSpace |
+        aiProcess_Triangulate |
         aiProcess_GenNormals |
         aiProcess_ImproveCacheLocality
     );
@@ -55,10 +57,13 @@ void triton::CMeshBackendAssimp::ImportScene(const aiScene*& scene, const std::s
         Print("Error: can't load mesh from file '" + filePath + "'");
 }
 
-void triton::CMeshBackendAssimp::CountVerticesIndices(const aiScene* scene, usize& vertexCount, usize indexCount)
+void triton::CMeshBackendAssimp::CountVerticesIndices(const aiScene* scene, usize& vertexCount, usize& indexCount, std::vector<usize>& indexOffsets)
 {
     for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
+    {
+        indexOffsets.push_back(vertexCount);
         vertexCount += scene->mMeshes[meshIndex]->mNumVertices;
+    }
     for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
         if (scene->mMeshes[meshIndex]->HasFaces())
             for (usize faceIndex = 0; faceIndex < scene->mMeshes[meshIndex]->mNumFaces; faceIndex++)
@@ -114,7 +119,7 @@ void triton::CMeshBackendAssimp::CalculateHandedness(SVertex* vertexData, cVecto
     }
 }
 
-void triton::CMeshBackendAssimp::ParseIndexData(const aiScene* scene, u32* indexData)
+void triton::CMeshBackendAssimp::ParseIndexData(const aiScene* scene, u32* indexData, const std::vector<usize>& indexOffsets)
 {
     usize globalIndicesIndex = 0;
     for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
@@ -127,7 +132,7 @@ void triton::CMeshBackendAssimp::ParseIndexData(const aiScene* scene, u32* index
                 const aiFace& face = mesh->mFaces[faceIndex];
                 for (usize indicesIndex = 0; indicesIndex < face.mNumIndices; indicesIndex++)
                 {
-                    indexData[globalIndicesIndex] = face.mIndices[indicesIndex];
+                    indexData[globalIndicesIndex] = indexOffsets.at(meshIndex) + face.mIndices[indicesIndex];
                     globalIndicesIndex += 1;
                 }
             }
