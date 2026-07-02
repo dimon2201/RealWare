@@ -48,7 +48,13 @@ void triton::CMeshBackendAssimp::DestroyMesh(SMeshBackendResource& mesh)
 void triton::CMeshBackendAssimp::ImportScene(const aiScene*& scene, const std::string& filePath)
 {
     Assimp::Importer importer;
-    scene = importer.ReadFile(filePath.c_str(), 0);
+    scene = importer.ReadFile(
+        filePath.c_str(),
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_CalcTangentSpace |
+        aiProcess_GenNormals |
+        aiProcess_ImproveCacheLocality
+    );
     if (!scene)
         Print("Error: can't load mesh from file '" + filePath + "'");
 }
