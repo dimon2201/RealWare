@@ -1,5 +1,7 @@
 // texture_subsystem.cpp
 
+#define TINYDDSLOADER_IMPLEMENTATION
+#include <tinyddsloader.h>
 #include "texture_subsystem.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../thirdparty/stb-master/stb_image.h"
@@ -10,6 +12,7 @@
 #include "log.hpp"
 #include "render_subsystem.hpp"
 #include "handle_allocator.hpp"
+#include "filesystem_manager.hpp"
 
 using namespace types;
 
@@ -124,13 +127,67 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
 
 std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile(const std::string& filePath)
 {
-    const usize channelsRequired = 4;
+    cDataFile* df = _context->GetSubsystem<cFileSystem>()->CreateDataFile(filePath, K_FALSE);
+    XDataBuffer* db = df->GetBuffer();
+    if (db->GetByteSize() == 0)
+        return std::nullopt;
+    
+    ETextureFormat tf = ETextureFormat::NONE;
+    const usize kPNGMagicByteCount = 8;
+    const usize kDDSMagicByteCount = 4;
+    const usize kMagicByteCountMax = std::max({ kPNGMagicByteCount, kDDSMagicByteCount });
+    const u8 pngMagic[kPNGMagicByteCount] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+    const u8 ddsMagic[kDDSMagicByteCount] = { 0x44, 0x44, 0x53, 0x20 };
+    u8 compareBuffer[kMagicByteCountMax] = {};
+    memcpy(&compareBuffer[0], &db->GetData()[0], kMagicByteCountMax);
+    if (memcmp(&compareBuffer[0], &pngMagic[0], kPNGMagicByteCount) == 0)
+        tf = ETextureFormat::PNG;
+    else if (memcmp(&compareBuffer[0], &ddsMagic[0], kDDSMagicByteCount) == 0)
+        tf = ETextureFormat::DDS;
 
-    int width = 0;
-    int height = 0;
-    int channels = 0;
-    stbi_uc* data = nullptr;
-    data = stbi_load(filePath.c_str(), &width, &height, &channels, channelsRequired);
+    usize width = 0;
+    usize height = 0;
+    usize channels = 0;
+    u8* data = nullptr;
+
+    if (tf == ETextureFormat::NONE)
+    {
+        Print("Error: unknown texture format, file path: '" + filePath + "'\n");
+
+        return std::nullopt;
+    }
+    else if (tf == ETextureFormat::PNG)
+    {
+        int stbWidth = width;
+        int stbHeight = height;
+        int stbChannels = channels;
+        const int channelsRequired = 4;
+
+        data = stbi_load(filePath.c_str(), &stbWidth, &stbHeight, &stbChannels, channelsRequired);
+
+        width = stbWidth;
+        height = stbHeight;
+        channels = stbChannels;
+    }
+    else if (tf == ETextureFormat::DDS)
+    {
+        tinyddsloader::DDSFile dds;
+
+        auto ret = dds.Load(filePath.c_str());
+        auto fmt = dds.GetFormat();
+        if (fmt != tinyddsloader::DDSFile::DXGIFormat::R8G8B8A8_UNorm)
+        {
+            Print("Error: unsupported DDS texture format, file path: '" + filePath + "'\n");
+            return std::nullopt;
+        }
+
+        width = dds.GetWidth();
+        height = dds.GetHeight();
+        channels = 4;
+        data = (u8*)dds.GetImageData()->m_mem;
+
+        return CreateTexture(cTexture::eFormat::RGBA8_MIPS, cVector2(width, height), data);
+    }
 
     return CreateTexture(cTexture::eFormat::RGBA8_MIPS, cVector2(width, height), data);
 }

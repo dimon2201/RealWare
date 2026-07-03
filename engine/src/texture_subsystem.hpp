@@ -27,6 +27,13 @@ namespace triton
         types::f32 _textureLayerInfo = 0.0f;
     };
 
+    enum class ETextureFormat
+    {
+        NONE,
+        PNG,
+        DDS
+    };
+
     class XTextureSubsystem : public ISubsystem<HTexture, STexture, XLinearArray<STexture>>
     {
         TRITON_OBJECT(XTextureSubsystem)
