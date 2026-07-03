@@ -19,6 +19,7 @@ target_include_directories(
     thirdparty/stb-master
     thirdparty/glm/glm
     thirdparty/lodepng
+    thirdparty/tinyddsloader
 )
 target_link_directories(
     TritonEngine
