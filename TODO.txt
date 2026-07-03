@@ -17,4 +17,4 @@
 - GFX: SSR
 - GFX: Volumetric Fog
 - GFX: TAA
-- GFX: GI
+- GFX: World Space Global Illumination using surfels
