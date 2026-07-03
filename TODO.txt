@@ -6,3 +6,15 @@
 - Fix texture offset, size precision in texture atlas
 - Move STB,tinyddsloader logic to proper image-related backend (texture_subsystem.cpp:*)
 - Replace cFileSystem::CreateDataFile() call with efficient header check procedure (texture_subsystem.cpp:128)
+- GFX: PBR
+- GFX: Shadows
+- GFX: IBL
+- GFX: SSAO
+- GFX: Bloom
+- GFX: Auto Exposure
+- GFX: Color Grading LUT
+- GFX: Contact Shadows
+- GFX: SSR
+- GFX: Volumetric Fog
+- GFX: TAA
+- GFX: GI
