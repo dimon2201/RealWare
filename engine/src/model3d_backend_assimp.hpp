@@ -48,6 +48,7 @@ namespace triton
         void CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials);
         void SetAbsoluteMaterialIndices(SVertex*& vertexData, types::usize vertexCount, const std::vector<HMaterial>& modelMaterials);
         void DeallocateTempBitangentBuffer(cVector3* bitangents);
+        std::optional<triton::HTexture> CreateTextureFromFile(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath);
         SModel3DBackendResource PrepareResult(const SVertex* vertexData, const types::u32* indexData, types::usize vertexCount, types::usize indexCount, const std::vector<HMaterial>& modelMaterials);
     };
 }

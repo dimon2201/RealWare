@@ -168,10 +168,44 @@ void triton::XModel3DBackendAssimp::ParseMaterialData(const aiScene* scene, std:
         const aiMaterial* material = scene->mMaterials[materialIndex];
         aiString diffuseTexturePath = aiString("");
         material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseTexturePath);
+        aiString normalTexturePath = aiString("");
+        material->GetTexture(aiTextureType_NORMALS, 0, &normalTexturePath);
 
         SModel3DMaterialData m3dmd;
         m3dmd.diffuseTextureFilePath = diffuseTexturePath.C_Str();
+        m3dmd.normalTextureFilePath = normalTexturePath.C_Str();
         materials.push_back(m3dmd);
+
+        for (usize i = 0; i < material->mNumProperties; i++)
+        {
+            std::cout <<
+                "name(" << material->mProperties[i]->mKey.C_Str() << ") " <<
+                "semantic(" << material->mProperties[i]->mSemantic << ") " <<
+                "dataLength(" << material->mProperties[i]->mDataLength << ") " <<
+                "index(" << material->mProperties[i]->mIndex << ") " <<
+                "type(" << material->mProperties[i]->mType << ") ";
+            for (usize j = 0; j < material->mProperties[i]->mDataLength; j++)
+                std::cout << material->mProperties[i]->mData[j];
+            std::cout << "\n";
+        }
+
+        for (int t = 0; t <= aiTextureType_TRANSMISSION; ++t)
+        {
+            auto type = (aiTextureType)t;
+            unsigned count = material->GetTextureCount(type);
+
+            if (count)
+            {
+                printf("TYPE %d:\n", t);
+
+                for (unsigned i = 0; i < count; ++i)
+                {
+                    aiString path;
+                    material->GetTexture(type, i, &path);
+                    printf("    %s\n", path.C_Str());
+                }
+            }
+        }
     }
 }
 
@@ -179,26 +213,10 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
 {
     for (auto& material : materials)
     {
-        std::string diffuseTextureFilePath;
+        HTexture diffuseTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.diffuseTextureFilePath);
+        HTexture normalTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.normalTextureFilePath);
 
-        std::filesystem::path diffusePath(material.diffuseTextureFilePath);
-        if (material.diffuseTextureFilePath.length() > 0 && material.diffuseTextureFilePath.at(0) == '*')
-        {
-            Print("Error: embedded textures are not supported, model folder path: " + modelFolderPath);
-            return;
-        }
-        else if (diffusePath.is_absolute())
-        {
-            diffuseTextureFilePath = diffusePath.generic_string();
-        }
-        else
-        {
-            diffusePath = modelFolderPath / diffusePath;
-            diffuseTextureFilePath = diffusePath.generic_string();
-        }
-
-        HTexture diffuseTexture = textureSubsystem->CreateTexture(diffuseTextureFilePath);
-        modelMaterials.push_back(materialSubsystem->CreateMaterial(cVector4(0.0f), diffuseTexture, {}));
+        modelMaterials.push_back(materialSubsystem->CreateMaterial(cVector4(1.0f), diffuseTexture, normalTexture));
     }
 }
 
@@ -211,6 +229,31 @@ void triton::XModel3DBackendAssimp::SetAbsoluteMaterialIndices(SVertex*& vertexD
 void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bitangents)
 {
     _context->GetMemoryAllocator()->Deallocate(bitangents);
+}
+
+std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFromFile(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath)
+{
+    std::string newTextureFilePath;
+    std::filesystem::path path(textureFilePath);
+    if (textureFilePath.length() > 0 && textureFilePath.at(0) == '*')
+    {
+        Print("Error: embedded textures are not supported, model folder path: " + modelFolderPath);
+        return std::nullopt;
+    }
+    else if (path.is_absolute())
+    {
+        newTextureFilePath =
+            std::filesystem::path(modelFolderPath).generic_string() +
+            "/" +
+            path.filename().string();
+    }
+    else
+    {
+        path = modelFolderPath / path;
+        newTextureFilePath = path.generic_string();
+    }
+    
+    return textureSubsystem->CreateTexture(newTextureFilePath);
 }
 
 triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(const SVertex* vertexData, const u32* indexData, usize vertexCount, usize indexCount, const std::vector<HMaterial>& modelMaterials)
