@@ -67,7 +67,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
         {
             for (usize x = 0; x < _atlas->GetWidth(); x++)
             {
-                const cVector2 normOffset = cVector2((f32)x / _atlas->GetWidth(), (f32)y / _atlas->GetWidth());
+                const cVector2 normOffset = cVector2((f32)x / _atlas->GetWidth(), (f32)y / _atlas->GetHeight());
                 const cVector2 normSize = cVector2(size.GetX() / _atlas->GetWidth(), size.GetY() / _atlas->GetHeight());
 
                 types::boolean isOverlapping = K_FALSE;
@@ -137,14 +137,18 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile
 
 types::boolean triton::XTextureSubsystem::IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture)
 {
-    if ((candidateTexture.layer == atlasTexture.layer &&
-        candidateTexture.normOffset.GetX() <= atlasTexture.normSize.GetX() &&
-        candidateTexture.normOffset.GetX() + candidateTexture.normSize.GetX() >= atlasTexture.normOffset.GetX() &&
-        candidateTexture.normOffset.GetY() <= atlasTexture.normSize.GetY() &&
-        candidateTexture.normOffset.GetY() + candidateTexture.normSize.GetY() >= atlasTexture.normOffset.GetY())
-        ||
-        (candidateTexture.normSize.GetX() > 1.0f || candidateTexture.normSize.GetY() > 1.0f))
+    if (candidateTexture.normOffset.GetX() + candidateTexture.normSize.GetX() > 1.0f ||
+        candidateTexture.normOffset.GetY() + candidateTexture.normSize.GetY() > 1.0f)
         return K_TRUE;
-    else
-        return K_FALSE;
+
+    return
+        candidateTexture.layer == atlasTexture.layer &&
+        candidateTexture.normOffset.GetX() <
+        atlasTexture.normOffset.GetX() + atlasTexture.normSize.GetX() &&
+        candidateTexture.normOffset.GetX() + candidateTexture.normSize.GetX() >
+        atlasTexture.normOffset.GetX() &&
+        candidateTexture.normOffset.GetY() <
+        atlasTexture.normOffset.GetY() + atlasTexture.normSize.GetY() &&
+        candidateTexture.normOffset.GetY() + candidateTexture.normSize.GetY() >
+        atlasTexture.normOffset.GetY();
 }
