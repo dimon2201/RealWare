@@ -1,7 +1,8 @@
-1. Rewrite how graphics backend returns data
-2. Move texture atlas to separate file from XTextureSubsystem
-3. Move cTexture::eFormat texture format to "texture.hpp"
-4. Move game object logic from XTextureSubsystem to separate XGameObject class
-5. Encapsulate GLM code to proper math-related backend (mesh_backend_assimp.cpp:105, game_object_subsystem:73)
-6. Fix texture offset, size precision in texture atlas
-7. Move STB,tinyddsloader logic to proper image-related backend (texture_subsystem.cpp)
+- Rewrite how graphics backend returns data
+- Move texture atlas to separate file from XTextureSubsystem
+- Move cTexture::eFormat texture format to "texture.hpp"
+- Move game object logic from XTextureSubsystem to separate XGameObject class
+- Encapsulate GLM code to proper math-related backend (mesh_backend_assimp.cpp:105, game_object_subsystem:73)
+- Fix texture offset, size precision in texture atlas
+- Move STB,tinyddsloader logic to proper image-related backend (texture_subsystem.cpp:*)
+- Replace cFileSystem::CreateDataFile() call with efficient header check procedure (texture_subsystem.cpp:128)
