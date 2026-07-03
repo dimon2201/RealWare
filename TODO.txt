@@ -4,3 +4,4 @@
 4. Move game object logic from XTextureSubsystem to separate XGameObject class
 5. Encapsulate GLM code to proper math-related backend (mesh_backend_assimp.cpp:105, game_object_subsystem:73)
 6. Fix texture offset, size precision in texture atlas
+7. Move STB,tinyddsloader logic to proper image-related backend (texture_subsystem.cpp)
