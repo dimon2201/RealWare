@@ -1,11 +1,11 @@
-- Rewrite how graphics backend returns data
-- Move texture atlas to separate file from XTextureSubsystem
-- Move cTexture::eFormat texture format to "texture.hpp"
-- Move game object logic from XTextureSubsystem to separate XGameObject class
-- Encapsulate GLM code to proper math-related backend (mesh_backend_assimp.cpp:105, game_object_subsystem:73)
-- Fix texture offset, size precision in texture atlas
-- Move STB,tinyddsloader logic to proper image-related backend (texture_subsystem.cpp:*)
-- Replace cFileSystem::CreateDataFile() call with efficient header check procedure (texture_subsystem.cpp:128)
+- Refactor: How graphics backend returns data
+- Refactor: Texture atlas to separate file from XTextureSubsystem
+- Refactor: Move cTexture::eFormat texture format to "texture.hpp"
+- Refactor: Move game object logic from XTextureSubsystem to separate XGameObject class
+- Refactor: Encapsulate GLM code to proper math-related backend (mesh_backend_assimp.cpp:105, game_object_subsystem:73)
+- Fix: Texture offset, size precision in texture atlas
+- Refactor: Move STB,tinyddsloader logic to proper image-related backend (texture_subsystem.cpp:*)
+- Refactor: Replace cFileSystem::CreateDataFile() call with efficient header check procedure (texture_subsystem.cpp:128)
 - GFX: PBR
 - GFX: HDR
 - GFX: Tonemapping
