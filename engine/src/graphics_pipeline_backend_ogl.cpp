@@ -97,32 +97,37 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
         definesVec.push_back(defines[i]);
     DefineInShader(vertexCppStr, fragmentCppStr, definesVec);
 
-    std::string vertexIncludeChars = "";
-    std::string fragmentIncludeChars = "";
-
-    usize vertexIncludeBufferByteCount = 0;
-    usize fragmentIncludeBufferByteCount = 0;
+    std::string vertexCppStrInclude = "";
+    std::string fragmentCppStrInclude = "";
     cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
-    for (usize i = 0; i < vertexIncludePathCount; i++)
-        vertexIncludeBufferByteCount += fs->TellFileByteSize(vertexIncludePaths[i]);
-    for (usize i = 0; i < fragmentIncludePathCount; i++)
-        fragmentIncludeBufferByteCount += fs->TellFileByteSize(fragmentIncludePaths[i]);
     cMemoryAllocator* ma = _context->GetMemoryAllocator();
-    u8* vertexIncludeBuffer = (u8*)ma->Allocate(vertexIncludeBufferByteCount, 64);
-    u8* fragmentIncludeBuffer = (u8*)ma->Allocate(fragmentIncludeBufferByteCount, 64);
-    usize vertexIncludeBufferPtr = 0;
-    usize fragmentIncludeBufferPtr = 0;
-    for (usize i = 0; i < vertexIncludePathCount; i++)
-        vertexIncludeBufferPtr += fs->BinFileToArray(vertexIncludePaths[i], &vertexIncludeBuffer[0], vertexIncludeBufferPtr, vertexIncludeBufferByteCount);
-    for (usize i = 0; i < fragmentIncludePathCount; i++)
-        fragmentIncludeBufferPtr += fs->BinFileToArray(fragmentIncludePaths[i], &fragmentIncludeBuffer[0], fragmentIncludeBufferPtr, fragmentIncludeBufferByteCount);
-    vertexIncludeChars = std::string((const char*)&vertexIncludeBuffer[0], vertexIncludeBufferByteCount);
-    fragmentIncludeChars = std::string((const char*)&fragmentIncludeBuffer[0], vertexIncludeBufferByteCount);
-    ma->Deallocate(fragmentIncludeBuffer);
-    ma->Deallocate(vertexIncludeBuffer);
+    if (vertexIncludePathCount > 0)
+    {
+        usize vertexIncludeBufferByteCount = 0;
+        for (usize i = 0; i < vertexIncludePathCount; i++)
+            vertexIncludeBufferByteCount += fs->TellFileByteSize(vertexIncludePaths[i]);
+        u8* vertexIncludeBuffer = (u8*)ma->Allocate(vertexIncludeBufferByteCount, 64);
+        usize vertexIncludeBufferPtr = 0;
+        for (usize i = 0; i < vertexIncludePathCount; i++)
+            vertexIncludeBufferPtr += fs->BinFileToArray(vertexIncludePaths[i], &vertexIncludeBuffer[0], vertexIncludeBufferPtr, vertexIncludeBufferByteCount);
+        vertexCppStrInclude = std::string((const char*)&vertexIncludeBuffer[0], vertexIncludeBufferByteCount);
+        ma->Deallocate(vertexIncludeBuffer);
+    }
+    if (fragmentIncludePathCount > 0)
+    {
+        usize fragmentIncludeBufferByteCount = 0;
+        for (usize i = 0; i < fragmentIncludePathCount; i++)
+            fragmentIncludeBufferByteCount += fs->TellFileByteSize(fragmentIncludePaths[i]);
+        u8* fragmentIncludeBuffer = (u8*)ma->Allocate(fragmentIncludeBufferByteCount, 64);
+        usize fragmentIncludeBufferPtr = 0;
+        for (usize i = 0; i < fragmentIncludePathCount; i++)
+            fragmentIncludeBufferPtr += fs->BinFileToArray(fragmentIncludePaths[i], &fragmentIncludeBuffer[0], fragmentIncludeBufferPtr, fragmentIncludeBufferByteCount);
+        fragmentCppStrInclude = std::string((const char*)&fragmentIncludeBuffer[0], fragmentIncludeBufferByteCount);
+        ma->Deallocate(fragmentIncludeBuffer);
+    }
 
-    const std::string& finalVertexCppStr = CleanShaderSource(appendStr + vertexIncludeChars + vertexCppStr);
-    const std::string& finalFragmentCppStr = CleanShaderSource(appendStr + fragmentIncludeChars + fragmentCppStr);
+    const std::string finalVertexCppStr = CleanShaderSource(appendStr + vertexCppStrInclude + "\n" + vertexCppStr);
+    const std::string finalFragmentCppStr = CleanShaderSource(appendStr + fragmentCppStrInclude + "\n" + fragmentCppStr);
 
     const char* vertexShaderStrPtr = finalVertexCppStr.c_str();
     const char* fragmentShaderStrPtr = finalFragmentCppStr.c_str();
