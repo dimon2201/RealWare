@@ -64,13 +64,12 @@ void triton::XModel3DBackendAssimp::DestroyModel(SModel3DBackendResource& mesh)
 
 void triton::XModel3DBackendAssimp::ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath)
 {
+    importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, aiComponent_NORMALS);
     scene = importer.ReadFile(
         filePath.c_str(),
-        aiProcess_JoinIdenticalVertices |
-        aiProcess_CalcTangentSpace |
-        aiProcess_Triangulate |
-        aiProcess_GenNormals |
-        aiProcess_ImproveCacheLocality
+        aiProcess_RemoveComponent |
+        aiProcess_GenSmoothNormals |
+        aiProcess_JoinIdenticalVertices
     );
     if (!scene)
         Print("Error: can't load mesh from file '" + filePath + "'");
