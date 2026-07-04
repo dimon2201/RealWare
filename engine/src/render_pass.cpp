@@ -109,7 +109,10 @@ void triton::XRenderPass::Draw()
                 // Static
                 static u32 time = 0;
                 time += 1;
+				// TODO: remove this
+                cVector4 cameraWorldPos = cVector4(camera->_worldPosition.GetX(), camera->_worldPosition.GetY(), camera->_worldPosition.GetZ(), 0.0f);
                 gfxPipelineBackend->SetShaderUniform(&shader, "UniformTime", (u32)time);
+                gfxPipelineBackend->SetShaderUniform(&shader, "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", (u32)0);
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::STATIC));
                 gfxDrawcallBackend->Draw(
