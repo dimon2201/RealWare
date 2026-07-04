@@ -56,6 +56,7 @@ std::string triton::cFileSystem::TextFileToString(const std::string& path)
     std::string str = "";
     for (usize i = 0; i < file->GetBuffer()->GetByteSize(); i++)
         str.push_back(((u8*)file->GetData())[i]);
+    _context->Destroy<cDataFile>(file);
     
     return str;
 }
