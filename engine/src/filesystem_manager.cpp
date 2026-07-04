@@ -61,6 +61,33 @@ std::string triton::cFileSystem::TextFileToString(const std::string& path)
     return str;
 }
 
+usize triton::cFileSystem::BinFileToArray(const std::string& path, types::u8* array, usize offset, usize maxByteSize)
+{
+    cDataFile* file = _context->Create<cDataFile>(_context, path, K_FALSE);
+    if (offset + file->GetBuffer()->GetByteSize() > maxByteSize)
+    {
+        Print("Error: binary file size exceeds array size");
+        return 0;
+    }
+    usize fileByteSize = file->GetBuffer()->GetByteSize();
+    for (usize i = 0; i < fileByteSize; i++)
+        array[offset + i] = file->GetBuffer()->GetData()[i];
+    _context->Destroy<cDataFile>(file);
+
+    return fileByteSize;
+}
+
+usize triton::cFileSystem::TellFileByteSize(const std::string& path)
+{
+    std::ifstream inputFile(path, std::ios::binary);
+    inputFile.seekg(0, std::ios::end);
+    const usize byteSize = inputFile.tellg();
+    inputFile.seekg(0, std::ios::beg);
+    inputFile.close();
+
+    return byteSize;
+}
+
 void triton::cFileSystem::DestroyDataFile(cDataFile* file)
 {
     if (file == nullptr)
