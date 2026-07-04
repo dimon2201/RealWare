@@ -47,12 +47,16 @@ void triton::XGameObjectSubsystem::SetWorldPosition(const HGameObject& gameObjec
 {
 	SGameObject& go = *_objects->Get(gameObject);
 	go.worldPosition = worldPosition;
+
+	AddDirty(go.renderable, {}, go.worldPosition, go.worldRotation);
 }
 
 void triton::XGameObjectSubsystem::SetWorldRotation(const HGameObject& gameObject, const cVector3& worldRotation)
 {
 	SGameObject& go = *_objects->Get(gameObject);
 	go.worldRotation = worldRotation;
+
+	AddDirty(go.renderable, {}, go.worldPosition, go.worldRotation);
 }
 
 void triton::XGameObjectSubsystem::SetMaterial(const HGameObject& gameObject, const HMaterial& material)

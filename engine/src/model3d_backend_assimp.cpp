@@ -69,7 +69,10 @@ void triton::XModel3DBackendAssimp::ImportScene(Assimp::Importer& importer, cons
         filePath.c_str(),
         aiProcess_RemoveComponent |
         aiProcess_GenSmoothNormals |
-        aiProcess_JoinIdenticalVertices
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_CalcTangentSpace |
+        aiProcess_Triangulate |
+        aiProcess_ImproveCacheLocality
     );
     if (!scene)
         Print("Error: can't load mesh from file '" + filePath + "'");
