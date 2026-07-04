@@ -67,7 +67,7 @@ void triton::XModel3DBackendAssimp::ImportScene(Assimp::Importer& importer, cons
     importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, aiComponent_NORMALS);
     scene = importer.ReadFile(
         filePath.c_str(),
-        aiProcess_RemoveComponent |
+        // aiProcess_RemoveComponent |
         aiProcess_GenSmoothNormals |
         aiProcess_JoinIdenticalVertices |
         aiProcess_CalcTangentSpace |
