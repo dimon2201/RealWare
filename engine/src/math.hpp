@@ -51,6 +51,7 @@ namespace triton
 		friend class cMatrix4;
 		friend class cTransform;
 
+	public: // TODO: remove this
 		glm::vec3 _vec = glm::vec3(0.0f);
 
 	public:
