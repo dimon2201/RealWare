@@ -8,6 +8,7 @@
 - Replace cFileSystem::CreateDataFile() call with efficient header check procedure (texture_subsystem.cpp:128)
 - GFX: PBR
 - GFX: HDR
+- GFX: Tonemapping
 - GFX: Shadows
 - GFX: IBL
 - GFX: SSAO
