@@ -39,7 +39,7 @@ public:
         
         HModel3D model = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModel(
             "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models",
-            "lighthouse_separ_bake.fbx"
+            "sphere.fbx"
         );
         SModel3DData& modelData = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
 

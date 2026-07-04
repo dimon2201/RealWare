@@ -1050,6 +1050,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     SViewport viewport;
     viewport.rect = cVector4(0.0f, 0.0f, windowSize.GetX(), windowSize.GetY());
 
+    const std::string pbrShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/brdf.shader";
     const std::string opaqueVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex.shader";
     const std::string opaqueFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_fragment.shader";
     const std::string transparentVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/transparent_vertex.shader";
@@ -1062,12 +1063,16 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     const std::string compositeFinalFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_fragment.shader";
 
     // Opaque render pass
+    const std::vector<const char*> opaqueShaderFragmentIncludePaths = { pbrShaderPath.c_str()};
     XShader* opaqueShader = _context->Create<XShader>(
         _context,
         fs->TextFileToString(opaqueVertexShaderPath),
         fs->TextFileToString(opaqueFragmentShaderPath),
         "",
-        ""
+        "",
+        std::vector<SShaderDefine>(),
+        std::vector<const char*>(),
+        opaqueShaderFragmentIncludePaths
     );
     SBlendState opaqueBlendState = {};
     opaqueBlendState.factorCount = 1;
