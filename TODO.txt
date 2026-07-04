@@ -6,7 +6,6 @@
 - Fix texture offset, size precision in texture atlas
 - Move STB,tinyddsloader logic to proper image-related backend (texture_subsystem.cpp:*)
 - Replace cFileSystem::CreateDataFile() call with efficient header check procedure (texture_subsystem.cpp:128)
-- Add calculations for dielectrics and metals in BRDF (brdf.shader:27)
 - GFX: PBR
 - GFX: HDR
 - GFX: Tonemapping
