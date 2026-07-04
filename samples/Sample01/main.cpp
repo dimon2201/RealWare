@@ -6,6 +6,13 @@
 #include "components.hpp"
 #include "graphics.hpp"
 #include "vertex.hpp"
+#include "render_batch.hpp"
+#include "camera.hpp"
+#include "game_object_subsystem.hpp"
+#include "texture_subsystem.hpp"
+#include "material_subsystem.hpp"
+#include "math.hpp"
+#include "model3d_subsystem.hpp"
 
 using namespace triton;
 using namespace triton::ecs;
@@ -25,28 +32,41 @@ public:
 
     virtual void Setup() override final
     {
-        XECSSubsystem* ecs = _context->GetSubsystem<XECSSubsystem>();
-        SSceneHandle scene1Handle = ecs->CreateScene("Scene1");
-        cScene* scene1 = ecs->GetScene(scene1Handle);
-        entity ent = scene1->CreateEntity();
-        STransformComponent* entTransform = scene1->CreateTransformComponent(ent);
-        SRenderInstanceComponent* entRender = scene1->CreateRenderInstanceComponent(ent);
-        SGeometryComponent* entGeometry = scene1->CreateGeometryComponent(ent);
-        entTransform->_world = cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
-
-        constexpr int kVertexCount = 3;
-        SVertex vertices[kVertexCount] = {};
-        vertices[0].position = cVector3(-1.0f, -1.0f, 0.0f);
-        vertices[1].position = cVector3(0.0f, 1.0f, 0.0f);
-        vertices[2].position = cVector3(1.0f, -1.0f, 0.0f);
-        usize indices[3] = { 0, 1, 2 };
-        entGeometry->geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
-            EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3,
-            (u8*)&vertices[0],
-            sizeof(SVertex) * kVertexCount,
-            (u8*)&indices[0],
-            sizeof(usize) * kVertexCount
+        HCamera cameraHandle = *_context->GetSubsystem<cGraphics>()->CreateCamera();
+        XCamera* camera = _context->GetSubsystem<cGraphics>()->GetCamera(cameraHandle);
+        camera->_worldPosition = cVector3(0.0f, 1.0f, 1.0f);
+        _context->GetSubsystem<cGraphics>()->GetOpaqueRenderPass()->SetCamera(cameraHandle);
+        
+        HModel3D model = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModel(
+            "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models",
+            "lighthouse_separ_bake.fbx"
         );
+        SModel3DData& modelData = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
+
+        XGameObjectSubsystem* gos = _context->GetSubsystem<XGameObjectSubsystem>();
+        HGameObject go = gos->CreateGameObject("MyTriangle");
+        gos->AddRenderable(
+            go,
+            SRenderInstance::EUsage::STATIC,
+            EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
+            (u8*)&modelData.resource.vertexData[0],
+            sizeof(SVertex) * modelData.resource.vertexCount,
+            (u8*)&modelData.resource.indexData[0],
+            sizeof(u32) * modelData.resource.indexCount
+        );
+        gos->SetWorldPosition(go, cVector3(0.0f));
+        gos->SetWorldRotation(go, cVector3(-90.0f, 0.0f, 0.0f));
+
+        XTextureSubsystem* ts = _context->GetSubsystem<XTextureSubsystem>();
+        HTexture t1 = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/dirt.png");
+        HTexture t2 = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/brick.png");
+        HTexture t2n = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/brick_normal.png");
+        
+        XMaterialSubsystem* ms = _context->GetSubsystem<XMaterialSubsystem>();
+        HMaterial m1 = ms->CreateMaterial(cVector4(1.0f), t1, t2n);
+        HMaterial m2 = ms->CreateMaterial(cVector4(1.0f), t2, t2n);
+
+        gos->SetMaterial(go, m2);
     }
 
     virtual void Stop() override final

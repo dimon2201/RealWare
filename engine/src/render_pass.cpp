@@ -107,6 +107,9 @@ void triton::XRenderPass::Draw()
                 gfxDrawcallBackend->ClearDepth(1.0f);
 
                 // Static
+                static u32 time = 0;
+                time += 1;
+                gfxPipelineBackend->SetShaderUniform(&shader, "UniformTime", (u32)time);
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", (u32)0);
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::STATIC));
                 gfxDrawcallBackend->Draw(

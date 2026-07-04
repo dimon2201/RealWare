@@ -45,10 +45,10 @@ void triton::XCamera::Update(const cVector2& screenCursorPosition, usize screenW
     AddEuler(cMath::EEulerAngle::YAW, mouseDelta.GetX() * mouseSensitivity * deltaTime);
     
     cInput* input = _context->GetSubsystem<cInput>();
-    const f32 forward = input->GetKeyPressed('W') * 0.01f * deltaTime;
-    const f32 backward = input->GetKeyPressed('S') * 0.01f * deltaTime;
-    const f32 left = input->GetKeyPressed('A') * 0.01f * deltaTime;
-    const f32 right = input->GetKeyPressed('D') * 0.01f * deltaTime;
+    const f32 forward = input->GetKeyPressed('W') * 0.1f * deltaTime;
+    const f32 backward = input->GetKeyPressed('S') * 0.1f * deltaTime;
+    const f32 left = input->GetKeyPressed('A') * 0.1f * deltaTime;
+    const f32 right = input->GetKeyPressed('D') * 0.1f * deltaTime;
     if (forward > 0.0f || backward > 0.0f || left > 0.0f || right > 0.0f)
     {
         Move(forward);

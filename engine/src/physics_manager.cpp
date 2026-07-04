@@ -376,9 +376,9 @@ sCPhysicsActor* mPhysics::AddActor(
         case mPhysics::eShapeDescriptor::TRIANGLE_MESH:
         {
             if (geometry->Format !=
-                render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3)
+                render::sVertexBufferGeometry::eFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4)
             {
-                MessageBox(0, "PhysX shape 'TRIANGLE_MESH' can only be created with geometry of 'POSITION_TEXCOORD_NORMAL_VEC3_VEC2_VEC3' format!", "Error", MB_ICONERROR);
+                MessageBox(0, "PhysX shape 'TRIANGLE_MESH' can only be created with geometry of 'POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4' format!", "Error", MB_ICONERROR);
                 return nullptr;
             }
 
