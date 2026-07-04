@@ -6,6 +6,8 @@ layout(location = 4) in int InMaterialIndex;
 
 out vec3 DiffuseTexcoordAtlas;
 out vec3 NormalTexcoordAtlas;
+out vec3 RoughnessTexcoordAtlas;
+out vec3 MetallicTexcoordAtlas;
 out vec2 TexcoordOrig;
 out vec3 Normal;
 out vec3 FragPosWorldSpace;
@@ -35,12 +37,14 @@ struct Material
 {
 	Texture Diffuse;
 	Texture Normal;
+	Texture Roughness;
+	Texture Metallic;
 	vec4 DiffuseColor;
 };
 
 layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[1024]; };
 layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[1024]; };
-layout(std430, binding = 2) buffer MaterialBuffer { Material materials[1024]; };
+layout(std430, binding = 2) buffer MaterialBuffer { Material materials[]; };
 
 void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
 {
@@ -73,6 +77,12 @@ void main()
 	NormalTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Normal.AtlasLayer);
 	NormalTexcoordAtlas.xy *= vec2(material.Normal.AtlasNormSize);
 	NormalTexcoordAtlas.xy += material.Normal.AtlasNormOffset;
+	RoughnessTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Roughness.AtlasLayer);
+	RoughnessTexcoordAtlas.xy *= vec2(material.Roughness.AtlasNormSize);
+	RoughnessTexcoordAtlas.xy += material.Roughness.AtlasNormOffset;
+	MetallicTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Metallic.AtlasLayer);
+	MetallicTexcoordAtlas.xy *= vec2(material.Metallic.AtlasNormSize);
+	MetallicTexcoordAtlas.xy += material.Metallic.AtlasNormOffset;
 	TexcoordOrig = InTexcoord;
 	Normal = InNormal;
 	FragPosWorldSpace = vec3(instance.World * vec4(InPositionLocal, 1.0));

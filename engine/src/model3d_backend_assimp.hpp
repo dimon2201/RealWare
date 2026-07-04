@@ -23,6 +23,8 @@ namespace triton
         types::s32 absoluteMaterialIndex = -1;
         std::string diffuseTextureFilePath = {};
         std::string normalTextureFilePath = {};
+        std::string roughnessTextureFilePath = {};
+        std::string metallicTextureFilePath = {};
     };
 
     class XModel3DBackendAssimp final : public IModel3DBackend

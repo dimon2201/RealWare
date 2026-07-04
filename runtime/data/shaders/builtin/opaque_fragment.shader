@@ -2,6 +2,8 @@ layout(location = 0) out vec4 FragColor;
 
 in vec3 DiffuseTexcoordAtlas;
 in vec3 NormalTexcoordAtlas;
+in vec3 RoughnessTexcoordAtlas;
+in vec3 MetallicTexcoordAtlas;
 in vec2 TexcoordOrig;
 in vec3 Normal;
 in vec3 FragPosWorldSpace;
@@ -32,6 +34,8 @@ uniform vec4 CameraPosWorldSpace;
 void main()
 {
 	vec4 textureColor = texture(TextureAtlasRGBA8, DiffuseTexcoordAtlas);
+	float roughness = texture(TextureAtlasR8, RoughnessTexcoordAtlas).x;
+	float metallic = texture(TextureAtlasR8, MetallicTexcoordAtlas).x;
 	vec4 fragColor = vec4(0.0);
 	
 	//Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
@@ -48,8 +52,8 @@ void main()
 	vec3 pbr = PBR(
 		textureColor.xyz,
 		1.0f,
-		max(sin(UniformTime * 0.0005f), 0.2f),
-		max(cos(UniformTime * 0.0005f), 0.2f),
+		roughness,
+		metallic,
 		normal,
 		viewDir,
 		lightDir

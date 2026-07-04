@@ -1,5 +1,5 @@
 - Refactor: How graphics backend returns data
-- Refactor: Texture atlas to separate file from XTextureSubsystem
+- Refactor: Move texture atlas to separate file from XTextureSubsystem
 - Refactor: Move cTexture::eFormat texture format to "texture.hpp"
 - Refactor: Move game object logic from XTextureSubsystem to separate XGameObject class
 - Refactor: Encapsulate GLM code to proper math-related backend (mesh_backend_assimp.cpp:105, game_object_subsystem:73)

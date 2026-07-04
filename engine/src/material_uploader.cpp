@@ -34,10 +34,24 @@ void triton::XMaterialUploader::Set(XTextureSubsystem* textureSubsystem, types::
 	normalTextureLayout.normOffset = normalTexture.normOffset;
 	normalTextureLayout.normSize = normalTexture.normSize;
 
+	const STexture& roughnessTexture = textureSubsystem->Get(material.roughnessTexture);
+	STextureLayout roughnessTextureLayout;
+	roughnessTextureLayout.layer = roughnessTexture.layer;
+	roughnessTextureLayout.normOffset = roughnessTexture.normOffset;
+	roughnessTextureLayout.normSize = roughnessTexture.normSize;
+
+	const STexture& metallicTexture = textureSubsystem->Get(material.metallicTexture);
+	STextureLayout metallicTextureLayout;
+	metallicTextureLayout.layer = metallicTexture.layer;
+	metallicTextureLayout.normOffset = metallicTexture.normOffset;
+	metallicTextureLayout.normSize = metallicTexture.normSize;
+
 	SMaterialLayout materialLayout;
 	materialLayout.diffuseColor = material.diffuseColor;
 	materialLayout.diffuseTextureLayout = diffuseTextureLayout;
 	materialLayout.normalTextureLayout = normalTextureLayout;
+	materialLayout.roughnessTextureLayout = roughnessTextureLayout;
+	materialLayout.metallicTextureLayout = metallicTextureLayout;
 
 	_stagingBuffer[index] = materialLayout;
 

@@ -169,10 +169,16 @@ void triton::XModel3DBackendAssimp::ParseMaterialData(const aiScene* scene, std:
         material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseTexturePath);
         aiString normalTexturePath = aiString("");
         material->GetTexture(aiTextureType_NORMALS, 0, &normalTexturePath);
+        aiString roughnessTexturePath = aiString("");
+        material->GetTexture(aiTextureType_SHININESS, 0, &roughnessTexturePath);
+        aiString metallicTexturePath = aiString("");
+        material->GetTexture(aiTextureType_METALNESS, 0, &metallicTexturePath);
 
         SModel3DMaterialData m3dmd;
         m3dmd.diffuseTextureFilePath = diffuseTexturePath.C_Str();
         m3dmd.normalTextureFilePath = normalTexturePath.C_Str();
+        m3dmd.roughnessTextureFilePath = roughnessTexturePath.C_Str();
+        m3dmd.metallicTextureFilePath = metallicTexturePath.C_Str();
         materials.push_back(m3dmd);
 
         for (usize i = 0; i < material->mNumProperties; i++)
@@ -214,8 +220,10 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
     {
         HTexture diffuseTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.diffuseTextureFilePath);
         HTexture normalTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.normalTextureFilePath);
+        HTexture roughnessTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.roughnessTextureFilePath);
+        HTexture metallicTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.metallicTextureFilePath);
 
-        modelMaterials.push_back(materialSubsystem->CreateMaterial(cVector4(1.0f), diffuseTexture, normalTexture));
+        modelMaterials.push_back(materialSubsystem->CreateMaterial(cVector4(1.0f), diffuseTexture, normalTexture, roughnessTexture, metallicTexture));
     }
 }
 

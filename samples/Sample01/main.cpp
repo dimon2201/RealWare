@@ -39,7 +39,7 @@ public:
         
         HModel3D model = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModel(
             "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models",
-            "sphere.fbx"
+            "lighthouse_separ_bake.fbx"
         );
         SModel3DData& modelData = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
 
@@ -63,10 +63,10 @@ public:
         HTexture t2n = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/brick_normal.png");
         
         XMaterialSubsystem* ms = _context->GetSubsystem<XMaterialSubsystem>();
-        HMaterial m1 = ms->CreateMaterial(cVector4(1.0f), t1, t2n);
-        HMaterial m2 = ms->CreateMaterial(cVector4(1.0f), t2, t2n);
+        HMaterial m1 = ms->CreateMaterial(cVector4(1.0f), t1, t2n, {}, {});
+        HMaterial m2 = ms->CreateMaterial(cVector4(1.0f), t2, t2n, {}, {});
 
-        gos->SetMaterial(go, m2);
+        //gos->SetMaterial(go, m2);
     }
 
     virtual void Stop() override final

@@ -24,6 +24,8 @@ namespace triton
     {
         STextureLayout diffuseTextureLayout;
         STextureLayout normalTextureLayout;
+        STextureLayout roughnessTextureLayout;
+        STextureLayout metallicTextureLayout;
         cVector4 diffuseColor = cVector4(0.0f);
     };
 

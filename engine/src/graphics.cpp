@@ -31,6 +31,7 @@
 #include "handle_allocator.hpp"
 #include "batch_storage.hpp"
 #include "camera.hpp"
+#include "material_uploader.hpp"
 
 using namespace types;
 
@@ -967,7 +968,7 @@ void triton::cGraphics::CreateMaterialBuffer()
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
-        caps->maxRenderMaterialCount * sizeof(SRenderInstance),
+        caps->maxRenderMaterialCount * sizeof(SMaterialLayout),
         2
     ));
     _materialBuffer = renderSubsystem->FetchResult<cBuffer*>();

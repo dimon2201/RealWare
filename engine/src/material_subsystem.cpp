@@ -16,13 +16,21 @@ triton::XMaterialSubsystem::~XMaterialSubsystem()
     _context->Destroy<XMaterialUploader>(_uploader);
 }
 
-triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(const cVector4& diffuseColor, const HTexture& diffuseTexture, const HTexture& normalTexture)
+triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(
+    const cVector4& diffuseColor,
+    const HTexture& diffuseTexture,
+    const HTexture& normalTexture,
+    const HTexture& roughnessTexture,
+    const HTexture& metallicTexture
+)
 {
     HMaterial material = Create();
     SMaterial materialData;
     materialData.diffuseColor = diffuseColor;
     materialData.diffuseTexture = diffuseTexture;
     materialData.normalTexture = normalTexture;
+    materialData.roughnessTexture = roughnessTexture;
+    materialData.metallicTexture = metallicTexture;
 
     *_objects->Get(material) = materialData;
     Set(material._indexInArray, materialData);

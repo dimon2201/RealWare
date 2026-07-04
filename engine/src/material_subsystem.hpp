@@ -25,7 +25,13 @@ namespace triton
         explicit XMaterialSubsystem(cContext* context);
         ~XMaterialSubsystem() override;
 
-        HMaterial CreateMaterial(const cVector4& diffuseColor, const HTexture& diffuseTexture, const HTexture& normalTexture);
+        HMaterial CreateMaterial(
+            const cVector4& diffuseColor,
+            const HTexture& diffuseTexture,
+            const HTexture& normalTexture,
+            const HTexture& roughnessTexture,
+            const HTexture& metallicTexture
+        );
         void Set(types::usize materialIndex, const SMaterial& materialData);
         void Init() override;
         void Free() override;
