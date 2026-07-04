@@ -3,6 +3,7 @@ layout(location = 0) out vec4 FragColor;
 in vec3 DiffuseTexcoordAtlas;
 in vec3 NormalTexcoordAtlas;
 in vec2 TexcoordOrig;
+in vec3 Normal;
 flat in vec4 DiffuseColor;
 flat in mat3 TBNMatrix;
 flat in mat3 TangentToWorld;
@@ -14,7 +15,8 @@ struct TextureAtlasTexture
 };
 layout(std430, binding = 3) buffer TextureAtlasTexturesBuffer { TextureAtlasTexture textureAtlasTextures[1024]; };
 
-layout(binding = 0) uniform sampler2DArray TextureAtlas;
+layout(binding = 0) uniform sampler2DArray TextureAtlasRGBA8;
+layout(binding = 1) uniform sampler2DArray TextureAtlasR8;
 
 void Fragment_Passthrough(in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor)
 {
@@ -23,20 +25,22 @@ void Fragment_Passthrough(in vec4 _textureColor, in vec4 _materialDiffuseColor, 
 
 void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}
 
+uniform uint UniformTime;
+
 void main()
 {
-	vec4 textureColor = texture(TextureAtlas, DiffuseTexcoordAtlas);
+	vec4 textureColor = texture(TextureAtlasRGBA8, DiffuseTexcoordAtlas);
 	vec4 fragColor = vec4(0.0);
 	
 	Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
 	Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
 
 	// Normal mapping test
-	const vec3 lightDir = vec3(0.0f, 0.0f, 1.0f);//normalize(vec3(0.0f, 0.0f, 5.0f) - vec3(0.0f));
-	vec3 normal = texture(TextureAtlas, NormalTexcoordAtlas).xyz;
+	const vec3 lightDir = normalize(vec3(cos(float(UniformTime * 0.0005f)), 0.0f, sin(float(UniformTime * 0.0005f)))); //normalize(vec3(0.0f, 0.0f, 5.0f) - vec3(0.0f));
+	vec3 normal = texture(TextureAtlasRGBA8, NormalTexcoordAtlas).xyz;
 	normal = normal * 2.0 - 1.0;
 	normal = normalize(TangentToWorld * normal);
-	float NdotL = max(dot(normal, lightDir), 0.0);
+	float NdotL = max(dot(normal, lightDir), 0.35);
 
-	FragColor = fragColor * NdotL;
+	FragColor = vec4(fragColor.xyz * NdotL, 1.0f);
 }

@@ -1084,7 +1084,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _opaque->SetVertexArray(opaqueVertexArray);
     _opaque->SetInputBuffers(opaqueInputBuffers);
     _opaque->SetInputTextures({
-        SRenderPassTexture("TextureAtlas", textureSubsystem->GetAtlas())
+        SRenderPassTexture("TextureAtlasRGBA8", textureSubsystem->GetAtlasRGBA8()),
+        SRenderPassTexture("TextureAtlasR8", textureSubsystem->GetAtlasR8())
     });
     _opaque->SetShader(opaqueShader);
     _opaque->SetViewport(viewport);
@@ -1117,7 +1118,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _transparent->SetVertexArray(transparentVertexArray);
     _transparent->SetInputBuffers(transparentInputBuffers);
     _transparent->SetInputTextures({
-        SRenderPassTexture("TextureAtlas", textureSubsystem->GetAtlas())
+        SRenderPassTexture("TextureAtlasRGBA8", textureSubsystem->GetAtlasRGBA8()),
+        SRenderPassTexture("TextureAtlasR8", textureSubsystem->GetAtlasR8())
     });
     _transparent->SetShader(transparentShader);
     _transparent->SetViewport(viewport);

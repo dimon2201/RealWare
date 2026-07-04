@@ -38,7 +38,8 @@ namespace triton
     {
         TRITON_OBJECT(XTextureSubsystem)
 
-        cTexture* _atlas = nullptr;
+        cTexture* _atlasRGBA8 = nullptr;
+        cTexture* _atlasR8 = nullptr;
 
     public:
         explicit XTextureSubsystem(cContext* context, const cVector3& size);
@@ -49,9 +50,14 @@ namespace triton
         void Free() override {}
         void Update() override {}
 
-        inline cTexture* GetAtlas() const
+        inline cTexture* GetAtlasRGBA8() const
         {
-            return _atlas;
+            return _atlasRGBA8;
+        }
+
+        inline cTexture* GetAtlasR8() const
+        {
+            return _atlasR8;
         }
 
     private:

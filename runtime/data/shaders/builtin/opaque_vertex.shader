@@ -7,6 +7,7 @@ layout(location = 4) in int InMaterialIndex;
 out vec3 DiffuseTexcoordAtlas;
 out vec3 NormalTexcoordAtlas;
 out vec2 TexcoordOrig;
+out vec3 Normal;
 flat out vec4 DiffuseColor;
 flat out mat3 TBNMatrix;
 flat out mat3 TangentToWorld;
@@ -63,7 +64,7 @@ void main()
 		instance = staticInstances[gl_InstanceID];
 	else if (InstanceBatchType == 1)
 		instance = dynamicInstances[gl_InstanceID];
-	Material material = materials[instance.MaterialIndex];
+	Material material = materials[0];//instance.MaterialIndex];
 
 	DiffuseTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Diffuse.AtlasLayer);
 	DiffuseTexcoordAtlas.xy *= vec2(material.Diffuse.AtlasNormSize);
@@ -72,13 +73,14 @@ void main()
 	NormalTexcoordAtlas.xy *= vec2(material.Normal.AtlasNormSize);
 	NormalTexcoordAtlas.xy += material.Normal.AtlasNormOffset;
 	TexcoordOrig = InTexcoord;
+	Normal = InNormal;
 	DiffuseColor = material.DiffuseColor;
 
-	vec4 normalWS = instance.World * vec4(InNormal, 0.0f);
-	vec4 tangentWS = instance.World * vec4(InTangent.xyz, 0.0f);
-	vec3 bitangentLS = normalize(cross(InNormal, InTangent.xyz)) * InTangent.w;
-	vec4 bitangentWS = instance.World * vec4(bitangentLS, 0.0f);
-	TangentToWorld = mat3(tangentWS.xyz, bitangentWS.xyz, normalWS.xyz);
+	mat3 normalMatrix = transpose(inverse(mat3(instance.World)));
+	vec3 N = normalize(normalMatrix * InNormal);
+	vec3 T = normalize(normalMatrix * InTangent.xyz);
+	vec3 B = normalize(cross(N, T)) * InTangent.w;
+	TangentToWorld = mat3(T, B, N);
 
 	Vertex_Passthrough(InPositionLocal, instance, 0, gl_Position);
 	Vertex_Func(InPositionLocal, vec2(DiffuseTexcoordAtlas.xy), InNormal, gl_InstanceID, instance, material, 0, gl_Position);
