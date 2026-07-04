@@ -4,9 +4,10 @@ in vec3 DiffuseTexcoordAtlas;
 in vec3 NormalTexcoordAtlas;
 in vec2 TexcoordOrig;
 in vec3 Normal;
+in vec3 FragPosWorldSpace;
 flat in vec4 DiffuseColor;
 flat in mat3 TBNMatrix;
-flat in mat3 TangentToWorld;
+in mat3 TangentToWorld;
 
 struct TextureAtlasTexture
 {
@@ -26,21 +27,33 @@ void Fragment_Passthrough(in vec4 _textureColor, in vec4 _materialDiffuseColor, 
 void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}
 
 uniform uint UniformTime;
+uniform vec4 CameraPosWorldSpace;
 
 void main()
 {
 	vec4 textureColor = texture(TextureAtlasRGBA8, DiffuseTexcoordAtlas);
 	vec4 fragColor = vec4(0.0);
 	
-	Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
-	Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
+	//Fragment_Passthrough(textureColor, DiffuseColor, fragColor);
+	//Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
 
 	// Normal mapping test
 	const vec3 lightDir = normalize(vec3(cos(float(UniformTime * 0.0005f)), 0.0f, sin(float(UniformTime * 0.0005f)))); //normalize(vec3(0.0f, 0.0f, 5.0f) - vec3(0.0f));
 	vec3 normal = texture(TextureAtlasRGBA8, NormalTexcoordAtlas).xyz;
 	normal = normal * 2.0 - 1.0;
 	normal = normalize(TangentToWorld * normal);
-	float NdotL = max(dot(normal, lightDir), 0.35);
+	float NdotL = max(dot(normal, lightDir), 0.65);
 
-	FragColor = vec4(fragColor.xyz * NdotL, 1.0f);
+	vec3 viewDir = normalize(CameraPosWorldSpace.xyz - FragPosWorldSpace);
+	vec3 pbr = PBR(
+		textureColor.xyz,
+		1.0f,
+		max(sin(UniformTime * 0.0005f), 0.2f),
+		max(cos(UniformTime * 0.0005f), 0.2f),
+		normal,
+		viewDir,
+		lightDir
+	);
+
+	FragColor = vec4(pbr, 1.0f);
 }

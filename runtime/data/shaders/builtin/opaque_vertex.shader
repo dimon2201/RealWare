@@ -8,9 +8,10 @@ out vec3 DiffuseTexcoordAtlas;
 out vec3 NormalTexcoordAtlas;
 out vec2 TexcoordOrig;
 out vec3 Normal;
+out vec3 FragPosWorldSpace;
 flat out vec4 DiffuseColor;
 flat out mat3 TBNMatrix;
-flat out mat3 TangentToWorld;
+out mat3 TangentToWorld;
 
 uniform mat4 ViewProjection;
 uniform uint InstanceBatchType;
@@ -74,6 +75,7 @@ void main()
 	NormalTexcoordAtlas.xy += material.Normal.AtlasNormOffset;
 	TexcoordOrig = InTexcoord;
 	Normal = InNormal;
+	FragPosWorldSpace = vec3(instance.World * vec4(InPositionLocal, 1.0));
 	DiffuseColor = material.DiffuseColor;
 
 	mat3 normalMatrix = transpose(inverse(mat3(instance.World)));
