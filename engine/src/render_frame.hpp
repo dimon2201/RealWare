@@ -60,8 +60,11 @@ namespace triton
 			types::cpuword argD_ = 0,
 			types::cpuword argE_ = 0,
 			types::cpuword argF_ = 0,
-			types::cpuword argG_ = 0
-		) : _argA(argA_), _argB(argB_), _argC(argC_), _argD(argD_), _argE(argE_), _argF(argF_), _argG(argG_) {}
+			types::cpuword argG_ = 0,
+			types::cpuword argH_ = 0,
+			types::cpuword argI_ = 0,
+			types::cpuword argJ_ = 0
+		) : _argA(argA_), _argB(argB_), _argC(argC_), _argD(argD_), _argE(argE_), _argF(argF_), _argG(argG_), _argH(argH_), _argI(argI_), _argJ(argJ_) {}
 
 		types::cpuword _argA = 0;
 		types::cpuword _argB = 0;
@@ -70,6 +73,9 @@ namespace triton
 		types::cpuword _argE = 0;
 		types::cpuword _argF = 0;
 		types::cpuword _argG = 0;
+		types::cpuword _argH = 0;
+		types::cpuword _argI = 0;
+		types::cpuword _argJ = 0;
 	};
 
 	struct SRenderCommand
@@ -82,8 +88,11 @@ namespace triton
 			types::cpuword argD_ = 0,
 			types::cpuword argE_ = 0,
 			types::cpuword argF_ = 0,
-			types::cpuword argG_ = 0
-		) : _command(command_), _args(argA_, argB_, argC_, argD_, argE_, argF_, argG_) {}
+			types::cpuword argG_ = 0,
+			types::cpuword argH_ = 0,
+			types::cpuword argI_ = 0,
+			types::cpuword argJ_ = 0
+		) : _command(command_), _args(argA_, argB_, argC_, argD_, argE_, argF_, argG_, argH_, argI_, argJ_) {}
 
 		ERenderCommand _command = ERenderCommand::NONE;
 		SRenderCommandArgs _args = {};

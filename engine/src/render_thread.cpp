@@ -245,7 +245,11 @@ void triton::cRenderThread::ExecuteCommands(const CRenderFrame* renderFrame, iGr
 					(const char*)cmd->_args._argC,
 					(const char*)cmd->_args._argD,
 					cmd->_args._argE,
-					(const SShaderDefine*)cmd->_args._argF
+					(const SShaderDefine*)cmd->_args._argF,
+					cmd->_args._argG,
+					(const char**)cmd->_args._argH,
+					cmd->_args._argI,
+					(const char**)cmd->_args._argJ
 				);
 				memcpy(&_resultBuffer[0], &resultGPUShader, sizeof(CGPUShader));
 				break;

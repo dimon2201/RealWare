@@ -28,7 +28,11 @@ namespace triton
             const char* vertexCustomFuncStr,
             const char* fragmentCustomFuncStr,
             types::usize defineCount,
-            const SShaderDefine* defines
+            const SShaderDefine* defines,
+            types::usize vertexIncludePathCount,
+            const char** vertexIncludePaths,
+            types::usize fragmentIncludePathCount,
+            const char** fragmentIncludePaths
         ) override final;
         virtual void DestroyShader(const CGPUShader& shader) override final;
         virtual void SetShaderUniform(const CGPUShader* shader, const std::string& name, const glm::mat4& matrix) override final;

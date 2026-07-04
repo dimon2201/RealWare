@@ -60,7 +60,7 @@ namespace triton
         CGPUShader _gpuShader = CGPUShader(nullptr, 0, 0);
 
     public:
-        explicit XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFunc, const std::string& fragmentCustomFunc, std::vector<SShaderDefine>&& defines = {});
+        explicit XShader(cContext* context, const std::string& vertexStr, const std::string& fragmentStr, const std::string& vertexCustomFuncStr, const std::string& fragmentCustomFuncStr, std::vector<SShaderDefine>&& defines = {}, const std::vector<const char*>& vertexIncludePaths = {}, const std::vector<const char*>& fragmentIncludePaths = {});
         ~XShader() override;
 
         inline CGPUShader GetGPUShader() const
@@ -122,7 +122,11 @@ namespace triton
             const char* vertexCustomFuncStr,
             const char* fragmentCustomFuncStr,
             types::usize defineCount,
-            const SShaderDefine* defines
+            const SShaderDefine* defines,
+            types::usize vertexIncludePathCount,
+            const char** vertexIncludePaths,
+            types::usize fragmentIncludePathCount,
+            const char** fragmentIncludePaths
         ) = 0;
         virtual void DestroyShader(const CGPUShader& shader) = 0;
         virtual void SetShaderUniform(const CGPUShader* shader, const std::string& name, const glm::mat4& matrix) = 0;

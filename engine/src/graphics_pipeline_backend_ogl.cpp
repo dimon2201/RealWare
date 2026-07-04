@@ -60,11 +60,15 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     const char* vertexCustomFuncStr,
     const char* fragmentCustomFuncStr,
     types::usize defineCount,
-    const SShaderDefine* defines
+    const SShaderDefine* defines,
+    types::usize vertexIncludePathCount,
+    const char** vertexIncludePaths,
+    types::usize fragmentIncludePathCount,
+    const char** fragmentIncludePaths
 )
 {
-    std::string finalVertexStr = vertexStr;
-    std::string finalFragmentStr = fragmentStr;
+    std::string vertexCppStr = vertexStr;
+    std::string fragmentCppStr = fragmentStr;
 
     const std::string appendStr = "#version 430\n\n";
     const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
@@ -74,33 +78,54 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
 
     if (!vertexCustomFuncStr && !fragmentCustomFuncStr)
     {
-        const usize vertexFuncDefinitionPos = finalVertexStr.find(vertexFuncDefinition);
+        const usize vertexFuncDefinitionPos = vertexCppStr.find(vertexFuncDefinition);
         if (vertexFuncDefinitionPos != std::string::npos)
-            finalVertexStr.replace(vertexFuncDefinitionPos, vertexFuncDefinition.length(), vertexCustomFuncStr);
-        const usize vertexFuncPasstroughCallPos = finalVertexStr.find(vertexFuncPassthroughCall);
+            vertexCppStr.replace(vertexFuncDefinitionPos, vertexFuncDefinition.length(), vertexCustomFuncStr);
+        const usize vertexFuncPasstroughCallPos = vertexCppStr.find(vertexFuncPassthroughCall);
         if (vertexFuncPasstroughCallPos != std::string::npos)
-            finalVertexStr.replace(vertexFuncPasstroughCallPos, vertexFuncPassthroughCall.length(), "");
-        const usize fragmentFuncDefinitionPos = finalFragmentStr.find(fragmentFuncDefinition);
+            vertexCppStr.replace(vertexFuncPasstroughCallPos, vertexFuncPassthroughCall.length(), "");
+        const usize fragmentFuncDefinitionPos = fragmentCppStr.find(fragmentFuncDefinition);
         if (fragmentFuncDefinitionPos != std::string::npos)
-            finalFragmentStr.replace(fragmentFuncDefinitionPos, fragmentFuncDefinition.length(), fragmentCustomFuncStr);
-        const usize fragmentFuncPassthroughPos = finalFragmentStr.find(fragmentFuncPassthroughCall);
+            fragmentCppStr.replace(fragmentFuncDefinitionPos, fragmentFuncDefinition.length(), fragmentCustomFuncStr);
+        const usize fragmentFuncPassthroughPos = fragmentCppStr.find(fragmentFuncPassthroughCall);
         if (fragmentFuncPassthroughPos != std::string::npos)
-            finalFragmentStr.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
+            fragmentCppStr.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
     }
-
-    finalVertexStr = CleanShaderSource(finalVertexStr);
-    finalFragmentStr = CleanShaderSource(finalFragmentStr);
 
     std::vector<SShaderDefine> definesVec = {};
     for (usize i = 0; i < defineCount; i++)
         definesVec.push_back(defines[i]);
-    DefineInShader(finalVertexStr, finalFragmentStr, definesVec);
+    DefineInShader(vertexCppStr, fragmentCppStr, definesVec);
 
-    finalVertexStr = appendStr + finalVertexStr;
-    finalFragmentStr = appendStr + finalFragmentStr;
+    std::string vertexIncludeChars = "";
+    std::string fragmentIncludeChars = "";
 
-    const char* vertexShaderStrPtr = finalVertexStr.c_str();
-    const char* fragmentShaderStrPtr = finalFragmentStr.c_str();
+    usize vertexIncludeBufferByteCount = 0;
+    usize fragmentIncludeBufferByteCount = 0;
+    cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
+    for (usize i = 0; i < vertexIncludePathCount; i++)
+        vertexIncludeBufferByteCount += fs->TellFileByteSize(vertexIncludePaths[i]);
+    for (usize i = 0; i < fragmentIncludePathCount; i++)
+        fragmentIncludeBufferByteCount += fs->TellFileByteSize(fragmentIncludePaths[i]);
+    cMemoryAllocator* ma = _context->GetMemoryAllocator();
+    u8* vertexIncludeBuffer = (u8*)ma->Allocate(vertexIncludeBufferByteCount, 64);
+    u8* fragmentIncludeBuffer = (u8*)ma->Allocate(fragmentIncludeBufferByteCount, 64);
+    usize vertexIncludeBufferPtr = 0;
+    usize fragmentIncludeBufferPtr = 0;
+    for (usize i = 0; i < vertexIncludePathCount; i++)
+        vertexIncludeBufferPtr += fs->BinFileToArray(vertexIncludePaths[i], &vertexIncludeBuffer[0], vertexIncludeBufferPtr, vertexIncludeBufferByteCount);
+    for (usize i = 0; i < fragmentIncludePathCount; i++)
+        fragmentIncludeBufferPtr += fs->BinFileToArray(fragmentIncludePaths[i], &fragmentIncludeBuffer[0], fragmentIncludeBufferPtr, fragmentIncludeBufferByteCount);
+    vertexIncludeChars = std::string((const char*)&vertexIncludeBuffer[0], vertexIncludeBufferByteCount);
+    fragmentIncludeChars = std::string((const char*)&fragmentIncludeBuffer[0], vertexIncludeBufferByteCount);
+    ma->Deallocate(fragmentIncludeBuffer);
+    ma->Deallocate(vertexIncludeBuffer);
+
+    const std::string& finalVertexCppStr = CleanShaderSource(appendStr + vertexIncludeChars + vertexCppStr);
+    const std::string& finalFragmentCppStr = CleanShaderSource(appendStr + fragmentIncludeChars + fragmentCppStr);
+
+    const char* vertexShaderStrPtr = finalVertexCppStr.c_str();
+    const char* fragmentShaderStrPtr = finalFragmentCppStr.c_str();
     const GLint vertexShaderStrByteSize = strlen(vertexShaderStrPtr);
     const GLint fragmentShaderStrByteSize = strlen(fragmentShaderStrPtr);
     GLuint instance = glCreateProgram();
@@ -124,14 +149,14 @@ triton::CGPUShader triton::cGraphicsPipelineBackendOGL::CreateShader(
     glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
     if (logBufferByteSize > 0)
     {
-        Print("Error: vertex shader!");
+        Print("Error: can't compile vertex shader!");
         Print(logBuffer);
     }
     logBufferByteSize = 0;
     glGetShaderInfoLog(fragmentShader, 1024, &logBufferByteSize, &logBuffer[0]);
     if (logBufferByteSize > 0)
     {
-        Print("Error: fragment shader!");
+        Print("Error: can't compile fragment shader!");
         Print(logBuffer);
     }
     glDeleteShader(vertexShader);
