@@ -8,6 +8,7 @@ target_include_directories(
     TritonEditor
     PUBLIC
     ../engine/src
+    ../engine/thirdparty/glm/glm
 )
 target_link_directories(
     TritonEditor
