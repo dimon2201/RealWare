@@ -35,6 +35,7 @@ target_link_libraries(
     freetype
     assimp-vc143-mtd
 )
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 add_custom_command(
     TARGET
     TritonEngine

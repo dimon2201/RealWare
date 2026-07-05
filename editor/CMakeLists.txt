@@ -15,6 +15,7 @@ target_link_directories(
     ../engine/lib
 )
 target_link_libraries(TritonEditor TritonEngine user32 gdi32)
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 add_custom_command(
     TARGET
     TritonEditor
