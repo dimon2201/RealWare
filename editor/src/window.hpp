@@ -1,3 +1,0 @@
-// window.hpp
-
-#pragma once
