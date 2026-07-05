@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "../../thirdparty/glm/glm/glm.hpp"
-#include "../../thirdparty/glm/glm/gtc/matrix_transform.hpp"
-#include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
-#include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/quaternion.hpp>
+#include <gtx/quaternion.hpp>
 #include "object.hpp"
 #include "types.hpp"
 
