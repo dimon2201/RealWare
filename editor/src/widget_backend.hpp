@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <string>
 #include "backend.hpp"
 
 namespace triton
@@ -12,6 +13,7 @@ namespace triton
 namespace triton::editor
 {
 	struct SWidgetCanvas;
+	class cVector2;
 
 	class IWidgetBackend : public iBackend
 	{
@@ -21,6 +23,10 @@ namespace triton::editor
 		explicit IWidgetBackend(cContext* context) : iBackend(context) {}
 		~IWidgetBackend() override = default;
 
-		virtual SWidgetCanvas CreateCanvas() = 0;
+		virtual SWidgetCanvas CreateCanvas(
+			const std::string& uniqueName,
+			const std::string& title,
+			const cVector2& size
+		) = 0;
 	};
 }
