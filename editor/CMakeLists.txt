@@ -2,30 +2,27 @@ cmake_minimum_required(VERSION 3.25)
 
 project(TritonEditor)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.hpp)
-add_library(TritonEditor ${SOURCE_FILES})
+add_executable(TritonEditor ${SOURCE_FILES})
 target_include_directories(
     TritonEditor
     PUBLIC
-    thirdparty/compiled_glfw/include
-    thirdparty/compiled_openal-soft/include
-    thirdparty/compiled_glew/include
-    thirdparty/Freetype/include
-    thirdparty/compiled_assimp/include
-    thirdparty/stb-master
-    thirdparty/glm/glm
-    thirdparty/lodepng
-    thirdparty/tinyddsloader
+    ../engine/src
 )
 target_link_directories(
     TritonEditor
     PUBLIC
-    thirdparty/compiled_glfw/lib/Debug
-    thirdparty/compiled_openal-soft/lib/Debug
-    thirdparty/compiled_glew/lib/Debug
-    thirdparty/Freetype/lib
-    thirdparty/compiled_assimp/lib/Debug
+    ../engine/lib
 )
-target_link_libraries(TritonEditor TritonEngine)
+target_link_libraries(TritonEditor TritonEngine user32 gdi32)
+add_custom_command(
+    TARGET
+    TritonEditor
+    POST_BUILD
+    COMMAND
+    ${CMAKE_COMMAND}
+    -E
+    copy
+    "$<TARGET_FILE:TritonEditor>"
+    "${CMAKE_CURRENT_SOURCE_DIR}/bin"
+)

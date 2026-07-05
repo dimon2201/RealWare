@@ -1,0 +1,10 @@
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_LINKER ld)
+
+find_program(CLANGXX clang++)
+if(NOT CLANGXX)
+    message(FATAL_ERROR "Error: To use Clang toolchain you need to have Clang compiler")
+endif()
