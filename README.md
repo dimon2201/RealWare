@@ -19,6 +19,10 @@ Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 - Single atlas for textures
 - User-defined GLSL shaders
 
+# Build
+## Windows
+1. el 1
+
 # License
 MIT License
 
