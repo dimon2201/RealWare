@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "object.hpp"
+
 namespace triton
 {
 	class cContext;
@@ -9,6 +11,16 @@ namespace triton
 
 namespace triton::editor
 {
-	void Init(cContext* context);
-	void Free(cContext* context);
+	class XEditor : public iObject
+	{
+		TRITON_OBJECT(XEditor)
+
+	public:
+		explicit XEditor(cContext* context) : iObject(context) {}
+		~XEditor() override = default;
+
+		void Initialize();
+		void Shutdown();
+		void Run();
+	};
 }
