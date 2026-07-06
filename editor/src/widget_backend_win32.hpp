@@ -8,6 +8,7 @@
 namespace triton
 {
 	class cContext;
+	class cVector2;
 }
 
 namespace triton::editor
@@ -23,7 +24,8 @@ namespace triton::editor
 		SWidgetCanvas CreateCanvas(
 			const std::string& uniqueName,
 			const std::string& title,
-			const cVector2& size
+			const triton::cVector2& size
 		) override final;
+		types::boolean ProcessMessage() override final;
 	};
 }
