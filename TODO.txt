@@ -6,6 +6,7 @@
 - Fix: Texture offset, size precision in texture atlas
 - Refactor: Move STB,tinyddsloader logic to proper image-related backend (texture_subsystem.cpp:*)
 - Refactor: Replace cFileSystem::CreateDataFile() call with efficient header check procedure (texture_subsystem.cpp:128)
+- Fix: Add check to CreateMemoryAllocator() to prevent double memory allocation (editor.cpp:9)
 - Fix: Always release cContext backends (editor.cpp:14)
 - GFX: PBR
 - GFX: HDR
