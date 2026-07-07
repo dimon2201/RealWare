@@ -39,6 +39,9 @@ namespace triton
 		void RegisterBackend(T* backend);
 
 		void RegisterSubsystem(iObject* object);
+		
+		template <typename T>
+		void ReleaseSubsystem();
 
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
 
@@ -108,6 +111,15 @@ void triton::cContext::RegisterBackend(T* backend)
 	const auto it = _backends.find(type);
 	if (it == _backends.end())
 		_backends.insert({ type, std::shared_ptr<iBackend>(backend) });
+}
+
+template <typename T>
+void triton::cContext::ReleaseSubsystem()
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _backends.find(type);
+	if (it == _backends.end())
+		delete it->second;
 }
 
 template <typename T>
