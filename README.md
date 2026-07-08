@@ -1,4 +1,4 @@
-<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/b1de71b3-a15a-40d5-93c8-7a6d60c798aa" /># Triton Engine
+# Triton Engine
 
 High-performance C++23 game engine.
 
