@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.25.1)
 
 project(TritonExample01)
 
-link_libraries(TritonEngine)
-
 add_executable(
     TritonExample01
     main.cpp
@@ -22,6 +20,8 @@ add_executable(
 
 target_include_directories(TritonExample01 PUBLIC ${CMAKE_SOURCE_DIR}/engine/src)
 
+target_link_libraries(TritonExample01 PUBLIC TritonEngine)
+
 add_custom_command(
     TARGET
     TritonExample01
@@ -31,7 +31,7 @@ add_custom_command(
     -E
     copy_directory
     "${CMAKE_SOURCE_DIR}/runtime"
-    "${CMAKE_CURRENT_BINARY_DIR}"
+    "$<TARGET_FILE_DIR:TritonExample01>"
 )
 
 #target_compile_options(TritonSample01 PRIVATE
