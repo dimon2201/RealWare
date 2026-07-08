@@ -1,5 +1,5 @@
 if(NOT WIN32)
-    message(FATAL_ERROR "Error: To use MSVC toolchain you need to have Windows OS")
+    message(FATAL_ERROR "Error: MSVC toolchain requires Windows OS")
 endif()
 
 set(CMAKE_CXX_STANDARD 17)

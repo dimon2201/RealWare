@@ -6,5 +6,5 @@ set(CMAKE_LINKER ld)
 
 find_program(CLANGXX clang++)
 if(NOT CLANGXX)
-    message(FATAL_ERROR "Error: To use Clang toolchain you need to have Clang compiler")
+    message(FATAL_ERROR "Error: Clang toolchain requires Clang compiler")
 endif()
