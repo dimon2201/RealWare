@@ -117,8 +117,8 @@ template <typename T>
 void triton::cContext::ReleaseSubsystem()
 {
 	const ClassType type = T::GetTypeStatic();
-	const auto it = _backends.find(type);
-	if (it == _backends.end())
+	const auto it = _subsystems.find(type);
+	if (it == _subsystems.end())
 		delete it->second;
 }
 
