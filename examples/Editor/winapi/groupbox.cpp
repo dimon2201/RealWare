@@ -1,0 +1,45 @@
+#include <string>
+#include "groupbox.hpp"
+#include "../editor_types.hpp"
+
+namespace realware
+{
+    namespace editor
+    {
+        cEditorGroupbox::cEditorGroupbox(
+            HWND parent,
+            const std::string& windowName,
+            const glm::vec2& position,
+            const glm::vec2& size
+        )
+        {
+            HINSTANCE hInstance = GetModuleHandle(0);
+
+            m_HWND = CreateWindow(
+                "BUTTON",
+                windowName.data(),
+                WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
+                position.x,
+                position.y,
+                size.x,
+                size.y,
+                parent,
+                0,
+                hInstance,
+                0
+            );
+            if (!m_HWND)
+            {
+                MessageBox(0, TEXT("Could not create groupbox"), 0, MB_ICONERROR);
+                return;
+            }
+
+            ShowWindow(m_HWND, 1);
+            UpdateWindow(m_HWND);
+        }
+
+        cEditorGroupbox::~cEditorGroupbox()
+        {
+        }
+    }
+}

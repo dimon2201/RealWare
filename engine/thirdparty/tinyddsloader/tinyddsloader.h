@@ -6,6 +6,7 @@
 #ifndef TINYDDSLOADER_H_
 #define TINYDDSLOADER_H_
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

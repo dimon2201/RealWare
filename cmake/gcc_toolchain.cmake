@@ -1,0 +1,10 @@
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_COMPILER gcc)
+set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_LINKER ld)
+
+find_program(CPP_COMPILER g++)
+if(NOT CPP_COMPILER)
+    message(FATAL_ERROR "Error: GCC toolchain requires GCC compiler")
+endif()

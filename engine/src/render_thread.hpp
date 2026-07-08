@@ -9,6 +9,7 @@
 #include "thread_subsystem.hpp"
 #include "render_frame.hpp"
 #include "thread_guard.hpp"
+#include "types.hpp"
 
 namespace triton
 {
@@ -53,10 +54,10 @@ namespace triton
 			_renderSubsystem->ResetScratchFrame();
 			NotifyThread();
 			_synchronization->WaitForLoopFinish(cv);
-			_synchronization->_mainThreadSwapChainSnapshot._isLoopFinished = K_FALSE;
+			_synchronization->_mainThreadSwapChainSnapshot._isLoopFinished = types::K_FALSE;
 			{
 				std::lock_guard<std::mutex> lock(_synchronization->_mutex);
-				_synchronization->_renderThreadSwapChainSnapshot._isLoopFinished = K_TRUE;
+				_synchronization->_renderThreadSwapChainSnapshot._isLoopFinished = types::K_TRUE;
 			}
 			
 			TResult* pr = (TResult*)&_resultBuffer[0];
