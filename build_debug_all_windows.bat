@@ -13,3 +13,5 @@ cmake ^
     -G %GENERATOR% ^
     -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN_FILE%
 cmake --build %BUILD_DIR% --config Debug
+
+pause
