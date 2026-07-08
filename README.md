@@ -1,4 +1,4 @@
-# Triton Engine
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/b1de71b3-a15a-40d5-93c8-7a6d60c798aa" /># Triton Engine
 
 High-performance C++23 game engine.
 
@@ -23,8 +23,8 @@ Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 ## Windows
 1. Get CMake 4.4.0-rc3 or higher
 2. Get Visual Studio 17 2022
-3. Run "build_debug_win32.bat" (this will build Engine static library and Editor executable)
-4. Built files are located in "engine/lib" and "editor/bin" folders respectively
+3. For Debug, run "build_debug_all_windows.bat" (this will build engine static library and editor executable)
+4. Built files are located in "engine/lib", "editor/bin", "Example*/bin" folders respectively
 
 # License
 MIT License
