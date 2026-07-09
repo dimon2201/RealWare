@@ -8,6 +8,7 @@
 - Refactor: Replace cFileSystem::CreateDataFile() call with efficient header check procedure (texture_subsystem.cpp:128)
 - Fix: Add check to CreateMemoryAllocator() to prevent double memory allocation (editor.cpp:9)
 - Fix: Always release cContext backends (editor.cpp:14)
+- Feature: Add custom OGL function loader
 - Fix: Use SDL module instead of GLFW
 - Fix: Use GLAD module instead of GLEW
 - GFX: PBR optimization with lookup tables
