@@ -16,3 +16,6 @@
 [submodule "engine/submodules/tinyddsloader"]
 	path = engine/submodules/tinyddsloader
 	url = https://github.com/benikabocha/tinyddsloader.git
+[submodule "engine/submodules/freetype"]
+	path = engine/submodules/freetype
+	url = https://github.com/freetype/freetype.git
