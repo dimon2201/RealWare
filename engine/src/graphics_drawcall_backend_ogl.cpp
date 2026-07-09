@@ -1,6 +1,6 @@
 // graphics_drawcall_backend_ogl.cpp
 
-#include <GL/glew.h>
+#include "gl.hpp"
 #include "graphics_drawcall_backend_ogl.hpp"
 
 using namespace types;

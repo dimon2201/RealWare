@@ -11,8 +11,6 @@
 #include "camera.hpp"
 #include "input.hpp"
 
-#include <GL/glew.h> // TODO: remove this include
-
 using namespace triton::ecs::components;
 using namespace types;
 

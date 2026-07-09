@@ -1,14 +1,12 @@
 // graphics.cpp
 
-#include <GL/glew.h>
 #include <iostream>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <vector>
-#include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
-#include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
+#include "math.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
 #include "engine.hpp"

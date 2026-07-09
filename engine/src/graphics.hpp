@@ -4,7 +4,7 @@
 
 #include <optional>
 #include <unordered_map>
-#include "../../thirdparty/glm/glm/glm.hpp"
+#include "math.hpp"
 #include "category.hpp"
 #include "types.hpp"
 #include "graphics_resource_backend.hpp"

@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "../../thirdparty/glm/glm/glm.hpp"
+#include "math.hpp"
 #include "object.hpp"
 #include "types.hpp"
 

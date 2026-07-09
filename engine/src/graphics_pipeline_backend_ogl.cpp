@@ -1,6 +1,6 @@
 // graphics_pipeline_backend_ogl.cpp
 
-#include <GL/glew.h>
+#include "gl.hpp"
 #include <lodepng.h> // TODO: move lodepng stuff to separate backend
 #include "graphics_pipeline_backend_ogl.hpp"
 #include "graphics_resource_backend.hpp"

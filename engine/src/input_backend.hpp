@@ -3,7 +3,7 @@
 #pragma once
 
 #include <string>
-#include "../../thirdparty/glm/glm/glm.hpp"
+#include "math.hpp"
 #include "backend.hpp"
 #include "input_backend_window.hpp"
 #include "input_window.hpp"

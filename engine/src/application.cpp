@@ -1,6 +1,5 @@
 // application.cpp
 
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include "application.hpp"
 #include "engine.hpp"

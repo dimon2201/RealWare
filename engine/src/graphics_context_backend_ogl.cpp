@@ -1,7 +1,6 @@
 // graphics_context_backend_ogl.cpp
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "gl.hpp"
 #include "graphics_context_backend_ogl.hpp"
 #include "log.hpp"
 

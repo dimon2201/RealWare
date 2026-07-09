@@ -1,6 +1,6 @@
 // graphics_resource_backend.cpp
 
-#include <GL/glew.h>
+#include "gl.hpp"
 #include "graphics_resource_backend.hpp"
 #include "context.hpp"
 #include "thread_guard.hpp"

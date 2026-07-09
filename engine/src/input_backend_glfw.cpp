@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 #include "input_backend_glfw.hpp"
 #include "input.hpp"
 #include "context.hpp"

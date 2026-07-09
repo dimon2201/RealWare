@@ -1,6 +1,6 @@
 // graphics_resource_backend_ogl.cpp
 
-#include <GL/glew.h>
+#include "gl.hpp"
 #include <lodepng.h>
 #include "graphics_resource_backend_ogl.hpp"
 #include "context.hpp"
