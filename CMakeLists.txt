@@ -7,6 +7,6 @@ add_subdirectory(engine/submodules/freetype)
 add_subdirectory(engine/submodules/openal-soft)
 add_subdirectory(engine/submodules/sdl)
 
-#add_subdirectory(engine)
+add_subdirectory(engine)
 #add_subdirectory(editor)
 add_subdirectory(examples)
