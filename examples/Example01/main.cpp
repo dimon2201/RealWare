@@ -1,4 +1,13 @@
 #include <iostream>
+
+int main()
+{
+	std::cout << "Hello World!\n";
+	
+    return 0;
+}
+
+/*#include <iostream>
 #include "capabilities.hpp"
 #include "context.hpp"
 #include "application.hpp"
@@ -76,15 +85,6 @@ public:
 
 int main()
 {
-    /*
-        cPlatform* platform = new cPlatform(
-            cPlatform::eGraphicsBackend::OGL,
-            cPlatform::eInputBackend::GLFW
-        ); // тут хранятся все бэкенды
-        cInputWindow* window = platform->CreatePlatformWindow(); // тут обязательны вызовы бэкэндов
-        cMyApplication* myApp = new cMyApplication(context, &caps); // создается пользовательское приложение
-    */
-
     cContext* context = new cContext();
     std::cout << "Context initialized." << std::endl;
 
@@ -101,7 +101,7 @@ int main()
     myApp->Run();
 
     return 0;
-}
+}*/
 
 /*#include <iostream>
 #include <chrono>

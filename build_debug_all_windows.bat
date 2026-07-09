@@ -11,7 +11,11 @@ cmake ^
     -S %SOURCE_DIR% ^
     -B %BUILD_DIR% ^
     -G %GENERATOR% ^
-    -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN_FILE%
+    -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN_FILE% ^
+	-DCMAKE_C_FLAGS="/fsanitize=address /EHsc" ^
+    -DCMAKE_CXX_FLAGS="/fsanitize=address /EHsc" ^
+	-DSDL_SHARED=OFF ^
+	-DSDL_STATIC=ON
 cmake --build %BUILD_DIR% --config Debug
 
 pause

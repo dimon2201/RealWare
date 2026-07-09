@@ -1,0 +1,5 @@
+C:/My/My_Projects_Programming/TritonEngine/engine/submodules/freetype/build_msvc/CMakeFiles/freetype.dir
+C:/My/My_Projects_Programming/TritonEngine/engine/submodules/freetype/build_msvc/CMakeFiles/PACKAGE.dir
+C:/My/My_Projects_Programming/TritonEngine/engine/submodules/freetype/build_msvc/CMakeFiles/INSTALL.dir
+C:/My/My_Projects_Programming/TritonEngine/engine/submodules/freetype/build_msvc/CMakeFiles/ALL_BUILD.dir
+C:/My/My_Projects_Programming/TritonEngine/engine/submodules/freetype/build_msvc/CMakeFiles/ZERO_CHECK.dir

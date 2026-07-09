@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.25)
-
 project(TritonEditor)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.hpp)
@@ -8,12 +6,7 @@ target_include_directories(
     TritonEditor
     PUBLIC
     ../engine/src
-    ../engine/thirdparty/glm/glm
-)
-target_link_directories(
-    TritonEditor
-    PUBLIC
-    ../engine/lib
+    ../engine/submodules/glm/glm
 )
 target_link_libraries(TritonEditor TritonEngine user32 gdi32)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")

@@ -6,8 +6,11 @@ add_executable(
     TritonExample01
     main.cpp
 )
-target_include_directories(TritonExample01 PUBLIC ${CMAKE_SOURCE_DIR}/engine/src)
-target_link_libraries(TritonExample01 PUBLIC TritonEngine)
+target_include_directories(TritonExample01 PUBLIC
+	${CMAKE_SOURCE_DIR}/engine/src
+	${CMAKE_SOURCE_DIR}/engine/submodules/glm/glm
+)
+target_link_libraries(TritonExample01 PUBLIC assimp freetype OpenAL SDL3-static)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 add_custom_command(
     TARGET
