@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"C:/My/My_Projects_Programming/TritonEngine/engine/submodules/freetype/build_msvc/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
