@@ -11,6 +11,8 @@
 - Feature: Add custom OGL function loader
 - Fix: Use SDL module instead of GLFW
 - Fix: Use GLAD module instead of GLEW
+- Fix: Add fullscreen mode (input_backend_sdl.cpp:55)
+- Fix: Add window callbacks (input_backend_sdl.cpp:64)
 - GFX: PBR optimization with lookup tables
 - GFX: HDR
 - GFX: Tonemapping
