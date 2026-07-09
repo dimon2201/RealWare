@@ -29,7 +29,7 @@ namespace triton
         ) = 0;
         virtual void DestroyWindow(sInputBackendWindow& window) = 0;
         virtual void ResizeWindow(sInputBackendWindow& window, const cVector2& size) = 0;
-        virtual void PollEvents() = 0;
+        virtual void PollEvent(void* event) = 0;
         virtual void* GetWindowWin32Handle(sInputBackendWindow& window) = 0;
         virtual cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) = 0;
         virtual types::boolean GetKeyPressed(types::qword keyCode) = 0;

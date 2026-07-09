@@ -39,7 +39,7 @@ namespace triton
         ) override final;
         virtual void DestroyWindow(sInputBackendWindow& window) override final;
         virtual void ResizeWindow(sInputBackendWindow& window, const cVector2& size) override final;
-        virtual void PollEvents() override final;
+        virtual void PollEvent(void* event) override final;
         virtual void* GetWindowWin32Handle(sInputBackendWindow& window) override final;
         virtual triton::cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) override final;
         virtual types::boolean GetKeyPressed(types::qword keyCode) override final;

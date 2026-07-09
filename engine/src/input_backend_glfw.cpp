@@ -14,11 +14,20 @@ using namespace types;
 
 triton::cInputBackendGLFW::cInputBackendGLFW(cContext* context) : iInputBackend(context)
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    if (!SDL_Init(SDL_INIT_VIDEO))
+    {
+        Print("Error: SDL_Init failed: " + std::string(SDL_GetError()));
+        return;
+    }
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#ifdef _DEBUG
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 }
 
 triton::sInputBackendWindow triton::cInputBackendGLFW::CreatePlatformWindow(
@@ -34,29 +43,30 @@ triton::sInputBackendWindow triton::cInputBackendGLFW::CreatePlatformWindow(
 
     if (fullscreen == K_FALSE)
     {
-        ibw.instance = (types::qword)glfwCreateWindow(ibw.size.GetX(), ibw.size.GetY(), ibw.title.c_str(), nullptr, nullptr);
+        SDL_Window* window = SDL_CreateWindow(
+            ibw.title.c_str(),
+            ibw.size.GetX(),
+            ibw.size.GetY(),
+            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+        );
     }
     else
     {
-        glfwWindowHint(GLFW_DECORATED, 0);
-
-        ibw.size = GetMonitorSize();
-        ibw.instance = (types::qword)glfwCreateWindow(ibw.size.GetX(), ibw.size.GetY(), ibw.title.c_str(), glfwGetPrimaryMonitor(), nullptr);
+        // TODO: add fullscreen mode
     }
 
     if (!ibw.instance)
     {
-        Print("Error: incompatible GL version!");
+        Print("Error: SDL_CreateWindow failed : " + std::string(SDL_GetError()));
         return ibw;
     }
 
-    glfwSetWindowUserPointer((GLFWwindow*)ibw.instance, _context);
-
-    glfwSetKeyCallback((GLFWwindow*)ibw.instance, &KeyCallback);
-    glfwSetWindowFocusCallback((GLFWwindow*)ibw.instance, &WindowFocusCallback);
-    glfwSetWindowSizeCallback((GLFWwindow*)ibw.instance, &WindowSizeCallback);
-    glfwSetCursorPosCallback((GLFWwindow*)ibw.instance, &CursorCallback);
-    glfwSetMouseButtonCallback((GLFWwindow*)ibw.instance, &MouseButtonCallback);
+    // TODO: add window callbacks
+    //glfwSetKeyCallback((GLFWwindow*)ibw.instance, &KeyCallback);
+    //glfwSetWindowFocusCallback((GLFWwindow*)ibw.instance, &WindowFocusCallback);
+    //glfwSetWindowSizeCallback((GLFWwindow*)ibw.instance, &WindowSizeCallback);
+    //glfwSetCursorPosCallback((GLFWwindow*)ibw.instance, &CursorCallback);
+    //glfwSetMouseButtonCallback((GLFWwindow*)ibw.instance, &MouseButtonCallback);
 
     return ibw;
 }
@@ -66,7 +76,7 @@ void triton::cInputBackendGLFW::DestroyWindow(sInputBackendWindow& window)
     if (window.instance == 0)
         return;
 
-    glfwDestroyWindow((GLFWwindow*)window.instance);
+    SDL_DestroyWindow((SDL_Window*)window.instance);
 }
 
 void triton::cInputBackendGLFW::ResizeWindow(sInputBackendWindow& window, const cVector2& newSize)
@@ -77,9 +87,9 @@ void triton::cInputBackendGLFW::ResizeWindow(sInputBackendWindow& window, const 
     window.size = cVector2(newSize.GetX(), newSize.GetY());
 }
 
-void triton::cInputBackendGLFW::PollEvents()
+void triton::cInputBackendGLFW::PollEvent(void* event)
 {
-    glfwPollEvents();
+    SDL_PollEvent((SDL_Event*)event);
 }
 
 void* triton::cInputBackendGLFW::GetWindowWin32Handle(sInputBackendWindow& window)
