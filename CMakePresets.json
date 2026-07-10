@@ -2,31 +2,51 @@
     "version": 6,
     "configurePresets": [
         {
-            "name": "debug",
+            "name": "debug_win64",
             "displayName": "Debug",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/debug",
+            "binaryDir": "${sourceDir}/build/debug_win64",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_C_COMPILER": "cl",
+				"CMAKE_CXX_COMPILER": "cl"
             }
         },
         {
-            "name": "release",
+            "name": "release_win64",
             "displayName": "Release",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/release",
+            "binaryDir": "${sourceDir}/build/release_win64",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_C_COMPILER": "cl",
+				"CMAKE_CXX_COMPILER": "cl"
             }
         },
         {
-            "name": "relwithdebinfo",
+            "name": "relwithdebinfo_win64",
             "displayName": "RelWithDebInfo",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/relwithdebinfo",
+            "binaryDir": "${sourceDir}/build/relwithdebinfo_win64",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"CMAKE_C_COMPILER": "cl",
+				"CMAKE_CXX_COMPILER": "cl"
             }
+        }
+    ],
+	"buildPresets": [
+        {
+            "name": "debug_win64",
+            "configurePreset": "debug_win64"
+        },
+		{
+            "name": "release_win64",
+            "configurePreset": "release_win64"
+        },
+		{
+            "name": "relwithdebinfo_win64",
+            "configurePreset": "relwithdebinfo_win64"
         }
     ]
 }
