@@ -1,10 +1,11 @@
 // graphics_resource_backend.cpp
 
-#include "gl.hpp"
+#include <glbinding/gl/gl.h>
 #include "graphics_resource_backend.hpp"
 #include "context.hpp"
 #include "thread_guard.hpp"
 
+using namespace gl;
 using namespace types;
 
 triton::cBuffer::cBuffer(cContext* context, qword instance, eType type, types::usize byteSize, types::s32 slot) 

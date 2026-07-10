@@ -5,7 +5,6 @@ add_library(TritonEngine ${SOURCE_FILES})
 target_include_directories(
     TritonEngine
     PRIVATE
-    submodules/sdl/include
     submodules/glm/glm
 	submodules/stb
     submodules/tinyddsloader
@@ -16,7 +15,8 @@ target_link_libraries(
 	assimp
 	freetype
 	OpenAL
-	SDL3-static
+	SDL3
+    glbinding
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 add_custom_command(

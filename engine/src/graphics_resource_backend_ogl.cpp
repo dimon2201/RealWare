@@ -1,11 +1,12 @@
 // graphics_resource_backend_ogl.cpp
 
-#include "gl.hpp"
+#include <glbinding/gl/gl.h>
 #include <lodepng.h>
 #include "graphics_resource_backend_ogl.hpp"
 #include "context.hpp"
 #include "capabilities.hpp"
 
+using namespace gl;
 using namespace types;
 
 triton::cGraphicsResourceBackendOGL::cGraphicsResourceBackendOGL(cContext* context)

@@ -19,3 +19,6 @@
 [submodule "engine/submodules/freetype"]
 	path = engine/submodules/freetype
 	url = https://github.com/freetype/freetype.git
+[submodule "engine/submodules/glbinding"]
+	path = engine/submodules/glbinding
+	url = https://github.com/cginternals/glbinding.git

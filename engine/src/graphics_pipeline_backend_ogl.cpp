@@ -1,6 +1,6 @@
 // graphics_pipeline_backend_ogl.cpp
 
-#include "gl.hpp"
+#include <glbinding/gl/gl.h>
 #include <lodepng.h> // TODO: move lodepng stuff to separate backend
 #include "graphics_pipeline_backend_ogl.hpp"
 #include "graphics_resource_backend.hpp"
@@ -10,6 +10,7 @@
 #include "instance_buffer.hpp"
 #include "graphics.hpp"
 
+using namespace gl;
 using namespace types;
 
 namespace triton

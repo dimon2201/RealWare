@@ -1,8 +1,10 @@
 // graphics_context_backend_ogl.cpp
 
-#include "gl.hpp"
+#include <glbinding/gl/gl.h>
 #include "graphics_context_backend_ogl.hpp"
 #include "log.hpp"
+
+using namespace gl;
 
 namespace triton
 {

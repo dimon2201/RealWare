@@ -1,8 +1,9 @@
 // graphics_drawcall_backend_ogl.cpp
 
-#include "gl.hpp"
+#include <glbinding/gl/gl.h>
 #include "graphics_drawcall_backend_ogl.hpp"
 
+using namespace gl;
 using namespace types;
 
 triton::cGraphicsDrawcallBackendOGL::cGraphicsDrawcallBackendOGL(cContext* context)
