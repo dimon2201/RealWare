@@ -12,7 +12,8 @@
           "CMAKE_CXX_COMPILER": "cl",
           "CMAKE_CXX_STANDARD": "17",
           "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-          "CMAKE_CXX_EXTENSIONS": "OFF"
+          "CMAKE_CXX_EXTENSIONS": "OFF",
+          "TRITON_ENABLE_ASAN": "ON"
         }
       },
       {
@@ -26,7 +27,8 @@
           "CMAKE_CXX_COMPILER": "cl",
           "CMAKE_CXX_STANDARD": "17",
           "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-          "CMAKE_CXX_EXTENSIONS": "OFF"
+          "CMAKE_CXX_EXTENSIONS": "OFF",
+          "TRITON_ENABLE_ASAN": "OFF"
         }
       },
       {
@@ -40,7 +42,8 @@
           "CMAKE_CXX_COMPILER": "cl",
           "CMAKE_CXX_STANDARD": "17",
           "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-          "CMAKE_CXX_EXTENSIONS": "OFF"
+          "CMAKE_CXX_EXTENSIONS": "OFF",
+          "TRITON_ENABLE_ASAN": "OFF"
         }
       }
     ],

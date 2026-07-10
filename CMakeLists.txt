@@ -2,12 +2,15 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Triton)
 
-if(MSVC)
-    add_compile_options("$<$<CONFIG:debug_win64>:/fsanitize=address>") # /EHsc
-    add_link_options("$<$<CONFIG:debug_win64>:/fsanitize=address>")
-else()
-    add_compile_options("$<$<CONFIG:debug_win64>:-fsanitize=address>")
-    add_link_options("$<$<CONFIG:debug_win64>:-fsanitize=address>")
+option(TRITON_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+if(TRITON_ENABLE_ASAN)
+    if(MSVC)
+        add_compile_options(/fsanitize=address)
+        add_link_options(/fsanitize=address)
+    else()
+        add_compile_options(-fsanitize=address)
+        add_link_options(-fsanitize=address)
+    endif()
 endif()
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)

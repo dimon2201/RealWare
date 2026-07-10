@@ -1,13 +1,17 @@
-/*#include <iostream>
+#include <iostream>
 
 int main()
 {
 	std::cout << "Hello World!\n";
-	
-    return 0;
-}*/
 
-#include <iostream>
+	int* p = new int;
+    delete p;
+    *p = 666;
+
+    return 0;
+}
+
+/*#include <iostream>
 #include "capabilities.hpp"
 #include "context.hpp"
 #include "application.hpp"
@@ -101,7 +105,7 @@ int main()
     myApp->Run();
 
     return 0;
-}
+}*/
 
 /*#include <iostream>
 #include <chrono>
