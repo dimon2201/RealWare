@@ -225,9 +225,7 @@ boolean triton::cInputBackendSDL::GetMouseKeyPressed(qword keyCode)
 
 triton::cVector2 triton::cInputBackendSDL::GetCursorPosition(sInputBackendWindow& window)
 {
-    // TODO: Implement cursor position getter
-
-    return cVector2(0.0f);
+    return _cursorPosition;
 }
 
 void triton::cInputBackendSDL::SetKeyPressed(qword keyCode, boolean isPressed)
