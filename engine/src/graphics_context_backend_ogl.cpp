@@ -1,6 +1,7 @@
 // graphics_context_backend_ogl.cpp
 
 #include <glbinding/gl/gl.h>
+#include <glbinding/glbinding.h>
 #include <SDL3/SDL.h>
 #include "graphics_context_backend_ogl.hpp"
 #include "log.hpp"
@@ -35,6 +36,8 @@ void triton::cGraphicsContextBackendOGL::CreateGraphicsContext(sInputBackendWind
         Print("Error: Failed to create GL context");
         return;
     }
+
+    glbinding::initialize(SDL_GL_GetProcAddress);
 
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);

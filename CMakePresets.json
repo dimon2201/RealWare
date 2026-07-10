@@ -9,7 +9,10 @@
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Debug",
           "CMAKE_C_COMPILER": "cl",
-          "CMAKE_CXX_COMPILER": "cl"
+          "CMAKE_CXX_COMPILER": "cl",
+          "CMAKE_CXX_STANDARD": "17",
+          "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+          "CMAKE_CXX_EXTENSIONS": "OFF"
         }
       },
       {
@@ -20,7 +23,10 @@
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Release",
           "CMAKE_C_COMPILER": "cl",
-          "CMAKE_CXX_COMPILER": "cl"
+          "CMAKE_CXX_COMPILER": "cl",
+          "CMAKE_CXX_STANDARD": "17",
+          "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+          "CMAKE_CXX_EXTENSIONS": "OFF"
         }
       },
       {
@@ -31,7 +37,10 @@
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "RelWithDebInfo",
           "CMAKE_C_COMPILER": "cl",
-          "CMAKE_CXX_COMPILER": "cl"
+          "CMAKE_CXX_COMPILER": "cl",
+          "CMAKE_CXX_STANDARD": "17",
+          "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+          "CMAKE_CXX_EXTENSIONS": "OFF"
         }
       }
     ],

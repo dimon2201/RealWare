@@ -16,7 +16,7 @@ triton::cInputBackendSDL::cInputBackendSDL(cContext* context) : iInputBackend(co
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
-        Print("Error: SDL_Init failed: " + std::string(SDL_GetError()));
+        Print("Error: SDL_Init failed");
         return;
     }
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -43,7 +43,7 @@ triton::sInputBackendWindow triton::cInputBackendSDL::CreatePlatformWindow(
 
     if (fullscreen == K_FALSE)
     {
-        SDL_Window* window = SDL_CreateWindow(
+        ibw.instance = (qword)SDL_CreateWindow(
             ibw.title.c_str(),
             ibw.size.GetX(),
             ibw.size.GetY(),
@@ -57,7 +57,7 @@ triton::sInputBackendWindow triton::cInputBackendSDL::CreatePlatformWindow(
 
     if (!ibw.instance)
     {
-        Print("Error: SDL_CreateWindow failed : " + std::string(SDL_GetError()));
+        Print("Error: SDL_CreateWindow failed");
         return ibw;
     }
 
