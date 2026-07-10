@@ -14,6 +14,9 @@
 - Fix: Add fullscreen mode (input_backend_sdl.cpp:55)
 - Fix: Add window callbacks (input_backend_sdl.cpp:64)
 - Refactor: Rethink the input system architecture
+- Fix: Do something with floating point precision in input mouse motion (input_backend_sdl.cpp:*)
+- Feature: Add SDL VSync (input_backend_sdl.cpp:*)
+- Fix: Implement cursor position getter (input_backend_sdl.cpp:*)
 - GFX: PBR optimization with lookup tables
 - GFX: HDR
 - GFX: Tonemapping
