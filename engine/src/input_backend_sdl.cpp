@@ -84,18 +84,20 @@ triton::SEvent triton::cInputBackendSDL::PollEvent()
 {
     SEvent e = {};
     SDL_Event event = {};
-    if (SDL_PollEvent(&event[0]))
+    if (SDL_PollEvent(&event))
     {
         switch (event.type)
         {
             case SDL_EVENT_KEY_DOWN:
             {
                 e.type = EWindowEvent::KeyDown;
+                e.argA = event.key.scancode;
                 return e;
             }
             case SDL_EVENT_KEY_UP:
             {
                 e.type = EWindowEvent::KeyUp;
+                e.argA = event.key.scancode;
                 return e;
             }
             case SDL_EVENT_WINDOW_FOCUS_GAINED:
@@ -147,18 +149,19 @@ triton::SEvent triton::cInputBackendSDL::PollEvent()
 
 void triton::cInputBackendSDL::ProcessEvent(const SEvent& event)
 {
-    iInputBackend* input = context->GetBackend<iInputBackend>();
+    iInputBackend* input = _context->GetBackend<iInputBackend>();
+    sInputBackendWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetBackendWindow();
     switch (event.type)
     {
         case EWindowEvent::KeyDown:
         {
-            input->SetKeyPressed(key, K_TRUE);
+            input->SetKeyPressed(event.argA, K_TRUE);
             break;
         }
 
         case EWindowEvent::KeyUp:
         {
-            input->SetKeyPressed(key, K_FALSE);
+            input->SetKeyPressed(event.argA, K_FALSE);
             break;
         }
 
@@ -177,7 +180,7 @@ void triton::cInputBackendSDL::ProcessEvent(const SEvent& event)
 
         case EWindowEvent::Resized:
         {
-            input->ResizeWindows(cVector2(event.argA, event.argB));
+            input->ResizeWindow(ibw, cVector2(event.argA, event.argB));
             break;
         }
 
