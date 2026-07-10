@@ -1,14 +1,16 @@
 // graphics_context_backend_ogl.cpp
 
 #include <glbinding/gl/gl.h>
+#include <SDL3/SDL.h>
 #include "graphics_context_backend_ogl.hpp"
 #include "log.hpp"
 
 using namespace gl;
+using namespace types;
 
 namespace triton
 {
-    void GLAPIENTRY GLDebugCallback(
+    static void GLDebugCallback(
         GLenum source,
         GLenum type,
         GLuint id,
@@ -25,11 +27,12 @@ namespace triton
 triton::cGraphicsContextBackendOGL::cGraphicsContextBackendOGL(cContext* context)
 	: iGraphicsContextBackend(context) {}
 
-void triton::cGraphicsContextBackendOGL::CreateGraphicsContext()
+void triton::cGraphicsContextBackendOGL::CreateGraphicsContext(sInputBackendWindow& window)
 {
-    if (glewInit() != GLEW_OK)
+    window.renderContextInstance = (qword)SDL_GL_CreateContext((SDL_Window*)window.instance);
+    if (!window.renderContextInstance)
     {
-        Print("Error: can't initialize OpenGL 4.3 context!");
+        Print("Error: Failed to create GL context");
         return;
     }
 
@@ -41,15 +44,15 @@ void triton::cGraphicsContextBackendOGL::CreateGraphicsContext()
     glFrontFace(GL_CW);
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(triton::GLDebugCallback, nullptr);
+    glDebugMessageCallback(GLDebugCallback, nullptr);
 }
 
 void triton::cGraphicsContextBackendOGL::MakeWindowGraphicsContextCurrent(sInputBackendWindow& window)
 {
-    glfwMakeContextCurrent((GLFWwindow*)window.instance);
+    SDL_GL_MakeCurrent((SDL_Window*)window.instance, (SDL_GLContext)window.renderContextInstance);
 }
 
 void triton::cGraphicsContextBackendOGL::SwapWindowBuffers(sInputBackendWindow& window)
 {
-    glfwSwapBuffers((GLFWwindow*)window.instance);
+    SDL_GL_SwapWindow((SDL_Window*)window.instance);
 }

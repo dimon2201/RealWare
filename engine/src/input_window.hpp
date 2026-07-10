@@ -27,7 +27,6 @@ namespace triton
         virtual ~cInputWindow() override final = default;
 
         types::boolean IsWindowFocused() const;
-        eRunState GetRunState();
 
         const cVector2& GetSize() const;
         inline sInputBackendWindow& GetBackendWindow() const { return _backendWindow; }

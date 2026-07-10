@@ -19,13 +19,6 @@ types::boolean triton::cInputWindow::IsWindowFocused() const
     return input->IsWindowFocused();
 }
 
-triton::cInputWindow::eRunState triton::cInputWindow::GetRunState()
-{
-    iInputBackend* input = _context->GetBackend<iInputBackend>();
-    
-    return input->GetWindowRunState(_backendWindow);
-}
-
 const triton::cVector2& triton::cInputWindow::GetSize() const
 {
     return _backendWindow.size;
@@ -74,7 +67,7 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
     sInputBackendWindow ibw = input->CreatePlatformWindow(title, size, fullscreen);
-    input->SetWindowSwapInterval(1);
+    // TODO: Set SDL VSync here
 
     cInputWindow* window = _context->Create<cInputWindow>(_context, ibw);
 

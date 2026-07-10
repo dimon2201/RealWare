@@ -17,7 +17,7 @@ namespace triton
         explicit iGraphicsContextBackend(cContext* context);
         virtual ~iGraphicsContextBackend() override = default;
 
-        virtual void CreateGraphicsContext() = 0;
+        virtual void CreateGraphicsContext(sInputBackendWindow& window) = 0;
         virtual void MakeWindowGraphicsContextCurrent(sInputBackendWindow& window) = 0;
         virtual void SwapWindowBuffers(sInputBackendWindow& window) = 0;
     };

@@ -15,7 +15,7 @@ target_link_libraries(
 	assimp
 	freetype
 	OpenAL
-	SDL3
+	SDL3::SDL3
     glbinding
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
