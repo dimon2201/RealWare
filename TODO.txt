@@ -17,6 +17,7 @@
 - Fix: Do something with floating point precision in input mouse motion (input_backend_sdl.cpp:*)
 - Feature: Add SDL VSync (input_backend_sdl.cpp:*)
 - Fix: Implement cursor position getter (input_backend_sdl.cpp:*)
+- Fix: Implement texture to file write (graphics_resource_backend_ogl.cpp:397)
 - GFX: PBR optimization with lookup tables
 - GFX: HDR
 - GFX: Tonemapping

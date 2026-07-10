@@ -1,7 +1,6 @@
 // graphics_resource_backend_ogl.cpp
 
 #include <glbinding/gl/gl.h>
-#include <lodepng.h>
 #include "graphics_resource_backend_ogl.hpp"
 #include "context.hpp"
 #include "capabilities.hpp"
@@ -395,7 +394,7 @@ void triton::cGraphicsResourceBackendOGL::WriteTextureToFile(const cTexture* tex
         glGetTexImage(GL_TEXTURE_2D, 0, channelsGL, formatComponentGL, pixels);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        lodepng_encode32_file(filename.c_str(), pixels, texture->GetWidth(), texture->GetHeight());
+        // TODO: Implement texture to file write
 
         memoryAllocator->Deallocate(pixels);
     }
