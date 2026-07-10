@@ -80,7 +80,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	s32 windowCount = windows->GetSize();
 	while (K_TRUE)
 	{
-		inputBackend->PollEvents();
+		SEvent e = inputBackend->PollEvent();
 
 		_synchronization->WaitForFreeFrame(_cv);
 

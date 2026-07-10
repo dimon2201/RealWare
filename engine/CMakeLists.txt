@@ -5,6 +5,7 @@ add_library(TritonEngine ${SOURCE_FILES})
 target_include_directories(
     TritonEngine
     PRIVATE
+    submodules/sdl/include
     submodules/glm/glm
 	submodules/stb
     submodules/tinyddsloader

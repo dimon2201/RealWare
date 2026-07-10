@@ -1,4 +1,4 @@
-// input_backend_glfw.hpp
+// input_backend_sdl.hpp
 
 #pragma once
 
@@ -11,9 +11,9 @@ namespace triton
 {
 	class cContext;
     
-	class cInputBackendGLFW final : public iInputBackend
+	class cInputBackendSDL final : public iInputBackend
 	{
-        TRITON_OBJECT(cInputBackendGLFW)
+        TRITON_OBJECT(cInputBackendSDL)
 
         static constexpr types::usize kMaxKeyboardKeyCount = 256;
         static constexpr types::usize kMaxMouseKeyCount = 256;
@@ -29,8 +29,8 @@ namespace triton
         static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 	public:
-		explicit cInputBackendGLFW(cContext* context);
-		virtual ~cInputBackendGLFW() override final = default;
+		explicit cInputBackendSDL(cContext* context);
+		virtual ~cInputBackendSDL() override final = default;
 
         virtual sInputBackendWindow CreatePlatformWindow(
             const std::string& title,
@@ -39,9 +39,9 @@ namespace triton
         ) override final;
         virtual void DestroyWindow(sInputBackendWindow& window) override final;
         virtual void ResizeWindow(sInputBackendWindow& window, const cVector2& size) override final;
-        virtual void PollEvent(void* event) override final;
+        virtual SEvent PollEvent() override final;
+        virtual void ProcessEvent(const SEvent& event) override final;
         virtual void* GetWindowWin32Handle(sInputBackendWindow& window) override final;
-        virtual triton::cInputWindow::eRunState GetWindowRunState(sInputBackendWindow& window) override final;
         virtual types::boolean GetKeyPressed(types::qword keyCode) override final;
         virtual types::boolean GetMouseKeyPressed(types::qword keyCode) override final;
         virtual cVector2 GetCursorPosition(sInputBackendWindow& window) override final;
@@ -49,7 +49,7 @@ namespace triton
         virtual void SetMouseKeyPressed(types::qword keyCode, types::boolean isPressed) override final;
         virtual void SetWindowFocus(types::boolean isFocused) override final;
         virtual void SetWindowCursorPosition(const cVector2& cursorPosition) override final;
-        virtual void SetWindowSwapInterval(types::usize interval) override final;
+        virtual void SetVSync(types::cpuword flag) override final;
         virtual cVector2 GetMonitorSize() override final;
         virtual types::boolean IsWindowFocused() override final;
 	};
