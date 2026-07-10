@@ -13,6 +13,7 @@
 - Fix: Use GLAD module instead of GLEW
 - Fix: Add fullscreen mode (input_backend_sdl.cpp:55)
 - Fix: Add window callbacks (input_backend_sdl.cpp:64)
+- Refactor: Rethink the input system architecture
 - GFX: PBR optimization with lookup tables
 - GFX: HDR
 - GFX: Tonemapping
