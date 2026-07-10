@@ -63,5 +63,9 @@ namespace triton
         virtual void SetVSync(types::cpuword flag) = 0;
         virtual cVector2 GetMonitorSize() = 0;
         virtual types::boolean IsWindowFocused() = 0;
+        virtual types::cpuword GetKeyW() = 0;
+        virtual types::cpuword GetKeyA() = 0;
+        virtual types::cpuword GetKeyS() = 0;
+        virtual types::cpuword GetKeyD() = 0;
 	};
 }

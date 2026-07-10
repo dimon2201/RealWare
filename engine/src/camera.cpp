@@ -7,6 +7,7 @@
 #include "render_pass.hpp"
 #include "thread_guard.hpp"
 #include "input.hpp"
+#include "input_backend_sdl.hpp"
 
 using namespace types;
 
@@ -46,10 +47,11 @@ void triton::XCamera::Update(const cVector2& screenCursorPosition, usize screenW
     
     const f32 camSpeed = 0.1f;
     cInput* input = _context->GetSubsystem<cInput>();
-    const f32 forward = input->GetKeyPressed('W') * camSpeed * deltaTime;
-    const f32 backward = input->GetKeyPressed('S') * camSpeed * deltaTime;
-    const f32 left = input->GetKeyPressed('A') * camSpeed * deltaTime;
-    const f32 right = input->GetKeyPressed('D') * camSpeed * deltaTime;
+    iInputBackend* ib = _context->GetBackend<iInputBackend>();
+    const f32 forward = input->GetKeyPressed(ib->GetKeyW()) * camSpeed * deltaTime;
+    const f32 backward = input->GetKeyPressed(ib->GetKeyS()) * camSpeed * deltaTime;
+    const f32 left = input->GetKeyPressed(ib->GetKeyA()) * camSpeed * deltaTime;
+    const f32 right = input->GetKeyPressed(ib->GetKeyD()) * camSpeed * deltaTime;
     if (forward > 0.0f || backward > 0.0f || left > 0.0f || right > 0.0f)
     {
         Move(forward);

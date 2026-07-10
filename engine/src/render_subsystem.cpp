@@ -78,9 +78,22 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	cStack<cInputWindow>* windows = input->GetWindows();
 	cInputWindow* window = windows->At(0).data;
 	s32 windowCount = windows->GetSize();
-	while (K_TRUE)
+	boolean bIsRunning = K_TRUE;
+	while (bIsRunning)
 	{
-		SEvent e = inputBackend->PollEvent();
+		SEvent e = {};
+		while ((e = inputBackend->PollEvent()).type != EWindowEvent::None)
+		{
+			if (e.type == EWindowEvent::Quit)
+			{
+				bIsRunning = K_FALSE;
+				break;
+			}
+			else
+			{
+				inputBackend->ProcessEvent(e);
+			}
+		}
 
 		_synchronization->WaitForFreeFrame(_cv);
 

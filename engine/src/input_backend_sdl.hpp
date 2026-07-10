@@ -52,5 +52,9 @@ namespace triton
         virtual void SetVSync(types::cpuword flag) override final;
         virtual cVector2 GetMonitorSize() override final;
         virtual types::boolean IsWindowFocused() override final;
+        virtual types::cpuword GetKeyW() override final;
+        virtual types::cpuword GetKeyA() override final;
+        virtual types::cpuword GetKeyS() override final;
+        virtual types::cpuword GetKeyD() override final;
 	};
 }

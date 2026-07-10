@@ -83,6 +83,7 @@ void triton::cInputBackendSDL::ResizeWindow(sInputBackendWindow& window, const c
 triton::SEvent triton::cInputBackendSDL::PollEvent()
 {
     SEvent e = {};
+    e.type = EWindowEvent::None;
     SDL_Event event = {};
     if (SDL_PollEvent(&event))
     {
@@ -262,4 +263,24 @@ triton::cVector2 triton::cInputBackendSDL::GetMonitorSize()
 boolean triton::cInputBackendSDL::IsWindowFocused()
 {
     return _isFocused;
+}
+
+types::cpuword triton::cInputBackendSDL::GetKeyW()
+{
+    return SDL_SCANCODE_W;
+}
+
+types::cpuword triton::cInputBackendSDL::GetKeyA()
+{
+    return SDL_SCANCODE_A;
+}
+
+types::cpuword triton::cInputBackendSDL::GetKeyS()
+{
+    return SDL_SCANCODE_S;
+}
+
+types::cpuword triton::cInputBackendSDL::GetKeyD()
+{
+    return SDL_SCANCODE_D;
 }
