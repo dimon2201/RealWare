@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.25.1)
-
 project(TritonExample01)
 
 add_executable(
@@ -10,7 +8,7 @@ target_include_directories(TritonExample01 PUBLIC
 	${CMAKE_SOURCE_DIR}/engine/src
 	${CMAKE_SOURCE_DIR}/engine/submodules/glm/glm
 )
-target_link_libraries(TritonExample01 PUBLIC assimp freetype OpenAL SDL3-static)
+target_link_libraries(TritonExample01 PUBLIC TritonEngine)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 add_custom_command(
     TARGET

@@ -37,7 +37,7 @@ void triton::cRenderThread::ThreadFunction()
 	for (usize i = 0; i < windows->GetSize(); i++)
 	{
 		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->At(i).data->GetBackendWindow());
-		gfxContextBackend->CreateGraphicsContext();
+		gfxContextBackend->CreateGraphicsContext(windows->At(i).data->GetBackendWindow());
 	}
 
 	_initialized.store(K_TRUE);

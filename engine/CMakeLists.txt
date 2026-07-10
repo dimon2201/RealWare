@@ -1,7 +1,7 @@
 project(TritonEngine)
 
-file(GLOB_RECURSE SOURCE_FILES thirdparty/lodepng/lodepng.cpp src/*.cpp src/*.hpp)
-add_library(TritonEngine ${SOURCE_FILES})
+file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.hpp)
+add_library(TritonEngine STATIC ${SOURCE_FILES})
 target_include_directories(
     TritonEngine
     PRIVATE
@@ -15,7 +15,7 @@ target_link_libraries(
 	assimp
 	freetype
 	OpenAL
-	SDL3::SDL3
+	SDL3-static
     glbinding
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")

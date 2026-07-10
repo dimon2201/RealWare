@@ -91,7 +91,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		// Prepare frame for render thread
 		for (s32 i = windowCount - 1; i > -1; i--)
 		{
-			if (window->GetRunState() == cInputWindow::eRunState::OPENED)
+			if (e.type != EWindowEvent::Quit)
 			{
 				// Fill frame
 				SRenderCommand cmd = SRenderCommand(
@@ -105,7 +105,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 				PushCommand(cmd);
 			}
 			// Destroy window if needed
-			else if (window->GetRunState() == cInputWindow::eRunState::CLOSED)
+			else if (e.type == EWindowEvent::Quit)
 			{
 				// input->DestroyWindow(window);
 				windows->Erase(i);
@@ -116,6 +116,8 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 				break;
 			}
 		}
+		if (e.type == EWindowEvent::Quit)
+			break;
 
 		_context->GetSubsystem<XGameObjectSubsystem>()->Update();
 		_context->GetSubsystem<XMaterialSubsystem>()->Update();

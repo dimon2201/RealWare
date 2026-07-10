@@ -350,8 +350,8 @@ void triton::cGraphicsPipelineBackendOGL::BindBlendMode(const SBlendState& blend
 {
     for (usize i = 0; i < blendMode.factorCount; i++)
     {
-        GLuint srcFactor = GL_ZERO;
-        GLuint dstFactor = GL_ZERO;
+        GLenum srcFactor = GL_ZERO;
+        GLenum dstFactor = GL_ZERO;
 
         switch (blendMode.srcFactors[i])
         {

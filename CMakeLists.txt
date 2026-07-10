@@ -10,6 +10,9 @@ else()
     add_link_options("$<$<CONFIG:debug_win64>:-fsanitize=address>")
 endif()
 
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+set(SDL_STATIC ON CACHE BOOL "" FORCE)
+
 add_subdirectory(engine/submodules/assimp)
 add_subdirectory(engine/submodules/freetype)
 add_subdirectory(engine/submodules/openal-soft)
