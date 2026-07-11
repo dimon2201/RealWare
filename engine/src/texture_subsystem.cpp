@@ -202,6 +202,17 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile
         {
             dataFormat = cTexture::eFormat::RGBA8_MIPS;
         }
+        else if (stbChannels == 3)
+        {
+            Print("Info: recreate image buffer from 3 channels to 4 channels");
+
+            u8* rgbaPixels = RecreateRGBBufferWithAlpha(cVector2(stbWidth, stbHeight), data);
+            stbi_image_free(data);
+            auto tex = CreateTexture(cTexture::eFormat::RGBA8_MIPS, cVector2(stbWidth, stbHeight), (const u8*)rgbaPixels);
+            DestroyRGBBufferWithAlpha(rgbaPixels);
+
+            return tex;
+        }
         else
         {
             Print("Error: unsupported PNG texture format, file path: '" + filePath + "'\n");

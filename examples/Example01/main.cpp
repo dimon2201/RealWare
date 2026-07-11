@@ -39,7 +39,7 @@ public:
         
         HModel3D model = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModel(
             "C:/My/My_Projects_Theoretical/Game_TheCursedKeep/",
-            "Wall1.fbx"
+            "Arm1_Rigged_New_Solid.fbx"
         );
         SModel3DData& modelData = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
         

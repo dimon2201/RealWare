@@ -52,8 +52,10 @@ void triton::cMemoryAllocator::Deallocate(void* ptr)
 	if (ptr == nullptr)
 		return;
 
-	iObject* obj = (iObject*)ptr;
-	obj->_occupied = K_FALSE;
+	// TODO: Implement proper and good-quality memory allocator
+	//iObject* obj = (iObject*)ptr;
+	//obj->_occupied = K_FALSE;
+	std::free(ptr);
 }
 
 void triton::cMemoryAllocator::SetBins(usize maxBinByteSize)
