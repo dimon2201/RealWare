@@ -42,7 +42,7 @@ public:
             "Wall1.fbx"
         );
         SModel3DData& modelData = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
-
+        
         XGameObjectSubsystem* gos = _context->GetSubsystem<XGameObjectSubsystem>();
         HGameObject go = gos->CreateGameObject("MyTriangle");
         gos->AddRenderable(
@@ -55,9 +55,9 @@ public:
             sizeof(u32) * modelData.resource.indexCount
         );
         gos->SetWorldPosition(go, cVector3(0.0f));
-        gos->SetWorldRotation(go, cVector3(-90.0f, 0.0f, 0.0f));
+        gos->SetWorldRotation(go, cVector3(0.0f, 0.0f, 0.0f));
 
-        XTextureSubsystem* ts = _context->GetSubsystem<XTextureSubsystem>();
+        /*XTextureSubsystem* ts = _context->GetSubsystem<XTextureSubsystem>();
         HTexture t1 = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/dirt.png");
         HTexture t2 = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/brick.png");
         HTexture t2n = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/brick_normal.png");
@@ -66,7 +66,7 @@ public:
         HMaterial m1 = ms->CreateMaterial(cVector4(1.0f), t1, t2n, {}, {});
         HMaterial m2 = ms->CreateMaterial(cVector4(1.0f), t2, t2n, {}, {});
 
-        //gos->SetMaterial(go, m2);
+        //gos->SetMaterial(go, m2);*/
     }
 
     virtual void Stop() override final

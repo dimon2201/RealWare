@@ -42,7 +42,8 @@ void main()
 	//Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
 
 	// Normal mapping test
-	const vec3 lightDir = normalize(vec3(cos(float(UniformTime * 0.0005f)), 0.0f, sin(float(UniformTime * 0.0005f)))); //normalize(vec3(0.0f, 0.0f, 5.0f) - vec3(0.0f));
+	const vec3 lightPos = vec3(0.0f, 10.0f, 5.0f); //5.0f * vec3(cos(float(UniformTime * 0.0005f)), 0.0f, sin(float(UniformTime * 0.0005f))); //normalize(vec3(0.0f, 0.0f, 5.0f) - vec3(0.0f));
+	const vec3 lightDir = normalize(lightPos - FragPosWorldSpace);
 	vec3 normal = texture(TextureAtlasRGBA8, NormalTexcoordAtlas).xyz;
 	normal = normal * 2.0 - 1.0;
 	normal = normalize(TangentToWorld * normal);

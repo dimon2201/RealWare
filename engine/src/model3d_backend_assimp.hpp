@@ -25,6 +25,10 @@ namespace triton
         std::string normalTextureFilePath = {};
         std::string roughnessTextureFilePath = {};
         std::string metallicTextureFilePath = {};
+        types::boolean bIsDiffuseEmbedded = types::K_FALSE;
+        types::boolean bIsNormalEmbedded = types::K_FALSE;
+        types::boolean bIsRoughnessEmbedded = types::K_FALSE;
+        types::boolean bIsMetallicEmbedded = types::K_FALSE;
     };
 
     class XModel3DBackendAssimp final : public IModel3DBackend
@@ -47,9 +51,11 @@ namespace triton
         void CalculateHandedness(SVertex* vertexData, cVector3* bitangents, types::usize vertexCount);
         void ParseIndexData(const aiScene* scene, types::u32* indexData, const std::vector<types::usize>& indexOffsets);
         void ParseMaterialData(const aiScene* scene, std::vector<SModel3DMaterialData>& materials);
-        void CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials);
+        void CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials, const aiScene* scene);
         void SetAbsoluteMaterialIndices(SVertex*& vertexData, types::usize vertexCount, const std::vector<HMaterial>& modelMaterials);
         void DeallocateTempBitangentBuffer(cVector3* bitangents);
+        std::optional<triton::HTexture> CreateTexture(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, types::boolean bIsEmbedded, const aiTexture* texture);
+        std::optional<triton::HTexture> CreateTextureFromModelData(XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture);
         std::optional<triton::HTexture> CreateTextureFromFile(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath);
         SModel3DBackendResource PrepareResult(const SVertex* vertexData, const types::u32* indexData, types::usize vertexCount, types::usize indexCount, const std::vector<HMaterial>& modelMaterials);
     };

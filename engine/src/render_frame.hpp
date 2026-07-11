@@ -156,7 +156,6 @@ namespace triton
 		SFrameDoubleBufferSnapshot _mainThreadSwapChainSnapshot = {}; // TODO: this one needs only _stopSync && _frameState (READY, BUSY)
 		SFrameDoubleBufferSnapshot _renderThreadSwapChainSnapshot = {}; // TODO: this one needs only _stopSync && _frameState (READY, BUSY)
 		std::mutex _mutex;
-		std::atomic<types::boolean> _bIsMainInitialized;
 
 	public:
 		explicit XEngineMTSynchronization(cContext* context, XRenderSubsystem* renderSubsystem) : iObject(context), _renderSubsystem(renderSubsystem) {}
@@ -172,10 +171,5 @@ namespace triton
 		void Kill();
 		void LoopStart();
 		void LoopFinish();
-
-		types::boolean IsMainInitialized()
-		{
-			return _bIsMainInitialized.load();
-		}
 	};
 }

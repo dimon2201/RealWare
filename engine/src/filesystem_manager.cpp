@@ -23,6 +23,11 @@ triton::cDataFile::cDataFile(cContext* context, const std::string& path, types::
         memoryAllocator->Deallocate(_data);
 
     std::ifstream inputFile(path, std::ios::binary);
+    if (!inputFile.is_open())
+    {
+        Print("Error: file '" + path + "' does not exist");
+        return;
+    }
 
     inputFile.seekg(0, std::ios::end);
     const usize byteSize = inputFile.tellg();

@@ -36,8 +36,8 @@ void triton::cRenderThread::ThreadFunction()
 	iGraphicsContextBackend* gfxContextBackend = _context->GetBackend<iGraphicsContextBackend>();
 	for (usize i = 0; i < windows->size(); i++)
 	{
-		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->at(i).GetBackendWindow());
 		gfxContextBackend->CreateGraphicsContext(windows->at(i).GetBackendWindow());
+		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->at(i).GetBackendWindow());
 	}
 
 	_initialized.store(K_TRUE);
@@ -74,9 +74,9 @@ void triton::cRenderThread::ThreadFunction()
 			cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 
 			// Core events
-			MakeContextCurrent(renderFrame, gfxContextBackend);
+			//MakeContextCurrent(renderFrame, gfxContextBackend);
 			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
-
+			
 			// Execute render passes
 			gfx->ExecutePasses();
 
@@ -86,7 +86,7 @@ void triton::cRenderThread::ThreadFunction()
 		{
 			// Execute render commands only
 			cGraphics* gfx = _context->GetSubsystem<cGraphics>();
-			MakeContextCurrent(renderFrame, gfxContextBackend);
+			//MakeContextCurrent(renderFrame, gfxContextBackend);
 			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
 		}
 

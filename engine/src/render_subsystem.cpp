@@ -27,7 +27,6 @@ void triton::XRenderSubsystem::Initialize()
 	CThreadGuard::AssertMain();
 
 	_synchronization = _context->Create<XEngineMTSynchronization>(_context, this);
-	_synchronization->_bIsMainInitialized.store(K_FALSE);
 	for (usize i = 0; i < 2; i++)
 	{
 		_synchronization->_mainThreadSwapChainSnapshot._frames[i] = EFrameState::FREE;
@@ -67,10 +66,8 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	app->Setup();
 
 	//auto camera = _context->GetSubsystem<cCameraSystem>();
-	auto time = _context->GetSubsystem<cTime>();
+	//auto time = _context->GetSubsystem<cTime>();
 	//auto physics = _context->GetSubsystem<cPhysics>();
-
-	time->BeginFrame();
 
 	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
 	cInput* input = _context->GetSubsystem<cInput>();
@@ -142,8 +139,6 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	}
 
 	input->DestroyWindow(&window);
-
-	time->EndFrame();
 
 	// Stop render thread
 	// TODO: main thread must wait until render thread finishes job completely

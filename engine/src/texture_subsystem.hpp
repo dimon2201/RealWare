@@ -46,6 +46,7 @@ namespace triton
         ~XTextureSubsystem() override;
 
         HTexture CreateTexture(const std::string& filePath);
+        HTexture CreateTexture(const types::u8* byteData, types::usize byteSize, ETextureFormat format);
         void Init() override {}
         void Free() override {}
         void Update() override {}
@@ -63,6 +64,9 @@ namespace triton
     private:
         std::optional<STexture> CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
         std::optional<STexture> CreateTextureFromFile(const std::string& filePath);
+        std::optional<STexture> CreateTextureFromBytes(const types::u8* byteData, types::usize byteSize, ETextureFormat format);
         types::boolean IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture);
+        types::u8* RecreateRGBBufferWithAlpha(const cVector2& size, const types::u8* data);
+        void DestroyRGBBufferWithAlpha(const types::u8* rgbaByteData);
     };
 }

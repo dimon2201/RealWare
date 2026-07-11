@@ -43,7 +43,8 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
         _context->GetSubsystem<XTextureSubsystem>(),
         _context->GetSubsystem<XMaterialSubsystem>(), 
         materials,
-        modelMaterials
+        modelMaterials,
+        scene
     );
     SetAbsoluteMaterialIndices(vertexData, vertexCount, modelMaterials);
 
@@ -182,6 +183,10 @@ void triton::XModel3DBackendAssimp::ParseMaterialData(const aiScene* scene, std:
         m3dmd.normalTextureFilePath = normalTexturePath.C_Str();
         m3dmd.roughnessTextureFilePath = roughnessTexturePath.C_Str();
         m3dmd.metallicTextureFilePath = metallicTexturePath.C_Str();
+        m3dmd.bIsDiffuseEmbedded = scene->GetEmbeddedTexture(diffuseTexturePath.C_Str()) ? K_TRUE : K_FALSE;
+        m3dmd.bIsNormalEmbedded = scene->GetEmbeddedTexture(diffuseTexturePath.C_Str()) ? K_TRUE : K_FALSE;
+        m3dmd.bIsRoughnessEmbedded = scene->GetEmbeddedTexture(diffuseTexturePath.C_Str()) ? K_TRUE : K_FALSE;
+        m3dmd.bIsMetallicEmbedded = scene->GetEmbeddedTexture(diffuseTexturePath.C_Str()) ? K_TRUE : K_FALSE;
         materials.push_back(m3dmd);
 
         for (usize i = 0; i < material->mNumProperties; i++)
@@ -217,16 +222,47 @@ void triton::XModel3DBackendAssimp::ParseMaterialData(const aiScene* scene, std:
     }
 }
 
-void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials)
+void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials, const aiScene* scene)
 {
     for (auto& material : materials)
     {
-        HTexture diffuseTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.diffuseTextureFilePath);
-        HTexture normalTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.normalTextureFilePath);
-        HTexture roughnessTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.roughnessTextureFilePath);
-        HTexture metallicTexture = *CreateTextureFromFile(modelFolderPath, textureSubsystem, material.metallicTextureFilePath);
+        HTexture diffuseTexture = *CreateTexture(
+            modelFolderPath,
+            textureSubsystem,
+            material.diffuseTextureFilePath,
+            material.bIsDiffuseEmbedded,
+            scene->GetEmbeddedTexture(material.diffuseTextureFilePath.c_str())
+        );
+        HTexture normalTexture = *CreateTexture(
+            modelFolderPath,
+            textureSubsystem,
+            material.normalTextureFilePath,
+            material.bIsNormalEmbedded,
+            scene->GetEmbeddedTexture(material.normalTextureFilePath.c_str())
+        );
+        HTexture roughnessTexture = *CreateTexture(
+            modelFolderPath,
+            textureSubsystem,
+            material.roughnessTextureFilePath,
+            material.bIsRoughnessEmbedded,
+            scene->GetEmbeddedTexture(material.roughnessTextureFilePath.c_str())
+        );
+        HTexture metallicTexture = *CreateTexture(
+            modelFolderPath,
+            textureSubsystem,
+            material.metallicTextureFilePath,
+            material.bIsMetallicEmbedded,
+            scene->GetEmbeddedTexture(material.metallicTextureFilePath.c_str())
+        );
 
-        modelMaterials.push_back(materialSubsystem->CreateMaterial(cVector4(1.0f), diffuseTexture, normalTexture, roughnessTexture, metallicTexture));
+        modelMaterials.push_back(
+            materialSubsystem->CreateMaterial(cVector4(1.0f),
+                diffuseTexture,
+                normalTexture,
+                roughnessTexture,
+                metallicTexture
+            )
+        );
     }
 }
 
@@ -239,6 +275,48 @@ void triton::XModel3DBackendAssimp::SetAbsoluteMaterialIndices(SVertex*& vertexD
 void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bitangents)
 {
     _context->GetMemoryAllocator()->Deallocate(bitangents);
+}
+
+std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTexture(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, boolean bIsEmbedded, const aiTexture* texture)
+{
+    if (bIsEmbedded == K_TRUE)
+        return CreateTextureFromModelData(textureSubsystem, textureFilePath, texture);
+    else
+        return CreateTextureFromFile(modelFolderPath, textureSubsystem, textureFilePath);
+}
+
+std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFromModelData(XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture)
+{
+    if (!texture)
+        return std::nullopt;
+
+    if (texture->mHeight == 0)
+    {
+        // Compressed PNG/JPG/DDS
+        const u8* fileData = (u8*)texture->pcData;
+        size_t fileByteSize = texture->mWidth;
+
+        if (texture->achFormatHint[0] != 'p' ||
+            texture->achFormatHint[1] != 'n' ||
+            texture->achFormatHint[2] != 'g')
+        {
+            Print("Error: incorrect embedded texture format, only PNG embedded textures are supported");
+            return std::nullopt;
+        }
+
+        return textureSubsystem->CreateTexture(fileData, fileByteSize, ETextureFormat::PNG);
+    }
+    else
+    {
+        // Uncompressed BGRA
+        // TODO: Implement embedded BGRA textures support
+        const aiTexel* pixels = texture->pcData;
+        unsigned width = texture->mWidth;
+        unsigned height = texture->mHeight;
+        Print("Error: uncompressed BGRA embedded textures are currenly unsupported, path: " + textureFilePath + "\n");
+        
+        return std::nullopt;
+    }
 }
 
 std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFromFile(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath)

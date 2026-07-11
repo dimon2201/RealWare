@@ -72,13 +72,13 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new XRenderSubsystem(_context));
 	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
 	//_context->RegisterSubsystem(new cAudio(_context));
-	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(2049, 2049, 8)));
+	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(4097, 4097, 8)));
 	_context->RegisterSubsystem(new XMaterialSubsystem(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	//_context->RegisterSubsystem(new cTime(_context));
 	//_context->RegisterSubsystem(new cThreadSubsystem(_context));
-	//_context->RegisterSubsystem(new XECSSubsystem(_context));
-	//_context->GetSubsystem<XECSSubsystem>()->Initialize();
+	_context->RegisterSubsystem(new XECSSubsystem(_context));
+	_context->GetSubsystem<XECSSubsystem>()->Initialize();
 	_context->RegisterSubsystem(new cGraphics(_context));
 	_context->GetSubsystem<cGraphics>()->Init();
 	_context->RegisterSubsystem(new XGameObjectSubsystem(_context));

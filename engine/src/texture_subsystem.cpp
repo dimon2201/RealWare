@@ -64,6 +64,14 @@ triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& fil
     return texture;
 }
 
+triton::HTexture triton::XTextureSubsystem::CreateTexture(const types::u8* byteData, types::usize byteSize, ETextureFormat format)
+{
+    HTexture texture = Create();
+    *_objects->Get(texture) = *CreateTextureFromBytes(byteData, byteSize, format);
+
+    return texture;
+}
+
 std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
 {
     if (data == nullptr ||
@@ -183,9 +191,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile
     }
     else if (tf == ETextureFormat::PNG)
     {
-        int stbWidth = 0;
-        int stbHeight = 0;
-        int stbChannels = 0;
+        int stbWidth = 0, stbHeight = 0, stbChannels = 0;
         
         data = stbi_load(filePath.c_str(), &stbWidth, &stbHeight, &stbChannels, 0);
         if (stbChannels == 1)
@@ -207,7 +213,11 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile
         height = stbHeight;
         channels = stbChannels;
 
-        return CreateTexture(dataFormat, cVector2(width, height), data);
+        auto result = CreateTexture(dataFormat, cVector2(width, height), data);
+
+        stbi_image_free(data);
+
+        return result;
     }
     else if (tf == ETextureFormat::DDS)
     {
@@ -242,6 +252,58 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile
     }
 }
 
+std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromBytes(const u8* byteData, usize byteSize, ETextureFormat format)
+{
+    if (format != ETextureFormat::PNG)
+    {
+        Print("Error: can not create texture from byte data because format is not PNG format");
+        return std::nullopt;
+    }
+    
+    int width = 0, height = 0, channels = 0;
+    stbi_uc* pixelsStbi = stbi_load_from_memory(
+        byteData,
+        byteSize,
+        &width,
+        &height,
+        &channels,
+        0
+    );
+
+    cTexture::eFormat texFmt = cTexture::eFormat::NONE;
+    if (channels == 1)
+    {
+        texFmt = cTexture::eFormat::R8;
+    }
+    else if (channels == 4)
+    {
+        texFmt = cTexture::eFormat::RGBA8_MIPS;
+    }
+    else if (channels == 3)
+    {
+        Print("Info: recreate image buffer from 3 channels to 4 channels");
+
+        u8* rgbaPixels = RecreateRGBBufferWithAlpha(cVector2(width, height), pixelsStbi);
+        stbi_image_free(pixelsStbi);
+        texFmt = cTexture::eFormat::RGBA8_MIPS;
+        auto tex = CreateTexture(texFmt, cVector2(width, height), (const u8*)rgbaPixels);
+        DestroyRGBBufferWithAlpha(rgbaPixels);
+
+        return tex;
+    }
+    else
+    {
+        Print("Error: unsupported PNG texture format, channel count: " + std::to_string(channels));
+        return std::nullopt;
+    }
+
+    auto tex = CreateTexture(texFmt, cVector2(width, height), (const u8*)pixelsStbi);
+
+    stbi_image_free(pixelsStbi);
+    
+    return tex;
+}
+
 types::boolean triton::XTextureSubsystem::IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture)
 {
     if (candidateTexture.normOffset.GetX() + candidateTexture.normSize.GetX() > 1.0f ||
@@ -258,4 +320,26 @@ types::boolean triton::XTextureSubsystem::IsOverlapping(const STexture& candidat
         atlasTexture.normOffset.GetY() + atlasTexture.normSize.GetY() &&
         candidateTexture.normOffset.GetY() + candidateTexture.normSize.GetY() >
         atlasTexture.normOffset.GetY();
+}
+
+types::u8* triton::XTextureSubsystem::RecreateRGBBufferWithAlpha(const cVector2& size, const u8* data)
+{
+    const usize kSrcChannelCount = 3;
+    const usize kDstChannelCount = 4;
+    const usize pixelCount = size.GetX() * size.GetY();
+    u8* rgba = (u8*)_context->GetMemoryAllocator()->Allocate(pixelCount * kDstChannelCount, 64);
+    for (usize i = 0; i < pixelCount; i++)
+    {
+        rgba[i * kDstChannelCount + 0] = data[i * kSrcChannelCount + 0];
+        rgba[i * kDstChannelCount + 1] = data[i * kSrcChannelCount + 1];
+        rgba[i * kDstChannelCount + 2] = data[i * kSrcChannelCount + 2];
+        rgba[i * kDstChannelCount + 3] = 255;
+    }
+
+    return rgba;
+}
+
+void triton::XTextureSubsystem::DestroyRGBBufferWithAlpha(const u8* rgbaByteData)
+{
+    _context->GetMemoryAllocator()->Deallocate((void*)rgbaByteData);
 }
