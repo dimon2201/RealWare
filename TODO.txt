@@ -18,6 +18,7 @@
 - Feature: Add SDL VSync (input_backend_sdl.cpp:*)
 - Fix: Implement texture to file write (graphics_resource_backend_ogl.cpp:397)
 - Fix: Implement proper and good-quality memory allocator (memory_pool.cpp:29)
+- Feature: Implement Assimp embedded BGRA textures support (model3d_backend_assimp.cpp:312)
 - GFX: PBR optimization with lookup tables
 - GFX: HDR
 - GFX: Tonemapping
