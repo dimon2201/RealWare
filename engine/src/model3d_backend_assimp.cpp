@@ -184,9 +184,9 @@ void triton::XModel3DBackendAssimp::ParseMaterialData(const aiScene* scene, std:
         m3dmd.roughnessTextureFilePath = roughnessTexturePath.C_Str();
         m3dmd.metallicTextureFilePath = metallicTexturePath.C_Str();
         m3dmd.bIsDiffuseEmbedded = scene->GetEmbeddedTexture(diffuseTexturePath.C_Str()) ? K_TRUE : K_FALSE;
-        m3dmd.bIsNormalEmbedded = scene->GetEmbeddedTexture(diffuseTexturePath.C_Str()) ? K_TRUE : K_FALSE;
-        m3dmd.bIsRoughnessEmbedded = scene->GetEmbeddedTexture(diffuseTexturePath.C_Str()) ? K_TRUE : K_FALSE;
-        m3dmd.bIsMetallicEmbedded = scene->GetEmbeddedTexture(diffuseTexturePath.C_Str()) ? K_TRUE : K_FALSE;
+        m3dmd.bIsNormalEmbedded = scene->GetEmbeddedTexture(normalTexturePath.C_Str()) ? K_TRUE : K_FALSE;
+        m3dmd.bIsRoughnessEmbedded = scene->GetEmbeddedTexture(roughnessTexturePath.C_Str()) ? K_TRUE : K_FALSE;
+        m3dmd.bIsMetallicEmbedded = scene->GetEmbeddedTexture(metallicTexturePath.C_Str()) ? K_TRUE : K_FALSE;
         materials.push_back(m3dmd);
 
         for (usize i = 0; i < material->mNumProperties; i++)
