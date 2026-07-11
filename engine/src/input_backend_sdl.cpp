@@ -151,7 +151,7 @@ triton::SEvent triton::cInputBackendSDL::PollEvent()
 void triton::cInputBackendSDL::ProcessEvent(const SEvent& event)
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
-    sInputBackendWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetBackendWindow();
+    sInputBackendWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->at(0).GetBackendWindow();
     switch (event.type)
     {
         case EWindowEvent::KeyDown:

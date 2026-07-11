@@ -98,7 +98,7 @@ namespace triton
 		SRenderCommandArgs _args = {};
 	};
 
-	class alignas(64) CRenderFrame final
+	class CRenderFrame final // TODO: add alignas(64)
 	{
 	public:
 		EFrameState _state = EFrameState::FREE;
@@ -150,12 +150,13 @@ namespace triton
 	class XEngineMTSynchronization final : public iObject
 	{
 		TRITON_OBJECT(XEngineMTSynchronization)
-	public:
+	public: // TODO: remove this "public"
 		XRenderSubsystem* _renderSubsystem = nullptr;
 		SFrameDoubleBuffer _swapChain = {};
 		SFrameDoubleBufferSnapshot _mainThreadSwapChainSnapshot = {}; // TODO: this one needs only _stopSync && _frameState (READY, BUSY)
 		SFrameDoubleBufferSnapshot _renderThreadSwapChainSnapshot = {}; // TODO: this one needs only _stopSync && _frameState (READY, BUSY)
 		std::mutex _mutex;
+		std::atomic<types::boolean> _bIsMainInitialized;
 
 	public:
 		explicit XEngineMTSynchronization(cContext* context, XRenderSubsystem* renderSubsystem) : iObject(context), _renderSubsystem(renderSubsystem) {}
@@ -171,5 +172,10 @@ namespace triton
 		void Kill();
 		void LoopStart();
 		void LoopFinish();
+
+		types::boolean IsMainInitialized()
+		{
+			return _bIsMainInitialized.load();
+		}
 	};
 }

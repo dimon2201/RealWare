@@ -281,7 +281,7 @@ f32 triton::cFont::GetTextWidth(cFontFace* font, const std::string& text) const
     f32 textWidth = 0.0f;
     f32 maxTextWidth = 0.0f;
     const usize textByteSize = strlen(text.c_str());
-    const cVector2 windowSize = input->GetWindows()->At(0).data->GetSize();
+    const cVector2 windowSize = input->GetWindows()->at(0).GetSize();
 
     for (usize i = 0; i < textByteSize; i++)
     {
@@ -323,7 +323,7 @@ f32 triton::cFont::GetTextHeight(cFontFace* font, const std::string& text) const
     f32 textHeight = 0.0f;
     f32 maxHeight = 0.0f;
     const usize textByteSize = strlen(text.c_str());
-    const cVector2 windowSize = input->GetWindows()->At(0).data->GetSize();
+    const cVector2 windowSize = input->GetWindows()->at(0).GetSize();
 
     for (usize i = 0; i < textByteSize; i++)
     {

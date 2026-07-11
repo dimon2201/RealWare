@@ -976,7 +976,7 @@ void triton::cGraphics::CreateDefaultRenderTargets()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
 
-    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
+    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->at(0).GetSize();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
@@ -1042,7 +1042,7 @@ void triton::cGraphics::CreateDefaultRenderTargets()
 
 void triton::cGraphics::CreateDefaultRenderPasses()
 {
-    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data->GetSize();
+    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->at(0).GetSize();
     XTextureSubsystem* textureSubsystem = _context->GetSubsystem<XTextureSubsystem>();
     cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
 

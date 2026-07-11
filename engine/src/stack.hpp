@@ -9,6 +9,7 @@
 #include "context.hpp"
 #include "memory_pool.hpp"
 #include "stack_value.hpp"
+#include "thread_guard.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -60,9 +61,6 @@ namespace triton
 		template<typename... Args>
 		SStackValue<TValue> Push(Args&&... args);
 		SStackValue<TValue> Push(TValue&& value);
-		template<typename... Args>
-		SStackValue<TValue> Recreate(types::usize index, Args&&... args);
-		SStackValue<TValue> Recreate(types::usize index, TValue&& value);
 		SStackValue<TValue> At(types::u32 index) const;
 		SStackValue<TValue> At(const SStackIndex& index) const;
 		SStackValue<TValue> Top() const;
@@ -131,66 +129,6 @@ namespace triton
 	}
 
 	template <typename TValue>
-	template <typename... Args>
-	SStackValue<TValue> cStack<TValue>::Recreate(types::usize index, Args&&... args)
-	{
-		if (_elementCount == 0 || index >= _elementCount)
-			return nullptr;
-
-		const types::u32 lastChunkIndex = _chunkCount - 1;
-		const types::u32 chunkIndex = GetChunkIndex(index);
-		const types::usize lastChunkObjectCount = GetChunkLocalPosition(lastChunkIndex, _elementCount);
-		const types::u32 lastLocalPosition = lastChunkObjectCount - 1;
-		const types::usize localPosition = GetChunkLocalPosition(chunkIndex, index);
-		const types::boolean isLastChunk = chunkIndex == lastChunkIndex;
-
-		if (chunkIndex >= _chunkCount || (isLastChunk == types::K_TRUE && localPosition >= lastChunkObjectCount))
-			return SStackValue<TValue>();
-
-		_chunkValues[chunkIndex][localPosition].~TValue();
-
-		SStackIndex si = New();
-		TValue* object = _context->Create<TValue>((types::u8*)_chunkValues[si.chunkIndex], si.localPosition, std::forward<Args>(args)...);
-		_chunkIndices[si.chunkIndex][si.localPosition] = si;
-
-		SStackValue<TValue> returnValue = {};
-		returnValue.value = object;
-		returnValue.index = _chunkIndices[si.chunkIndex][si.localPosition];
-
-		return object;
-	}
-
-	template <typename TValue>
-	SStackValue<TValue> cStack<TValue>::Recreate(types::usize index, TValue&& value)
-	{
-		if (_elementCount == 0 || index >= _elementCount)
-			return nullptr;
-
-		const types::u32 lastChunkIndex = _chunkCount - 1;
-		const types::u32 chunkIndex = GetChunkIndex(index);
-		const types::usize lastChunkObjectCount = GetChunkLocalPosition(lastChunkIndex, _elementCount);
-		const types::u32 lastLocalPosition = lastChunkObjectCount - 1;
-		const types::usize localPosition = GetChunkLocalPosition(chunkIndex, index);
-		const types::boolean isLastChunk = chunkIndex == lastChunkIndex;
-
-		if (chunkIndex >= _chunkCount || (isLastChunk == types::K_TRUE && localPosition >= lastChunkObjectCount))
-			return SStackValue<TValue>();
-
-		_chunkValues[chunkIndex][localPosition].~TValue();
-
-		SStackIndex si = New();
-		_chunkValues[si.chunkIndex][si.localPosition] = std::move(value);
-		TValue* object = &_chunkValues[si.chunkIndex][si.localPosition];
-		_chunkIndices[si.chunkIndex][si.localPosition] = si;
-
-		SStackValue<TValue> returnValue = {};
-		returnValue.value = object;
-		returnValue.index = &_chunkIndices[si.chunkIndex][si.localPosition];
-
-		return returnValue;
-	}
-
-	template <typename TValue>
 	SStackValue<TValue> cStack<TValue>::At(types::u32 index) const
 	{
 		if (_chunkCount == 0 || index >= _elementCount)
@@ -238,7 +176,7 @@ namespace triton
 			return;
 
 		_chunkValues[chunkIndex][localPosition].~TValue();
-		_chunkValues[chunkIndex][localPosition] = _chunkValues[lastChunkIndex][lastLocalPosition];
+		new (&_chunkValues[chunkIndex][localPosition]) TValue(_chunkValues[lastChunkIndex][lastLocalPosition]);
 		_chunkIndices[chunkIndex][localPosition] = _chunkIndices[lastChunkIndex][lastLocalPosition];
 		_elementCount -= 1;
 
@@ -299,7 +237,7 @@ namespace triton
 		const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 		_chunkValues[_chunkCount] = (TValue*)memoryAllocator->Allocate(_allocatorDesc.chunkByteSize, caps->memoryAlignment);
-		_chunkIndices[_chunkCount] = (SStackIndex*)memoryAllocator->Allocate(_objectCountPerChunk, caps->memoryAlignment);
+		_chunkIndices[_chunkCount] = (SStackIndex*)memoryAllocator->Allocate(_objectCountPerChunk * sizeof(SStackIndex), caps->memoryAlignment);
 
 		return _chunkCount++;
 	}

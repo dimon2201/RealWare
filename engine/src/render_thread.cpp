@@ -32,22 +32,25 @@ void triton::cRenderThread::ThreadFunction()
 
 	// Create graphics contexts for windows
 	cInput* inputSubsystem = _context->GetSubsystem<cInput>();
-	cStack<cInputWindow>* windows = inputSubsystem->GetWindows();
+	std::vector<cInputWindow>* windows = inputSubsystem->GetWindows();
 	iGraphicsContextBackend* gfxContextBackend = _context->GetBackend<iGraphicsContextBackend>();
-	for (usize i = 0; i < windows->GetSize(); i++)
+	for (usize i = 0; i < windows->size(); i++)
 	{
-		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->At(i).data->GetBackendWindow());
-		gfxContextBackend->CreateGraphicsContext(windows->At(i).data->GetBackendWindow());
+		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->at(i).GetBackendWindow());
+		gfxContextBackend->CreateGraphicsContext(windows->at(i).GetBackendWindow());
 	}
 
 	_initialized.store(K_TRUE);
 	_renderSubsystem->NotifyMainThread(); // TODO: move XRenderSubsystem::NotifyMainThread() to cRenderThread
-
+	
 	{
 		std::lock_guard<std::mutex> lg(mtx);
-		std::cout << "Render thread initialized\n\n";
+		std::cout << "Render thread waits for main thread to initialize\n\n";
 	}
-
+	{
+		std::lock_guard<std::mutex> lg(mtx);
+		std::cout << "Render thread ready and starts\n\n";
+	}
 
 	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();

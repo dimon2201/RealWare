@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <vector>
 #include "object.hpp"
 #include "input_backend.hpp"
 #include "input_window.hpp"
@@ -20,7 +21,7 @@ namespace triton
 	{
         TRITON_OBJECT(cInput)
 
-        cStack<cInputWindow>* _windows = nullptr;
+        std::vector<cInputWindow>* _windows = nullptr; // TODO: replace with DynamicArray<T>
 
 	public:
 		explicit cInput(cContext* context);
@@ -40,6 +41,6 @@ namespace triton
         cVector2 GetMonitorSize() const;
         types::boolean GetKeyPressed(types::qword keyCode) const;
         inline types::boolean GetMouseKeyPressed(types::qword keyCode) const;
-        inline cStack<cInputWindow>* GetWindows() const { return _windows; }
+        inline std::vector<cInputWindow>* GetWindows() const { return _windows; }
 	};
 }

@@ -48,7 +48,6 @@ namespace triton
 		TResult FetchCommandResult(std::condition_variable& cv)
 		{
 			CThreadGuard::AssertMain();
-
 			_synchronization->WaitForFreeFrame(cv);
 			_synchronization->ProduceFrame(EFrameState::EXECUTE_COMMANDS);
 			_renderSubsystem->ResetScratchFrame();

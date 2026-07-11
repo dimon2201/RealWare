@@ -1,17 +1,4 @@
 #include <iostream>
-
-int main()
-{
-	std::cout << "Hello World!\n";
-
-	int* p = new int;
-    delete p;
-    *p = 666;
-
-    return 0;
-}
-
-/*#include <iostream>
 #include "capabilities.hpp"
 #include "context.hpp"
 #include "application.hpp"
@@ -51,8 +38,8 @@ public:
         _context->GetSubsystem<cGraphics>()->GetOpaqueRenderPass()->SetCamera(cameraHandle);
         
         HModel3D model = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModel(
-            "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models",
-            "lighthouse_separ_bake.fbx"
+            "C:/My/My_Projects_Theoretical/Game_TheCursedKeep/",
+            "Wall1.fbx"
         );
         SModel3DData& modelData = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
 
@@ -98,6 +85,7 @@ int main()
     caps.windows[0].windowWidth = 800;
     caps.windows[0].windowHeight = 600;
     caps.windows[0].fullscreen = K_FALSE;
+    caps.hashTableChunkByteSize = 1024;
 
     cMyApplication* myApp = new cMyApplication(context, &caps);
     std::cout << "Application initialized." << std::endl;
@@ -105,7 +93,7 @@ int main()
     myApp->Run();
 
     return 0;
-}*/
+}
 
 /*#include <iostream>
 #include <chrono>

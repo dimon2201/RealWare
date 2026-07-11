@@ -25,8 +25,9 @@ void* triton::cMemoryAllocator::Allocate(types::usize byteSize, types::usize ali
 	if (byteSize < MAX_ALLOCATION_BYTE_SIZE)
 	{
 		sAllocatorBin* bin = _memSizeToBin[byteSize];
-
-		for (usize i = 0; i < bin->_maxBlockCount; i++)
+		
+		// TODO: Implement proper and good-quality memory allocator
+		/*for (usize i = 0; i < bin->_maxBlockCount; i++)
 		{
 			iObject* obj = (iObject*)((u8*)bin->_blocks + bin->_blockSize * i);
 
@@ -36,7 +37,7 @@ void* triton::cMemoryAllocator::Allocate(types::usize byteSize, types::usize ali
 
 				return (void*)obj;
 			}
-		}
+		}*/
 
 		return std::malloc(byteSize);
 	}

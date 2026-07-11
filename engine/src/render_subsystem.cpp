@@ -27,6 +27,7 @@ void triton::XRenderSubsystem::Initialize()
 	CThreadGuard::AssertMain();
 
 	_synchronization = _context->Create<XEngineMTSynchronization>(_context, this);
+	_synchronization->_bIsMainInitialized.store(K_FALSE);
 	for (usize i = 0; i < 2; i++)
 	{
 		_synchronization->_mainThreadSwapChainSnapshot._frames[i] = EFrameState::FREE;
@@ -34,17 +35,15 @@ void triton::XRenderSubsystem::Initialize()
 	}
 	
 	// Create render thread
-	cInputWindow* window = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data;
+	cInputWindow& window = _context->GetSubsystem<cInput>()->GetWindows()->at(0);
 	for (usize i = 0; i < 2; i++)
-		_synchronization->_swapChain._frames[i].Reset(window);
-
-	_scratchFrame.Reset(window);
+		_synchronization->_swapChain._frames[i].Reset(&window);
+	_scratchFrame.Reset(&window);
 	
+	_renderThread = _context->Create<cRenderThread>(_context, _synchronization, this);
+	_renderThread->Run();
 	{
 		std::unique_lock<std::mutex> lock(_synchronization->_mutex);
-		_renderThread = _context->Create<cRenderThread>(_context, _synchronization, this);
-		_renderThread->Run();
-
 		// Wait until render thread gets initialized to continue main thread
 		_cv.wait(lock, [this] { return _renderThread->IsInitialized(); });
 	}
@@ -75,9 +74,9 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 
 	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
 	cInput* input = _context->GetSubsystem<cInput>();
-	cStack<cInputWindow>* windows = input->GetWindows();
-	cInputWindow* window = windows->At(0).data;
-	s32 windowCount = windows->GetSize();
+	std::vector<cInputWindow>* windows = input->GetWindows();
+	cInputWindow& window = windows->at(0);
+	s32 windowCount = windows->size();
 	boolean bIsRunning = K_TRUE;
 	while (bIsRunning)
 	{
@@ -97,7 +96,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 
 		_synchronization->WaitForFreeFrame(_cv);
 
-		s32 windowCount = windows->GetSize();
+		s32 windowCount = windows->size();
 		if (windowCount == 0)
 			break;
 
@@ -121,7 +120,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			else if (e.type == EWindowEvent::Quit)
 			{
 				// input->DestroyWindow(window);
-				windows->Erase(i);
+				windows->erase(windows->begin() + i);
 
 				Kill();
 
@@ -142,7 +141,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		_renderThread->NotifyThread();
 	}
 
-	input->DestroyWindow(window);
+	input->DestroyWindow(&window);
 
 	time->EndFrame();
 

@@ -94,8 +94,8 @@ void triton::XRenderPass::Draw()
                 CGPUShader shader = _shader->GetGPUShader();
 
                 // TODO: remove this line
-                cInputWindow* ibw = _context->GetSubsystem<cInput>()->GetWindows()->At(0).data;
-                cVector2 cursorPos = _context->GetSubsystem<cInput>()->GetCursorPosition(ibw);
+                cInputWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->at(0);
+                cVector2 cursorPos = _context->GetSubsystem<cInput>()->GetCursorPosition(&ibw);
                 camera->Update(cursorPos, 800, 600, 65.0f, 0.01f, 10000.0f, 0.1f);
                 ///////////////////////////////////////////////////////////////////////////
 

@@ -36,7 +36,7 @@ void triton::cInput::Initialize()
     cad.chunkByteSize = caps->hashTableChunkByteSize;
     cad.maxChunkCount = caps->hashTableMaxChunkCount;
     cad.hashTableSize = caps->hashTableSize;
-    _windows = new cStack<cInputWindow>(_context, cad);
+    _windows = new std::vector<cInputWindow>();
 
     cInput* input = _context->GetSubsystem<cInput>();
     if (input == nullptr)
@@ -50,13 +50,13 @@ void triton::cInput::Initialize()
             caps->windows[i].fullscreen
         );
 
-        _windows->Push(*window);
+        _windows->push_back(*window);
     }
 }
 
 void triton::cInput::Shutdown()
 {
-    _context->Destroy<cStack<cInputWindow>>(_windows);
+    //_context->Destroy<cStack<cInputWindow>>(_windows);
 }
 
 triton::cInputWindow* triton::cInput::CreatePlatformWindow(
@@ -86,8 +86,8 @@ void triton::cInput::ResizeWindows(const cVector2& newSize)
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
 
-    for (usize i = 0; i < _windows->GetSize(); i++)
-        input->ResizeWindow(_windows->At(i).data->GetBackendWindow(), newSize);
+    for (usize i = 0; i < _windows->size(); i++)
+        input->ResizeWindow(_windows->at(i).GetBackendWindow(), newSize);
 }
 
 triton::cVector2 triton::cInput::GetCursorPosition(cInputWindow* window)
