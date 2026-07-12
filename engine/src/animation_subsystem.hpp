@@ -12,6 +12,13 @@ namespace triton
 {
 	class cBuffer;
 	struct SBoneAnimation;
+	template <typename T>
+	class XUploader;
+
+	struct SSkinnedBoneGPULayout
+	{
+		cMatrix4 modelToModelMatrix = cMatrix4();
+	};
 
 	class XAnimationSubsystem : public ISubsystem<HAnimation, SAnimation, XLinearArray<SAnimation>>
 	{
@@ -19,6 +26,7 @@ namespace triton
 		TRITON_SUBSYSTEM
 
 		cBuffer* _skinnedBoneBuffer = nullptr;
+		XUploader<SSkinnedBoneGPULayout>* _uploader = nullptr;
 
 	public:
 		HAnimation CreateAnimation(
@@ -46,7 +54,7 @@ namespace triton
 
 		void Free() override;
 
-		void Update() override {}
+		void Update() override;
 
 	private:
 		void Upload(cBuffer* skinMatricesBuffer);

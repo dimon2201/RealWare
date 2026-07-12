@@ -42,5 +42,6 @@ namespace triton
         types::usize hashTableSize = 4096;
         types::usize futureResultBufferByteSize = 16 * 1024;
         types::usize handleAllocatorObjectCount = 16 * 1024;
+        types::usize maxSkinnedBoneCount = 64 * 1024;
     };
 }

@@ -7,6 +7,7 @@
 #include "animation.hpp"
 #include "bone.hpp"
 #include "handles.hpp"
+#include "uploader.hpp"
 
 using namespace types;
 
@@ -214,10 +215,12 @@ void triton::XAnimationSubsystem::Init()
         4
     ));
     _skinnedBoneBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _uploader = _context->Create<XUploader<SSkinnedBoneGPULayout>>(_context, caps->maxSkinnedBoneCount);
 }
 
 void triton::XAnimationSubsystem::Free()
 {
+    _context->Destroy<XUploader<SSkinnedBoneGPULayout>>(_uploader);
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
@@ -226,4 +229,9 @@ void triton::XAnimationSubsystem::Free()
         0,
         0
     ));
+}
+
+void triton::XAnimationSubsystem::Update()
+{
+    _uploader->Update();
 }
