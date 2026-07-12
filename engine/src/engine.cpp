@@ -33,6 +33,8 @@
 #include "model3d_backend.hpp"
 #include "model3d_backend_assimp.hpp"
 #include "model3d_subsystem.hpp"
+#include "animation_subsystem.hpp"
+#include "skeleton_subsystem.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -84,6 +86,10 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
 	_context->GetSubsystem<XGameObjectSubsystem>()->Init();
 	_context->RegisterSubsystem(new XModel3DSubsystem(_context));
+	_context->RegisterSubsystem(new XAnimationSubsystem(_context));
+	_context->GetSubsystem<XAnimationSubsystem>()->Init();
+	_context->RegisterSubsystem(new XSkeletonSubsystem(_context));
+	_context->GetSubsystem<XSkeletonSubsystem>()->Init();
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
