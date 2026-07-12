@@ -23,11 +23,11 @@ namespace triton
         TGPUElementLayout* _stagingBuffer = nullptr;
 
     public:
-        explicit XUploader(cContext* context, cGPUResource* resource, types::usize stagingBufferElementSize) : _context(context)
+        explicit XUploader(cContext* context, cGPUResource* resource, types::usize stagingBufferElementCount) : _context(context)
         {
             const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
             _resource = resource;
-            _stagingBufferByteSize = stagingBufferElementSize * sizeof(TGPUElementLayout);
+            _stagingBufferByteSize = stagingBufferElementCount * sizeof(TGPUElementLayout);
             _stagingBuffer = (TGPUElementLayout*)_context->GetMemoryAllocator()->Allocate(_stagingBufferByteSize, 64);
         }
 
