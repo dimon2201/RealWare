@@ -25,6 +25,7 @@ struct Instance
 {
 	float Use2D;
 	int MaterialIndex;
+	int SkeletonIndex;
 	mat4 World;
 };
 
@@ -44,9 +45,21 @@ struct Material
 	vec4 DiffuseColor;
 };
 
+struct Skeleton
+{
+	uint globBoneOffset;
+};
+
+struct SkinnedBone
+{
+	mat4 modelToModelMatrix;
+};
+
 layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[1024]; };
 layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[1024]; };
 layout(std430, binding = 2) buffer MaterialBuffer { Material materials[]; };
+layout(std430, binding = 3) buffer SkeletonBuffer { Skeleton skeletons[]; };
+layout(std430, binding = 4) buffer SkinnedBoneBuffer { SkinnedBone skinnedBones[]; };
 
 void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
 {
