@@ -38,7 +38,7 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
     f32 time
 )
 {
-    const SAnimation& a = Get(animationHandle);
+    const SAnimation& a = Get(animation);
 
     SEvaluatedFrame frame = {};
     frame.skeleton = a.skeleton;
@@ -50,10 +50,10 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
         SEvaluatedBone()
     );
 
-    if (animation->duration > 0.0f)
-        time = std::fmod(time, animation->duration);
+    if (a.duration > 0.0f)
+        time = std::fmod(time, a.duration);
 
-    for (const SBoneAnimation& boneAnimation : animation->bones)
+    for (const SBoneAnimation& boneAnimation : a.bones)
     {
         cVector3 posePosition = cVector3(0.0f);
         cQuaternion poseRotation = cQuaternion();
@@ -87,7 +87,7 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
                     const auto& a = boneAnimation.positionKeys[next - 1];
                     const auto& b = boneAnimation.positionKeys[next];
                     f32 factor = (time - a.time) / (b.time - a.time);
-                    posePosition = glm::lerp(a.position._vec, b.position._vec, factor);
+                    posePosition = cVector3(glm::mix(a.position._vec, b.position._vec, factor));
                 }
             }
         }
@@ -115,7 +115,7 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
                     const auto& a = boneAnimation.rotationKeys[next - 1];
                     const auto& b = boneAnimation.rotationKeys[next];
                     f32 factor = (time - a.time) / (b.time - a.time);
-                    pose.rotation = glm::slerp(a.rotation._quat, b.rotation._quat, factor);
+                    poseRotation = cQuaternion(glm::slerp(a.rotation._quat, b.rotation._quat, factor));
                 }
             }
         }
@@ -143,18 +143,18 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
                     const auto& a = boneAnimation.scaleKeys[next - 1];
                     const auto& b = boneAnimation.scaleKeys[next];
                     f32 factor = (time - a.time) / (b.time - a.time);
-                    poseScale = glm::lerp(a.scale._vec, b.scale._vec, factor);
+                    poseScale = cVector3(glm::mix(a.scale._vec, b.scale._vec, factor));
                 }
             }
         }
 
         glm::mat4 matrix = glm::mat4(1.0f);
-        matrix = glm::translate(matrix, posePosition);
-        matrix *= glm::mat4_cast(poseRotation);
-        matrix = glm::scale(matrix, poseScale);
+        matrix = glm::translate(matrix, posePosition._vec);
+        matrix *= glm::mat4_cast(poseRotation._quat);
+        matrix = glm::scale(matrix, poseScale._vec);
 
         SEvaluatedBone eb = {};
-        eb.transformMatrix = matrix;
+        eb.transformMatrix = cMatrix4(matrix);
 
         frame.bones[boneAnimation.localBoneIndex] = eb;
     }
@@ -210,9 +210,9 @@ void triton::XAnimationSubsystem::Init()
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->boneBufferSize,
-        3
+        4
     ));
-    _boneBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _skinnedBoneBuffer = renderSubsystem->FetchResult<cBuffer*>();
 }
 
 void triton::XAnimationSubsystem::Free()
@@ -220,7 +220,7 @@ void triton::XAnimationSubsystem::Free()
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_boneBuffer,
+        (cpuword)_skinnedBoneBuffer,
         0,
         0,
         0
