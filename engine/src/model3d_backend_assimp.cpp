@@ -38,6 +38,7 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     std::vector<SAnimation> animations = {};
     HSkeleton modelSkeleton = {};
     usize boneOffset = 0;
+    std::vector<HAnimation> modelAnimations = {};
 
     CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
 
@@ -64,9 +65,9 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     FinalizeBoneWeights(vertexData, vertexCount, vertexWeights);
     CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
     CreateSkeleton(modelSkeleton, bones, _context->GetSubsystem<XSkeletonSubsystem>());
-    CreateAnimations(scene, boneIndices, _context->GetSubsystem<XAnimationSubsystem>(), modelSkeleton);
+    CreateAnimations(scene, boneIndices, _context->GetSubsystem<XAnimationSubsystem>(), modelSkeleton, modelAnimations);
 
-    return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials);
+    return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials, modelAnimations);
 }
 
 void triton::XModel3DBackendAssimp::DestroyModel(SModel3DBackendResource& mesh)
@@ -426,7 +427,8 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
     const aiScene* scene,
     const std::unordered_map<std::string, usize>& boneIndices,
     XAnimationSubsystem* animationSubsystem,
-    HSkeleton modelSkeleton
+    HSkeleton modelSkeleton,
+    std::vector<HAnimation>& modelAnimations
 )
 {
     for (usize animIdx = 0; animIdx < scene->mNumAnimations; ++animIdx)
@@ -486,13 +488,14 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
             animation.bones.push_back(std::move(boneAnim));
         }
 
-        animationSubsystem->CreateAnimation(
+        modelAnimations.push_back(
+            animationSubsystem->CreateAnimation(
             animation.name,
             animation.duration,
             animation.ticksPerSecond,
             modelSkeleton,
             animation.bones
-        );
+        ));
     }
 }
 
@@ -563,7 +566,14 @@ std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFrom
     return textureSubsystem->CreateTexture(newTextureFilePath, dataFormat);
 }
 
-triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(const SVertex* vertexData, const u32* indexData, usize vertexCount, usize indexCount, const std::vector<HMaterial>& modelMaterials)
+triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(
+    const SVertex* vertexData,
+    const u32* indexData,
+    usize vertexCount,
+    usize indexCount,
+    const std::vector<HMaterial>& modelMaterials,
+    const std::vector<HAnimation>& modelAnimations
+)
 {
     SModel3DBackendResource mbr;
     mbr.vertexData = vertexData;
@@ -571,6 +581,7 @@ triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(con
     mbr.vertexCount = vertexCount;
     mbr.indexCount = indexCount;
     mbr.materials = modelMaterials;
+    mbr.animations = modelAnimations;
 
     return mbr;
 }

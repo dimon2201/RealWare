@@ -96,13 +96,21 @@ namespace triton
             const aiScene* scene,
             const std::unordered_map<std::string, types::usize>& boneIndices,
             XAnimationSubsystem* animationSubsystem,
-            HSkeleton modelSkeleton
+            HSkeleton modelSkeleton,
+            std::vector<HAnimation>& modelAnimations
         );
         
         std::optional<triton::HTexture> CreateTexture(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, types::boolean bIsEmbedded, const aiTexture* texture);
         std::optional<triton::HTexture> CreateTextureFromModelData(cTexture::eFormat dataFormat, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture);
         std::optional<triton::HTexture> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath);
-        SModel3DBackendResource PrepareResult(const SVertex* vertexData, const types::u32* indexData, types::usize vertexCount, types::usize indexCount, const std::vector<HMaterial>& modelMaterials);
+        SModel3DBackendResource PrepareResult(
+            const SVertex* vertexData,
+            const types::u32* indexData,
+            types::usize vertexCount,
+            types::usize indexCount,
+            const std::vector<HMaterial>& modelMaterials,
+            const std::vector<HAnimation>& modelAnimations
+        );
         cMatrix4 ConvertMatrix(const aiMatrix4x4& mat);
     };
 }
