@@ -1,4 +1,6 @@
-// render_susbsytem.hpp
+// render_subsystem.hpp
+
+#pragma once
 
 #include <mutex>
 #include <condition_variable>

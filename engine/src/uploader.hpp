@@ -18,12 +18,13 @@ namespace triton
     {
         TRITON_OBJECT(XUploader)
 
-        cGPUResouce* _resource = nullptr;
+        types::boolean _bIsDirty = types::K_FALSE;
+        cGPUResource* _resource = nullptr;
         types::usize _stagingBufferByteSize = 0;
         TGPUElementLayout* _stagingBuffer = nullptr;
 
     public:
-        explicit XUploader(cContext* context, cGPUResource* resource, types::usize stagingBufferElementCount) : _context(context)
+        explicit XUploader(cContext* context, cGPUResource* resource, types::usize stagingBufferElementCount) : iObject(context)
         {
             const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
             _resource = resource;
