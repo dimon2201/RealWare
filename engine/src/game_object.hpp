@@ -16,5 +16,6 @@ namespace triton
         HMaterial material;
         cVector3 worldPosition = cVector3(0.0f);
         cVector3 worldRotation = cVector3(0.0f);
+        HSkeleton skeleton = {};
     };
 }
