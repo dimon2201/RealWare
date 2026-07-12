@@ -22,7 +22,8 @@ namespace triton
 
         types::f32 _use2D = 0.0f;
         types::s32 _materialIndex = -1;
-        types::dword _pad[2] = {};
+        types::s32 _skeletonIndex = -1;
+        types::dword _pad[1] = {};
         cMatrix4 _world = cMatrix4(1.0f);
     };
 }
