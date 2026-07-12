@@ -43,5 +43,6 @@ namespace triton
         types::usize futureResultBufferByteSize = 16 * 1024;
         types::usize handleAllocatorObjectCount = 16 * 1024;
         types::usize maxSkinnedBoneCount = 64 * 1024;
+        types::usize maxSkeletonCount = 64 * 1024;
     };
 }

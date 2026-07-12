@@ -2,6 +2,7 @@
 
 #include "skeleton_subsystem.hpp"
 #include "skeleton.hpp"
+#include "uploader.hpp"
 
 using namespace types;
 
@@ -19,4 +20,22 @@ triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(const std::vector<S
 void triton::XSkeletonSubsystem::DestroySkeleton(const HSkeleton& skeleton)
 {
     Destroy(skeleton);
+}
+
+void triton::XSkeletonSubsystem::Init()
+{
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+    const sCapabilities* caps = app->GetCapabilities();
+    _uploader = _context->Create<XUploader<SSkeletonGPULayout>>(_context, caps->maxSkeletonCount);
+}
+
+void triton::XSkeletonSubsystem::Free()
+{
+    _context->Destroy<XUploader<SSkeletonGPULayout>>(_uploader);
+}
+
+void triton::XSkeletonSubsystem::Update()
+{
+    _uploader->Update();
 }
