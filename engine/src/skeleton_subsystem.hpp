@@ -15,7 +15,7 @@ namespace triton
 		TRITON_SUBSYSTEM
 
 	public:
-		HSkeleton CreateAnimation();
+		HSkeleton CreateSkeleton(const std::vector<SBone>& bones);
 
 		void DestroySkeleton(const HSkeleton& skeleton);
 

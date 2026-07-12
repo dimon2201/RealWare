@@ -7,6 +7,7 @@
 #include "vertex.hpp"
 #include "math.hpp"
 #include "material_subsystem.hpp"
+#include "skeleton_subsystem.hpp"
 #include "bone.hpp"
 #include "animation.hpp"
 
@@ -34,6 +35,7 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     std::vector<SBone> bones = {};
     std::vector<std::vector<SBoneWeight>> vertexWeights;
     std::vector<SAnimation> animations = {};
+    HSkeleton modelSkeleton = {};
 
     CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
 
@@ -59,6 +61,7 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     CreateBones(scene, vertexData, vertexCount, boneIndices, bones, vertexWeights);
     FinalizeBoneWeights(vertexData, vertexCount, vertexWeights);
     CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
+    CreateSkeleton(bones, _context->GetSubsystem<XSkeletonSubsystem>());
     CreateAnimations(scene, boneIndices, animations);
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials);
@@ -406,6 +409,11 @@ void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
             bones
         );
     }
+}
+
+void triton::XModel3DBackendAssimp::CreateSkeleton(HSkeleton& modelSkeleton, const std::vector<SBone>& bones, XSkeletonSubsystem* skeletonSubsystem)
+{
+    modelSkeleton = skeletonSubsystem->CreateSkeleton(bones);
 }
 
 void triton::XModel3DBackendAssimp::CreateAnimations(

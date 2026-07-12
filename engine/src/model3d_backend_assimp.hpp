@@ -19,8 +19,10 @@ namespace triton
     class cVector3;
     class XTextureSubsystem;
     class XMaterialSubsystem;
+    class XSkeletonSubsystem;
     struct SBone;
     struct SAnimation;
+    struct SSkeleton;
 
     struct SModel3DMaterialData final
     {
@@ -82,6 +84,8 @@ namespace triton
             std::unordered_map<std::string, types::usize>& boneIndices,
             std::vector<SBone>& bones
         );
+
+        void CreateSkeleton(HSkeleton& modelSkeleton, const std::vector<SBone>& bones, XSkeletonSubsystem* skeletonSubsystem);
 
         void CreateAnimations(
             const aiScene* scene,
