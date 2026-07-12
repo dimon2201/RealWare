@@ -124,10 +124,11 @@ namespace triton
 	class cQuaternion
 	{
 		friend class cQuaternion;
-
+	public: // TODO: remove this
 		glm::quat _quat = {};
 
 	public:
+		explicit cQuaternion();
 		explicit cQuaternion(const glm::quat& quat);
 		explicit cQuaternion(types::f32 angle, const cVector3& axis);
 		explicit cQuaternion(types::f32 w, types::f32 x, types::f32 y, types::f32 z);

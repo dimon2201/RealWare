@@ -168,6 +168,8 @@ void triton::cVector4::Normalize()
 	_vec = glm::normalize(_vec);
 }
 
+triton::cQuaternion::cQuaternion() : _quat(glm::identity<glm::quat>()) {}
+
 triton::cQuaternion::cQuaternion(const glm::quat& quat) : _quat(quat) {}
 
 triton::cQuaternion::cQuaternion(f32 angle, const cVector3& axis) : _quat(glm::angleAxis(angle, axis._vec)) {}
