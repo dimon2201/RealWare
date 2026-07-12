@@ -15,4 +15,5 @@ namespace triton
 	using HTexture = SHandle;
 	using HModel3D = SHandle;
 	using HAnimation = SHandle;
+	using HSkeleton = SHandle;
 }
