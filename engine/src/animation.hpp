@@ -5,6 +5,7 @@
 namespace triton
 {
     struct HSkeleton;
+    class cMatrix4;
 
     struct SBonePositionKey
     {
@@ -15,7 +16,7 @@ namespace triton
     struct SBoneRotationKey
     {
         types::f32 time = 0.0f;
-        cQuaternion rotation = cQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
+        cQuaternion rotation = cQuaternion();
     };
 
     struct SBoneScaleKey
@@ -39,5 +40,10 @@ namespace triton
         types::f32 duration = 0.0f;
         types::f32 ticksPerSecond = 0.0f;
         std::vector<SBoneAnimation> bones = {};
+    };
+
+    struct SAnimationFrame
+    {
+        std::vector<cMatrix4> bones = {};
     };
 }
