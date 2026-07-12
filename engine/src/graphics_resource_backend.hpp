@@ -63,10 +63,11 @@ namespace triton
             R8,
             R8F,
             RGBA8,
+            RGBA8_SRGB,
             RGB16F,
             RGBA16F,
             DEPTH_STENCIL,
-            RGBA8_MIPS
+            RGBA8_SRGB_MIPS
         };
 
     private:

@@ -227,6 +227,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
     for (auto& material : materials)
     {
         HTexture diffuseTexture = *CreateTexture(
+            cTexture::eFormat::RGBA8_SRGB_MIPS,
             modelFolderPath,
             textureSubsystem,
             material.diffuseTextureFilePath,
@@ -234,6 +235,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
             scene->GetEmbeddedTexture(material.diffuseTextureFilePath.c_str())
         );
         HTexture normalTexture = *CreateTexture(
+            cTexture::eFormat::RGBA8,
             modelFolderPath,
             textureSubsystem,
             material.normalTextureFilePath,
@@ -241,6 +243,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
             scene->GetEmbeddedTexture(material.normalTextureFilePath.c_str())
         );
         HTexture roughnessTexture = *CreateTexture(
+            cTexture::eFormat::R8,
             modelFolderPath,
             textureSubsystem,
             material.roughnessTextureFilePath,
@@ -248,6 +251,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
             scene->GetEmbeddedTexture(material.roughnessTextureFilePath.c_str())
         );
         HTexture metallicTexture = *CreateTexture(
+            cTexture::eFormat::R8,
             modelFolderPath,
             textureSubsystem,
             material.metallicTextureFilePath,
@@ -277,15 +281,15 @@ void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bita
     _context->GetMemoryAllocator()->Deallocate(bitangents);
 }
 
-std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTexture(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, boolean bIsEmbedded, const aiTexture* texture)
+std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTexture(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, boolean bIsEmbedded, const aiTexture* texture)
 {
     if (bIsEmbedded == K_TRUE)
-        return CreateTextureFromModelData(textureSubsystem, textureFilePath, texture);
+        return CreateTextureFromModelData(dataFormat, textureSubsystem, textureFilePath, texture);
     else
-        return CreateTextureFromFile(modelFolderPath, textureSubsystem, textureFilePath);
+        return CreateTextureFromFile(dataFormat, modelFolderPath, textureSubsystem, textureFilePath);
 }
 
-std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFromModelData(XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture)
+std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFromModelData(cTexture::eFormat dataFormat, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture)
 {
     if (!texture)
         return std::nullopt;
@@ -304,7 +308,7 @@ std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFrom
             return std::nullopt;
         }
 
-        return textureSubsystem->CreateTexture(fileData, fileByteSize, ETextureFormat::PNG);
+        return textureSubsystem->CreateTexture(fileData, fileByteSize, ETextureFormat::PNG, dataFormat);
     }
     else
     {
@@ -319,7 +323,7 @@ std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFrom
     }
 }
 
-std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFromFile(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath)
+std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath)
 {
     std::string newTextureFilePath;
     std::filesystem::path path(textureFilePath);
@@ -341,7 +345,7 @@ std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFrom
         newTextureFilePath = path.generic_string();
     }
     
-    return textureSubsystem->CreateTexture(newTextureFilePath);
+    return textureSubsystem->CreateTexture(newTextureFilePath, dataFormat);
 }
 
 triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(const SVertex* vertexData, const u32* indexData, usize vertexCount, usize indexCount, const std::vector<HMaterial>& modelMaterials)

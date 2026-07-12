@@ -18,8 +18,9 @@ struct TextureAtlasTexture
 };
 layout(std430, binding = 3) buffer TextureAtlasTexturesBuffer { TextureAtlasTexture textureAtlasTextures[1024]; };
 
-layout(binding = 0) uniform sampler2DArray TextureAtlasRGBA8;
-layout(binding = 1) uniform sampler2DArray TextureAtlasR8;
+layout(binding = 0) uniform sampler2DArray TextureAtlasRGBA8SRGB;
+layout(binding = 1) uniform sampler2DArray TextureAtlasRGBA8;
+layout(binding = 2) uniform sampler2DArray TextureAtlasR8;
 
 void Fragment_Passthrough(in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor)
 {
@@ -33,7 +34,8 @@ uniform vec4 CameraPosWorldSpace;
 
 void main()
 {
-	vec4 textureColor = texture(TextureAtlasRGBA8, DiffuseTexcoordAtlas);
+	vec4 textureColor = texture(TextureAtlasRGBA8SRGB, DiffuseTexcoordAtlas);
+	textureColor.xyz = pow(textureColor.xyz, vec3(1.0 / 2.2));
 	float roughness = texture(TextureAtlasR8, RoughnessTexcoordAtlas).x;
 	float metallic = texture(TextureAtlasR8, MetallicTexcoordAtlas).x;
 	vec4 fragColor = vec4(0.0);
@@ -60,5 +62,5 @@ void main()
 		lightDir
 	);
 
-	FragColor = vec4(pbr, 1.0f);
+	FragColor = vec4(textureColor.xyz, 1.0f);
 }

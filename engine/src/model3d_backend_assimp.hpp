@@ -9,6 +9,7 @@
 #include <assimp/postprocess.h>
 #include <vector>
 #include "model3d_backend.hpp"
+#include "graphics_resource_backend.hpp"
 #include "handles.hpp"
 
 namespace triton
@@ -54,9 +55,9 @@ namespace triton
         void CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials, const aiScene* scene);
         void SetAbsoluteMaterialIndices(SVertex*& vertexData, types::usize vertexCount, const std::vector<HMaterial>& modelMaterials);
         void DeallocateTempBitangentBuffer(cVector3* bitangents);
-        std::optional<triton::HTexture> CreateTexture(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, types::boolean bIsEmbedded, const aiTexture* texture);
-        std::optional<triton::HTexture> CreateTextureFromModelData(XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture);
-        std::optional<triton::HTexture> CreateTextureFromFile(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath);
+        std::optional<triton::HTexture> CreateTexture(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, types::boolean bIsEmbedded, const aiTexture* texture);
+        std::optional<triton::HTexture> CreateTextureFromModelData(cTexture::eFormat dataFormat, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture);
+        std::optional<triton::HTexture> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath);
         SModel3DBackendResource PrepareResult(const SVertex* vertexData, const types::u32* indexData, types::usize vertexCount, types::usize indexCount, const std::vector<HMaterial>& modelMaterials);
     };
 }

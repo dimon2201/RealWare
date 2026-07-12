@@ -162,9 +162,15 @@ triton::cTexture* triton::cGraphicsResourceBackendOGL::CreateTexture(
         channelsGL = GL_RED;
         formatComponentGL = GL_FLOAT;
     }
-    else if (format == cTexture::eFormat::RGBA8 || format == cTexture::eFormat::RGBA8_MIPS)
+    else if (format == cTexture::eFormat::RGBA8)
     {
         formatGL = GL_RGBA8;
+        channelsGL = GL_RGBA;
+        formatComponentGL = GL_UNSIGNED_BYTE;
+    }
+    else if (format == cTexture::eFormat::RGBA8_SRGB_MIPS)
+    {
+        formatGL = GL_SRGB8_ALPHA8;
         channelsGL = GL_RGBA;
         formatComponentGL = GL_UNSIGNED_BYTE;
     }
@@ -194,7 +200,7 @@ triton::cTexture* triton::cGraphicsResourceBackendOGL::CreateTexture(
         glTexImage2D(GL_TEXTURE_2D, 0, formatGL, size.GetX(), size.GetY(), 0, channelsGL, formatComponentGL, data);
         if (format != cTexture::eFormat::DEPTH_STENCIL)
         {
-            if (format == cTexture::eFormat::RGBA8_MIPS)
+            if (format == cTexture::eFormat::RGBA8_SRGB_MIPS)
             {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -216,7 +222,7 @@ triton::cTexture* triton::cGraphicsResourceBackendOGL::CreateTexture(
 
         glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatGL, size.GetX(), size.GetY(), size.GetZ(), 0, channelsGL, formatComponentGL, data);
 
-        if (format == cTexture::eFormat::RGBA8_MIPS)
+        if (format == cTexture::eFormat::RGBA8_SRGB_MIPS)
         {
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -296,10 +302,13 @@ void triton::cGraphicsResourceBackendOGL::WriteTexture(
         channelsGL = GL_RED;
         formatComponentGL = GL_FLOAT;
     }
-    else if (
-        texture->GetFormat() == cTexture::eFormat::RGBA8 ||
-        texture->GetFormat() == cTexture::eFormat::RGBA8_MIPS
-        )
+    else if (texture->GetFormat() == cTexture::eFormat::RGBA8_SRGB_MIPS)
+    {
+        formatGL = GL_SRGB8_ALPHA8;
+        channelsGL = GL_RGBA;
+        formatComponentGL = GL_UNSIGNED_BYTE;
+    }
+    else if (texture->GetFormat() == cTexture::eFormat::RGBA8)
     {
         formatGL = GL_RGBA8;
         channelsGL = GL_RGBA;
