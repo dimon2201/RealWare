@@ -29,9 +29,14 @@ namespace triton
 			const std::vector<SBoneAnimation>& bones
 		);
 
-		void DestroyAnimation(const HAnimation& animation);
+		void DestroyAnimation(
+			const HAnimation& animation
+		);
 
-		void Evaluate(const HAnimation& animation);
+		SAnimationFrame Evaluate(
+			const HAnimation& animation,
+			types::f32 time
+		);
 
 		void Init() override;
 
