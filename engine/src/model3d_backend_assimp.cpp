@@ -61,7 +61,7 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     CreateBones(scene, vertexData, vertexCount, boneIndices, bones, vertexWeights);
     FinalizeBoneWeights(vertexData, vertexCount, vertexWeights);
     CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
-    CreateSkeleton(bones, _context->GetSubsystem<XSkeletonSubsystem>());
+    CreateSkeleton(modelSkeleton, bones, _context->GetSubsystem<XSkeletonSubsystem>());
     CreateAnimations(scene, boneIndices, animations);
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials);
