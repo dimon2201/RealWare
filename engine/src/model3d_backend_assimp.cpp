@@ -8,6 +8,7 @@
 #include "math.hpp"
 #include "material_subsystem.hpp"
 #include "bone.hpp"
+#include "animation.hpp"
 
 using namespace types;
 
