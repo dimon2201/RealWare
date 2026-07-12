@@ -3,6 +3,8 @@ layout(location = 1) in vec2 InTexcoord;
 layout(location = 2) in vec3 InNormal;
 layout(location = 3) in vec4 InTangent;
 layout(location = 4) in int InMaterialIndex;
+layout(location = 5) in uvec4 InBoneIndices;
+layout(location = 6) in vec4 InBoneWeights;
 
 out vec3 DiffuseTexcoordAtlas;
 out vec3 NormalTexcoordAtlas;
