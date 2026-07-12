@@ -3,11 +3,10 @@
 #pragma once
 
 #include <vector>
+#include "bone.hpp"
 
 namespace triton
 {
-	struct SBone;
-
 	struct SSkeleton
 	{
 		types::u32 globBoneOffset = 0;

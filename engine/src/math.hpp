@@ -153,6 +153,7 @@ namespace triton
 		glm::mat4 _mat = {};
 
 	public:
+		explicit cMatrix4();
 		explicit cMatrix4(const glm::mat4& mat);
 		explicit cMatrix4(types::f32 value);
 		explicit cMatrix4(const cVector3& position, const cVector3& direction, const cVector3& up);

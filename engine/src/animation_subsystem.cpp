@@ -6,6 +6,7 @@
 #include "graphics_resource_backend.hpp"
 #include "animation.hpp"
 #include "bone.hpp"
+#include "handles.hpp"
 
 using namespace types;
 

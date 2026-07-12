@@ -192,6 +192,8 @@ triton::cVector3 triton::cQuaternion::EulerAngles() const
 	return cVector3(glm::eulerAngles(_quat));
 }
 
+triton::cMatrix4::cMatrix4() : _mat(glm::mat4(1.0f)) {}
+
 triton::cMatrix4::cMatrix4(const glm::mat4& mat) : _mat(mat) {}
 
 triton::cMatrix4::cMatrix4(f32 value) : _mat(glm::mat4(value)) {}

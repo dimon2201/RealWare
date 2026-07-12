@@ -4,7 +4,6 @@
 
 namespace triton
 {
-    struct HSkeleton;
     class cMatrix4;
 
     struct SBonePositionKey
