@@ -32,6 +32,7 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     std::unordered_map<std::string, types::usize> boneIndices = {};
     std::vector<SBone> bones = {};
     std::vector<std::vector<SBoneWeight>> vertexWeights;
+    std::vector<SAnimation> animations = {};
 
     CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
 
@@ -56,6 +57,8 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
 
     CreateBones(scene, vertexData, vertexCount, boneIndices, bones, vertexWeights);
     FinalizeBoneWeights(vertexData, vertexCount, vertexWeights);
+    CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
+    CreateAnimations(scene, boneIndices, animations);
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials);
 }
@@ -312,7 +315,7 @@ void triton::XModel3DBackendAssimp::CreateBones(
             {
                 SBone b = {};
                 b.name = boneName;
-                b.offsetMatrix = ConvertMatrix(bone->mOffsetMatrix);
+                b.parentBoneSpaceToThisBoneSpace = ConvertMatrix(bone->mOffsetMatrix);
 
                 realBoneIndex = bones.size();
                 boneIndices.insert({ boneName, realBoneIndex });
@@ -372,22 +375,22 @@ void triton::XModel3DBackendAssimp::FinalizeBoneWeights(SVertex* vertexData, typ
     }
 }
 
-void triton::XModel3DBackendAssimp::ParseNode(
+void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
     const aiNode* node,
     int parentBone,
     std::unordered_map<std::string, usize>& boneIndices,
     std::vector<SBone>& bones
 )
 {
-    int currentBone = -1;
+    usize currentBone = -1;
 
     auto it = boneIndices.find(node->mName.C_Str());
     if (it != boneIndices.end())
     {
-        currentBone = static_cast<int>(it->second);
+        currentBone = it->second;
 
         bones[currentBone].parent = parentBone;
-        bones[currentBone].localMatrix = ConvertMatrix(node->mTransformation);
+        bones[currentBone].modelSpaceToThisBoneSpace = ConvertMatrix(node->mTransformation);
 
         if (parentBone != -1)
             bones[parentBone].children.push_back(currentBone);
@@ -395,12 +398,81 @@ void triton::XModel3DBackendAssimp::ParseNode(
 
     for (uint32_t i = 0; i < node->mNumChildren; i++)
     {
-        ParseNode(
+        CreateBoneHierarchy(
             node->mChildren[i],
             currentBone == -1 ? parentBone : currentBone,
             boneIndices,
             bones
         );
+    }
+}
+
+void triton::XModel3DBackendAssimp::CreateAnimations(
+    const aiScene* scene,
+    const std::unordered_map<std::string, usize>& boneIndices,
+    std::vector<SAnimation>& animations
+)
+{
+    animations.reserve(scene->mNumAnimations);
+
+    for (usize animIdx = 0; animIdx < scene->mNumAnimations; ++animIdx)
+    {
+        const aiAnimation* srcAnim = scene->mAnimations[animIdx];
+
+        SAnimation animation = {};
+        animation.name = srcAnim->mName.C_Str();
+        animation.duration = srcAnim->mDuration;
+        animation.ticksPerSecond = srcAnim->mTicksPerSecond;
+        animation.bones.reserve(srcAnim->mNumChannels);
+
+        for (usize channelIdx = 0; channelIdx < srcAnim->mNumChannels; ++channelIdx)
+        {
+            const aiNodeAnim* channel = srcAnim->mChannels[channelIdx];
+
+            auto it = boneIndices.find(channel->mNodeName.C_Str());
+            if (it == boneIndices.end())
+                continue;
+
+            SBoneAnimation boneAnim;
+            boneAnim.boneIndex = it->second;
+
+            // Position
+            boneAnim.positionKeys.reserve(channel->mNumPositionKeys);
+            for (usize keyIdx = 0; keyIdx < channel->mNumPositionKeys; ++keyIdx)
+            {
+                const aiVectorKey& key = channel->mPositionKeys[keyIdx];
+                SBonePositionKey bpk = {};
+                bpk.time = key.mTime;
+                bpk.position = cVector3(key.mValue.x, key.mValue.y, key.mValue.z);
+                boneAnim.positionKeys.push_back(bpk);
+            }
+
+            // Rotation
+            boneAnim.rotationKeys.reserve(channel->mNumRotationKeys);
+            for (usize keyIdx = 0; keyIdx < channel->mNumRotationKeys; ++keyIdx)
+            {
+                const aiQuatKey& key = channel->mRotationKeys[keyIdx];
+                SBoneRotationKey brk = {};
+                brk.time = key.mTime;
+                brk.rotation = cQuaternion(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z);
+                boneAnim.rotationKeys.push_back(brk);
+            }
+
+            // Scale
+            boneAnim.scaleKeys.reserve(channel->mNumScalingKeys);
+            for (usize keyIdx = 0; keyIdx < channel->mNumScalingKeys; ++keyIdx)
+            {
+                const aiVectorKey& key = channel->mScalingKeys[keyIdx];
+                SBoneScaleKey bsk = {};
+                bsk.time = key.mTime;
+                bsk.scale = cVector3(key.mValue.x, key.mValue.y, key.mValue.z);
+                boneAnim.scaleKeys.push_back(bsk);
+            }
+
+            animation.bones.push_back(std::move(boneAnim));
+        }
+
+        animations.push_back(std::move(animation));
     }
 }
 

@@ -14,8 +14,8 @@ namespace triton
 		static constexpr types::usize kMaxChildCount = 16;
 
 		std::string name = {};
-		cMatrix4 offsetMatrix = cMatrix4(1.0f);
-		cMatrix4 localMatrix = cMatrix4(1.0f);
+		cMatrix4 parentBoneSpaceToThisBoneSpace = cMatrix4(1.0f);
+		cMatrix4 modelSpaceToThisBoneSpace = cMatrix4(1.0f);
 		types::s32 parent = kNoParent;
 		std::vector<types::usize> children = {};
 	};

@@ -40,6 +40,43 @@ namespace triton
         types::f32 weight = 0.0f;
     };
 
+    // TODO: move this structs to separate file
+    // ||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    struct SBonePositionKey
+    {
+        types::f32 time = 0.0f;
+        cVector3 position = cVector3(0.0f);
+    };
+
+    struct SBoneRotationKey
+    {
+        types::f32 time = 0.0f;
+        cQuaternion rotation = cQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
+    };
+
+    struct SBoneScaleKey
+    {
+        types::f32 time = 0.0f;
+        cVector3 scale = cVector3(0.0f);
+    };
+
+    struct SBoneAnimation
+    {
+        types::usize boneIndex = 0;
+        std::vector<SBonePositionKey> positionKeys = {};
+        std::vector<SBoneRotationKey> rotationKeys = {};
+        std::vector<SBoneScaleKey> scaleKeys = {};
+    };
+
+    struct SAnimation
+    {
+        std::string name = "";
+        types::f32 duration = 0.0f;
+        types::f32 ticksPerSecond = 0.0f;
+        std::vector<SBoneAnimation> bones = {};
+    };
+
     class XModel3DBackendAssimp final : public IModel3DBackend
     {
         TRITON_OBJECT(XModel3DBackendAssimp)
@@ -75,13 +112,17 @@ namespace triton
 
         void FinalizeBoneWeights(SVertex* vertexData, types::usize vertexCount, std::vector<std::vector<SBoneWeight>>& vertexWeights);
         
-        void CreateBoneHierarchy();
-        
-        void ParseNode(
+        void CreateBoneHierarchy(
             const aiNode* node,
             int parentBone,
             std::unordered_map<std::string, types::usize>& boneIndices,
             std::vector<SBone>& bones
+        );
+
+        void CreateAnimations(
+            const aiScene* scene,
+            const std::unordered_map<std::string, types::usize>& boneIndices,
+            std::vector<SAnimation>& animations
         );
         
         std::optional<triton::HTexture> CreateTexture(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, types::boolean bIsEmbedded, const aiTexture* texture);
