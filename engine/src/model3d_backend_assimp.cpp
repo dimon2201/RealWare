@@ -7,6 +7,7 @@
 #include "vertex.hpp"
 #include "math.hpp"
 #include "material_subsystem.hpp"
+#include "bone.hpp"
 
 using namespace types;
 
@@ -28,6 +29,9 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     cVector3* bitangents = nullptr;
     std::vector<SModel3DMaterialData> materials = {};
     std::vector<HMaterial> modelMaterials = {};
+    std::unordered_map<std::string, types::usize> boneIndices = {};
+    std::vector<SBone> bones = {};
+    std::vector<std::vector<SBoneWeight>> vertexWeights;
 
     CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
 
@@ -49,6 +53,9 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     SetAbsoluteMaterialIndices(vertexData, vertexCount, modelMaterials);
 
     ParseIndexData(scene, indexData, indexOffsets);
+
+    CreateBones(scene, vertexData, vertexCount, boneIndices, bones, vertexWeights);
+    FinalizeBoneWeights(vertexData, vertexCount, vertexWeights);
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials);
 }
@@ -281,6 +288,122 @@ void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bita
     _context->GetMemoryAllocator()->Deallocate(bitangents);
 }
 
+void triton::XModel3DBackendAssimp::CreateBones(
+    const aiScene* scene,
+    SVertex* vertexData,
+    usize vertexCount,
+    std::unordered_map<std::string, usize>& boneIndices,
+    std::vector<SBone>& bones,
+    std::vector<std::vector<SBoneWeight>>& vertexWeights
+)
+{
+    vertexWeights.resize(vertexCount);
+    usize vertexOffset = 0;
+    for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
+    {
+        const aiMesh* mesh = scene->mMeshes[meshIndex];
+        for (usize boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
+        {
+            const aiBone* bone = mesh->mBones[boneIndex];
+
+            std::string boneName = bone->mName.C_Str();
+            usize realBoneIndex = 0;
+            if (boneIndices.find(boneName) == boneIndices.end())
+            {
+                SBone b = {};
+                b.name = boneName;
+                b.offsetMatrix = ConvertMatrix(bone->mOffsetMatrix);
+
+                realBoneIndex = bones.size();
+                boneIndices.insert({ boneName, realBoneIndex });
+                bones.push_back(std::move(b));
+            }
+            else
+            {
+                realBoneIndex = boneIndices[boneName];
+            }
+
+            for (usize weightIndex = 0; weightIndex < bone->mNumWeights; weightIndex++)
+            {
+                const aiVertexWeight& vw = bone->mWeights[weightIndex];
+                const usize vertexIndex = vertexOffset + vw.mVertexId;
+                vertexWeights[vertexIndex].push_back({ 
+                    realBoneIndex,
+                    vw.mWeight
+                });
+            }
+        }
+        vertexOffset += mesh->mNumVertices;
+    }
+}
+
+void triton::XModel3DBackendAssimp::FinalizeBoneWeights(SVertex* vertexData, types::usize vertexCount, std::vector<std::vector<SBoneWeight>>& vertexWeights)
+{
+    for (usize vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
+    {
+        auto& weights = vertexWeights[vertexIndex];
+
+        std::sort(
+            weights.begin(),
+            weights.end(),
+            [](const SBoneWeight& a, const SBoneWeight& b)
+            {
+                return a.weight > b.weight;
+            }
+        );
+
+        if (weights.size() > SVertex::kMaxBonesPerVertex)
+            weights.resize(SVertex::kMaxBonesPerVertex);
+
+        f32 sum = 0.0f;
+        for (const auto& w : weights)
+            sum += w.weight;
+        if (sum > 0.0f)
+        {
+            for (auto& w : weights)
+                w.weight /= sum;
+        }
+
+        for (usize i = 0; i < weights.size(); i++)
+        {
+            vertexData[vertexIndex].boneIndices[i] = weights[i].boneIndex;
+            vertexData[vertexIndex].boneWeights[i] = weights[i].weight;
+        }
+    }
+}
+
+void triton::XModel3DBackendAssimp::ParseNode(
+    const aiNode* node,
+    int parentBone,
+    std::unordered_map<std::string, usize>& boneIndices,
+    std::vector<SBone>& bones
+)
+{
+    int currentBone = -1;
+
+    auto it = boneIndices.find(node->mName.C_Str());
+    if (it != boneIndices.end())
+    {
+        currentBone = static_cast<int>(it->second);
+
+        bones[currentBone].parent = parentBone;
+        bones[currentBone].localMatrix = ConvertMatrix(node->mTransformation);
+
+        if (parentBone != -1)
+            bones[parentBone].children.push_back(currentBone);
+    }
+
+    for (uint32_t i = 0; i < node->mNumChildren; i++)
+    {
+        ParseNode(
+            node->mChildren[i],
+            currentBone == -1 ? parentBone : currentBone,
+            boneIndices,
+            bones
+        );
+    }
+}
+
 std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTexture(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, boolean bIsEmbedded, const aiTexture* texture)
 {
     if (bIsEmbedded == K_TRUE)
@@ -358,4 +481,14 @@ triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(con
     mbr.materials = modelMaterials;
 
     return mbr;
+}
+
+triton::cMatrix4 triton::XModel3DBackendAssimp::ConvertMatrix(const aiMatrix4x4& m)
+{
+    return cMatrix4(glm::mat4(
+        m.a1, m.b1, m.c1, m.d1,
+        m.a2, m.b2, m.c2, m.d2,
+        m.a3, m.b3, m.c3, m.d3,
+        m.a4, m.b4, m.c4, m.d4
+    ));
 }

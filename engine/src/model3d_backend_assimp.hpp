@@ -8,6 +8,7 @@
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <vector>
+#include <unordered_map>
 #include "model3d_backend.hpp"
 #include "graphics_resource_backend.hpp"
 #include "handles.hpp"
@@ -18,6 +19,7 @@ namespace triton
     class cVector3;
     class XTextureSubsystem;
     class XMaterialSubsystem;
+    struct SBone;
 
     struct SModel3DMaterialData final
     {
@@ -30,6 +32,12 @@ namespace triton
         types::boolean bIsNormalEmbedded = types::K_FALSE;
         types::boolean bIsRoughnessEmbedded = types::K_FALSE;
         types::boolean bIsMetallicEmbedded = types::K_FALSE;
+    };
+
+    struct SBoneWeight final
+    {
+        types::usize boneIndex = 0;
+        types::f32 weight = 0.0f;
     };
 
     class XModel3DBackendAssimp final : public IModel3DBackend
@@ -55,9 +63,31 @@ namespace triton
         void CreateMaterials(const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, XMaterialSubsystem* materialSubsystem, const std::vector<SModel3DMaterialData>& materials, std::vector<HMaterial>& modelMaterials, const aiScene* scene);
         void SetAbsoluteMaterialIndices(SVertex*& vertexData, types::usize vertexCount, const std::vector<HMaterial>& modelMaterials);
         void DeallocateTempBitangentBuffer(cVector3* bitangents);
+        
+        void CreateBones(
+            const aiScene* scene,
+            SVertex* vertexData,
+            types::usize vertexCount,
+            std::unordered_map<std::string, types::usize>& boneIndices,
+            std::vector<SBone>& bones,
+            std::vector<std::vector<SBoneWeight>>& vertexWeights
+        );
+
+        void FinalizeBoneWeights(SVertex* vertexData, types::usize vertexCount, std::vector<std::vector<SBoneWeight>>& vertexWeights);
+        
+        void CreateBoneHierarchy();
+        
+        void ParseNode(
+            const aiNode* node,
+            int parentBone,
+            std::unordered_map<std::string, types::usize>& boneIndices,
+            std::vector<SBone>& bones
+        );
+        
         std::optional<triton::HTexture> CreateTexture(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, types::boolean bIsEmbedded, const aiTexture* texture);
         std::optional<triton::HTexture> CreateTextureFromModelData(cTexture::eFormat dataFormat, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture);
         std::optional<triton::HTexture> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath);
         SModel3DBackendResource PrepareResult(const SVertex* vertexData, const types::u32* indexData, types::usize vertexCount, types::usize indexCount, const std::vector<HMaterial>& modelMaterials);
+        cMatrix4 ConvertMatrix(const aiMatrix4x4& mat);
     };
 }
