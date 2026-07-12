@@ -11,6 +11,7 @@ triton::HAnimation triton::XAnimationSubsystem::CreateAnimation(
     const std::string& name,
     types::f32 duration,
     types::f32 ticksPerSecond,
+    HSkeleton skeleton,
     const std::vector<SBoneAnimation>& bones
 )
 {
@@ -19,6 +20,7 @@ triton::HAnimation triton::XAnimationSubsystem::CreateAnimation(
     a.name = name;
     a.duration = duration;
     a.ticksPerSecond = ticksPerSecond;
+    a.skeleton = skeleton;
     a.bones = bones;
     
     return animation;

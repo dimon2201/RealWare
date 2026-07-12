@@ -4,6 +4,8 @@
 
 namespace triton
 {
+    struct HSkeleton;
+
     struct SBonePositionKey
     {
         types::f32 time = 0.0f;
@@ -24,7 +26,7 @@ namespace triton
 
     struct SBoneAnimation
     {
-        types::usize boneIndex = 0;
+        types::usize localBoneIndex = 0;
         std::vector<SBonePositionKey> positionKeys = {};
         std::vector<SBoneRotationKey> rotationKeys = {};
         std::vector<SBoneScaleKey> scaleKeys = {};
@@ -32,6 +34,7 @@ namespace triton
 
     struct SAnimation
     {
+        HSkeleton skeleton = {};
         std::string name = "";
         types::f32 duration = 0.0f;
         types::f32 ticksPerSecond = 0.0f;

@@ -20,6 +20,7 @@ namespace triton
     class XTextureSubsystem;
     class XMaterialSubsystem;
     class XSkeletonSubsystem;
+    class XAnimationSubsystem;
     struct SBone;
     struct SAnimation;
     struct SSkeleton;
@@ -80,17 +81,22 @@ namespace triton
         
         void CreateBoneHierarchy(
             const aiNode* node,
-            int parentBone,
+            types::s32 parentBone,
             std::unordered_map<std::string, types::usize>& boneIndices,
             std::vector<SBone>& bones
         );
 
-        void CreateSkeleton(HSkeleton& modelSkeleton, const std::vector<SBone>& bones, XSkeletonSubsystem* skeletonSubsystem);
+        void CreateSkeleton(
+            HSkeleton& modelSkeleton,
+            const std::vector<SBone>& bones,
+            XSkeletonSubsystem* skeletonSubsystem
+        );
 
         void CreateAnimations(
             const aiScene* scene,
             const std::unordered_map<std::string, types::usize>& boneIndices,
-            std::vector<SAnimation>& animations
+            XAnimationSubsystem* animationSubsystem,
+            HSkeleton modelSkeleton
         );
         
         std::optional<triton::HTexture> CreateTexture(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, types::boolean bIsEmbedded, const aiTexture* texture);

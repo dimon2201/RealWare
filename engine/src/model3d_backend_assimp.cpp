@@ -8,6 +8,7 @@
 #include "math.hpp"
 #include "material_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
+#include "animation_subsystem.hpp"
 #include "bone.hpp"
 #include "animation.hpp"
 
@@ -36,6 +37,7 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     std::vector<std::vector<SBoneWeight>> vertexWeights;
     std::vector<SAnimation> animations = {};
     HSkeleton modelSkeleton = {};
+    usize boneOffset = 0;
 
     CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
 
@@ -62,7 +64,7 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     FinalizeBoneWeights(vertexData, vertexCount, vertexWeights);
     CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
     CreateSkeleton(modelSkeleton, bones, _context->GetSubsystem<XSkeletonSubsystem>());
-    CreateAnimations(scene, boneIndices, animations);
+    CreateAnimations(scene, boneIndices, _context->GetSubsystem<XAnimationSubsystem>());
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials);
 }
@@ -381,23 +383,23 @@ void triton::XModel3DBackendAssimp::FinalizeBoneWeights(SVertex* vertexData, typ
 
 void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
     const aiNode* node,
-    int parentBone,
+    s32 parentBone,
     std::unordered_map<std::string, usize>& boneIndices,
     std::vector<SBone>& bones
 )
 {
-    usize currentBone = -1;
+    s32 currentBone = -1;
 
     auto it = boneIndices.find(node->mName.C_Str());
     if (it != boneIndices.end())
     {
         currentBone = it->second;
 
-        bones[currentBone].parent = parentBone;
+        bones[currentBone].parentLocalBoneIndex = parentBone;
         bones[currentBone].modelSpaceToThisBoneSpace = ConvertMatrix(node->mTransformation);
 
         if (parentBone != -1)
-            bones[parentBone].children.push_back(currentBone);
+            bones[parentBone].childrenLocalBoneIndices.push_back(currentBone);
     }
 
     for (uint32_t i = 0; i < node->mNumChildren; i++)
@@ -411,7 +413,11 @@ void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
     }
 }
 
-void triton::XModel3DBackendAssimp::CreateSkeleton(HSkeleton& modelSkeleton, const std::vector<SBone>& bones, XSkeletonSubsystem* skeletonSubsystem)
+void triton::XModel3DBackendAssimp::CreateSkeleton(
+    HSkeleton& modelSkeleton,
+    const std::vector<SBone>& bones,
+    XSkeletonSubsystem* skeletonSubsystem
+)
 {
     modelSkeleton = skeletonSubsystem->CreateSkeleton(bones);
 }
@@ -419,11 +425,10 @@ void triton::XModel3DBackendAssimp::CreateSkeleton(HSkeleton& modelSkeleton, con
 void triton::XModel3DBackendAssimp::CreateAnimations(
     const aiScene* scene,
     const std::unordered_map<std::string, usize>& boneIndices,
-    std::vector<SAnimation>& animations
+    XAnimationSubsystem* animationSubsystem,
+    HSkeleton modelSkeleton
 )
 {
-    animations.reserve(scene->mNumAnimations);
-
     for (usize animIdx = 0; animIdx < scene->mNumAnimations; ++animIdx)
     {
         const aiAnimation* srcAnim = scene->mAnimations[animIdx];
@@ -443,7 +448,7 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
                 continue;
 
             SBoneAnimation boneAnim;
-            boneAnim.boneIndex = it->second;
+            boneAnim.localBoneIndex = it->second;
 
             // Position
             boneAnim.positionKeys.reserve(channel->mNumPositionKeys);
@@ -481,7 +486,13 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
             animation.bones.push_back(std::move(boneAnim));
         }
 
-        animations.push_back(std::move(animation));
+        animationSubsystem->CreateAnimation(
+            animation.name,
+            animation.duration,
+            animation.ticksPerSecond,
+            modelSkeleton,
+            animation.bones
+        );
     }
 }
 

@@ -9,7 +9,9 @@ triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(const std::vector<S
 {
     HSkeleton skeleton = Create();
     SSkeleton& s = Get(skeleton);
+    s.globBoneOffset = _totalBoneCount;
     s.bones = bones;
+    _totalBoneCount += s.bones.size();
 
     return skeleton;
 }

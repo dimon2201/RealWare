@@ -14,6 +14,8 @@ namespace triton
 		TRITON_OBJECT(XSkeletonSubsystem)
 		TRITON_SUBSYSTEM
 
+		types::usize _totalBoneCount = 0;
+
 	public:
 		HSkeleton CreateSkeleton(const std::vector<SBone>& bones);
 

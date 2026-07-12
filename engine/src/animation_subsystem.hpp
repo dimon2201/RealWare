@@ -18,13 +18,14 @@ namespace triton
 		TRITON_OBJECT(XAnimationSubsystem)
 		TRITON_SUBSYSTEM
 
-		cBuffer* _boneBuffer = nullptr;
+		cBuffer* _skinMatrixBuffer = nullptr;
 
 	public:
 		HAnimation CreateAnimation(
 			const std::string& name,
 			types::f32 duration,
 			types::f32 ticksPerSecond,
+			HSkeleton skeleton,
 			const std::vector<SBoneAnimation>& bones
 		);
 

@@ -16,7 +16,7 @@ namespace triton
 		std::string name = {};
 		cMatrix4 parentBoneSpaceToThisBoneSpace = cMatrix4(1.0f);
 		cMatrix4 modelSpaceToThisBoneSpace = cMatrix4(1.0f);
-		types::s32 parent = kNoParent;
-		std::vector<types::usize> children = {};
+		types::s32 parentLocalBoneIndex = kNoParent;
+		std::vector<types::usize> childrenLocalBoneIndices = {};
 	};
 }
