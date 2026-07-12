@@ -42,8 +42,19 @@ namespace triton
         std::vector<SBoneAnimation> bones = {};
     };
 
-    struct SAnimationFrame
+    struct SEvaluatedBone
     {
-        std::vector<cMatrix4> bones = {};
+        cMatrix4 transformMatrix = cMatrix4(1.0f);
+    };
+
+    struct SEvaluatedFrame
+    {
+        HSkeleton skeleton = {};
+        std::vector<SEvaluatedBone> bones = {};
+    };
+
+    struct SSkinMatrices
+    {
+        std::vector<cMatrix4> matrices = {};
     };
 }

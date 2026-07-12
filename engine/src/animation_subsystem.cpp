@@ -2,8 +2,10 @@
 
 #include "animation_subsystem.hpp"
 #include "render_subsystem.hpp"
+#include "skeleton_subsystem.hpp"
 #include "graphics_resource_backend.hpp"
 #include "animation.hpp"
+#include "bone.hpp"
 
 using namespace types;
 
@@ -31,20 +33,21 @@ void triton::XAnimationSubsystem::DestroyAnimation(const HAnimation& animation)
     Destroy(animation);
 }
 
-triton::SAnimationFrame triton::XAnimationSubsystem::Evaluate(
+triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
     const HAnimation& animation,
     f32 time
 )
 {
     const SAnimation& a = Get(animationHandle);
 
-    SAnimationFrame frame = {};
+    SEvaluatedFrame frame = {};
+    frame.skeleton = a.skeleton;
     frame.bones.resize(a.bones.size());
 
     std::fill(
         frame.bones.begin(),
         frame.bones.end(),
-        cMatrix4(1.0f)
+        SEvaluatedBone()
     );
 
     if (animation->duration > 0.0f)
@@ -150,10 +153,51 @@ triton::SAnimationFrame triton::XAnimationSubsystem::Evaluate(
         matrix *= glm::mat4_cast(poseRotation);
         matrix = glm::scale(matrix, poseScale);
 
-        frame.bones[boneAnimation.localBoneIndex] = cMatrix4(matrix);
+        SEvaluatedBone eb = {};
+        eb.transformMatrix = matrix;
+
+        frame.bones[boneAnimation.localBoneIndex] = eb;
     }
 
     return frame;
+}
+
+triton::SSkinMatrices triton::XAnimationSubsystem::Skin(
+    const SEvaluatedFrame& frame
+)
+{
+    const SSkeleton& skeleton = _context->GetSubsystem<XSkeletonSubsystem>()->Get(frame.skeleton);
+    const usize boneCount = skeleton.bones.size();
+
+    SSkinMatrices skin;
+    skin.matrices.resize(boneCount);
+
+    std::vector<cMatrix4> globalMatrices;
+    globalMatrices.resize(boneCount);
+
+    for (usize i = 0; i < boneCount; ++i)
+    {
+        const SBone& bone = skeleton.bones[i];
+        if (bone.parentLocalBoneIndex < 0)
+        {
+            globalMatrices[i] = frame.bones[i].transformMatrix;
+        }
+        else
+        {
+            globalMatrices[i] = 
+                globalMatrices[bone.parentLocalBoneIndex] *
+                frame.bones[i].transformMatrix;
+        }
+    }
+
+    for (usize i = 0; i < boneCount; ++i)
+    {
+        skin.matrices[i] =
+            globalMatrices[i] *
+            skeleton.bones[i].modelSpaceToThisBoneSpace;
+    }
+
+    return skin;
 }
 
 void triton::XAnimationSubsystem::Init()

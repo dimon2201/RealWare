@@ -18,8 +18,6 @@ namespace triton
 		TRITON_OBJECT(XAnimationSubsystem)
 		TRITON_SUBSYSTEM
 
-		cBuffer* _skinMatrixBuffer = nullptr;
-
 	public:
 		HAnimation CreateAnimation(
 			const std::string& name,
@@ -33,9 +31,13 @@ namespace triton
 			const HAnimation& animation
 		);
 
-		SAnimationFrame Evaluate(
+		SEvaluatedFrame Evaluate(
 			const HAnimation& animation,
 			types::f32 time
+		);
+
+		SSkinMatrices Skin(
+			const SEvaluatedFrame& frame
 		);
 
 		void Init() override;
@@ -45,6 +47,6 @@ namespace triton
 		void Update() override {}
 
 	private:
-		void Upload();
+		void Upload(cBuffer* skinMatricesBuffer);
 	};
 }
