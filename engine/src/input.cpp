@@ -5,7 +5,7 @@
 #include "input_backend.hpp"
 #include "graphics_context_backend.hpp"
 #include "thread_guard.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 
 using namespace types;
 
@@ -56,7 +56,7 @@ void triton::cInput::Initialize()
 
 void triton::cInput::Shutdown()
 {
-    //_context->Destroy<cStack<cInputWindow>>(_windows);
+    //_context->Destroy<XDynamicArray<cInputWindow>>(_windows);
 }
 
 triton::cInputWindow* triton::cInput::CreatePlatformWindow(

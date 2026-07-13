@@ -2,7 +2,7 @@
 
 #include "batch_storage.hpp"
 #include "context.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 #include "render_batch.hpp"
 #include "handle_allocator.hpp"
 #include "instance_buffer.hpp"

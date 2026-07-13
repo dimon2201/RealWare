@@ -37,7 +37,7 @@ namespace triton
     {
         TRITON_OBJECT(cEventDispatcher)
 
-        cHashTable<eEventType, cStack<cEventHandler>>* _listeners = nullptr;
+        cHashTable<eEventType, XDynamicArray<cEventHandler>>* _listeners = nullptr;
 
     public:
         explicit cEventDispatcher(cContext* context);

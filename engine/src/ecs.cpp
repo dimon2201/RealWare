@@ -14,12 +14,12 @@ triton::ecs::cSceneStorage::cSceneStorage(cContext* context) : iObject(context)
 	cad.maxChunkCount = caps->hashTableMaxChunkCount;
 	cad.hashTableSize = caps->hashTableSize;
 
-	_scenes = _context->Create<cStack<cScene>>(_context, cad);
+	_scenes = _context->Create<XDynamicArray<cScene>>(_context, cad);
 }
 
 triton::ecs::cSceneStorage::~cSceneStorage()
 {
-	_context->Destroy<cStack<cScene>>(_scenes);
+	_context->Destroy<XDynamicArray<cScene>>(_scenes);
 }
 
 const triton::ecs::cScene* triton::ecs::cSceneStorage::Create(const std::string& name)

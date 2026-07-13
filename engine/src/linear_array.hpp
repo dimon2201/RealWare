@@ -8,7 +8,7 @@
 #include "memory_pool.hpp"
 #include "stack_value.hpp"
 #include "buffer_view.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 #include "types.hpp"
 
 namespace triton

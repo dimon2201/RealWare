@@ -12,7 +12,7 @@ namespace triton
 {
 	class cContext;
 	template <typename T>
-	class cStack;
+	class XDynamicArray;
 	template <typename TKey, typename TValue>
 	class cHashTable;
 
@@ -23,7 +23,7 @@ namespace triton
 		{
 			TRITON_OBJECT(cSceneStorage)
 
-			cStack<cScene>* _scenes = nullptr;
+			XDynamicArray<cScene>* _scenes = nullptr;
 			cHashTable<::std::string, cSingleValue>* _sceneIndices = nullptr;
 
 		public:

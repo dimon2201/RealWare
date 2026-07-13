@@ -3,7 +3,7 @@
 #include "ecs_subsystem.hpp"
 #include "context.hpp"
 #include "engine.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 #include "handle_allocator.hpp"
 
 using namespace types;
@@ -17,7 +17,7 @@ void triton::ecs::XECSSubsystem::Initialize()
 	cad.hashTableSize = caps->hashTableSize;
 	if (!_handleAllocator)
 	{
-		_handleAllocator = _context->Create<XHandleAllocator<SSceneSlot, HScene, cStack<cScene>, cScene>>(_context);
+		_handleAllocator = _context->Create<XHandleAllocator<SSceneSlot, HScene, XDynamicArray<cScene>, cScene>>(_context);
 		_handleAllocator->Initialize();
 	}
 }
@@ -27,7 +27,7 @@ void triton::ecs::XECSSubsystem::Shutdown()
 	if (_handleAllocator)
 	{
 		_handleAllocator->Free();
-		_context->Destroy<XHandleAllocator<SSceneSlot, HScene, cStack<cScene>, cScene>>(_handleAllocator);
+		_context->Destroy<XHandleAllocator<SSceneSlot, HScene, XDynamicArray<cScene>, cScene>>(_handleAllocator);
 	}
 }
 

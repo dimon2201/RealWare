@@ -15,7 +15,7 @@ namespace triton
 {
 	class cContext;
     template <typename TValue>
-    class cStack;
+    class XDynamicArray;
 
 	class cInput : public iObject
 	{

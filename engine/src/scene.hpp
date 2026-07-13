@@ -25,8 +25,8 @@ namespace triton::ecs
 		cComponentStorage<components::STransformComponent>* _transformComponents = nullptr;
 		cComponentStorage<components::SRenderInstanceComponent>* _renderInstanceComponents = nullptr;
 		cComponentStorage<components::SGeometryComponent>* _geometryComponents = nullptr;
-		cStack<components::SRenderInstanceComponent>* _renderInstancesStatic = nullptr;
-		cStack<components::SRenderInstanceComponent>* _renderInstancesDynamic = nullptr;
+		XDynamicArray<components::SRenderInstanceComponent>* _renderInstancesStatic = nullptr;
+		XDynamicArray<components::SRenderInstanceComponent>* _renderInstancesDynamic = nullptr;
 
 	public:
 		explicit cScene(cContext* context, const ::std::string& name);

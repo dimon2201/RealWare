@@ -23,7 +23,7 @@
 #include "render_pass_executor.hpp"
 #include "graphics_pipeline_backend.hpp"
 #include "render_pass.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 #include "render_subsystem.hpp"
 #include "render_batch.hpp"
 #include "handle_allocator.hpp"

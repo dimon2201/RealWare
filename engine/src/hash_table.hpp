@@ -8,7 +8,7 @@
 #include "object.hpp"
 #include "context.hpp"
 #include "memory_pool.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 #include "tag.hpp"
 #include "math.hpp"
 #include "types.hpp"
@@ -39,7 +39,7 @@ namespace triton
 		TRITON_OBJECT(cHashTable)
 
 		sChunkAllocatorDescriptor _allocatorDesc = {};
-		cStack<cHashTablePair<TKey, TValue>>* _elements;
+		XDynamicArray<cHashTablePair<TKey, TValue>>* _elements;
 		types::usize _hashTableSize = 0;
 		types::qword _hashMask = 0;
 		SStackValue<cHashTablePair<TKey, TValue>>* _hashTableElements = nullptr;
@@ -73,7 +73,7 @@ triton::cHashTable<TKey, TValue>::cHashTable(cContext* context, const sChunkAllo
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
 	_allocatorDesc = allocatorDesc;
-	_elements = _context->Create<cStack<cHashTablePair<TKey, TValue>>>(_context, _allocatorDesc);
+	_elements = _context->Create<XDynamicArray<cHashTablePair<TKey, TValue>>>(_context, _allocatorDesc);
 	_hashTableSize = _allocatorDesc.hashTableSize;
 	_hashMask = cMath::MakeHashMask(_allocatorDesc.hashTableSize);
 	_hashTableElements = (SStackValue<cHashTablePair<TKey, TValue>>*)memoryAllocator->Allocate(_hashTableSize * sizeof(SStackValue<cHashTablePair<TKey, TValue>>), caps->memoryAlignment);
@@ -86,7 +86,7 @@ triton::cHashTable<TKey, TValue>::~cHashTable()
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 	memoryAllocator->Deallocate(_hashTableElements);
 
-	_context->Destroy<cStack<cHashTablePair<TKey, TValue>>>(_elements);
+	_context->Destroy<XDynamicArray<cHashTablePair<TKey, TValue>>>(_elements);
 }
 
 // TODO: Figure out better way

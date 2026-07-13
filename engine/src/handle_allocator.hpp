@@ -11,27 +11,27 @@ namespace triton
 {
 	class cContext;
 	template <typename T>
-	class cStack;
+	class XDynamicArray;
 
-	// Concept to check if XHandleAllocator member data structure is derived from stack class cStack<TValue>
+	// Concept to check if XHandleAllocator member data structure is derived from stack class XDynamicArray<TValue>
 	/*template<typename T>
 	concept IsDerivedFromIStack =
 		requires
 	{
 		typename T::ValueType;
 	} &&
-	std::derived_from<T, cStack<typename T::ValueType>>;*/
+	std::derived_from<T, XDynamicArray<typename T::ValueType>>;*/
 
 	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
 	class XHandleAllocator : public iObject
 	{
 		TRITON_OBJECT(XHandleAllocator)
 
-		//static_assert(IsDerivedFromIStack<TDataStructure>, "TDataStructure must inherit from cStack<TValue>");
+		//static_assert(IsDerivedFromIStack<TDataStructure>, "TDataStructure must inherit from XDynamicArray<TValue>");
 
-		cStack<TSlot>* _slots = nullptr;
-		cStack<types::usize>* _freeSlots = nullptr;
-		cStack<types::usize>* _reverseMap = nullptr;
+		XDynamicArray<TSlot>* _slots = nullptr;
+		XDynamicArray<types::usize>* _freeSlots = nullptr;
+		XDynamicArray<types::usize>* _reverseMap = nullptr;
 		TDataStructure* _objects = nullptr;
 
 	public:
@@ -46,11 +46,11 @@ namespace triton
 			cad.maxChunkCount = caps->hashTableMaxChunkCount;
 			cad.hashTableSize = caps->hashTableSize;
 			if (!_slots)
-				_slots = _context->Create<cStack<TSlot>>(_context, cad);
+				_slots = _context->Create<XDynamicArray<TSlot>>(_context, cad);
 			if (!_freeSlots)
-				_freeSlots = _context->Create<cStack<types::usize>>(_context, cad);
+				_freeSlots = _context->Create<XDynamicArray<types::usize>>(_context, cad);
 			if (!_reverseMap)
-				_reverseMap = _context->Create<cStack<types::usize>>(_context, cad);
+				_reverseMap = _context->Create<XDynamicArray<types::usize>>(_context, cad);
 			sChunkAllocatorDescriptor cadObjects = {};
 			cadObjects.chunkByteSize = caps->handleAllocatorObjectCount * sizeof(TObject);
 			if (!_objects)
@@ -62,11 +62,11 @@ namespace triton
 			if (_objects)
 				_context->Destroy<TDataStructure>(_objects);
 			if (_reverseMap)
-				_context->Destroy<cStack<types::usize>>(_reverseMap);
+				_context->Destroy<XDynamicArray<types::usize>>(_reverseMap);
 			if (_freeSlots)
-				_context->Destroy<cStack<types::usize>>(_freeSlots);
+				_context->Destroy<XDynamicArray<types::usize>>(_freeSlots);
 			if (_slots)
-				_context->Destroy<cStack<TSlot>>(_slots);
+				_context->Destroy<XDynamicArray<TSlot>>(_slots);
 		}
 
 		template <typename... Args>

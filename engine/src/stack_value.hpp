@@ -5,14 +5,14 @@
 namespace triton
 {
 	template <typename TValue>
-	class cStack;
+	class XDynamicArray;
 	template <typename TKey, typename TValue>
 	class cHashTable;
 
-	/*class cStackValue
+	/*class XDynamicArrayValue
 	{
 		template <typename>
-		friend class cStack;
+		friend class XDynamicArray;
 		template <typename, typename>
 		friend class cHashTable;
 

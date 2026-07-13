@@ -21,14 +21,14 @@ triton::ecs::cScene::cScene(cContext* context, const std::string& name) : iObjec
 	_transformComponents = _context->Create<cComponentStorage<components::STransformComponent>>(_context);
 	_renderInstanceComponents = _context->Create<cComponentStorage<components::SRenderInstanceComponent>>(_context);
 	_geometryComponents = _context->Create<cComponentStorage<components::SGeometryComponent>>(_context);
-	_renderInstancesStatic = _context->Create<cStack<SRenderInstanceComponent>>(_context, cad);
-	_renderInstancesDynamic = _context->Create<cStack<SRenderInstanceComponent>>(_context, cad);
+	_renderInstancesStatic = _context->Create<XDynamicArray<SRenderInstanceComponent>>(_context, cad);
+	_renderInstancesDynamic = _context->Create<XDynamicArray<SRenderInstanceComponent>>(_context, cad);
 }
 
 triton::ecs::cScene::~cScene()
 {
-	_context->Destroy<cStack<SRenderInstanceComponent>>(_renderInstancesDynamic);
-	_context->Destroy<cStack<SRenderInstanceComponent>>(_renderInstancesStatic);
+	_context->Destroy<XDynamicArray<SRenderInstanceComponent>>(_renderInstancesDynamic);
+	_context->Destroy<XDynamicArray<SRenderInstanceComponent>>(_renderInstancesStatic);
 	_context->Destroy<cComponentStorage<components::SGeometryComponent>>(_geometryComponents);
 	_context->Destroy<cComponentStorage<components::SRenderInstanceComponent>>(_renderInstanceComponents);
 	_context->Destroy<cComponentStorage<components::STransformComponent>>(_transformComponents);

@@ -5,7 +5,7 @@
 #include "engine.hpp"
 #include "application.hpp"
 #include "hash_table.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 #include "entity.hpp"
 #include "scene.hpp"
 #include "components.hpp"
@@ -26,7 +26,7 @@ namespace triton::ecs
 
 		static_assert(std::is_base_of_v<components::SComponent, TComponent>, "TComponent must inherit from sComponent");
 
-		cStack<TComponent>* _data = nullptr;
+		XDynamicArray<TComponent>* _data = nullptr;
 		cHashTable<entity, cSingleValue>* _indices = nullptr;
 
 	public:
@@ -51,7 +51,7 @@ triton::ecs::cComponentStorage<TComponent>::cComponentStorage(triton::cContext* 
 	cad.maxChunkCount = caps->hashTableMaxChunkCount;
 	cad.hashTableSize = caps->hashTableSize;
 
-	_data = _context->Create<cStack<TComponent>>(_context, cad);
+	_data = _context->Create<XDynamicArray<TComponent>>(_context, cad);
 	_indices = _context->Create<cHashTable<entity, cSingleValue>>(_context, cad);
 }
 
@@ -59,7 +59,7 @@ template <typename TComponent>
 triton::ecs::cComponentStorage<TComponent>::~cComponentStorage()
 {
 	_context->Destroy<cHashTable<entity, cSingleValue>>(_indices);
-	_context->Destroy<cStack<TComponent>>(_data);
+	_context->Destroy<XDynamicArray<TComponent>>(_data);
 }
 
 template <typename TComponent>

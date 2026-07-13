@@ -11,7 +11,7 @@ namespace triton
 {
 	class cContext;
 	template <typename TValue>
-	class cStack;
+	class XDynamicArray;
 	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
 	class XHandleAllocator;
 }
@@ -22,7 +22,7 @@ namespace triton::ecs
 	{
 		TRITON_OBJECT(XECSSubsystem)
 
-		XHandleAllocator<SSceneSlot, HScene, cStack<cScene>, cScene>* _handleAllocator = nullptr;
+		XHandleAllocator<SSceneSlot, HScene, XDynamicArray<cScene>, cScene>* _handleAllocator = nullptr;
 
 	public:
 		explicit XECSSubsystem(cContext* context) : iObject(context) {}

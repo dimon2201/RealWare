@@ -10,6 +10,6 @@ namespace triton
 	class SRenderData final
 	{
 	public:
-		cStack<ecs::components::SRenderInstanceComponent>* _renderInstances = nullptr;
+		XDynamicArray<ecs::components::SRenderInstanceComponent>* _renderInstances = nullptr;
 	};
 }

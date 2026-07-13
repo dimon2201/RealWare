@@ -9,7 +9,7 @@
 #include "graphics_resource_backend.hpp"
 #include "render_subsystem.hpp"
 #include "thread_guard.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 
 using namespace types;
 

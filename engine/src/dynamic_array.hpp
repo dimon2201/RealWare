@@ -1,4 +1,4 @@
-// stack.hpp
+// dynamic_array.hpp
 
 #pragma once
 
@@ -36,9 +36,9 @@ namespace triton
 	};
 
 	template <typename TValue>
-	class cStack : public iObject
+	class XDynamicArray : public iObject
 	{
-		TRITON_OBJECT(cStack)
+		TRITON_OBJECT(XDynamicArray)
 
 		sChunkAllocatorDescriptor _allocatorDesc = {};
 		types::usize _chunkCount = 0;
@@ -55,8 +55,8 @@ namespace triton
 		types::u32 GetChunkLocalPosition(types::u32 chunkIndex, types::u32 globalPosition) const;
 
 	public:
-		explicit cStack(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc);
-		virtual ~cStack() override final;
+		explicit XDynamicArray(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc);
+		virtual ~XDynamicArray() override final;
 
 		template<typename... Args>
 		SStackValue<TValue> Push(Args&&... args);
@@ -73,7 +73,7 @@ namespace triton
 	};
 
 	template <typename TValue>
-	cStack<TValue>::cStack(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc) : iObject(context)
+	XDynamicArray<TValue>::XDynamicArray(cContext* context, const sChunkAllocatorDescriptor& allocatorDesc) : iObject(context)
 	{
 		const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
@@ -88,7 +88,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	cStack<TValue>::~cStack()
+	XDynamicArray<TValue>::~XDynamicArray()
 	{
 		for (types::usize i = 0; i < _elementCount; i++)
 			Pop();
@@ -100,7 +100,7 @@ namespace triton
 
 	template <typename TValue>
 	template <typename... Args>
-	SStackValue<TValue> cStack<TValue>::Push(Args&&... args)
+	SStackValue<TValue> XDynamicArray<TValue>::Push(Args&&... args)
 	{
 		SStackIndex si = New();
 		TValue* object = _context->Create<TValue>(_chunkValues[si.chunkIndex], si.localPosition, std::forward<Args>(args)...);
@@ -114,7 +114,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	SStackValue<TValue> cStack<TValue>::Push(TValue&& value)
+	SStackValue<TValue> XDynamicArray<TValue>::Push(TValue&& value)
 	{
 		SStackIndex si = New();
 		_chunkValues[si.chunkIndex][si.localPosition] = std::move(value);
@@ -129,7 +129,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	SStackValue<TValue> cStack<TValue>::At(types::u32 index) const
+	SStackValue<TValue> XDynamicArray<TValue>::At(types::u32 index) const
 	{
 		if (_chunkCount == 0 || index >= _elementCount)
 			return {};
@@ -145,13 +145,13 @@ namespace triton
 	}
 
 	template <typename TValue>
-	SStackValue<TValue> cStack<TValue>::At(const SStackIndex& index) const
+	SStackValue<TValue> XDynamicArray<TValue>::At(const SStackIndex& index) const
 	{
 		return At(index.globalPosition);
 	}
 
 	template <typename TValue>
-	SStackValue<TValue> cStack<TValue>::Top() const
+	SStackValue<TValue> XDynamicArray<TValue>::Top() const
 	{
 		if (_elementCount == 0)
 			return {};
@@ -160,7 +160,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	void cStack<TValue>::Erase(types::u32 index)
+	void XDynamicArray<TValue>::Erase(types::u32 index)
 	{
 		if (_elementCount == 0 || index >= _elementCount)
 			return;
@@ -185,7 +185,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	SStackValue<TValue> cStack<TValue>::Pop()
+	SStackValue<TValue> XDynamicArray<TValue>::Pop()
 	{
 		SStackValue<TValue> value = Top();
 		Erase(_elementCount - 1);
@@ -194,7 +194,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	void cStack<TValue>::Clear()
+	void XDynamicArray<TValue>::Clear()
 	{
 		types::usize size = GetSize();
 		for (types::usize i = 0; i < size; i++)
@@ -202,13 +202,13 @@ namespace triton
 	}
 
 	template <typename TValue>
-	types::boolean cStack<TValue>::IsEmpty()
+	types::boolean XDynamicArray<TValue>::IsEmpty()
 	{
 		return _elementCount == 0 ? types::K_TRUE : types::K_FALSE;
 	}
 
 	template <typename TValue>
-	SStackIndex cStack<TValue>::New()
+	SStackIndex XDynamicArray<TValue>::New()
 	{
 		types::u32 elementChunkIndex = GetChunkIndex(_elementCount);
 		types::u32 elementLocalPosition = GetChunkLocalPosition(elementChunkIndex, _elementCount);
@@ -229,7 +229,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	types::u32 cStack<TValue>::AllocateChunk()
+	types::u32 XDynamicArray<TValue>::AllocateChunk()
 	{
 		if (_chunkCount >= _allocatorDesc.maxChunkCount)
 			return 0;
@@ -243,7 +243,7 @@ namespace triton
 	}
 
 	template <typename TValue>
-	void cStack<TValue>::DeallocateChunk(types::u32 chunkIndex)
+	void XDynamicArray<TValue>::DeallocateChunk(types::u32 chunkIndex)
 	{
 		if (chunkIndex >= _chunkCount--)
 			return;
@@ -254,13 +254,13 @@ namespace triton
 	}
 
 	template <typename TValue>
-	types::u32 cStack<TValue>::GetChunkIndex(types::u32 globalPosition) const
+	types::u32 XDynamicArray<TValue>::GetChunkIndex(types::u32 globalPosition) const
 	{
 		return globalPosition / _objectCountPerChunk;
 	}
 
 	template <typename TValue>
-	types::u32 cStack<TValue>::GetChunkLocalPosition(types::u32 chunkIndex, types::u32 globalPosition) const
+	types::u32 XDynamicArray<TValue>::GetChunkLocalPosition(types::u32 chunkIndex, types::u32 globalPosition) const
 	{
 		const types::u32 chunkIndexBoundary = chunkIndex * _objectCountPerChunk;
 		const types::u32 localPosition = globalPosition - chunkIndexBoundary;

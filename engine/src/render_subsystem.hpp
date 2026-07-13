@@ -18,7 +18,7 @@ namespace triton
 	class cContext;
 	class cTexture;
 	template <typename T>
-	class cStack;
+	class XDynamicArray;
 
 	class XRenderSubsystem final : public iObject
 	{

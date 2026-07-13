@@ -9,7 +9,7 @@ namespace triton
 {
 	class cContext;
 	template <typename TValue>
-	class cStack;
+	class XDynamicArray;
 }
 
 namespace triton::ecs
@@ -18,7 +18,7 @@ namespace triton::ecs
 	{
 		TRITON_OBJECT(cSystem)
 
-		triton::cStack<ecs::cScene>* _scenes;
+		triton::XDynamicArray<ecs::cScene>* _scenes;
 
 	public:
 		explicit cSystem(triton::cContext* context);

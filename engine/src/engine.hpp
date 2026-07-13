@@ -16,7 +16,7 @@ namespace triton
 	class cContext;
 	class IApplication;
 	template <typename T>
-	class cStack;
+	class XDynamicArray;
 
 	inline std::thread::id gMainThreadId = std::this_thread::get_id();
 

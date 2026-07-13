@@ -27,20 +27,20 @@ triton::cEventDispatcher::cEventDispatcher(cContext* context) : iObject(context)
     cad.maxChunkCount = caps->hashTableMaxChunkCount;
     cad.hashTableSize = caps->hashTableSize;
 
-    _listeners = _context->Create<cHashTable<eEventType, cStack<cEventHandler>>>(_context, cad);
+    _listeners = _context->Create<cHashTable<eEventType, XDynamicArray<cEventHandler>>>(_context, cad);
 }
 
 triton::cEventDispatcher::~cEventDispatcher()
 {
     for (usize i = 0; i < _listeners->GetSize(); i++)
-        _context->Destroy<cStack<cEventHandler>>(_listeners->Find(i));
+        _context->Destroy<XDynamicArray<cEventHandler>>(_listeners->Find(i));
 
-    _context->Destroy<cHashTable<eEventType, cStack<cEventHandler>>>(_listeners);
+    _context->Destroy<cHashTable<eEventType, XDynamicArray<cEventHandler>>>(_listeners);
 }
 
 void triton::cEventDispatcher::Subscribe(iObject* receiver, eEventType type, EventFunction&& function)
 {
-    cStack<cEventHandler>* listener = _listeners->Find(type);
+    XDynamicArray<cEventHandler>* listener = _listeners->Find(type);
     if (listener == nullptr)
     {
         const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
@@ -50,7 +50,7 @@ void triton::cEventDispatcher::Subscribe(iObject* receiver, eEventType type, Eve
         cad.maxChunkCount = caps->hashTableMaxChunkCount;
         cad.hashTableSize = caps->hashTableSize;
 
-        cStack<cEventHandler> listener(_context, cad);
+        XDynamicArray<cEventHandler> listener(_context, cad);
         _listeners->Insert(type, std::move(listener));
     }
 
@@ -59,7 +59,7 @@ void triton::cEventDispatcher::Subscribe(iObject* receiver, eEventType type, Eve
 
 void triton::cEventDispatcher::Unsubscribe(iObject* receiver, eEventType type)
 {
-    cStack<cEventHandler>* listener = _listeners->Find(type);
+    XDynamicArray<cEventHandler>* listener = _listeners->Find(type);
     if (listener == nullptr)
         return;
 
@@ -84,7 +84,7 @@ void triton::cEventDispatcher::Send(eEventType type)
 
 void triton::cEventDispatcher::Send(eEventType type, XDataBuffer* data)
 {
-    cStack<cEventHandler>* listener = _listeners->Find(type);
+    XDynamicArray<cEventHandler>* listener = _listeners->Find(type);
     if (listener == nullptr)
         return;
 

@@ -9,7 +9,7 @@
 #include "input_backend.hpp"
 #include "input.hpp"
 #include "thread_guard.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 #include "capabilities.hpp"
 #include "log.hpp"
 #include "game_object_subsystem.hpp"

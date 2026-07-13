@@ -3,7 +3,7 @@
 #include "engine.hpp"
 #include "instance_buffer.hpp"
 #include "components.hpp"
-#include "stack.hpp"
+#include "dynamic_array.hpp"
 #include "application.hpp"
 #include "render_subsystem.hpp"
 #include "graphics.hpp"
