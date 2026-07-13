@@ -23,6 +23,7 @@
 - Refactor: Encapsulate batch,render pass rendering calls to proper classes (graphics.cpp:182)
 - Refactor: Create separate structure for skin instead of std::vector<HSkinnedBone> (skinning_subsystem.cpp:43)
 - Refactor: Do something with subsystem pointers aka references return for ISubsystem subsystems, centralize subsystems ownership
+- Refactor: Rename ISubsystem to ICentralizedStorage, also create ISubsystem interface with Init/Update/Free methods
 - GFX: PBR optimization using LUT
 - GFX: HDR
 - GFX: Tonemapping
