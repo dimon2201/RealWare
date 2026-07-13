@@ -37,5 +37,10 @@ namespace triton
 		void Free() override;
 
 		void Update() override;
+
+		inline cBuffer* GetSkeletonBuffer()
+		{
+			return _skeletonBuffer;
+		}
 	};
 }

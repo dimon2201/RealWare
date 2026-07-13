@@ -30,6 +30,8 @@
 #include "batch_storage.hpp"
 #include "camera.hpp"
 #include "material_uploader.hpp"
+#include "skeleton_subsystem.hpp"
+#include "skinning_subsystem.hpp"
 
 using namespace types;
 
@@ -189,12 +191,16 @@ void triton::cGraphics::ExecutePasses()
     BindVertexIndexBuffers();
     BindInstanceBuffers();
     BindMaterialBuffer();
+    BindSkeletonBuffer();
+    BindSkinnedBoneBuffer();
 
     ExecuteDefaultPasses();
 
     UnbindVertexIndexBuffers();
     UnbindInstanceBuffers();
     UnbindMaterialBuffer();
+    UnbindSkeletonBuffer();
+    UnbindSkinnedBoneBuffer();
 }
 
 triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
@@ -1322,6 +1328,16 @@ void triton::cGraphics::BindMaterialBuffer()
     _materialBuffer->Bind();
 }
 
+void triton::cGraphics::BindSkeletonBuffer()
+{
+    _context->GetSubsystem<XSkeletonSubsystem>()->GetSkeletonBuffer()->Bind();
+}
+
+void triton::cGraphics::BindSkinnedBoneBuffer()
+{
+    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBoneBuffer()->Bind();
+}
+
 void triton::cGraphics::UnbindVertexIndexBuffers()
 {
     _geometryStorage->GetVertexBuffer()->Unbind();
@@ -1337,6 +1353,16 @@ void triton::cGraphics::UnbindInstanceBuffers()
 void triton::cGraphics::UnbindMaterialBuffer()
 {
     _materialBuffer->Unbind();
+}
+
+void triton::cGraphics::UnbindSkeletonBuffer()
+{
+    _context->GetSubsystem<XSkeletonSubsystem>()->GetSkeletonBuffer()->Unbind();
+}
+
+void triton::cGraphics::UnbindSkinnedBoneBuffer()
+{
+    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBoneBuffer()->Unbind();
 }
 
 void triton::cGraphics::ExecuteDefaultPasses()

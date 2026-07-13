@@ -218,9 +218,13 @@ namespace triton
         void BindVertexIndexBuffers();
         void BindInstanceBuffers();
         void BindMaterialBuffer();
+        void BindSkeletonBuffer();
+        void BindSkinnedBoneBuffer();
         void UnbindVertexIndexBuffers();
         void UnbindInstanceBuffers();
         void UnbindMaterialBuffer();
+        void UnbindSkeletonBuffer();
+        void UnbindSkinnedBoneBuffer();
         void ExecuteDefaultPasses();
         void MarkStaticBufferDirty();
         void WriteBatchInstances(SRenderInstance::EUsage usage);
