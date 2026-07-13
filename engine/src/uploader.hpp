@@ -44,9 +44,15 @@ namespace triton
             _context->GetMemoryAllocator()->Deallocate(_stagingBuffer);
         }
 
-        void Set(types::usize index, const TGPUElementLayout& element)
+        template <typename TElementField>
+        void WriteField(
+            types::usize elementIndex,
+            types::usize byteOffset,
+            const TElementField& field
+        )
         {
-            _stagingBuffer[index] = element;
+            TElementField* ef = (TElementField*)((types::u8*)&_stagingBuffer[elementIndex] + byteOffset);
+            *ef = field;
             MarkDirty();
         }
 
