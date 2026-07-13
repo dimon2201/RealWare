@@ -25,6 +25,7 @@ namespace triton
         virtual ~IApplication() override;
 
         virtual void Setup() = 0;
+        virtual void Update() = 0;
         virtual void Stop() = 0;
         void Run();
 

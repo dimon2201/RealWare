@@ -131,6 +131,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		if (e.type == EWindowEvent::Quit)
 			break;
 
+		app->Update();
 		_context->GetSubsystem<XGameObjectSubsystem>()->Update();
 		_context->GetSubsystem<XMaterialSubsystem>()->Update();
 		_context->GetSubsystem<XTextureSubsystem>()->Update();
