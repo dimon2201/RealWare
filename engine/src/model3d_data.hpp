@@ -2,12 +2,19 @@
 
 #pragma once
 
-#include "model3d_backend_resource.hpp"
+#include <vector>
+#include "vertex.hpp"
+#include "handles.hpp"
 
 namespace triton
 {
 	struct SModel3DData final
 	{
-		SModel3DBackendResource resource;
+        const SVertex* vertexData = nullptr;
+        const types::u32* indexData = nullptr;
+        types::usize vertexCount = 0;
+        types::usize indexCount = 0;
+        std::vector<HMaterial> materials = {};
+        std::vector<HAnimation> animations = {};
 	};
 }

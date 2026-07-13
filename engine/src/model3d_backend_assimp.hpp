@@ -52,8 +52,8 @@ namespace triton
         explicit XModel3DBackendAssimp(cContext* context) : IModel3DBackend(context) {}
         ~XModel3DBackendAssimp() override = default;
 
-        std::optional<SModel3DBackendResource> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath) override final;
-        void DestroyModel(SModel3DBackendResource& model) override final;
+        std::optional<SModel3DData> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath) override final;
+        void DestroyModel(SModel3DData& model) override final;
 
     private:
         void ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath);
@@ -103,7 +103,7 @@ namespace triton
         std::optional<triton::HTexture> CreateTexture(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, types::boolean bIsEmbedded, const aiTexture* texture);
         std::optional<triton::HTexture> CreateTextureFromModelData(cTexture::eFormat dataFormat, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath, const aiTexture* texture);
         std::optional<triton::HTexture> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& modelFolderPath, XTextureSubsystem* textureSubsystem, const std::string& textureFilePath);
-        SModel3DBackendResource PrepareResult(
+        SModel3DData PrepareResult(
             const SVertex* vertexData,
             const types::u32* indexData,
             types::usize vertexCount,

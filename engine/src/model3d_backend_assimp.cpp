@@ -2,7 +2,7 @@
 
 #include <filesystem>
 #include "model3d_backend_assimp.hpp"
-#include "model3d_backend_resource.hpp"
+#include "model3d_data.hpp"
 #include "context.hpp"
 #include "vertex.hpp"
 #include "math.hpp"
@@ -14,7 +14,7 @@
 
 using namespace types;
 
-std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath)
+std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath)
 {
     Assimp::Importer importer;
     const aiScene* scene = nullptr;
@@ -70,14 +70,14 @@ std::optional<triton::SModel3DBackendResource> triton::XModel3DBackendAssimp::Cr
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials, modelAnimations);
 }
 
-void triton::XModel3DBackendAssimp::DestroyModel(SModel3DBackendResource& mesh)
+void triton::XModel3DBackendAssimp::DestroyModel(SModel3DData& model)
 {
-    mesh.vertexCount = 0;
-    mesh.indexCount = 0;
-    if (mesh.indexData)
-        _context->GetMemoryAllocator()->Deallocate((void*)mesh.indexData);
-    if (mesh.vertexData)
-        _context->GetMemoryAllocator()->Deallocate((void*)mesh.vertexData);
+    model.vertexCount = 0;
+    model.indexCount = 0;
+    if (model.indexData)
+        _context->GetMemoryAllocator()->Deallocate((void*)model.indexData);
+    if (model.vertexData)
+        _context->GetMemoryAllocator()->Deallocate((void*)model.vertexData);
 }
 
 void triton::XModel3DBackendAssimp::ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath)
@@ -566,7 +566,7 @@ std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFrom
     return textureSubsystem->CreateTexture(newTextureFilePath, dataFormat);
 }
 
-triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(
+triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(
     const SVertex* vertexData,
     const u32* indexData,
     usize vertexCount,
@@ -575,15 +575,15 @@ triton::SModel3DBackendResource triton::XModel3DBackendAssimp::PrepareResult(
     const std::vector<HAnimation>& modelAnimations
 )
 {
-    SModel3DBackendResource mbr;
-    mbr.vertexData = vertexData;
-    mbr.indexData = indexData;
-    mbr.vertexCount = vertexCount;
-    mbr.indexCount = indexCount;
-    mbr.materials = modelMaterials;
-    mbr.animations = modelAnimations;
+    SModel3DData m3dd;
+    m3dd.vertexData = vertexData;
+    m3dd.indexData = indexData;
+    m3dd.vertexCount = vertexCount;
+    m3dd.indexCount = indexCount;
+    m3dd.materials = modelMaterials;
+    m3dd.animations = modelAnimations;
 
-    return mbr;
+    return m3dd;
 }
 
 triton::cMatrix4 triton::XModel3DBackendAssimp::ConvertMatrix(const aiMatrix4x4& m)

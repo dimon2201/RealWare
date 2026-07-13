@@ -9,9 +9,15 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModel(const std
 	if (!result)
 		return std::nullopt;
 
-	SModel3DBackendResource mbr = *result;
+	SModel3DData& m3ddr = *result;
 	HModel3D model = Create();
-	Get(model).resource = mbr;
+	SModel3DData& m3ddl = Get(model);
+	m3ddl.animations = m3ddr.animations;
+	m3ddl.indexCount = m3ddr.indexCount;
+	m3ddl.indexData = m3ddr.indexData;
+	m3ddl.materials = m3ddr.materials;
+	m3ddl.vertexCount = m3ddr.vertexCount;
+	m3ddl.vertexData = m3ddr.vertexData;
 
 	return model;
 }
@@ -19,6 +25,6 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModel(const std
 void triton::XModel3DSubsystem::DestroyModel(const HModel3D& model)
 {
 	SModel3DData& modelData = Get(model);
-	_context->GetBackend<IModel3DBackend>()->DestroyModel(modelData.resource);
+	_context->GetBackend<IModel3DBackend>()->DestroyModel(modelData);
 	Destroy(model);
 }

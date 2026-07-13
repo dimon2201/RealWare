@@ -10,7 +10,7 @@
 namespace triton
 {
     struct SVertex;
-    struct SModel3DBackendResource;
+    struct SModel3DData;
 
     class IModel3DBackend : public iBackend
     {
@@ -20,7 +20,7 @@ namespace triton
         explicit IModel3DBackend(cContext* context) : iBackend(context) {}
         ~IModel3DBackend() override = default;
 
-        virtual std::optional<SModel3DBackendResource> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath) = 0;
-        virtual void DestroyModel(SModel3DBackendResource& model) = 0;
+        virtual std::optional<SModel3DData> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath) = 0;
+        virtual void DestroyModel(SModel3DData& model) = 0;
     };
 }
