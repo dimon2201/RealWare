@@ -33,6 +33,14 @@ void triton::XSkeletonSubsystem::Init()
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxSkeletonCount * sizeof(SGPUSkeletonLayout),
+        3
+    ));
+    _skeletonBuffer = renderSubsystem->FetchResult<cBuffer*>();
     _uploader = _context->Create<XUploader<XSkeletonSubsystem, HSkeleton, SGPUSkeletonLayout>>(
         _context,
         _skeletonBuffer,
@@ -44,6 +52,14 @@ void triton::XSkeletonSubsystem::Init()
 void triton::XSkeletonSubsystem::Free()
 {
     _context->Destroy<XUploader<XSkeletonSubsystem, HSkeleton, SGPUSkeletonLayout>>(_uploader);
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_skeletonBuffer,
+        0,
+        0,
+        0
+    ));
 }
 
 void triton::XSkeletonSubsystem::Update()
