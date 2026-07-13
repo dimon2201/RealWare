@@ -12,12 +12,7 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModel(const std
 	SModel3DData& m3ddr = *result;
 	HModel3D model = Create();
 	SModel3DData& m3ddl = Get(model);
-	m3ddl.animations = m3ddr.animations;
-	m3ddl.indexCount = m3ddr.indexCount;
-	m3ddl.indexData = m3ddr.indexData;
-	m3ddl.materials = m3ddr.materials;
-	m3ddl.vertexCount = m3ddr.vertexCount;
-	m3ddl.vertexData = m3ddr.vertexData;
+	m3ddl = m3ddr;
 
 	return model;
 }
