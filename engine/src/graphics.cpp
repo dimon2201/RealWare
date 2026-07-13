@@ -1361,7 +1361,7 @@ void triton::cGraphics::WriteBatchInstances(SRenderInstance::EUsage usage)
     for (usize i = 0; i < batchBuffer._elementCount; i++)
     {
         XRenderBatch& batch = batchBuffer._elements[i];
-        nextOffset += batch.Write(usage, nextOffset, &_tempBuffer[0]);
+        nextOffset = batch.Write(usage, nextOffset, &_tempBuffer[0]);
     }
     if (usage == SRenderInstance::EUsage::STATIC)
         _instanceBufferStatic->Write(0, &_tempBuffer[0], nextOffset);

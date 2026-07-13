@@ -82,6 +82,10 @@ types::usize triton::XRenderBatch::Write(SRenderInstance::EUsage usage, types::u
 		memcpy(&destination[offset], bufferView._elements, bufferView._byteSize);
 		nextOffset = offset + bufferView._byteSize;
 	}
+	else
+	{
+		return 0;
+	}
 
 	return nextOffset;
 }
