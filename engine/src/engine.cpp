@@ -35,6 +35,7 @@
 #include "model3d_subsystem.hpp"
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
+#include "skinning_subsystem.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -90,6 +91,8 @@ void triton::cEngine::Initialize()
 	_context->GetSubsystem<XAnimationSubsystem>()->Init();
 	_context->RegisterSubsystem(new XSkeletonSubsystem(_context));
 	_context->GetSubsystem<XSkeletonSubsystem>()->Init();
+	_context->RegisterSubsystem(new XSkinningSubsystem(_context));
+	_context->GetSubsystem<XSkinningSubsystem>()->Init();
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));

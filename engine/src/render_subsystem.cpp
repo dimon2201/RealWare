@@ -16,6 +16,7 @@
 #include "material_subsystem.hpp"
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
+#include "skinning_subsystem.hpp"
 
 using namespace types;
 
@@ -135,6 +136,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		_context->GetSubsystem<XTextureSubsystem>()->Update();
 		_context->GetSubsystem<XAnimationSubsystem>()->Update();
 		_context->GetSubsystem<XSkeletonSubsystem>()->Update();
+		_context->GetSubsystem<XSkinningSubsystem>()->Update();
 
 		_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
 		ResetScratchFrame();
