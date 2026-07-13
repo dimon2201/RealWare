@@ -21,19 +21,25 @@ namespace triton
 		cMatrix4 modelMatrix = cMatrix4();
 	};
 
+	struct SSkinData
+	{
+		types::usize globSkinnedBoneOffset = 0;
+		std::vector<HSkinnedBone> skinnedBones = {};
+	};
+
 	class XSkinningSubsystem : public ISubsystem<HSkinnedBone, SSkinnedBoneData, XLinearArray<SSkinnedBoneData>>
 	{
 		TRITON_OBJECT(XSkinningSubsystem)
 		TRITON_SUBSYSTEM
 
 		cBuffer* _skinnedBoneBuffer = nullptr;
-		XUploader<HSkinnedBone, XSkinningSubsystem, SGPUSkinnedBoneLayout>* _uploader = nullptr;
+		XUploader<XSkinningSubsystem, HSkinnedBone, SGPUSkinnedBoneLayout>* _uploader = nullptr;
 
 	public:
 		// TODO: create separate structure for skin instead of std::vector<HSkinnedBone>
-		std::vector<HSkinnedBone> CreateSkin(const SEvaluatedFrame& frame);
+		SSkinData CreateSkin(const SEvaluatedFrame& frame);
 
-		void DestroySkin(const std::vector<HSkinnedBone>& animation);
+		void DestroySkin(const SSkinData& skin);
 
 		void Init() override;
 

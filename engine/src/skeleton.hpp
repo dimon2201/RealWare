@@ -9,7 +9,7 @@ namespace triton
 {
 	struct SSkeleton
 	{
-		types::u32 globBoneOffset = 0;
+		types::u32 globSkinnedBoneOffset = 0;
 		std::vector<SBone> bones = {};
 	};
 }

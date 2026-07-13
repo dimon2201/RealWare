@@ -10,14 +10,12 @@ triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(const std::vector<S
 {
     HSkeleton skeleton = Create();
     SSkeleton& s = Get(skeleton);
-    s.globBoneOffset = _totalBoneCount;
     s.bones = bones;
-    _totalBoneCount += s.bones.size();
 
-    _uploader->WriteField<decltype(s.globBoneOffset)>(
+    _uploader->WriteField<decltype(s.globSkinnedBoneOffset)>(
         skeleton,
         0,
-        s.globBoneOffset
+        0
     );
 
     return skeleton;
@@ -26,6 +24,18 @@ triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(const std::vector<S
 void triton::XSkeletonSubsystem::DestroySkeleton(const HSkeleton& skeleton)
 {
     Destroy(skeleton);
+}
+
+void triton::XSkeletonSubsystem::SetSkin(const HSkeleton& skeleton, const SSkinData& skin)
+{
+    SSkeleton& s = Get(skeleton);
+    s.globSkinnedBoneOffset = skin.globSkinnedBoneOffset;
+
+    _uploader->WriteField<decltype(s.globSkinnedBoneOffset)>(
+        skeleton,
+        0,
+        s.globSkinnedBoneOffset
+    );
 }
 
 void triton::XSkeletonSubsystem::Init()

@@ -5,6 +5,7 @@
 #include "handles.hpp"
 #include "skeleton.hpp"
 #include "subsystem.hpp"
+#include "skinning_subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -15,7 +16,7 @@ namespace triton
 
 	struct SGPUSkeletonLayout
 	{
-		types::u32 globBoneOffset = 0;
+		types::u32 globSkinnedBoneOffset = 0;
 	};
 
 	class XSkeletonSubsystem : public ISubsystem<HSkeleton, SSkeleton, XLinearArray<SSkeleton>>
@@ -23,7 +24,6 @@ namespace triton
 		TRITON_OBJECT(XSkeletonSubsystem)
 		TRITON_SUBSYSTEM
 
-		types::usize _totalBoneCount = 0;
 		cBuffer* _skeletonBuffer = nullptr;
 		XUploader<XSkeletonSubsystem, HSkeleton, SGPUSkeletonLayout>* _uploader = nullptr;
 
@@ -31,6 +31,8 @@ namespace triton
 		HSkeleton CreateSkeleton(const std::vector<SBone>& bones);
 
 		void DestroySkeleton(const HSkeleton& skeleton);
+
+		void SetSkin(const HSkeleton& skeleton, const SSkinData& skin);
 
 		void Init() override;
 

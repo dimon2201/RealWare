@@ -53,6 +53,11 @@ namespace triton
 		{
 			return handle._indexInArray;
 		}
+
+		inline types::usize GetBufferSize() const
+		{
+			return _objects->GetSize();
+		}
 	};
 
 	#define TRITON_SUBSYSTEM using ISubsystem::ISubsystem;
