@@ -25,7 +25,6 @@ triton::HAnimation triton::XAnimationSubsystem::CreateAnimation(
     a.name = name;
     a.duration = duration;
     a.ticksPerSecond = ticksPerSecond;
-    a.skeleton = skeleton;
     a.animBones = bones;
     
     return animation;
@@ -36,21 +35,21 @@ void triton::XAnimationSubsystem::DestroyAnimation(const HAnimation& animation)
     Destroy(animation);
 }
 
-triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
+triton::SFrame triton::XAnimationSubsystem::Evaluate(
+    const HSkeleton& skeleton,
     const HAnimation& animation,
     f32 time
 )
 {
     const SAnimation& a = Get(animation);
-
-    SEvaluatedFrame frame = {};
-    frame.skeleton = a.skeleton;
-    frame.bones.resize(a.animBones.size());
+    
+    SFrame frame = {};
+    frame.frameBones.resize(a.animBones.size());
 
     std::fill(
-        frame.bones.begin(),
-        frame.bones.end(),
-        SEvaluatedBone()
+        frame.frameBones.begin(),
+        frame.frameBones.end(),
+        SFrameBone()
     );
 
     if (a.duration > 0.0f)
@@ -156,10 +155,10 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
         matrix *= glm::mat4_cast(poseRotation._quat);
         matrix = glm::scale(matrix, poseScale._vec);
 
-        SEvaluatedBone eb = {};
-        eb.transformMatrix = cMatrix4(matrix);
+        SFrameBone fb = {};
+        fb.transformMatrix = cMatrix4(matrix);
 
-        frame.bones[animBone.localBoneIndex] = eb;
+        frame.frameBones[animBone.localBoneIndex] = fb;
     }
 
     return frame;

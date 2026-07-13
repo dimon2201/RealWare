@@ -34,21 +34,19 @@ namespace triton
 
     struct SAnimation
     {
-        HSkeleton skeleton = {};
         std::string name = "";
         types::f32 duration = 0.0f;
         types::f32 ticksPerSecond = 0.0f;
         std::vector<SAnimationBone> animBones = {};
     };
 
-    struct SEvaluatedBone
+    struct SFrameBone
     {
         cMatrix4 transformMatrix = cMatrix4(1.0f);
     };
 
-    struct SEvaluatedFrame
+    struct SFrame
     {
-        HSkeleton skeleton = {};
-        std::vector<SEvaluatedBone> bones = {};
+        std::vector<SFrameBone> frameBones = {};
     };
 }

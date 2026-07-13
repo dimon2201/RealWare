@@ -322,7 +322,7 @@ void triton::XModel3DBackendAssimp::CreateBones(
             {
                 SBone b = {};
                 b.name = boneName;
-                b.parentBoneSpaceToThisBoneSpace = ConvertMatrix(bone->mOffsetMatrix);
+                b.parentBoneMatrix = ConvertMatrix(bone->mOffsetMatrix);
 
                 realBoneIndex = bones.size();
                 boneIndices.insert({ boneName, realBoneIndex });
@@ -396,11 +396,11 @@ void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
     {
         currentBone = it->second;
 
-        bones[currentBone].parentLocalBoneIndex = parentBone;
-        bones[currentBone].modelSpaceToThisBoneSpace = ConvertMatrix(node->mTransformation);
+        bones[currentBone].localParentBoneIndex = parentBone;
+        bones[currentBone].modelMatrix = ConvertMatrix(node->mTransformation);
 
         if (parentBone != -1)
-            bones[parentBone].childrenLocalBoneIndices.push_back(currentBone);
+            bones[parentBone].localChildBoneIndices.push_back(currentBone);
     }
 
     for (uint32_t i = 0; i < node->mNumChildren; i++)

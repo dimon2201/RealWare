@@ -28,7 +28,8 @@ namespace triton
 
 		void DestroyAnimation(const HAnimation& animation);
 
-		SEvaluatedFrame Evaluate(
+		SFrame Evaluate(
+			const HSkeleton& skeleton,
 			const HAnimation& animation,
 			types::f32 time
 		);

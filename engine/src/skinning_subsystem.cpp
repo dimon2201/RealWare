@@ -12,10 +12,10 @@
 
 using namespace types;
 
-triton::SSkinData triton::XSkinningSubsystem::CreateSkin(const SEvaluatedFrame& frame)
+triton::SSkinData triton::XSkinningSubsystem::CreateSkin(const HSkeleton& skeleton, const SFrame& frame)
 {
-    const SSkeleton& skeleton = _context->GetSubsystem<XSkeletonSubsystem>()->Get(frame.skeleton);
-    const usize boneCount = skeleton.bones.size();
+    const SSkeleton& skeletonData = _context->GetSubsystem<XSkeletonSubsystem>()->Get(skeleton);
+    const usize boneCount = skeletonData.bones.size();
 
     SSkinData sd = {};
 
@@ -27,16 +27,16 @@ triton::SSkinData triton::XSkinningSubsystem::CreateSkin(const SEvaluatedFrame& 
 
     for (usize i = 0; i < boneCount; ++i)
     {
-        const SBone& bone = skeleton.bones[i];
-        if (bone.parentLocalBoneIndex < 0)
+        const SBone& bone = skeletonData.bones[i];
+        if (bone.localParentBoneIndex < 0)
         {
-            tempMatrixBuffer[i] = frame.bones[i].transformMatrix;
+            tempMatrixBuffer[i] = frame.frameBones[i].transformMatrix;
         }
         else
         {
             tempMatrixBuffer[i] =
-                tempMatrixBuffer[bone.parentLocalBoneIndex] *
-                frame.bones[i].transformMatrix;
+                tempMatrixBuffer[bone.localParentBoneIndex] *
+                frame.frameBones[i].transformMatrix;
         }
     }
 
@@ -45,8 +45,9 @@ triton::SSkinData triton::XSkinningSubsystem::CreateSkin(const SEvaluatedFrame& 
     for (usize i = 0; i < boneCount; ++i)
     {
         sbdArr[i] = Create();
+
         SSkinnedBoneData& sbd = Get(sbdArr[i]);
-        sbd.modelMatrix = tempMatrixBuffer[i] * skeleton.bones[i].modelSpaceToThisBoneSpace;
+        sbd.modelMatrix = tempMatrixBuffer[i] * skeletonData.bones[i].modelMatrix;
 
         // Sync with GPU
         SGPUSkinnedBoneLayout gpusbl;

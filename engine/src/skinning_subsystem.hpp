@@ -37,7 +37,7 @@ namespace triton
 
 	public:
 		// TODO: create separate structure for skin instead of std::vector<HSkinnedBone>
-		SSkinData CreateSkin(const SEvaluatedFrame& frame);
+		SSkinData CreateSkin(const HSkeleton& skeleton, const SFrame& frame);
 
 		void DestroySkin(const SSkinData& skin);
 
