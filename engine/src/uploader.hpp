@@ -48,12 +48,12 @@ namespace triton
         template <typename TElementField>
         void WriteField(
             const TCPUObjectHandle& object,
-            types::usize byteOffset,
+            types::usize gpuLayoutByteOffset,
             const TElementField& field
         )
         {
-            const types::usize elementIndex = _context->GetSubsystem<TSubsystem>->GetBufferIndex(object);
-            TElementField* ef = (TElementField*)((types::u8*)&_stagingBuffer[elementIndex] + byteOffset);
+            const types::usize elementIndex = _context->GetSubsystem<TSubsystem>()->GetBufferIndex(object);
+            TElementField* ef = (TElementField*)((types::u8*)&_stagingBuffer[elementIndex] + gpuLayoutByteOffset);
             *ef = field;
             MarkDirty();
         }
@@ -80,6 +80,7 @@ namespace triton
             }
         }
 
+    private:
         void MarkDirty()
         {
             _bIsDirty = types::K_TRUE;
