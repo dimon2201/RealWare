@@ -16,7 +16,7 @@ namespace triton
 	template <typename HSkinnedBone, typename XSkinningSubsystem, typename SSkinnedBoneGPULayout>
 	class XUploader;
 
-	struct SSkinnedBoneGPULayout
+	struct SGPUSkinnedBoneLayout
 	{
 		cMatrix4 modelMatrix = cMatrix4();
 	};
@@ -27,7 +27,7 @@ namespace triton
 		TRITON_SUBSYSTEM
 
 		cBuffer* _skinnedBoneBuffer = nullptr;
-		XUploader<HSkinnedBone, XSkinningSubsystem, SSkinnedBoneGPULayout>* _uploader = nullptr;
+		XUploader<HSkinnedBone, XSkinningSubsystem, SGPUSkinnedBoneLayout>* _uploader = nullptr;
 
 	public:
 		// TODO: create separate structure for skin instead of std::vector<HSkinnedBone>
