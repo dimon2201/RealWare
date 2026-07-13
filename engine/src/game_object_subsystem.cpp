@@ -4,6 +4,8 @@
 #include "batch_storage.hpp"
 #include "graphics.hpp"
 #include "material_subsystem.hpp"
+#include "model3d_subsystem.hpp"
+#include "skeleton_subsystem.hpp"
 #include "math.hpp"
 
 using namespace types;
@@ -41,6 +43,22 @@ void triton::XGameObjectSubsystem::AddRenderable(const HGameObject& gameObject, 
 	go.renderable = bi;
 
 	AddDirty(bi, ri, go.worldPosition, go.worldRotation);
+}
+
+void triton::XGameObjectSubsystem::AddRenderable(
+	const HGameObject& gameObject,
+	SRenderInstance::EUsage usage,
+	const HModel3D& model
+)
+{
+	SGameObject& go = Get(gameObject);
+
+	SModel3DData& m3dd = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
+
+	SRenderInstance ri;
+	ri._skeletonIndex = _context->GetSubsystem<XSkeletonSubsystem>()->GetBufferIndex(m3dd.skeleton);
+
+	AddDirty(go.renderable, {}, go.worldPosition, go.worldRotation);
 }
 
 void triton::XGameObjectSubsystem::SetWorldPosition(const HGameObject& gameObject, const cVector3& worldPosition)
