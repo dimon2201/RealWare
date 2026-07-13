@@ -14,6 +14,12 @@ triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(const std::vector<S
     s.bones = bones;
     _totalBoneCount += s.bones.size();
 
+    _uploader->WriteField<decltype(s.globBoneOffset)>(
+        skeleton,
+        0,
+        s.globBoneOffset
+    );
+
     return skeleton;
 }
 
