@@ -10,10 +10,10 @@
 namespace triton
 {
 	class cBuffer;
-	template <typename T>
+	template <typename TSubsystem, typename TCPUObjectHandle, typename TGPUElementLayout>
 	class XUploader;
 
-	struct SSkeletonGPULayout
+	struct SGPUSkeletonLayout
 	{
 		types::u32 globBoneOffset = 0;
 	};
@@ -25,7 +25,7 @@ namespace triton
 
 		types::usize _totalBoneCount = 0;
 		cBuffer* _skeletonBuffer = nullptr;
-		XUploader<SSkeletonGPULayout>* _uploader = nullptr;
+		XUploader<XSkeletonSubsystem, HSkeleton, SGPUSkeletonLayout>* _uploader = nullptr;
 
 	public:
 		HSkeleton CreateSkeleton(const std::vector<SBone>& bones);

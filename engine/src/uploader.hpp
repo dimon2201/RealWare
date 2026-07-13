@@ -9,11 +9,12 @@
 #include "graphics_resource_backend.hpp"
 #include "gpu_resource.hpp"
 #include "render_subsystem.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-    template <typename TGPUElementLayout>
+    template <typename TSubsystem, typename TCPUObjectHandle, typename TGPUElementLayout>
     class XUploader : public iObject
     {
         TRITON_OBJECT(XUploader)
@@ -46,11 +47,12 @@ namespace triton
 
         template <typename TElementField>
         void WriteField(
-            types::usize elementIndex,
+            const TCPUObjectHandle& object,
             types::usize byteOffset,
             const TElementField& field
         )
         {
+            const types::usize elementIndex = _context->GetSubsystem<TSubsystem>->GetBufferIndex(object);
             TElementField* ef = (TElementField*)((types::u8*)&_stagingBuffer[elementIndex] + byteOffset);
             *ef = field;
             MarkDirty();

@@ -10,23 +10,12 @@
 
 namespace triton
 {
-	class cBuffer;
 	struct SAnimationBone;
-	template <typename T>
-	class XUploader;
-
-	struct SSkinnedBoneGPULayout
-	{
-		cMatrix4 modelToModelMatrix = cMatrix4();
-	};
 
 	class XAnimationSubsystem : public ISubsystem<HAnimation, SAnimation, XLinearArray<SAnimation>>
 	{
 		TRITON_OBJECT(XAnimationSubsystem)
 		TRITON_SUBSYSTEM
-
-		cBuffer* _skinnedBoneBuffer = nullptr;
-		XUploader<SSkinnedBoneGPULayout>* _uploader = nullptr;
 
 	public:
 		HAnimation CreateAnimation(
@@ -37,26 +26,17 @@ namespace triton
 			const std::vector<SAnimationBone>& bones
 		);
 
-		void DestroyAnimation(
-			const HAnimation& animation
-		);
+		void DestroyAnimation(const HAnimation& animation);
 
 		SEvaluatedFrame Evaluate(
 			const HAnimation& animation,
 			types::f32 time
 		);
 
-		SSkinMatrices Skin(
-			const SEvaluatedFrame& frame
-		);
+		void Init() override {}
 
-		void Init() override;
+		void Free() override {}
 
-		void Free() override;
-
-		void Update() override;
-
-	private:
-		void Upload(cBuffer* skinMatricesBuffer);
+		void Update() override {}
 	};
 }

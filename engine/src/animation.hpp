@@ -51,9 +51,4 @@ namespace triton
         HSkeleton skeleton = {};
         std::vector<SEvaluatedBone> bones = {};
     };
-
-    struct SSkinMatrices
-    {
-        std::vector<cMatrix4> matrices = {};
-    };
 }

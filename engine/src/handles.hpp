@@ -16,4 +16,5 @@ namespace triton
 	using HModel3D = SHandle;
 	using HAnimation = SHandle;
 	using HSkeleton = SHandle;
+	using HSkinnedBone = SHandle;
 }
