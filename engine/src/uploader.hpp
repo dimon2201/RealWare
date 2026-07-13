@@ -65,7 +65,6 @@ namespace triton
             }
         }
 
-    private:
         void MarkDirty()
         {
             _bIsDirty = types::K_TRUE;
