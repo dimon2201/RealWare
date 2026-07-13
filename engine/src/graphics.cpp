@@ -179,6 +179,10 @@ void triton::cGraphics::ExecutePasses()
 {
     CThreadGuard::AssertRender();
 
+    // TODO: encapsulate this code to proper classes
+    // |||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+
     WriteDirtyStaticInstances();
     WriteDynamicInstances();
 

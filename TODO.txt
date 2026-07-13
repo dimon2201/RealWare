@@ -22,6 +22,7 @@
 - Refactor: Use proper math backend (animation_subsystem.cpp:58)
 - Fix: Add support for multiple materials, currently it is messy
 - Refactor: Rewrite model3d backend
+- Refactor: Encapsulate batch,render pass rendering calls to proper classes (graphics.cpp:182)
 - GFX: PBR optimization with lookup tables
 - GFX: HDR
 - GFX: Tonemapping
