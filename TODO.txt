@@ -21,6 +21,7 @@
 - Feature: Implement Assimp embedded BGRA textures support (model3d_backend_assimp.cpp:312)
 - Refactor: Use proper math backend (animation_subsystem.cpp:58)
 - Fix: Add support for multiple materials, currently it is messy
+- Refactor: Rewrite model3d backend
 - GFX: PBR optimization with lookup tables
 - GFX: HDR
 - GFX: Tonemapping
