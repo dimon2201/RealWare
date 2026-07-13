@@ -439,7 +439,7 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
         animation.name = srcAnim->mName.C_Str();
         animation.duration = srcAnim->mDuration;
         animation.ticksPerSecond = srcAnim->mTicksPerSecond;
-        animation.bones.reserve(srcAnim->mNumChannels);
+        animation.animBones.reserve(srcAnim->mNumChannels);
 
         for (usize channelIdx = 0; channelIdx < srcAnim->mNumChannels; ++channelIdx)
         {
@@ -449,43 +449,43 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
             if (it == boneIndices.end())
                 continue;
 
-            SBoneAnimation boneAnim;
-            boneAnim.localBoneIndex = it->second;
+            SAnimationBone animBone = {};
+            animBone.localBoneIndex = it->second;
 
             // Position
-            boneAnim.positionKeys.reserve(channel->mNumPositionKeys);
+            animBone.positionKeys.reserve(channel->mNumPositionKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumPositionKeys; ++keyIdx)
             {
                 const aiVectorKey& key = channel->mPositionKeys[keyIdx];
                 SBonePositionKey bpk = {};
                 bpk.time = key.mTime;
                 bpk.position = cVector3(key.mValue.x, key.mValue.y, key.mValue.z);
-                boneAnim.positionKeys.push_back(bpk);
+                animBone.positionKeys.push_back(bpk);
             }
 
             // Rotation
-            boneAnim.rotationKeys.reserve(channel->mNumRotationKeys);
+            animBone.rotationKeys.reserve(channel->mNumRotationKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumRotationKeys; ++keyIdx)
             {
                 const aiQuatKey& key = channel->mRotationKeys[keyIdx];
                 SBoneRotationKey brk = {};
                 brk.time = key.mTime;
                 brk.rotation = cQuaternion(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z);
-                boneAnim.rotationKeys.push_back(brk);
+                animBone.rotationKeys.push_back(brk);
             }
 
             // Scale
-            boneAnim.scaleKeys.reserve(channel->mNumScalingKeys);
+            animBone.scaleKeys.reserve(channel->mNumScalingKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumScalingKeys; ++keyIdx)
             {
                 const aiVectorKey& key = channel->mScalingKeys[keyIdx];
                 SBoneScaleKey bsk = {};
                 bsk.time = key.mTime;
                 bsk.scale = cVector3(key.mValue.x, key.mValue.y, key.mValue.z);
-                boneAnim.scaleKeys.push_back(bsk);
+                animBone.scaleKeys.push_back(bsk);
             }
 
-            animation.bones.push_back(std::move(boneAnim));
+            animation.animBones.push_back(std::move(animBone));
         }
 
         modelAnimations.push_back(
@@ -494,7 +494,7 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
             animation.duration,
             animation.ticksPerSecond,
             modelSkeleton,
-            animation.bones
+            animation.animBones
         ));
     }
 }

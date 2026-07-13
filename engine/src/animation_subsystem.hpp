@@ -11,7 +11,7 @@
 namespace triton
 {
 	class cBuffer;
-	struct SBoneAnimation;
+	struct SAnimationBone;
 	template <typename T>
 	class XUploader;
 
@@ -34,7 +34,7 @@ namespace triton
 			types::f32 duration,
 			types::f32 ticksPerSecond,
 			HSkeleton skeleton,
-			const std::vector<SBoneAnimation>& bones
+			const std::vector<SAnimationBone>& bones
 		);
 
 		void DestroyAnimation(

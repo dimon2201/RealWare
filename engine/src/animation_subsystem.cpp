@@ -17,7 +17,7 @@ triton::HAnimation triton::XAnimationSubsystem::CreateAnimation(
     types::f32 duration,
     types::f32 ticksPerSecond,
     HSkeleton skeleton,
-    const std::vector<SBoneAnimation>& bones
+    const std::vector<SAnimationBone>& bones
 )
 {
     HAnimation animation = Create();
@@ -26,7 +26,7 @@ triton::HAnimation triton::XAnimationSubsystem::CreateAnimation(
     a.duration = duration;
     a.ticksPerSecond = ticksPerSecond;
     a.skeleton = skeleton;
-    a.bones = bones;
+    a.animBones = bones;
     
     return animation;
 }
@@ -45,7 +45,7 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
 
     SEvaluatedFrame frame = {};
     frame.skeleton = a.skeleton;
-    frame.bones.resize(a.bones.size());
+    frame.bones.resize(a.animBones.size());
 
     std::fill(
         frame.bones.begin(),
@@ -56,7 +56,7 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
     if (a.duration > 0.0f)
         time = std::fmod(time, a.duration);
 
-    for (const SBoneAnimation& boneAnimation : a.bones)
+    for (const SAnimationBone& animBone : a.animBones)
     {
         cVector3 posePosition = cVector3(0.0f);
         cQuaternion poseRotation = cQuaternion();
@@ -67,84 +67,84 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
         // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
         // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 
-        if (!boneAnimation.positionKeys.empty())
+        if (!animBone.positionKeys.empty())
         {
-            if (boneAnimation.positionKeys.size() == 1)
+            if (animBone.positionKeys.size() == 1)
             {
-                posePosition = boneAnimation.positionKeys[0].position;
+                posePosition = animBone.positionKeys[0].position;
             }
             else
             {
                 usize next = 1;
-                while (next < boneAnimation.positionKeys.size() &&
-                    time >= boneAnimation.positionKeys[next].time)
+                while (next < animBone.positionKeys.size() &&
+                    time >= animBone.positionKeys[next].time)
                 {
                     ++next;
                 }
-                if (next == boneAnimation.positionKeys.size())
+                if (next == animBone.positionKeys.size())
                 {
-                    posePosition = boneAnimation.positionKeys.back().position;
+                    posePosition = animBone.positionKeys.back().position;
                 }
                 else
                 {
-                    const auto& a = boneAnimation.positionKeys[next - 1];
-                    const auto& b = boneAnimation.positionKeys[next];
+                    const auto& a = animBone.positionKeys[next - 1];
+                    const auto& b = animBone.positionKeys[next];
                     f32 factor = (time - a.time) / (b.time - a.time);
                     posePosition = cVector3(glm::mix(a.position._vec, b.position._vec, factor));
                 }
             }
         }
 
-        if (!boneAnimation.rotationKeys.empty())
+        if (!animBone.rotationKeys.empty())
         {
-            if (boneAnimation.rotationKeys.size() == 1)
+            if (animBone.rotationKeys.size() == 1)
             {
-                poseRotation = boneAnimation.rotationKeys[0].rotation;
+                poseRotation = animBone.rotationKeys[0].rotation;
             }
             else
             {
                 usize next = 1;
-                while (next < boneAnimation.rotationKeys.size() &&
-                    time >= boneAnimation.rotationKeys[next].time)
+                while (next < animBone.rotationKeys.size() &&
+                    time >= animBone.rotationKeys[next].time)
                 {
                     ++next;
                 }
-                if (next == boneAnimation.rotationKeys.size())
+                if (next == animBone.rotationKeys.size())
                 {
-                    poseRotation = boneAnimation.rotationKeys.back().rotation;
+                    poseRotation = animBone.rotationKeys.back().rotation;
                 }
                 else
                 {
-                    const auto& a = boneAnimation.rotationKeys[next - 1];
-                    const auto& b = boneAnimation.rotationKeys[next];
+                    const auto& a = animBone.rotationKeys[next - 1];
+                    const auto& b = animBone.rotationKeys[next];
                     f32 factor = (time - a.time) / (b.time - a.time);
                     poseRotation = cQuaternion(glm::slerp(a.rotation._quat, b.rotation._quat, factor));
                 }
             }
         }
 
-        if (!boneAnimation.scaleKeys.empty())
+        if (!animBone.scaleKeys.empty())
         {
-            if (boneAnimation.scaleKeys.size() == 1)
+            if (animBone.scaleKeys.size() == 1)
             {
-                poseScale = boneAnimation.scaleKeys[0].scale;
+                poseScale = animBone.scaleKeys[0].scale;
             }
             else
             {
                 usize next = 1;
-                while (next < boneAnimation.scaleKeys.size() &&
-                    time >= boneAnimation.scaleKeys[next].time)
+                while (next < animBone.scaleKeys.size() &&
+                    time >= animBone.scaleKeys[next].time)
                 {
                     ++next;
                 }
-                if (next == boneAnimation.scaleKeys.size())
+                if (next == animBone.scaleKeys.size())
                 {
-                    poseScale = boneAnimation.scaleKeys.back().scale;
+                    poseScale = animBone.scaleKeys.back().scale;
                 }
                 else
                 {
-                    const auto& a = boneAnimation.scaleKeys[next - 1];
-                    const auto& b = boneAnimation.scaleKeys[next];
+                    const auto& a = animBone.scaleKeys[next - 1];
+                    const auto& b = animBone.scaleKeys[next];
                     f32 factor = (time - a.time) / (b.time - a.time);
                     poseScale = cVector3(glm::mix(a.scale._vec, b.scale._vec, factor));
                 }
@@ -159,7 +159,7 @@ triton::SEvaluatedFrame triton::XAnimationSubsystem::Evaluate(
         SEvaluatedBone eb = {};
         eb.transformMatrix = cMatrix4(matrix);
 
-        frame.bones[boneAnimation.localBoneIndex] = eb;
+        frame.bones[animBone.localBoneIndex] = eb;
     }
 
     return frame;
