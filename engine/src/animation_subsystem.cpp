@@ -216,7 +216,12 @@ void triton::XAnimationSubsystem::Init()
         4
     ));
     _skinnedBoneBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    _uploader = _context->Create<XUploader<SSkinnedBoneGPULayout>>(_context, _skinnedBoneBuffer, caps->maxSkinnedBoneCount);
+    _uploader = _context->Create<XUploader<SSkinnedBoneGPULayout>>(
+        _context,
+        _skinnedBoneBuffer,
+        caps->maxSkinnedBoneCount,
+        K_TRUE
+    );
 }
 
 void triton::XAnimationSubsystem::Free()

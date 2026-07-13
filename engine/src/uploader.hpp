@@ -18,15 +18,22 @@ namespace triton
     {
         TRITON_OBJECT(XUploader)
 
+        types::boolean _bIsPermanentDirty = types::K_FALSE;
         types::boolean _bIsDirty = types::K_FALSE;
         cGPUResource* _resource = nullptr;
         types::usize _stagingBufferByteSize = 0;
         TGPUElementLayout* _stagingBuffer = nullptr;
 
     public:
-        explicit XUploader(cContext* context, cGPUResource* resource, types::usize stagingBufferElementCount) : iObject(context)
+        explicit XUploader(
+            cContext* context,
+            cGPUResource* resource,
+            types::usize stagingBufferElementCount,
+            types::boolean bIsPermanentDirty
+        ) : iObject(context)
         {
             const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+            _bIsPermanentDirty = bIsPermanentDirty;
             _resource = resource;
             _stagingBufferByteSize = stagingBufferElementCount * sizeof(TGPUElementLayout);
             _stagingBuffer = (TGPUElementLayout*)_context->GetMemoryAllocator()->Allocate(_stagingBufferByteSize, 64);
@@ -45,7 +52,7 @@ namespace triton
 
         void Update()
         {
-            if (_bIsDirty == types::K_TRUE)
+            if (_bIsPermanentDirty == types::K_TRUE || _bIsDirty == types::K_TRUE)
                 Upload(0, _stagingBufferByteSize);
         }
 
