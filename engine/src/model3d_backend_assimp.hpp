@@ -109,6 +109,7 @@ namespace triton
             types::usize vertexCount,
             types::usize indexCount,
             const std::vector<HMaterial>& modelMaterials,
+            HSkeleton modelSkeleton,
             const std::vector<HAnimation>& modelAnimations
         );
         cMatrix4 ConvertMatrix(const aiMatrix4x4& mat);

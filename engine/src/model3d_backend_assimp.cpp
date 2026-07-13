@@ -67,7 +67,7 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(c
     CreateSkeleton(modelSkeleton, bones, _context->GetSubsystem<XSkeletonSubsystem>());
     CreateAnimations(scene, boneIndices, _context->GetSubsystem<XAnimationSubsystem>(), modelSkeleton, modelAnimations);
 
-    return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials, modelAnimations);
+    return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials, modelSkeleton, modelAnimations);
 }
 
 void triton::XModel3DBackendAssimp::DestroyModel(SModel3DData& model)
@@ -572,6 +572,7 @@ triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(
     usize vertexCount,
     usize indexCount,
     const std::vector<HMaterial>& modelMaterials,
+    HSkeleton modelSkeleton,
     const std::vector<HAnimation>& modelAnimations
 )
 {
@@ -581,6 +582,7 @@ triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(
     m3dd.vertexCount = vertexCount;
     m3dd.indexCount = indexCount;
     m3dd.materials = modelMaterials;
+    m3dd.skeleton = modelSkeleton;
     m3dd.animations = modelAnimations;
 
     return m3dd;
