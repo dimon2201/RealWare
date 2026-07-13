@@ -48,6 +48,11 @@ namespace triton
 		{
 			_objects->Destroy(handle);
 		}
+
+		inline types::usize GetBufferIndex(const THandle& handle) const
+		{
+			return handle._indexInArray;
+		}
 	};
 
 	#define TRITON_SUBSYSTEM using ISubsystem::ISubsystem;
