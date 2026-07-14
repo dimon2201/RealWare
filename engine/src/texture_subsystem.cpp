@@ -162,8 +162,8 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
 
                     STexture readyTexture;
                     readyTexture.layer = layer;
-                    readyTexture.normOffset = candidateTexture.normOffset;
-                    readyTexture.normSize = candidateTexture.normSize;
+                    readyTexture.normOffset = normOffset;
+                    readyTexture.normSize = normSize;
                     readyTexture.pixelOffset = pixelOffset;
                     readyTexture.pixelSize = pixelSize;
 
