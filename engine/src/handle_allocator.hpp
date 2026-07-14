@@ -31,7 +31,7 @@ namespace triton
 
 		XDynamicArray<TSlot>* _slots = nullptr;
 		XDynamicArray<types::usize>* _freeSlots = nullptr;
-		XDynamicArray<types::usize>* _reverseMap = nullptr;
+		XDynamicArray<types::usize>* _objectIndexToSlotIndex = nullptr;
 		TDataStructure* _objects = nullptr;
 
 	public:
@@ -49,8 +49,8 @@ namespace triton
 				_slots = _context->Create<XDynamicArray<TSlot>>(_context, cad);
 			if (!_freeSlots)
 				_freeSlots = _context->Create<XDynamicArray<types::usize>>(_context, cad);
-			if (!_reverseMap)
-				_reverseMap = _context->Create<XDynamicArray<types::usize>>(_context, cad);
+			if (!_objectIndexToSlotIndex)
+				_objectIndexToSlotIndex = _context->Create<XDynamicArray<types::usize>>(_context, cad);
 			sChunkAllocatorDescriptor cadObjects = {};
 			cadObjects.chunkByteSize = caps->handleAllocatorObjectCount * sizeof(TObject);
 			if (!_objects)
@@ -61,8 +61,8 @@ namespace triton
 		{
 			if (_objects)
 				_context->Destroy<TDataStructure>(_objects);
-			if (_reverseMap)
-				_context->Destroy<XDynamicArray<types::usize>>(_reverseMap);
+			if (_objectIndexToSlotIndex)
+				_context->Destroy<XDynamicArray<types::usize>>(_objectIndexToSlotIndex);
 			if (_freeSlots)
 				_context->Destroy<XDynamicArray<types::usize>>(_freeSlots);
 			if (_slots)
@@ -72,84 +72,92 @@ namespace triton
 		template <typename... Args>
 		THandle Create(Args&&... args)
 		{
-			types::usize arrayIndex;
-			types::usize slotIndex;
-			types::usize generation;
-			
-			arrayIndex = _objects->GetSize();
 			THandle handle;
+			types::usize slotIndex;
+			types::usize arrayIndex;
+			types::usize generation;
 
 			if (_freeSlots->IsEmpty())
 			{
 				slotIndex = _slots->GetSize();
-			
+				arrayIndex = _objects->GetSize();
 				_objects->Push(std::forward<Args>(args)...);
-				_reverseMap->Push(slotIndex);
+				_objectIndexToSlotIndex->Push(slotIndex);
 
+				generation = 0;
+				
 				TSlot slot = {};
 				slot._arrayIndex = arrayIndex;
-				slot._generation = 0;
-
+				slot._generation = generation;
 				_slots->Push(std::move(slot));
 
+				handle._slotIndex = slotIndex;
 				handle._indexInArray = arrayIndex;
-				handle._generation = 0;
+				handle._generation = generation;
 			}
 			else
 			{
-				slotIndex = *_freeSlots->Pop().data;
-
+				slotIndex = *_freeSlots->Top().data;
+				arrayIndex = _objects->GetSize();
 				_objects->Push(std::forward<Args>(args)...);
-				_reverseMap->Push(slotIndex);
+				_objectIndexToSlotIndex->Push(slotIndex);
+			
+				TSlot& slot = *_slots->At(slotIndex).data;
+				slot._arrayIndex = arrayIndex;
+				generation = slot._generation;
 
-				_slots->At(slotIndex).data->_arrayIndex = arrayIndex;
-
+				handle._slotIndex = slotIndex;
 				handle._indexInArray = arrayIndex;
-				handle._generation = _slots->At(slotIndex).data->_generation;
+				handle._generation = generation;
+
+				_freeSlots->Pop();
 			}
 			
-			handle._slotIndex = slotIndex;
-
 			return handle;
 		}
 
 		THandle Create(TObject&& object)
 		{
-			types::usize arrayIndex;
-			types::usize slotIndex;
-			types::usize generation;
-
-			arrayIndex = _objects->GetSize();
 			THandle handle;
+			types::usize slotIndex;
+			types::usize arrayIndex;
+			types::usize generation;
 
 			if (_freeSlots->IsEmpty())
 			{
 				slotIndex = _slots->GetSize();
-
+				arrayIndex = _objects->GetSize();
 				_objects->Push(std::move(object));
-				_reverseMap->Push(slotIndex);
+				_objectIndexToSlotIndex->Push(slotIndex);
+
+				generation = 0;
 
 				TSlot slot = {};
 				slot._arrayIndex = arrayIndex;
-				slot._generation = 0;
-
+				slot._generation = generation;
 				_slots->Push(std::move(slot));
 
-				handle._generation = 0;
+				handle._slotIndex = slotIndex;
+				handle._indexInArray = arrayIndex;
+				handle._generation = generation;
 			}
 			else
 			{
-				slotIndex = *_freeSlots->Pop().data;
-
+				slotIndex = *_freeSlots->Top().data;
+				arrayIndex = _objects->GetSize();
 				_objects->Push(std::move(object));
-				_reverseMap->Push(slotIndex);
+				_objectIndexToSlotIndex->Push(slotIndex);
 
-				_slots->At(slotIndex).data->_arrayIndex = arrayIndex;
+				TSlot& slot = *_slots->At(slotIndex).data;
+				slot._arrayIndex = arrayIndex;
+				generation = slot._generation;
 
-				handle._generation = _slots->At(slotIndex).data->_generation;
+				handle._slotIndex = slotIndex;
+				handle._indexInArray = arrayIndex;
+				handle._generation = generation;
+
+				_freeSlots->Pop();
 			}
-
-			handle._slotIndex = slotIndex;
 
 			return handle;
 		}
@@ -168,31 +176,30 @@ namespace triton
 			if (_objects->IsEmpty())
 				return;
 
-			TSlot* slot = _slots->At(handle._slotIndex).data;
-			if (slot->_generation != handle._generation)
+			TSlot& slot = *_slots->At(handle._slotIndex).data;
+			if (slot._generation != handle._generation)
 				return;
+			slot._generation += 1;
 
-			types::usize removeIndex = slot->_arrayIndex;
-			types::usize lastIndex = _objects->GetSize() - 1;
+			types::usize removeObjectIndex = slot._arrayIndex;
+			types::usize lastObjectIndex = _objects->GetSize() - 1;
+			types::usize freeSlotIndex = handle._slotIndex;
 
-			if (removeIndex != lastIndex)
+			if (removeObjectIndex != lastObjectIndex)
 			{
-				// TODO: figure out what to do here
-				//*(_objects->At(removeIndex).data) = std::move(*(_objects->At(lastIndex).data));
-				// Call "_objects->At(removeIndex).data" destructor here
-				new (_objects->At(removeIndex).data) TObject(std::move(*(_objects->At(lastIndex).data)));
+				_objects->At(removeObjectIndex).data->~TObject();
+				new (_objects->At(removeObjectIndex).data)
+					TObject(std::move(*(_objects->At(lastObjectIndex).data)));
 
-				types::usize movedSlotIndex = *_reverseMap->At(lastIndex).data;
-				*_reverseMap->At(removeIndex).data = movedSlotIndex;
+				types::usize movedSlotIndex = *_objectIndexToSlotIndex->At(lastObjectIndex).data;
+				*_objectIndexToSlotIndex->At(removeObjectIndex).data = movedSlotIndex;
 
-				_slots->At(movedSlotIndex).data->_arrayIndex = removeIndex;
+				_slots->At(movedSlotIndex).data->_arrayIndex = removeObjectIndex;
 			}
 
 			_objects->Pop();
-			_reverseMap->Pop();
-			_freeSlots->Push(handle._slotIndex);
-
-			slot->_generation += 1;
+			_objectIndexToSlotIndex->Pop();
+			_freeSlots->Push(freeSlotIndex);
 		}
 
 		inline SBufferView<TObject> GetData() const
