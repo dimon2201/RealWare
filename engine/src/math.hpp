@@ -150,6 +150,7 @@ namespace triton
 		friend class cMatrix4;
 		friend class cTransform;
 
+	public: // TODO: uncomment this
 		glm::mat4 _mat = {};
 
 	public:

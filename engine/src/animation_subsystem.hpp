@@ -10,7 +10,7 @@
 
 namespace triton
 {
-	struct SAnimationBone;
+	struct SAnimationKey;
 
 	class XAnimationSubsystem : public ISubsystem<HAnimation, SAnimation, XLinearArray<SAnimation>>
 	{
@@ -23,7 +23,7 @@ namespace triton
 			types::f32 duration,
 			types::f32 ticksPerSecond,
 			HSkeleton skeleton,
-			const std::vector<SAnimationBone>& bones
+			const std::vector<SAnimationKey>& bones
 		);
 
 		void DestroyAnimation(const HAnimation& animation);

@@ -39,6 +39,9 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(c
     HSkeleton modelSkeleton = {};
     usize boneOffset = 0;
     std::vector<HAnimation> modelAnimations = {};
+    aiNode* boneRootNode = nullptr;
+    aiMatrix4x4 parentRootTransform = aiMatrix4x4();
+    aiMatrix4x4 accumulatedRootTransform = aiMatrix4x4();
 
     CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
 
@@ -63,8 +66,15 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(c
 
     CreateBones(scene, vertexData, vertexCount, boneIndices, bones, vertexWeights);
     FinalizeBoneWeights(vertexData, vertexCount, vertexWeights);
+    AccumulateRootTransform(
+        scene->mRootNode,
+        boneRootNode,
+        parentRootTransform,
+        accumulatedRootTransform,
+        boneIndices
+    );
     CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
-    CreateSkeleton(modelSkeleton, bones, _context->GetSubsystem<XSkeletonSubsystem>());
+    CreateSkeleton(modelSkeleton, bones, _context->GetSubsystem<XSkeletonSubsystem>(), accumulatedRootTransform);
     CreateAnimations(scene, boneIndices, _context->GetSubsystem<XAnimationSubsystem>(), modelSkeleton, modelAnimations);
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials, modelSkeleton, modelAnimations);
@@ -322,7 +332,7 @@ void triton::XModel3DBackendAssimp::CreateBones(
             {
                 SBone b = {};
                 b.name = boneName;
-                b.parentBoneMatrix = ConvertMatrix(bone->mOffsetMatrix);
+                b.modelMatrix = ConvertMatrix(bone->mOffsetMatrix);
 
                 realBoneIndex = bones.size();
                 boneIndices.insert({ boneName, realBoneIndex });
@@ -378,8 +388,45 @@ void triton::XModel3DBackendAssimp::FinalizeBoneWeights(SVertex* vertexData, typ
         {
             vertexData[vertexIndex].boneIndices[i] = weights[i].boneIndex;
             vertexData[vertexIndex].boneWeights[i] = weights[i].weight;
+
+            vertexData[vertexIndex].boneWeights[0] = 1.0f;
+            vertexData[vertexIndex].boneWeights[1] = 0.0f;
+            vertexData[vertexIndex].boneWeights[2] = 0.0f;
+            vertexData[vertexIndex].boneWeights[3] = 0.0f;
         }
     }
+}
+
+boolean triton::XModel3DBackendAssimp::AccumulateRootTransform(
+    const aiNode* node,
+    aiNode*& boneRootNode,
+    const aiMatrix4x4& parentRootTransform,
+    aiMatrix4x4& accumulatedRootTransform,
+    std::unordered_map<std::string, usize>& boneIndices
+)
+{
+    aiMatrix4x4 current = parentRootTransform * node->mTransformation;
+    auto it = boneIndices.find(node->mName.C_Str());
+    if (it != boneIndices.end())
+    {
+        boneRootNode = (aiNode*)node;
+        accumulatedRootTransform = parentRootTransform;
+        return K_TRUE;
+    }
+
+    for (uint32_t i = 0; i < node->mNumChildren; i++)
+    {
+        if (AccumulateRootTransform(
+            node->mChildren[i],
+            boneRootNode,
+            current,
+            accumulatedRootTransform,
+            boneIndices
+        ))
+            return K_TRUE;
+    }
+
+    return K_FALSE;
 }
 
 void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
@@ -397,7 +444,7 @@ void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
         currentBone = it->second;
 
         bones[currentBone].localParentBoneIndex = parentBone;
-        bones[currentBone].modelMatrix = ConvertMatrix(node->mTransformation);
+        bones[currentBone].localMatrix = ConvertMatrix(node->mTransformation);
 
         if (parentBone != -1)
             bones[parentBone].localChildBoneIndices.push_back(currentBone);
@@ -417,10 +464,11 @@ void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
 void triton::XModel3DBackendAssimp::CreateSkeleton(
     HSkeleton& modelSkeleton,
     const std::vector<SBone>& bones,
-    XSkeletonSubsystem* skeletonSubsystem
+    XSkeletonSubsystem* skeletonSubsystem,
+    const aiMatrix4x4& accumulatedRootTransform
 )
 {
-    modelSkeleton = skeletonSubsystem->CreateSkeleton(bones);
+    modelSkeleton = skeletonSubsystem->CreateSkeleton(bones, ConvertMatrix(accumulatedRootTransform));
 }
 
 void triton::XModel3DBackendAssimp::CreateAnimations(
@@ -439,7 +487,7 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
         animation.name = srcAnim->mName.C_Str();
         animation.duration = srcAnim->mDuration;
         animation.ticksPerSecond = srcAnim->mTicksPerSecond;
-        animation.animBones.reserve(srcAnim->mNumChannels);
+        animation.animKeys.reserve(srcAnim->mNumChannels);
 
         for (usize channelIdx = 0; channelIdx < srcAnim->mNumChannels; ++channelIdx)
         {
@@ -449,43 +497,43 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
             if (it == boneIndices.end())
                 continue;
 
-            SAnimationBone animBone = {};
-            animBone.localBoneIndex = it->second;
+            SAnimationKey animKey = {};
+            animKey.localBoneIndex = it->second;
 
             // Position
-            animBone.positionKeys.reserve(channel->mNumPositionKeys);
+            animKey.positionKeys.reserve(channel->mNumPositionKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumPositionKeys; ++keyIdx)
             {
                 const aiVectorKey& key = channel->mPositionKeys[keyIdx];
                 SBonePositionKey bpk = {};
                 bpk.time = key.mTime;
                 bpk.position = cVector3(key.mValue.x, key.mValue.y, key.mValue.z);
-                animBone.positionKeys.push_back(bpk);
+                animKey.positionKeys.push_back(bpk);
             }
 
             // Rotation
-            animBone.rotationKeys.reserve(channel->mNumRotationKeys);
+            animKey.rotationKeys.reserve(channel->mNumRotationKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumRotationKeys; ++keyIdx)
             {
                 const aiQuatKey& key = channel->mRotationKeys[keyIdx];
                 SBoneRotationKey brk = {};
                 brk.time = key.mTime;
                 brk.rotation = cQuaternion(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z);
-                animBone.rotationKeys.push_back(brk);
+                animKey.rotationKeys.push_back(brk);
             }
 
             // Scale
-            animBone.scaleKeys.reserve(channel->mNumScalingKeys);
+            animKey.scaleKeys.reserve(channel->mNumScalingKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumScalingKeys; ++keyIdx)
             {
                 const aiVectorKey& key = channel->mScalingKeys[keyIdx];
                 SBoneScaleKey bsk = {};
                 bsk.time = key.mTime;
                 bsk.scale = cVector3(key.mValue.x, key.mValue.y, key.mValue.z);
-                animBone.scaleKeys.push_back(bsk);
+                animKey.scaleKeys.push_back(bsk);
             }
 
-            animation.animBones.push_back(std::move(animBone));
+            animation.animKeys.push_back(std::move(animKey));
         }
 
         modelAnimations.push_back(
@@ -494,7 +542,7 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
             animation.duration,
             animation.ticksPerSecond,
             modelSkeleton,
-            animation.animBones
+            animation.animKeys
         ));
     }
 }
@@ -590,10 +638,11 @@ triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(
 
 triton::cMatrix4 triton::XModel3DBackendAssimp::ConvertMatrix(const aiMatrix4x4& m)
 {
-    return cMatrix4(glm::mat4(
-        m.a1, m.b1, m.c1, m.d1,
-        m.a2, m.b2, m.c2, m.d2,
-        m.a3, m.b3, m.c3, m.d3,
-        m.a4, m.b4, m.c4, m.d4
-    ));
+    glm::mat4 result;
+    result[0] = glm::vec4(m.a1, m.b1, m.c1, m.d1);
+    result[1] = glm::vec4(m.a2, m.b2, m.c2, m.d2);
+    result[2] = glm::vec4(m.a3, m.b3, m.c3, m.d3);
+    result[3] = glm::vec4(m.a4, m.b4, m.c4, m.d4);
+
+    return cMatrix4(result);
 }

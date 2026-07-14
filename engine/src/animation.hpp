@@ -24,7 +24,7 @@ namespace triton
         cVector3 scale = cVector3(0.0f);
     };
 
-    struct SAnimationBone
+    struct SAnimationKey
     {
         types::usize localBoneIndex = 0;
         std::vector<SBonePositionKey> positionKeys = {};
@@ -37,12 +37,12 @@ namespace triton
         std::string name = "";
         types::f32 duration = 0.0f;
         types::f32 ticksPerSecond = 0.0f;
-        std::vector<SAnimationBone> animBones = {};
+        std::vector<SAnimationKey> animKeys = {};
     };
 
     struct SFrameBone
     {
-        cMatrix4 transformMatrix = cMatrix4(1.0f);
+        cMatrix4 transformMatrix = cMatrix4();
     };
 
     struct SFrame

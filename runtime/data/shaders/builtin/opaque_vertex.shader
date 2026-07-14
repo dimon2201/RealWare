@@ -16,6 +16,7 @@ out vec3 FragPosWorldSpace;
 flat out vec4 DiffuseColor;
 flat out mat3 TBNMatrix;
 out mat3 TangentToWorld;
+flat out uint OutTripleSixty;
 
 uniform mat4 ViewProjection;
 uniform uint InstanceBatchType;
@@ -85,6 +86,14 @@ void main()
 	else if (InstanceBatchType == 1)
 		instance = dynamicInstances[gl_InstanceID];
 	Material material = materials[0];//instance.MaterialIndex];
+	
+	uint skBoneOffset = skeletons[instance.SkeletonIndex].globBoneOffset;
+	mat4 skinMatrix =
+      InBoneWeights.x * skinnedBones[skBoneOffset + InBoneIndices.x].modelToModelMatrix
+    + InBoneWeights.y * skinnedBones[skBoneOffset + InBoneIndices.y].modelToModelMatrix
+    + InBoneWeights.z * skinnedBones[skBoneOffset + InBoneIndices.z].modelToModelMatrix
+    + InBoneWeights.w * skinnedBones[skBoneOffset + InBoneIndices.w].modelToModelMatrix;
+	//mat4 skinMatrix = InBoneWeights.x * skinnedBones[skBoneOffset + InBoneIndices.x].modelToModelMatrix;
 
 	DiffuseTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Diffuse.AtlasLayer);
 	DiffuseTexcoordAtlas.xy *= vec2(material.Diffuse.AtlasNormSize);
@@ -99,16 +108,19 @@ void main()
 	MetallicTexcoordAtlas.xy *= vec2(material.Metallic.AtlasNormSize);
 	MetallicTexcoordAtlas.xy += material.Metallic.AtlasNormOffset;
 	TexcoordOrig = InTexcoord;
-	Normal = InNormal;
-	FragPosWorldSpace = vec3(instance.World * vec4(InPositionLocal, 1.0));
+	Normal = mat3(skinMatrix) * InNormal;
+	vec4 posLocal = skinMatrix * vec4(InPositionLocal, 1.0);
+	FragPosWorldSpace = vec3(instance.World * posLocal);
 	DiffuseColor = material.DiffuseColor;
 
+	OutTripleSixty = skeletons[0].globBoneOffset;
+
 	mat3 normalMatrix = transpose(inverse(mat3(instance.World)));
-	vec3 N = normalize(normalMatrix * InNormal);
+	vec3 N = normalize(normalMatrix * Normal);
 	vec3 T = normalize(normalMatrix * InTangent.xyz);
 	vec3 B = normalize(cross(N, T)) * InTangent.w;
 	TangentToWorld = mat3(T, B, N);
 
-	Vertex_Passthrough(InPositionLocal, instance, 0, gl_Position);
-	Vertex_Func(InPositionLocal, vec2(DiffuseTexcoordAtlas.xy), InNormal, gl_InstanceID, instance, material, 0, gl_Position);
+	Vertex_Passthrough(posLocal.xyz, instance, 0, gl_Position);
+	Vertex_Func(posLocal.xyz, vec2(DiffuseTexcoordAtlas.xy), Normal, gl_InstanceID, instance, material, 0, gl_Position);
 }

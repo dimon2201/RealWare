@@ -79,6 +79,14 @@ namespace triton
 
         void FinalizeBoneWeights(SVertex* vertexData, types::usize vertexCount, std::vector<std::vector<SBoneWeight>>& vertexWeights);
         
+        types::boolean AccumulateRootTransform(
+            const aiNode* node,
+            aiNode*& boneRootNode,
+            const aiMatrix4x4& parentRootTransform,
+            aiMatrix4x4& accumulatedRootTransform,
+            std::unordered_map<std::string, types::usize>& boneIndices
+        );
+
         void CreateBoneHierarchy(
             const aiNode* node,
             types::s32 parentBone,
@@ -89,7 +97,8 @@ namespace triton
         void CreateSkeleton(
             HSkeleton& modelSkeleton,
             const std::vector<SBone>& bones,
-            XSkeletonSubsystem* skeletonSubsystem
+            XSkeletonSubsystem* skeletonSubsystem,
+            const aiMatrix4x4& accumulatedRootTransform
         );
 
         void CreateAnimations(

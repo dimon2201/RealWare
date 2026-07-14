@@ -6,16 +6,20 @@
 
 using namespace types;
 
-triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(const std::vector<SBone>& bones)
+triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(
+    const std::vector<SBone>& bones,
+    const cMatrix4& accumulatedRootTransform
+)
 {
     HSkeleton skeleton = Create();
     SSkeleton& s = Get(skeleton);
+    s.accumulatedRootTransform = accumulatedRootTransform;
     s.bones = bones;
 
     _uploader->WriteField<decltype(s.globSkinnedBoneOffset)>(
         skeleton,
         0,
-        0
+        s.globSkinnedBoneOffset
     );
 
     return skeleton;

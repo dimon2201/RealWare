@@ -45,7 +45,7 @@ void triton::XCamera::Update(const cVector2& screenCursorPosition, usize screenW
     AddEuler(cMath::EEulerAngle::PITCH, mouseDelta.GetY() * mouseSensitivity * deltaTime);
     AddEuler(cMath::EEulerAngle::YAW, mouseDelta.GetX() * mouseSensitivity * deltaTime);
     
-    const f32 camSpeed = 0.01f;
+    const f32 camSpeed = 0.1f;
     cInput* input = _context->GetSubsystem<cInput>();
     iInputBackend* ib = _context->GetBackend<iInputBackend>();
     const f32 forward = input->GetKeyPressed(ib->GetKeyW()) * camSpeed * deltaTime;

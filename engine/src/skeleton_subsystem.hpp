@@ -28,7 +28,10 @@ namespace triton
 		XUploader<XSkeletonSubsystem, HSkeleton, SGPUSkeletonLayout>* _uploader = nullptr;
 
 	public:
-		HSkeleton CreateSkeleton(const std::vector<SBone>& bones);
+		HSkeleton CreateSkeleton(
+			const std::vector<SBone>& bones,
+			const cMatrix4& accumulatedRootTransform = cMatrix4()
+		);
 
 		void DestroySkeleton(const HSkeleton& skeleton);
 

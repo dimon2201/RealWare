@@ -15,6 +15,8 @@ namespace triton
 	class cBuffer;
 	template <typename HSkinnedBone, typename XSkinningSubsystem, typename SSkinnedBoneGPULayout>
 	class XUploader;
+	struct SBone;
+	struct SFrame;
 
 	struct SGPUSkinnedBoneLayout
 	{
@@ -37,7 +39,10 @@ namespace triton
 
 	public:
 		// TODO: create separate structure for skin instead of std::vector<HSkinnedBone>
-		SSkinData CreateSkin(const HSkeleton& skeleton, const SFrame& frame);
+		SSkinData CreateSkin(
+			const HSkeleton& skeleton,
+			const SFrame& frame
+		);
 
 		void DestroySkin(const SSkinData& skin);
 
@@ -51,5 +56,13 @@ namespace triton
 		{
 			return _skinnedBoneBuffer;
 		}
+
+	private:
+		void CalculateBone(
+			const std::vector<SBone>& bones,
+			types::usize boneIndex,
+			const SFrame& frame,
+			std::vector<cMatrix4>& totalTransform
+		);
 	};
 }

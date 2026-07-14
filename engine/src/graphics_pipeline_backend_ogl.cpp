@@ -332,8 +332,8 @@ void triton::cGraphicsPipelineBackendOGL::BindDefaultInputLayout()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 84, (void*)12);
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 84, (void*)20);
     glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 84, (void*)32);
-    glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, 84, (void*)48);
-    glVertexAttribPointer(5, 4, GL_UNSIGNED_INT, GL_FALSE, 84, (void*)52);
+    glVertexAttribIPointer(4, 1, GL_INT, 84, (void*)48);
+    glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, 84, (void*)52);
     glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 84, (void*)68);
 }
 

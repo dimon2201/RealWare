@@ -12,54 +12,54 @@
 
 using namespace types;
 
-triton::SSkinData triton::XSkinningSubsystem::CreateSkin(const HSkeleton& skeleton, const SFrame& frame)
+triton::SSkinData triton::XSkinningSubsystem::CreateSkin(
+    const HSkeleton& skeleton,
+    const SFrame& frame
+)
 {
     const SSkeleton& skeletonData = _context->GetSubsystem<XSkeletonSubsystem>()->Get(skeleton);
     const usize boneCount = skeletonData.bones.size();
 
     SSkinData sd = {};
-
-    std::vector<HSkinnedBone> sbdArr = {};
-    sbdArr.resize(boneCount);
-
-    std::vector<cMatrix4> tempMatrixBuffer = {};
-    tempMatrixBuffer.resize(boneCount);
-
-    for (usize i = 0; i < boneCount; ++i)
-    {
-        const SBone& bone = skeletonData.bones[i];
-        if (bone.localParentBoneIndex < 0)
-        {
-            tempMatrixBuffer[i] = frame.frameBones[i].transformMatrix;
-        }
-        else
-        {
-            tempMatrixBuffer[i] =
-                tempMatrixBuffer[bone.localParentBoneIndex] *
-                frame.frameBones[i].transformMatrix;
-        }
-    }
-
     sd.globSkinnedBoneOffset = GetBufferSize();
 
-    for (usize i = 0; i < boneCount; ++i)
-    {
-        sbdArr[i] = Create();
+    std::vector<HSkinnedBone> skinnedBones = {};
+    skinnedBones.resize(boneCount);
 
-        SSkinnedBoneData& sbd = Get(sbdArr[i]);
-        sbd.modelMatrix = tempMatrixBuffer[i] * skeletonData.bones[i].modelMatrix;
+    std::vector<cMatrix4> totalTransform = {};
+    totalTransform.resize(boneCount);
+
+    // Bone transform in Local space
+    for (usize boneIndex = 0; boneIndex < boneCount; ++boneIndex)
+    {
+        if (skeletonData.bones[boneIndex].localParentBoneIndex == -1)
+            CalculateBone(skeletonData.bones, boneIndex, frame, totalTransform);
+    }
+
+    // Bone transform in Model space
+    for (usize boneIndex = 0; boneIndex < boneCount; ++boneIndex)
+    {
+        skinnedBones[boneIndex] = Create();
+
+        SSkinnedBoneData& sbd = Get(skinnedBones[boneIndex]);
+        sbd.modelMatrix =
+            skeletonData.accumulatedRootTransform *
+            totalTransform[boneIndex] *
+            skeletonData.bones[boneIndex].modelMatrix;
+
+        //sbd.modelMatrix = cMatrix4(glm::mat4(1.0f));
 
         // Sync with GPU
         SGPUSkinnedBoneLayout gpusbl;
         gpusbl.modelMatrix = sbd.modelMatrix;
         _uploader->WriteField<SGPUSkinnedBoneLayout>(
-            sbdArr[i],
+            skinnedBones[boneIndex],
             0,
             gpusbl
         );
     }
 
-    sd.skinnedBones = sbdArr;
+    sd.skinnedBones = skinnedBones;
 
     return sd;
 }
@@ -107,4 +107,21 @@ void triton::XSkinningSubsystem::Free()
 void triton::XSkinningSubsystem::Update()
 {
     _uploader->Update();
+}
+
+void triton::XSkinningSubsystem::CalculateBone(
+    const std::vector<SBone>& bones,
+    usize boneIndex,
+    const SFrame& frame,
+    std::vector<cMatrix4>& totalTransform
+)
+{
+    if (bones[boneIndex].localParentBoneIndex == -1)
+        totalTransform[boneIndex] = frame.frameBones[boneIndex].transformMatrix;
+    else
+        totalTransform[boneIndex] =
+            totalTransform[bones[boneIndex].localParentBoneIndex] *
+            frame.frameBones[boneIndex].transformMatrix;
+    for (usize i : bones[boneIndex].localChildBoneIndices)
+        CalculateBone(bones, i, frame, totalTransform);
 }

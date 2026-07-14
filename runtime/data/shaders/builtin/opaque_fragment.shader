@@ -10,6 +10,7 @@ in vec3 FragPosWorldSpace;
 flat in vec4 DiffuseColor;
 flat in mat3 TBNMatrix;
 in mat3 TangentToWorld;
+flat in uint OutTripleSixty;
 
 struct TextureAtlasTexture
 {
@@ -35,7 +36,6 @@ uniform vec4 CameraPosWorldSpace;
 void main()
 {
 	vec4 textureColor = texture(TextureAtlasRGBA8SRGB, DiffuseTexcoordAtlas);
-	textureColor.xyz = pow(textureColor.xyz, vec3(1.0 / 2.2));
 	float roughness = texture(TextureAtlasR8, RoughnessTexcoordAtlas).x;
 	float metallic = texture(TextureAtlasR8, MetallicTexcoordAtlas).x;
 	vec4 fragColor = vec4(0.0);
@@ -44,7 +44,7 @@ void main()
 	//Fragment_Func(TexcoordOrig, textureColor, DiffuseColor, fragColor);
 
 	// Normal mapping test
-	const vec3 lightPos = vec3(0.0f, 10.0f, 5.0f); //5.0f * vec3(cos(float(UniformTime * 0.0005f)), 0.0f, sin(float(UniformTime * 0.0005f))); //normalize(vec3(0.0f, 0.0f, 5.0f) - vec3(0.0f));
+	const vec3 lightPos = vec3(0.0f, 1.0f, 1.0f); //5.0f * vec3(cos(float(UniformTime * 0.0005f)), 0.0f, sin(float(UniformTime * 0.0005f))); //normalize(vec3(0.0f, 0.0f, 5.0f) - vec3(0.0f));
 	const vec3 lightDir = normalize(lightPos - FragPosWorldSpace);
 	vec3 normal = texture(TextureAtlasRGBA8, NormalTexcoordAtlas).xyz;
 	normal = normal * 2.0 - 1.0;
@@ -62,5 +62,5 @@ void main()
 		lightDir
 	);
 
-	FragColor = vec4(pbr, 1.0f);
+	FragColor = vec4(pow(pbr.xyz, vec3(1.0 / 2.2)), 1.0f);
 }
