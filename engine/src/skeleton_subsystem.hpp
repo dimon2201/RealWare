@@ -30,6 +30,7 @@ namespace triton
 	public:
 		HSkeleton CreateSkeleton(
 			const std::vector<SBone>& bones,
+			types::usize globSkinnedBoneOffset = 0,
 			const cMatrix4& accumulatedRootTransform = cMatrix4()
 		);
 
