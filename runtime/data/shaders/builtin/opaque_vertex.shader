@@ -85,7 +85,11 @@ void main()
 		instance = staticInstances[gl_InstanceID];
 	else if (InstanceBatchType == 1)
 		instance = dynamicInstances[gl_InstanceID];
-	Material material = materials[0];//instance.MaterialIndex];
+	Material material;
+	if (InMaterialIndex == -1)
+		material = materials[instance.MaterialIndex];
+	else
+		material = materials[InMaterialIndex];
 	
 	uint skBoneOffset = skeletons[instance.SkeletonIndex].globBoneOffset;
 	mat4 skinMatrix =
