@@ -74,7 +74,12 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(c
         boneIndices
     );
     CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
-    CreateSkeleton(modelSkeleton, bones, _context->GetSubsystem<XSkeletonSubsystem>(), accumulatedRootTransform);
+    CreateSkeleton(
+        modelSkeleton,
+        bones,
+        _context->GetSubsystem<XSkeletonSubsystem>(),
+        accumulatedRootTransform
+    );
     CreateAnimations(scene, boneIndices, _context->GetSubsystem<XAnimationSubsystem>(), modelSkeleton, modelAnimations);
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials, modelSkeleton, modelAnimations);
@@ -469,7 +474,11 @@ void triton::XModel3DBackendAssimp::CreateSkeleton(
     const aiMatrix4x4& accumulatedRootTransform
 )
 {
-    modelSkeleton = skeletonSubsystem->CreateSkeleton(bones, ConvertMatrix(accumulatedRootTransform));
+    modelSkeleton = skeletonSubsystem->CreateSkeleton(
+        bones,
+        0,
+        ConvertMatrix(accumulatedRootTransform)
+    );
 }
 
 void triton::XModel3DBackendAssimp::CreateAnimations(
