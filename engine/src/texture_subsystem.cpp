@@ -73,8 +73,10 @@ triton::XTextureSubsystem::~XTextureSubsystem()
 
 triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& filePath, cTexture::eFormat dataFormat)
 {
+    auto tff = CreateTextureFromFile(dataFormat, filePath);;
+
     HTexture texture = Create();
-    *_objects->Get(texture) = *CreateTextureFromFile(dataFormat, filePath);
+    *_objects->Get(texture) = tff.has_value() ? *tff : STexture();
 
     return texture;
 }
@@ -177,6 +179,8 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
 std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath)
 {
     cDataFile* df = _context->GetSubsystem<cFileSystem>()->CreateDataFile(filePath, K_FALSE);
+    if (!df->Exists())
+        return std::nullopt;
     XDataBuffer* db = df->GetBuffer();
     if (db->GetByteSize() == 0)
         return std::nullopt;

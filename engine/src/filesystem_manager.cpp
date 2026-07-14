@@ -25,8 +25,14 @@ triton::cDataFile::cDataFile(cContext* context, const std::string& path, types::
     std::ifstream inputFile(path, std::ios::binary);
     if (!inputFile.is_open())
     {
+        _bExists = K_FALSE;
         Print("Error: file '" + path + "' does not exist");
+
         return;
+    }
+    else
+    {
+        _bExists = K_TRUE;
     }
 
     inputFile.seekg(0, std::ios::end);

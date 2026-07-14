@@ -12,6 +12,7 @@ namespace triton
     {
         TRITON_OBJECT(cDataFile)
 
+        types::boolean _bExists = types::K_FALSE;
         XDataBuffer* _data = nullptr;
 
     public:
@@ -20,6 +21,11 @@ namespace triton
 
         inline void* GetData() const;
         inline XDataBuffer* GetBuffer() const { return _data; }
+
+        inline types::boolean Exists() const
+        {
+            return _bExists;
+        }
     };
 
     class cFileSystem : public iObject

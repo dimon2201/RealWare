@@ -253,7 +253,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
 {
     for (auto& material : materials)
     {
-        HTexture diffuseTexture = *CreateTexture(
+        auto diffOpt = CreateTexture(
             cTexture::eFormat::RGBA8_SRGB_MIPS,
             modelFolderPath,
             textureSubsystem,
@@ -261,7 +261,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
             material.bIsDiffuseEmbedded,
             scene->GetEmbeddedTexture(material.diffuseTextureFilePath.c_str())
         );
-        HTexture normalTexture = *CreateTexture(
+        auto normOpt = CreateTexture(
             cTexture::eFormat::RGBA8,
             modelFolderPath,
             textureSubsystem,
@@ -269,7 +269,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
             material.bIsNormalEmbedded,
             scene->GetEmbeddedTexture(material.normalTextureFilePath.c_str())
         );
-        HTexture roughnessTexture = *CreateTexture(
+        auto rghnOpt = CreateTexture(
             cTexture::eFormat::R8,
             modelFolderPath,
             textureSubsystem,
@@ -277,7 +277,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
             material.bIsRoughnessEmbedded,
             scene->GetEmbeddedTexture(material.roughnessTextureFilePath.c_str())
         );
-        HTexture metallicTexture = *CreateTexture(
+        auto metlOpt = CreateTexture(
             cTexture::eFormat::R8,
             modelFolderPath,
             textureSubsystem,
@@ -287,11 +287,12 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
         );
 
         modelMaterials.push_back(
-            materialSubsystem->CreateMaterial(cVector4(1.0f),
-                diffuseTexture,
-                normalTexture,
-                roughnessTexture,
-                metallicTexture
+            materialSubsystem->CreateMaterial(
+                cVector4(1.0f),
+                diffOpt.has_value() ? *diffOpt : HTexture(),
+                normOpt.has_value() ? *normOpt : HTexture(),
+                rghnOpt.has_value() ? *rghnOpt : HTexture(),
+                metlOpt.has_value() ? *metlOpt : HTexture()
             )
         );
     }
