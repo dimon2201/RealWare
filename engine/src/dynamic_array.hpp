@@ -94,6 +94,9 @@ namespace triton
 			Pop();
 
 		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
+		for (types::usize i = 0; i < _allocatorDesc.maxChunkCount; i++)
+			memoryAllocator->Deallocate(_chunkIndices[i]);
+
 		memoryAllocator->Deallocate(_chunkIndices);
 		memoryAllocator->Deallocate(_chunkValues);
 	}
