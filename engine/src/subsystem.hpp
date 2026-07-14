@@ -16,12 +16,6 @@ namespace triton
 
 		XHandleAllocator<SSlot, THandle, TAllocator, TObject>* _objects = nullptr;
 
-	protected:
-		inline THandle Create()
-		{
-			return _objects->Create();
-		}
-
 	public:
 		virtual void Init() = 0;
 		virtual void Free() = 0;
@@ -37,6 +31,11 @@ namespace triton
 		{
 			_objects->Free();
 			_context->Destroy<XHandleAllocator<SSlot, THandle, TAllocator, TObject>>(_objects);
+		}
+
+		inline THandle Create()
+		{
+			return _objects->Create();
 		}
 
 		inline TObject& Get(const THandle& handle)
