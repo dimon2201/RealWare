@@ -51,12 +51,25 @@ void triton::XGameObjectSubsystem::AddRenderable(
 	const HModel3D& model
 )
 {
-	SGameObject& go = Get(gameObject);
-
 	SModel3DData& m3dd = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
+
+	SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
+		EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
+		(u8*)m3dd.vertexData,
+		m3dd.vertexCount * sizeof(SVertex),
+		(u8*)m3dd.indexData,
+		m3dd.indexCount * sizeof(u32)
+	);
+	HBatch batchHandle = *_context->GetSubsystem<cGraphics>()->CreateBatch(geometry);
+	SBatchInstance bi = *_context->GetSubsystem<cGraphics>()->CreateInstance(
+		usage,
+		batchHandle
+	);
 
 	SRenderInstance ri;
 	ri._skeletonIndex = _context->GetSubsystem<XSkeletonSubsystem>()->GetBufferIndex(m3dd.skeleton);
+
+	SGameObject& go = Get(gameObject);
 
 	AddDirty(go.renderable, {}, go.worldPosition, go.worldRotation);
 }
