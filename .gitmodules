@@ -22,3 +22,6 @@
 [submodule "engine/submodules/glbinding"]
 	path = engine/submodules/glbinding
 	url = https://github.com/cginternals/glbinding.git
+[submodule "engine/submodules/jolt-physics"]
+	path = engine/submodules/jolt-physics
+	url = https://github.com/jrouwe/JoltPhysics.git
