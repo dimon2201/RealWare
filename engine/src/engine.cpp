@@ -75,7 +75,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new XRenderSubsystem(_context));
 	_context->GetSubsystem<XRenderSubsystem>()->Initialize();
 	//_context->RegisterSubsystem(new cAudio(_context));
-	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(8193, 8193, 8)));
+	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(8193, 8193, 4)));
 	_context->RegisterSubsystem(new XMaterialSubsystem(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
 	//_context->RegisterSubsystem(new cTime(_context));

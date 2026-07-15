@@ -62,5 +62,5 @@ void main()
 		lightDir
 	);
 
-	FragColor = vec4(pow(textureColor.xyz, vec3(1.0 / 2.2)), 1.0f);
+	FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f); //vec4(pow(textureColor.xyz, vec3(1.0 / 2.2)), 1.0f);
 }
