@@ -24,3 +24,12 @@ void triton::cContext::RegisterSubsystem(iObject* object)
 	if (it == _subsystems.end())
 		_subsystems.insert({ type, object });
 }
+
+void triton::cContext::RegisterStorage(iObject* object)
+{
+	// TODO: static_assert that T must inherit from iObject
+	ClassType type = object->GetType();
+	const auto it = _storages.find(type);
+	if (it == _storages.end())
+		_storages.insert({ type, object });
+}

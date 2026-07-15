@@ -18,6 +18,7 @@ namespace triton
 		cMemoryAllocator* _allocator = nullptr;
 		::std::unordered_map<ClassType, std::shared_ptr<iBackend>> _backends;
 		::std::unordered_map<ClassType, iObject*> _subsystems;
+		std::unordered_map<ClassType, iObject*> _storages;
 
 	public:
 		explicit cContext() = default;
@@ -39,9 +40,14 @@ namespace triton
 		void RegisterBackend(T* backend);
 
 		void RegisterSubsystem(iObject* object);
+
+		void RegisterStorage(iObject* object);
 		
 		template <typename T>
 		void ReleaseSubsystem();
+
+		template <typename T>
+		void ReleaseStorage();
 
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
 
@@ -119,6 +125,15 @@ void triton::cContext::ReleaseSubsystem()
 	const ClassType type = T::GetTypeStatic();
 	const auto it = _subsystems.find(type);
 	if (it == _subsystems.end())
+		delete it->second;
+}
+
+template <typename T>
+void triton::cContext::ReleaseStorage()
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _storages.find(type);
+	if (it == _storages.end())
 		delete it->second;
 }
 
