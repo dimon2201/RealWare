@@ -27,6 +27,7 @@ struct Instance
 	float Use2D;
 	int MaterialIndex;
 	int SkeletonIndex;
+	uint PropertyBits;
 	mat4 World;
 };
 
