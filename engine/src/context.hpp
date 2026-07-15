@@ -41,13 +41,8 @@ namespace triton
 
 		void RegisterSubsystem(iObject* object);
 
-		void RegisterStorage(iObject* object);
-		
 		template <typename T>
 		void ReleaseSubsystem();
-
-		template <typename T>
-		void ReleaseStorage();
 
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
 
@@ -125,15 +120,6 @@ void triton::cContext::ReleaseSubsystem()
 	const ClassType type = T::GetTypeStatic();
 	const auto it = _subsystems.find(type);
 	if (it == _subsystems.end())
-		delete it->second;
-}
-
-template <typename T>
-void triton::cContext::ReleaseStorage()
-{
-	const ClassType type = T::GetTypeStatic();
-	const auto it = _storages.find(type);
-	if (it == _storages.end())
 		delete it->second;
 }
 

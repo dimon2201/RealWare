@@ -36,6 +36,8 @@
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "skinning_subsystem.hpp"
+#include "static_instance_storage.hpp"
+#include "dynamic_instance_storage.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
