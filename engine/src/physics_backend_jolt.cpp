@@ -176,48 +176,6 @@ triton::XPhysicsBackendJolt::XPhysicsBackendJolt(cContext* context) : IPhysicsBa
 	JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
 	Factory::sInstance = new Factory();
 	RegisterTypes();
-
-	BodyInterface& body_interface = physics_system.GetBodyInterface();
-
-	BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
-	floor_shape_settings.SetEmbedded();
-
-	ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
-	ShapeRefC floor_shape = floor_shape_result.Get();
-
-	BodyCreationSettings floor_settings(floor_shape, RVec3(0.0f, -1.0f, 0.0f), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
-
-	Body* floor = body_interface.CreateBody(floor_settings);
-
-	body_interface.AddBody(floor->GetID(), EActivation::DontActivate);
-
-	BodyCreationSettings sphere_settings(new SphereShape(0.5f), RVec3(0.0f, 2.0f, 0.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
-	BodyID sphere_id = body_interface.CreateAndAddBody(sphere_settings, EActivation::Activate);
-
-	body_interface.SetLinearVelocity(sphere_id, Vec3(0.0f, -5.0f, 0.0f));
-
-	const float cDeltaTime = 1.0f / 60.0f;
-
-	physics_system.OptimizeBroadPhase();
-
-	uint step = 0;
-	while (body_interface.IsActive(sphere_id))
-	{
-		++step;
-
-		RVec3 position = body_interface.GetCenterOfMassPosition(sphere_id);
-		Vec3 velocity = body_interface.GetLinearVelocity(sphere_id);
-
-		const int cCollisionSteps = 1;
-
-		physics_system.Update(cDeltaTime, cCollisionSteps, &temp_allocator, &job_system);
-	}
-
-	body_interface.RemoveBody(sphere_id);
-	body_interface.DestroyBody(sphere_id);
-
-	body_interface.RemoveBody(floor->GetID());
-	body_interface.DestroyBody(floor->GetID());
 }
 
 triton::XPhysicsBackendJolt::~XPhysicsBackendJolt()
@@ -257,14 +215,14 @@ triton::SPhysicsWorldBackendData triton::XPhysicsBackendJolt::CreateWorld()
 	physicsSystem->SetContactListener(contactListener);
 
 	SPhysicsWorldBackendData pwbd;
-	pwbd.systemObjects[0] = (SPair("tempAllocator", tempAllocator));
-	pwbd.systemObjects[1] = (SPair("jobSystem", jobSystem));
-	pwbd.systemObjects[2] = (SPair("broadPhaseLayerInterface", broadPhaseLayerInterface));
-	pwbd.systemObjects[3] = (SPair("objectVsBroadphaseLayerFilter", objectVsBroadphaseLayerFilter));
-	pwbd.systemObjects[4] = (SPair("objectVsObjectLayerFilter", objectVsObjectLayerFilter));
-	pwbd.systemObjects[5] = (SPair("physicsSystem", physicsSystem));
-	pwbd.systemObjects[6] = (SPair("bodyActivationListener", bodyActivationListener));
-	pwbd.systemObjects[7] = (SPair("contactListener", contactListener));
+	pwbd.systemObjects[(int)ESystemObjectIndices::TempAllocator] = (SPair("tempAllocator", tempAllocator));
+	pwbd.systemObjects[(int)ESystemObjectIndices::JobSystem] = (SPair("jobSystem", jobSystem));
+	pwbd.systemObjects[(int)ESystemObjectIndices::BroadPhaseLayerInterface] = (SPair("broadPhaseLayerInterface", broadPhaseLayerInterface));
+	pwbd.systemObjects[(int)ESystemObjectIndices::ObjectVsBroadphaseLayerFilter] = (SPair("objectVsBroadphaseLayerFilter", objectVsBroadphaseLayerFilter));
+	pwbd.systemObjects[(int)ESystemObjectIndices::ObjectVsObjectLayerFilter] = (SPair("objectVsObjectLayerFilter", objectVsObjectLayerFilter));
+	pwbd.systemObjects[(int)ESystemObjectIndices::PhysicsSystem] = (SPair("physicsSystem", physicsSystem));
+	pwbd.systemObjects[(int)ESystemObjectIndices::BodyActivationListener] = (SPair("bodyActivationListener", bodyActivationListener));
+	pwbd.systemObjects[(int)ESystemObjectIndices::ContactListener] = (SPair("contactListener", contactListener));
 	pwbd.systemObjectCount = 8;
 	pwbd.worldIndex = 5;
 
@@ -297,9 +255,25 @@ void triton::XPhysicsBackendJolt::DestroyWorld(const SPhysicsWorldBackendData& w
 	}
 }
 
-triton::SPhysicsShapeBackendData triton::XPhysicsBackendJolt::CreateBoxShape(const SPhysicsShapeDesc& desc)
+triton::SPhysicsShapeBackendData triton::XPhysicsBackendJolt::CreateBoxShape(
+	const SPhysicsWorldBackendData& world,
+	const SPhysicsShapeDesc& desc
+)
 {
-	return {};
+	PhysicsSystem* ps = (PhysicsSystem*)world.systemObjects[world.worldIndex].ptr;
+	BoxShapeSettings shapeSettings(Vec3(
+		desc.halfExtent.GetX(),
+		desc.halfExtent.GetY(),
+		desc.halfExtent.GetZ()
+	));
+	shapeSettings.SetEmbedded();
+	ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+	ShapeRefC* shape = _context->Create<ShapeRefC>(shapeResult.Get());
+
+	SPhysicsShapeBackendData psbd;
+	psbd.shape = (void*)shape;
+
+	return psbd;
 }
 
 triton::SPhysicsShapeBackendData triton::XPhysicsBackendJolt::CreateSphereShape(const SPhysicsShapeDesc& desc)
@@ -334,18 +308,58 @@ triton::SPhysicsShapeBackendData triton::XPhysicsBackendJolt::CreateHeightFieldS
 
 void triton::XPhysicsBackendJolt::DestroyShape(const SPhysicsShapeBackendData& shape)
 {
+	if (shape.shape)
+		_context->Destroy<ShapeRefC>((ShapeRefC*)shape.shape);
 }
 
 triton::SPhysicsRigidBodyBackendData triton::XPhysicsBackendJolt::CreateRigidBody(
+	const SPhysicsWorldBackendData& world,
 	const SPhysicsRigidBodyDesc& desc,
 	const SPhysicsShapeBackendData& shape
 )
 {
-	return {};
+	PhysicsSystem* ps = (PhysicsSystem*)world.systemObjects[world.worldIndex].ptr;
+	BodyInterface& bi = ps->GetBodyInterface();
+	ShapeRefC* rbShape = (ShapeRefC*)shape.shape;
+
+	JPH::EMotionType mt = JPH::EMotionType::Static;
+	switch (desc.motionType)
+	{
+		case EMotionType::Static:    mt = JPH::EMotionType::Static; break;
+		case EMotionType::Kinematic: mt = JPH::EMotionType::Kinematic; break;
+		case EMotionType::Dynamic:   mt = JPH::EMotionType::Dynamic; break;
+	}
+	BodyCreationSettings rbSettings(
+		*rbShape,
+		RVec3(desc.worldPosition.GetX(), desc.worldPosition.GetY(), desc.worldPosition.GetZ()),
+		Quat(desc.worldRotation.GetX(), desc.worldRotation.GetY(), desc.worldRotation.GetZ(), desc.worldRotation.GetW()),
+		mt,
+		desc.properties[(int)ERigidBodyPropertyIndices::ObjectLayer]
+	);
+	Body* rb = bi.CreateBody(rbSettings);
+	bi.AddBody(rb->GetID(), (EActivation)desc.properties[(int)ERigidBodyPropertyIndices::ActivationMode]);
+	BodyID* rbid = _context->Create<BodyID>(rb->GetID());
+
+	SPhysicsRigidBodyBackendData prbbd;
+	prbbd.body = (void*)rbid;
+
+	return prbbd;
 }
 
-void triton::XPhysicsBackendJolt::DestroyRigidBody(const SPhysicsRigidBodyBackendData& body)
+void triton::XPhysicsBackendJolt::DestroyRigidBody(
+	const SPhysicsWorldBackendData& world, 
+	const SPhysicsRigidBodyBackendData& body
+)
 {
+	if (body.body)
+	{
+		PhysicsSystem* ps = (PhysicsSystem*)world.systemObjects[world.worldIndex].ptr;
+		BodyInterface& bi = ps->GetBodyInterface();
+		BodyID& bid = *(BodyID*)body.body;
+		bi.RemoveBody(bid);
+		bi.DestroyBody(bid);
+		_context->Destroy<BodyID>((BodyID*)body.body);
+	}
 }
 
 triton::SPhysicsCharacterControllerBackendData triton::XPhysicsBackendJolt::CreateCharacterController(const SPhysicsCharacterControllerDesc& desc)
@@ -398,4 +412,22 @@ triton::SPhysicsMaterialBackendData triton::XPhysicsBackendJolt::CreateMaterial(
 
 void triton::XPhysicsBackendJolt::DestroyMaterial(const SPhysicsMaterialBackendData& material)
 {
+}
+
+void triton::XPhysicsBackendJolt::OptimizeAccelerationStructures(const SPhysicsWorldBackendData& world)
+{
+	PhysicsSystem* ps = (PhysicsSystem*)world.systemObjects[world.worldIndex].ptr;
+	ps->OptimizeBroadPhase();
+}
+
+void triton::XPhysicsBackendJolt::Update(
+	const SPhysicsWorldBackendData& world,
+	f32 deltaTime,
+	s32 collisionStepCount
+)
+{
+	PhysicsSystem* ps = (PhysicsSystem*)world.systemObjects[world.worldIndex].ptr;
+	TempAllocatorImpl* ta = (TempAllocatorImpl*)world.systemObjects[(int)ESystemObjectIndices::TempAllocator].ptr;
+	JobSystemThreadPool* js = (JobSystemThreadPool*)world.systemObjects[(int)ESystemObjectIndices::JobSystem].ptr;
+	ps->Update(deltaTime, collisionStepCount, ta, js);
 }
