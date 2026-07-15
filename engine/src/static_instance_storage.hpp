@@ -1,8 +1,8 @@
-// static_render_instance_subsystem.hpp
+// static_instance_storage.hpp
 
 #pragma once
 
-#include "subsystem.hpp"
+#include "storage.hpp"
 #include "render_instance.hpp"
 #include "handles.hpp"
 #include "uploader.hpp"
@@ -21,12 +21,15 @@ namespace triton
 
 	struct SGPUStaticRenderInstanceLayout final : public SRenderInstance {};
 
-	class XStaticRenderInstanceSubsystem : public ISubsystem<HStaticRenderInstance, SStaticRenderInstance, XLinearArray<SStaticRenderInstance>>
+	class XStaticInstanceStorage : public IStorage<HStaticRenderInstance, SStaticRenderInstance, XLinearArray<SStaticRenderInstance>>
 	{
-		TRITON_OBJECT(XStaticRenderInstanceSubsystem)
+		TRITON_OBJECT(XStaticInstanceStorage)
 		TRITON_SUBSYSTEM
 
 		cBuffer* _staticInstanceBuffer = nullptr;
-		XUploader<XStaticRenderInstanceSubsystem, HStaticRenderInstance, SGPUStaticRenderInstanceLayout>* _uploader = nullptr;
+		XUploader<XStaticInstanceStorage, HStaticRenderInstance, SGPUStaticRenderInstanceLayout>* _uploader = nullptr;
+	
+	public:
+		void Update() override;
 	};
 }
