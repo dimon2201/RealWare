@@ -13,7 +13,8 @@
           "CMAKE_CXX_STANDARD": "17",
           "CMAKE_CXX_STANDARD_REQUIRED": "ON",
           "CMAKE_CXX_EXTENSIONS": "OFF",
-          "TRITON_ENABLE_ASAN": "ON"
+          "TRITON_ENABLE_ASAN": "ON",
+          "TRITON_STATIC_RUNTIME": "ON"
         }
       },
       {
@@ -50,15 +51,18 @@
 	"buildPresets": [
         {
             "name": "debug_win64",
-            "configurePreset": "debug_win64"
+            "configurePreset": "debug_win64",
+			      "configuration": "Debug"
         },
-		{
+        {
             "name": "release_win64",
-            "configurePreset": "release_win64"
+            "configurePreset": "release_win64",
+            "configuration": "Debug"
         },
-		{
+        {
             "name": "relwithdebinfo_win64",
-            "configurePreset": "relwithdebinfo_win64"
+            "configurePreset": "relwithdebinfo_win64",
+            "configuration": "RelWithDebInfo"
         }
     ]
 }
