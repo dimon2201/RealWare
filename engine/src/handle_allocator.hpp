@@ -165,6 +165,8 @@ namespace triton
 		TObject* Get(const THandle& handle)
 		{
 			TSlot* slot = _slots->At(handle._slotIndex).data;
+			if (!slot)
+				return nullptr;
 			if (handle._generation != slot->_generation)
 				return nullptr;
 

@@ -14,6 +14,7 @@ namespace triton
 	{
 		TRITON_OBJECT(ISubsystem)
 
+		TObject _nullObject = {};
 		XHandleAllocator<SSlot, THandle, TAllocator, TObject>* _objects = nullptr;
 
 	public:
@@ -40,7 +41,11 @@ namespace triton
 
 		inline TObject& Get(const THandle& handle)
 		{
-			return *_objects->Get(handle);
+			TObject* p = _objects->Get(handle);
+			if (p)
+				return *p;
+			else
+				return _nullObject;
 		}
 
 		inline void Destroy(const THandle& handle)
