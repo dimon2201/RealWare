@@ -24,7 +24,7 @@ namespace triton
 	class XStaticInstanceStorage : public IStorage<HStaticRenderInstance, SStaticRenderInstance, XLinearArray<SStaticRenderInstance>>
 	{
 		TRITON_OBJECT(XStaticInstanceStorage)
-		TRITON_SUBSYSTEM
+		TRITON_STORAGE
 
 		cBuffer* _staticInstanceBuffer = nullptr;
 		XUploader<XStaticInstanceStorage, HStaticRenderInstance, SGPUStaticRenderInstanceLayout>* _uploader = nullptr;
