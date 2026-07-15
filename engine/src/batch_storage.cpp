@@ -33,7 +33,7 @@ void triton::XBatchStorage::Remove(const HBatch& batch)
 	_batches->Destroy(batch);
 }
 
-std::optional<triton::SBatchInstance> triton::XBatchStorage::AddInstance(const HBatch& batch, SRenderInstance::EUsage usage)
+std::optional<triton::SBatchInstance> triton::XBatchStorage::AddInstance(const HBatch& batch, ERenderInstanceMotionType usage)
 {
 	XRenderBatch* currentBatch = _batches->Get(batch);
         SRenderInstance ri = {};

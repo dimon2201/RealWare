@@ -9,7 +9,7 @@ namespace triton
 {
     struct SBatchInstance
     {
-        SRenderInstance::EUsage usage = SRenderInstance::EUsage::NONE;
+        ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
         HBatch batch;
         HRenderInstance instance;
     };

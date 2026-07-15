@@ -23,7 +23,7 @@ namespace triton::ecs::components
     class SRenderInstanceComponent final : public SComponent
     {
     public:
-        SRenderInstance::EUsage _usage = SRenderInstance::EUsage::NONE;
+        ERenderInstanceMotionType _usage = SRenderInstance::EUsage::NONE;
     };
 
     class SCameraComponent : public SComponent

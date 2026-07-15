@@ -23,7 +23,15 @@ void triton::XGameObjectSubsystem::Update()
 	WriteDirty();
 }
 
-void triton::XGameObjectSubsystem::AddRenderable(const HGameObject& gameObject, SRenderInstance::EUsage usage, EGraphicsBufferFormat format, const types::u8* vertexBytes, types::usize vertexBytesCount, const types::u8* indexBytes, types::usize indexBytesCount)
+void triton::XGameObjectSubsystem::AddRenderable(
+	const HGameObject& gameObject,
+	ERenderInstanceMotionType motionType,
+	EGraphicsBufferFormat format,
+	const types::u8* vertexBytes,
+	types::usize vertexBytesCount,
+	const types::u8* indexBytes,
+	types::usize indexBytesCount
+)
 {
 	SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
 		format,
@@ -34,7 +42,7 @@ void triton::XGameObjectSubsystem::AddRenderable(const HGameObject& gameObject, 
 	);
 	HBatch batchHandle = *_context->GetSubsystem<cGraphics>()->CreateBatch(geometry);
 	SBatchInstance bi = *_context->GetSubsystem<cGraphics>()->CreateInstance(
-		usage,
+		motionType,
 		batchHandle
 	);
 	SRenderInstance ri;
@@ -47,7 +55,7 @@ void triton::XGameObjectSubsystem::AddRenderable(const HGameObject& gameObject, 
 
 void triton::XGameObjectSubsystem::AddRenderable(
 	const HGameObject& gameObject,
-	SRenderInstance::EUsage usage,
+	ERenderInstanceMotionType usage,
 	const HModel3D& model
 )
 {

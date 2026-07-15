@@ -227,7 +227,7 @@ namespace triton
         void UnbindSkinnedBoneBuffer();
         void ExecuteDefaultPasses();
         void MarkStaticBufferDirty();
-        void WriteBatchInstances(SRenderInstance::EUsage usage);
+        void WriteBatchInstances(ERenderInstanceMotionType usage);
         void WriteDirtyStaticInstances();
         void WriteDynamicInstances();
 
@@ -252,7 +252,7 @@ namespace triton
         std::optional<triton::SGeometryView> StoreGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
         std::optional<HBatch> CreateBatch(const SGeometryView& geometry);
         void RemoveBatch(const HBatch& handle);
-        std::optional<SBatchInstance> CreateInstance(SRenderInstance::EUsage usage, const HBatch& batch);
+        std::optional<SBatchInstance> CreateInstance(ERenderInstanceMotionType usage, const HBatch& batch);
         void SetInstance(const SBatchInstance& instance, const SRenderInstance& renderInstance); // TODO: remove this temporary method completely
         void DestroyInstance(const SBatchInstance& instance);
         std::optional<HCamera> CreateCamera();

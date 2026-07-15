@@ -23,12 +23,12 @@ triton::XRenderBatch::~XRenderBatch()
 	_context->Destroy<XHandleAllocator<SInstanceBufferSlot, HRenderInstance, XLinearArray<SRenderInstance>, SRenderInstance>>(_staticInstances);
 }
 
-std::optional<triton::SBatchInstance> triton::XRenderBatch::Add(const HBatch& batch, SRenderInstance::EUsage usage, SRenderInstance& instance)
+std::optional<triton::SBatchInstance> triton::XRenderBatch::Add(const HBatch& batch, ERenderInstanceMotionType usage, SRenderInstance& instance)
 {
 	HRenderInstance ri;
-	if (usage == SRenderInstance::EUsage::STATIC)
+	if (usage == ERenderInstanceMotionType::Static)
 		ri = _staticInstances->Create(std::move(instance));
-	else if (usage == SRenderInstance::EUsage::DYNAMIC)
+	else if (usage == ERenderInstanceMotionType::Dynamic)
 		ri = _dynamicInstances->Create(std::move(instance));
 
 	SBatchInstance bi;
@@ -41,9 +41,9 @@ std::optional<triton::SBatchInstance> triton::XRenderBatch::Add(const HBatch& ba
 
 triton::SRenderInstance* triton::XRenderBatch::Get(const SBatchInstance& handle)
 {
-	if (handle.usage == SRenderInstance::EUsage::STATIC)
+	if (handle.usage == ERenderInstanceMotionType::Static)
 		return _staticInstances->Get(handle.instance);
-	else if (handle.usage == SRenderInstance::EUsage::DYNAMIC)
+	else if (handle.usage == ERenderInstanceMotionType::Dynamic)
 		return _dynamicInstances->Get(handle.instance);
 
 	return nullptr;
@@ -51,31 +51,31 @@ triton::SRenderInstance* triton::XRenderBatch::Get(const SBatchInstance& handle)
 
 void triton::XRenderBatch::Set(const SBatchInstance& handle, const SRenderInstance& instance)
 {
-	if (handle.usage == SRenderInstance::EUsage::STATIC)
+	if (handle.usage == ERenderInstanceMotionType::Static)
 		*_staticInstances->Get(handle.instance) = instance;
-	else if (handle.usage == SRenderInstance::EUsage::DYNAMIC)
+	else if (handle.usage == ERenderInstanceMotionType::Dynamic)
 		*_dynamicInstances->Get(handle.instance) = instance;
 }
 
 void triton::XRenderBatch::Remove(const SBatchInstance& handle)
 {
-	if (handle.usage == SRenderInstance::EUsage::STATIC)
+	if (handle.usage == ERenderInstanceMotionType::Static)
 		return _staticInstances->Destroy(handle.instance);
-	else if (handle.usage == SRenderInstance::EUsage::DYNAMIC)
+	else if (handle.usage == ERenderInstanceMotionType::Dynamic)
 		return _dynamicInstances->Destroy(handle.instance);
 }
 
-types::usize triton::XRenderBatch::Write(SRenderInstance::EUsage usage, types::usize offset, types::u8* destination)
+types::usize triton::XRenderBatch::Write(ERenderInstanceMotionType usage, types::usize offset, types::u8* destination)
 {
 	usize nextOffset;
-	if (usage == SRenderInstance::EUsage::STATIC)
+	if (usage == ERenderInstanceMotionType::Static)
 	{
 		_staticOffset = offset;
 		SBufferView bufferView = _staticInstances->GetData();
 		memcpy(&destination[offset], bufferView._elements, bufferView._byteSize);
 		nextOffset = offset + bufferView._byteSize;
 	}
-	else if (usage == SRenderInstance::EUsage::DYNAMIC)
+	else if (usage == ERenderInstanceMotionType::Dynamic)
 	{
 		_dynamicOffset = offset;
 		SBufferView bufferView = _dynamicInstances->GetData();

@@ -112,22 +112,22 @@ void triton::XRenderPass::Draw()
                 gfxPipelineBackend->SetShaderUniform(&shader, "UniformTime", (u32)time);
                 gfxPipelineBackend->SetShaderUniform(&shader, "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", (u32)0);
-                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::STATIC));
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(ERenderInstanceMotionType::Static));
                 gfxDrawcallBackend->Draw(
                     geometry._indexCount,
                     geometry._vertexElementOffset,
                     geometry._indexElementOffset,
-                    batch.GetInstanceCount(SRenderInstance::EUsage::STATIC)
+                    batch.GetInstanceCount(ERenderInstanceMotionType::Static)
                 );
 
                 // Dynamic
                 /*gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", 1);
-                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(SRenderInstance::EUsage::DYNAMIC));
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(ERenderInstanceMotionType::Dynamic));
                 gfxDrawcallBackend->Draw(
                     geometry._indexCount,
                     geometry._vertexElementOffset,
                     geometry._indexElementOffset,
-                    batch.GetInstanceCount(SRenderInstance::EUsage::DYNAMIC)
+                    batch.GetInstanceCount(ERenderInstanceMotionType::Dynamic)
                 );*/
             }
             break;

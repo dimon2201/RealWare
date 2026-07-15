@@ -37,30 +37,30 @@ namespace triton
 		explicit XRenderBatch(cContext* context, const SGeometryView& geometry);
 		~XRenderBatch();
 
-		std::optional<triton::SBatchInstance> Add(const HBatch& batch, SRenderInstance::EUsage usage, SRenderInstance& instance);
+		std::optional<triton::SBatchInstance> Add(const HBatch& batch, ERenderInstanceMotionType usage, SRenderInstance& instance);
 		SRenderInstance* Get(const SBatchInstance& handle);
 		void Set(const SBatchInstance& handle, const SRenderInstance& instance);
 		void Remove(const SBatchInstance& handle);
-		types::usize Write(SRenderInstance::EUsage usage, types::usize offset, types::u8* destination);
+		types::usize Write(ERenderInstanceMotionType usage, types::usize offset, types::u8* destination);
 
 		inline SGeometryView GetGeometry() const
 		{
 			return _geometry;
 		}
 
-		inline types::usize GetInstanceCount(SRenderInstance::EUsage usage) const
+		inline types::usize GetInstanceCount(ERenderInstanceMotionType usage) const
 		{
-			if (usage == SRenderInstance::EUsage::STATIC)
+			if (usage == ERenderInstanceMotionType::Static)
 				return _staticInstances->GetSize();
-			else if (usage == SRenderInstance::EUsage::DYNAMIC)
+			else if (usage == ERenderInstanceMotionType::Dynamic)
 				return _dynamicInstances->GetSize();
 		}
 
-		inline types::usize GetInstanceOffset(SRenderInstance::EUsage usage) const
+		inline types::usize GetInstanceOffset(ERenderInstanceMotionType usage) const
 		{
-			if (usage == SRenderInstance::EUsage::STATIC)
+			if (usage == ERenderInstanceMotionType::Static)
 				return _staticOffset;
-			else if (usage == SRenderInstance::EUsage::DYNAMIC)
+			else if (usage == ERenderInstanceMotionType::Dynamic)
 				return _dynamicOffset;
 		}
 	};

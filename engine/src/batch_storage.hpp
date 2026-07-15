@@ -33,7 +33,7 @@ namespace triton
         std::optional<HBatch> Create(const SGeometryView& geometry);
         XRenderBatch* Get(const HBatch& batch);
         void Remove(const HBatch& batch);
-        std::optional<SBatchInstance> AddInstance(const HBatch& batch, SRenderInstance::EUsage usage);
+        std::optional<SBatchInstance> AddInstance(const HBatch& batch, ERenderInstanceMotionType usage);
         void RemoveInstance(const SBatchInstance& instance);
 
         inline SBufferView<XRenderBatch> GetBatches() const

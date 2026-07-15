@@ -42,11 +42,11 @@ namespace triton
         void Init() override;
         void Free() override;
         void Update() override;
-        void AddRenderable(const HGameObject& gameObject, SRenderInstance::EUsage usage, EGraphicsBufferFormat format, const types::u8* vertexBytes, types::usize vertexBytesCount, const types::u8* indexBytes, types::usize indexBytesCount);
+        void AddRenderable(const HGameObject& gameObject, ERenderInstanceMotionType usage, EGraphicsBufferFormat format, const types::u8* vertexBytes, types::usize vertexBytesCount, const types::u8* indexBytes, types::usize indexBytesCount);
         
         void AddRenderable(
             const HGameObject& gameObject,
-            SRenderInstance::EUsage usage,
+            ERenderInstanceMotionType usage,
             const HModel3D& model
         );
         

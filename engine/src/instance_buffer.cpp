@@ -13,6 +13,6 @@
 using namespace triton::ecs::components;
 using namespace types;
 
-triton::XInstanceBuffer::XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage) : cBuffer(context, 0, cBuffer::eType::NONE, 0, 0), _usage(usage) {}
+triton::XInstanceBuffer::XInstanceBuffer(cContext* context, ERenderInstanceMotionType usage) : cBuffer(context, 0, cBuffer::eType::NONE, 0, 0), _usage(usage) {}
 
-triton::XInstanceBuffer::XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage, cBuffer* buffer) : cBuffer(context, buffer->GetInstance(), buffer->GetBufferType(), buffer->GetByteSize(), buffer->GetSlot()), _usage(usage) {}
+triton::XInstanceBuffer::XInstanceBuffer(cContext* context, ERenderInstanceMotionType usage, cBuffer* buffer) : cBuffer(context, buffer->GetInstance(), buffer->GetBufferType(), buffer->GetByteSize(), buffer->GetSlot()), _usage(usage) {}

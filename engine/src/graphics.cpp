@@ -237,9 +237,9 @@ void triton::cGraphics::RemoveBatch(const HBatch& handle)
     _batchStorage->Remove(handle);
 }
 
-std::optional<triton::SBatchInstance> triton::cGraphics::CreateInstance(SRenderInstance::EUsage usage, const HBatch& batch)
+std::optional<triton::SBatchInstance> triton::cGraphics::CreateInstance(ERenderInstanceMotionType usage, const HBatch& batch)
 {
-    if (usage == SRenderInstance::EUsage::STATIC)
+    if (usage == ERenderInstanceMotionType::Static)
         MarkStaticBufferDirty();
 
     return _batchStorage->AddInstance(batch, usage);
@@ -252,7 +252,7 @@ void triton::cGraphics::SetInstance(const SBatchInstance& instance, const SRende
 
 void triton::cGraphics::DestroyInstance(const SBatchInstance& instance)
 {
-    if (instance.usage == SRenderInstance::EUsage::STATIC)
+    if (instance.usage == ERenderInstanceMotionType::Static)
         MarkStaticBufferDirty();
 
     _batchStorage->RemoveInstance(instance);
@@ -948,7 +948,7 @@ void triton::cGraphics::CreateInstanceBuffers()
     cBuffer* instanceBufferStatic = renderSubsystem->FetchResult<cBuffer*>();
     _instanceBufferStatic = _context->Create<XInstanceBuffer>(
         _context,
-        SRenderInstance::EUsage::STATIC,
+        ERenderInstanceMotionType::Static,
         instanceBufferStatic
     );
     renderSubsystem->PushCommand(SRenderCommand(
@@ -961,7 +961,7 @@ void triton::cGraphics::CreateInstanceBuffers()
     cBuffer* instanceBufferDynamic = renderSubsystem->FetchResult<cBuffer*>();
     _instanceBufferDynamic = _context->Create<XInstanceBuffer>(
         _context,
-        SRenderInstance::EUsage::DYNAMIC,
+        ERenderInstanceMotionType::Dynamic,
         instanceBufferDynamic
     );
     _tempBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance), 64);
@@ -1376,12 +1376,12 @@ void triton::cGraphics::MarkStaticBufferDirty()
     _isStaticBufferDirty = K_TRUE;
 }
 
-void triton::cGraphics::WriteBatchInstances(SRenderInstance::EUsage usage)
+void triton::cGraphics::WriteBatchInstances(ERenderInstanceMotionType usage)
 {
     usize instanceBufferByteSize;
-    if (usage == SRenderInstance::EUsage::STATIC)
+    if (usage == ERenderInstanceMotionType::Static)
         instanceBufferByteSize = _instanceBufferStatic->GetByteSize();
-    else if (usage == SRenderInstance::EUsage::DYNAMIC)
+    else if (usage == ERenderInstanceMotionType::Dynamic)
         instanceBufferByteSize = _instanceBufferDynamic->GetByteSize();
     else
         return;
@@ -1393,9 +1393,9 @@ void triton::cGraphics::WriteBatchInstances(SRenderInstance::EUsage usage)
         XRenderBatch& batch = batchBuffer._elements[i];
         nextOffset = batch.Write(usage, nextOffset, &_tempBuffer[0]);
     }
-    if (usage == SRenderInstance::EUsage::STATIC)
+    if (usage == ERenderInstanceMotionType::Static)
         _instanceBufferStatic->Write(0, &_tempBuffer[0], nextOffset);
-    else if (usage == SRenderInstance::EUsage::DYNAMIC)
+    else if (usage == ERenderInstanceMotionType::Dynamic)
         _instanceBufferDynamic->Write(0, &_tempBuffer[0], nextOffset);
 }
 
@@ -1403,12 +1403,12 @@ void triton::cGraphics::WriteDirtyStaticInstances()
 {
     if (_isStaticBufferDirty == K_TRUE)
     {
-        WriteBatchInstances(SRenderInstance::EUsage::STATIC);
+        WriteBatchInstances(ERenderInstanceMotionType::Static);
         _isStaticBufferDirty = K_FALSE;
     }
 }
 
 void triton::cGraphics::WriteDynamicInstances()
 {
-    WriteBatchInstances(SRenderInstance::EUsage::DYNAMIC);
+    WriteBatchInstances(ERenderInstanceMotionType::Dynamic);
 }

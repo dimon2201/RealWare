@@ -94,7 +94,7 @@ triton::SRenderData triton::ecs::cScene::BuildRenderDataStatic()
 		if (!pRic)
 			continue;
 		SRenderInstanceComponent ric = *pRic;
-		if (ric._usage == SRenderInstance::EUsage::STATIC)
+		if (ric._usage == ERenderInstanceMotionType::Static)
 			_renderInstancesStatic->Push(std::move(ric));
 	}
 
@@ -114,7 +114,7 @@ triton::SRenderData triton::ecs::cScene::BuildRenderDataDynamic()
 		if (!pRic)
 			continue;
 		SRenderInstanceComponent ric = *pRic;
-		if (ric._usage == SRenderInstance::EUsage::DYNAMIC)
+		if (ric._usage == ERenderInstanceMotionType::Dynamic)
 			_renderInstancesDynamic->Push(std::move(ric));
 	}
 

@@ -40,11 +40,11 @@ namespace triton
 	{
 		TRITON_OBJECT(XInstanceBuffer)
 
-		SRenderInstance::EUsage _usage = SRenderInstance::EUsage::NONE;
+		ERenderInstanceMotionType _usage = ERenderInstanceMotionType::Static;
 
 	public:
-		explicit XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage);
-		explicit XInstanceBuffer(cContext* context, SRenderInstance::EUsage usage, cBuffer* buffer);
+		explicit XInstanceBuffer(cContext* context, ERenderInstanceMotionType usage);
+		explicit XInstanceBuffer(cContext* context, ERenderInstanceMotionType usage, cBuffer* buffer);
 		~XInstanceBuffer() override = default;
 	};
 }
