@@ -30,6 +30,8 @@ namespace triton
 		XUploader<XStaticInstanceStorage, HStaticRenderInstance, SGPUStaticRenderInstanceLayout>* _uploader = nullptr;
 	
 	public:
+		HStaticRenderInstance CreateRenderInstance(const HBatch& batch);
+
 		void Update() override;
 	};
 }
