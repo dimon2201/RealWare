@@ -2,18 +2,34 @@
 
 #pragma once
 
+#include <unordered_map>
+#include <string>
 #include "backend.hpp"
+#include "types.hpp"
 
 namespace triton
 {
     class cContext;
 
+    struct SPair
+    {
+        SPair(const std::string& tag, void* ptr) : tag(tag), ptr(ptr) {}
+
+        std::string tag = {};
+        void* ptr = nullptr;
+    };
+
     struct SPhysicsWorldDesc final
     {
     };
 
+    static constexpr types::usize kMaxPhysicsWorldSystemObjectCount = 16;
+
     struct SPhysicsWorldBackendData final
     {
+        types::usize worldIndex = 0;
+        types::usize systemObjectCount = 0;
+        SPair systemObjects[kMaxPhysicsWorldSystemObjectCount] = {};
     };
 
     struct SPhysicsShapeDesc final
@@ -64,7 +80,7 @@ namespace triton
         explicit IPhysicsBackend(cContext* context) : iBackend(context) {}
         ~IPhysicsBackend() override = default;
 
-        virtual SPhysicsWorldBackendData CreateWorld(const SPhysicsWorldDesc& desc) = 0;
+        virtual SPhysicsWorldBackendData CreateWorld() = 0;
         virtual void DestroyWorld(const SPhysicsWorldBackendData& world) = 0;
 
         virtual SPhysicsShapeBackendData CreateBoxShape(const SPhysicsShapeDesc& desc) = 0;
