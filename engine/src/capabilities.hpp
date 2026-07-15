@@ -44,5 +44,10 @@ namespace triton
         types::usize handleAllocatorObjectCount = 16 * 1024;
         types::usize maxSkinnedBoneCount = 64 * 1024;
         types::usize maxSkeletonCount = 64 * 1024;
+        types::usize maxPhysicsTempBufferByteSize = 10 * 1024 * 1024;
+        types::usize maxPhysicsSimulationBodyCount = 1024;
+        types::usize maxPhysicsSimulationBodyMutexCount = 0;
+        types::usize maxPhysicsSimulationBodyPairCount = 1024;
+        types::usize maxPhysicsSimulationContactConstraintCount = 1024;
     };
 }
