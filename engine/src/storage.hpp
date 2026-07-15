@@ -30,6 +30,8 @@ namespace triton
 			_context->Destroy<XHandleAllocator<SSlot, THandle, TAllocator, TObject>>(_objects);
 		}
 
+		virtual void Update() = 0;
+
 		inline THandle Create()
 		{
 			return _objects->Create();
