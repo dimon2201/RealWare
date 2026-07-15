@@ -1,8 +1,8 @@
-// dynamic_render_instance_subsystem.hpp
+// dynamic_instance_storage.hpp
 
 #pragma once
 
-#include "subsystem.hpp"
+#include "storage.hpp"
 #include "render_instance.hpp"
 #include "handles.hpp"
 #include "uploader.hpp"
@@ -21,12 +21,15 @@ namespace triton
 
 	struct SGPUDynamicRenderInstanceLayout final : public SRenderInstance {};
 
-	class XDynamicRenderInstanceSubsystem : public ISubsystem<HDynamicRenderInstance, SDynamicRenderInstance, XLinearArray<SDynamicRenderInstance>>
+	class XDynamicInstanceStorage : public IStorage<HDynamicRenderInstance, SDynamicRenderInstance, XLinearArray<SDynamicRenderInstance>>
 	{
-		TRITON_OBJECT(XDynamicRenderInstanceSubsystem)
-		TRITON_SUBSYSTEM
+		TRITON_OBJECT(XDynamicInstanceStorage)
+		TRITON_STORAGE
 
 		cBuffer* _dynamicInstanceBuffer = nullptr;
-		XUploader<XDynamicRenderInstanceSubsystem, HDynamicRenderInstance, SGPUDynamicRenderInstanceLayout>* _uploader = nullptr;
+		XUploader<XDynamicInstanceStorage, HDynamicRenderInstance, SGPUDynamicRenderInstanceLayout>* _uploader = nullptr;
+	
+	public:
+		void Update() override;
 	};
 }
