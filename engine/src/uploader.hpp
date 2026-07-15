@@ -14,7 +14,7 @@
 
 namespace triton
 {
-    template <typename TSubsystem, typename TCPUObjectHandle, typename TGPUElementLayout>
+    template <typename TCPUStorage, typename TCPUObjectHandle, typename TGPUElementLayout>
     class XUploader : public iObject
     {
         TRITON_OBJECT(XUploader)
