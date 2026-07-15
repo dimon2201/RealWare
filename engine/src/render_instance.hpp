@@ -33,7 +33,7 @@ namespace triton
         return pb;
     }
 
-    class SRenderInstance final
+    class SRenderInstance
     {
     public:
         SRenderInstance() = default;
