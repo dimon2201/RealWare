@@ -22,7 +22,7 @@ namespace triton
 	} &&
 	std::derived_from<T, XDynamicArray<typename T::ValueType>>;*/
 
-	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
+	template <typename TSlot, typename TCPUObject, typename TCPUObjectHandle, typename TCPUObjectAllocator>
 	class XHandleAllocator : public iObject
 	{
 		TRITON_OBJECT(XHandleAllocator)
@@ -32,47 +32,39 @@ namespace triton
 		XDynamicArray<TSlot>* _slots = nullptr;
 		XDynamicArray<types::usize>* _freeSlots = nullptr;
 		XDynamicArray<types::usize>* _objectIndexToSlotIndex = nullptr;
-		TDataStructure* _objects = nullptr;
+		TCPUObjectAllocator* _objects = nullptr;
+		TCPUObject _nullObject = {};
 
 	public:
-		explicit XHandleAllocator(cContext* context) : iObject(context) {}
-		virtual ~XHandleAllocator() override = default;
+		XHandleAllocator() = delete;
 
-		void Initialize()
+		explicit XHandleAllocator(cContext* context) : iObject(context)
 		{
 			const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
 			sChunkAllocatorDescriptor cad = {};
 			cad.chunkByteSize = caps->hashTableChunkByteSize;
 			cad.maxChunkCount = caps->hashTableMaxChunkCount;
 			cad.hashTableSize = caps->hashTableSize;
-			if (!_slots)
-				_slots = _context->Create<XDynamicArray<TSlot>>(_context, cad);
-			if (!_freeSlots)
-				_freeSlots = _context->Create<XDynamicArray<types::usize>>(_context, cad);
-			if (!_objectIndexToSlotIndex)
-				_objectIndexToSlotIndex = _context->Create<XDynamicArray<types::usize>>(_context, cad);
+			_slots = _context->Create<XDynamicArray<TSlot>>(_context, cad);
+			_freeSlots = _context->Create<XDynamicArray<types::usize>>(_context, cad);
+			_objectIndexToSlotIndex = _context->Create<XDynamicArray<types::usize>>(_context, cad);
 			sChunkAllocatorDescriptor cadObjects = {};
-			cadObjects.chunkByteSize = caps->handleAllocatorObjectCount * sizeof(TObject);
-			if (!_objects)
-				_objects = _context->Create<TDataStructure>(_context, cadObjects);
+			cadObjects.chunkByteSize = caps->handleAllocatorObjectCount * sizeof(TCPUObject);
+			_objects = _context->Create<TCPUObjectAllocator>(_context, cadObjects);
 		}
 
-		void Free()
+		virtual ~XHandleAllocator() override
 		{
-			if (_objects)
-				_context->Destroy<TDataStructure>(_objects);
-			if (_objectIndexToSlotIndex)
-				_context->Destroy<XDynamicArray<types::usize>>(_objectIndexToSlotIndex);
-			if (_freeSlots)
-				_context->Destroy<XDynamicArray<types::usize>>(_freeSlots);
-			if (_slots)
-				_context->Destroy<XDynamicArray<TSlot>>(_slots);
+			_context->Destroy<TCPUObjectAllocator>(_objects);
+			_context->Destroy<XDynamicArray<types::usize>>(_objectIndexToSlotIndex);
+			_context->Destroy<XDynamicArray<types::usize>>(_freeSlots);
+			_context->Destroy<XDynamicArray<TSlot>>(_slots);
 		}
 
 		template <typename... Args>
-		THandle Create(Args&&... args)
+		TCPUObjectHandle Create(Args&&... args)
 		{
-			THandle handle;
+			TCPUObjectHandle handle;
 			types::usize slotIndex;
 			types::usize arrayIndex;
 			types::usize generation;
@@ -116,9 +108,9 @@ namespace triton
 			return handle;
 		}
 
-		THandle Create(TObject&& object)
+		TCPUObjectHandle Create(TCPUObject&& object)
 		{
-			THandle handle;
+			TCPUObjectHandle handle;
 			types::usize slotIndex;
 			types::usize arrayIndex;
 			types::usize generation;
@@ -162,18 +154,31 @@ namespace triton
 			return handle;
 		}
 
-		TObject* Get(const THandle& handle)
+		TCPUObject& Get(const TCPUObjectHandle& handle)
 		{
 			TSlot* slot = _slots->At(handle._slotIndex).data;
 			if (!slot)
-				return nullptr;
+				return _nullObject;
 			if (handle._generation != slot->_generation)
-				return nullptr;
+				return _nullObject;
 
-			return _objects->At(slot->_arrayIndex).data;
+			return *_objects->At(slot->_arrayIndex).data;
 		}
 
-		void Destroy(const THandle& handle)
+		TCPUObjectHandle GetHandle(types::usize elementIndex)
+		{
+			const types::usize idx = *_objectIndexToSlotIndex->At(elementIndex).data;
+			const TSlot& slot = *_slots->At(idx).data;
+
+			TCPUObjectHandle handle;
+			handle._slotIndex = idx;
+			handle._indexInArray = slot._arrayIndex;
+			handle._generation = slot._generation;
+
+			return handle;
+		}
+
+		void Destroy(const TCPUObjectHandle& handle)
 		{
 			if (_objects->IsEmpty())
 				return;
@@ -189,9 +194,9 @@ namespace triton
 
 			if (removeObjectIndex != lastObjectIndex)
 			{
-				_objects->At(removeObjectIndex).data->~TObject();
+				_objects->At(removeObjectIndex).data->~TCPUObject();
 				new (_objects->At(removeObjectIndex).data)
-					TObject(std::move(*(_objects->At(lastObjectIndex).data)));
+					TCPUObject(std::move(*(_objects->At(lastObjectIndex).data)));
 
 				types::usize movedSlotIndex = *_objectIndexToSlotIndex->At(lastObjectIndex).data;
 				*_objectIndexToSlotIndex->At(removeObjectIndex).data = movedSlotIndex;
@@ -204,7 +209,20 @@ namespace triton
 			_freeSlots->Push(freeSlotIndex);
 		}
 
-		inline SBufferView<TObject> GetData() const
+		types::boolean Exists(const TCPUObjectHandle& handle) const
+		{
+			SSlot* slotData = _slots->At(handle._slotIndex).data;
+			if (!slotData)
+				return types::K_FALSE;
+
+			TSlot& slot = *slotData;
+			if (slot._generation != handle._generation)
+				return types::K_FALSE;
+
+			return types::K_TRUE;
+		}
+
+		inline const SBufferView<TCPUObject> GetData() const
 		{
 			return _objects->GetData();
 		}
@@ -217,6 +235,11 @@ namespace triton
 		inline types::usize GetByteSize() const
 		{
 			return _objects->GetByteSize();
+		}
+
+		inline types::usize GetHandleBufferIndex(const TCPUObjectHandle& handle) const
+		{
+			return handle._indexInArray;
 		}
 	};
 }
