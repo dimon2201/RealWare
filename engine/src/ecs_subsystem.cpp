@@ -17,8 +17,7 @@ void triton::ecs::XECSSubsystem::Initialize()
 	cad.hashTableSize = caps->hashTableSize;
 	if (!_handleAllocator)
 	{
-		_handleAllocator = _context->Create<XHandleAllocator<SSceneSlot, HScene, XDynamicArray<cScene>, cScene>>(_context);
-		_handleAllocator->Initialize();
+		_handleAllocator = _context->Create<XHandleAllocator<SSceneSlot, cScene, HScene, XDynamicArray<cScene>>>(_context);
 	}
 }
 
@@ -26,17 +25,17 @@ void triton::ecs::XECSSubsystem::Shutdown()
 {
 	if (_handleAllocator)
 	{
-		_handleAllocator->Free();
-		_context->Destroy<XHandleAllocator<SSceneSlot, HScene, XDynamicArray<cScene>, cScene>>(_handleAllocator);
+		_context->Destroy<XHandleAllocator<SSceneSlot, cScene, HScene, XDynamicArray<cScene>>>(_handleAllocator);
 	}
 }
 
 triton::HScene triton::ecs::XECSSubsystem::CreateScene(const std::string& name)
 {
-	return _handleAllocator->Create(_context, name);
+	return HScene();
+	//return _handleAllocator->Create(_context, name);
 }
 
-triton::ecs::cScene* triton::ecs::XECSSubsystem::GetScene(const HScene& handle)
+triton::ecs::cScene& triton::ecs::XECSSubsystem::GetScene(const HScene& handle)
 {
 	return _handleAllocator->Get(handle);
 }

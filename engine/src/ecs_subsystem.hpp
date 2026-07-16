@@ -22,7 +22,7 @@ namespace triton::ecs
 	{
 		TRITON_OBJECT(XECSSubsystem)
 
-		XHandleAllocator<SSceneSlot, HScene, XDynamicArray<cScene>, cScene>* _handleAllocator = nullptr;
+		XHandleAllocator<SSceneSlot, cScene, HScene, XDynamicArray<cScene>>* _handleAllocator = nullptr;
 
 	public:
 		explicit XECSSubsystem(cContext* context) : iObject(context) {}
@@ -31,7 +31,7 @@ namespace triton::ecs
 		void Initialize();
 		void Shutdown();
 		HScene CreateScene(const std::string& name);
-		cScene* GetScene(const HScene& handle);
+		cScene& GetScene(const HScene& handle);
 		void DestroyScene(const HScene& handle);
 	};
 }
