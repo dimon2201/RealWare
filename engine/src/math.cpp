@@ -247,3 +247,20 @@ qword triton::cMath::HashBytes(const u8* data, usize dataByteSize, qword mask)
 
 	return hash & mask;
 }
+
+triton::cMatrix4 triton::cMath::Transform(
+	cVector3 worldPosition,
+	cVector3 worldRotation,
+	cVector3 scale
+)
+{
+	glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(worldRotation.GetX()), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(worldRotation.GetY()), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), glm::radians(worldRotation.GetZ()), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 result =
+		glm::translate(glm::mat4(1.0f), glm::vec3(worldPosition.GetX(), worldPosition.GetY(), worldPosition.GetZ())) *
+		rotX * rotY * rotZ *
+		glm::scale(glm::mat4(1.0f), glm::vec3(scale.GetX(), scale.GetY(), scale.GetZ()));
+		
+	return cMatrix4(result);
+}

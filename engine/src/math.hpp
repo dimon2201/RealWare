@@ -213,6 +213,12 @@ namespace triton
 
 		template <typename TValue>
 		static types::qword Hash(const TValue& value, types::qword mask);
+
+		static cMatrix4 Transform(
+			cVector3 worldPosition,
+			cVector3 worldRotation,
+			cVector3 scale
+		);
 	};
 }
 
