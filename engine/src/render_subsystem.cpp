@@ -17,6 +17,7 @@
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "skinning_subsystem.hpp"
+#include "batcher.hpp"
 
 using namespace types;
 
@@ -138,6 +139,7 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		_context->GetSubsystem<XAnimationSubsystem>()->Update();
 		_context->GetSubsystem<XSkeletonSubsystem>()->Update();
 		_context->GetSubsystem<XSkinningSubsystem>()->Update();
+		_context->GetSubsystem<XBatchSubsystem>()->Update();
 
 		_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
 		ResetScratchFrame();
