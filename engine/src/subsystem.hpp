@@ -15,7 +15,7 @@ namespace triton
 		TRITON_OBJECT(ISubsystem)
 
 		TObject _nullObject = {};
-		XHandleAllocator<SSlot, THandle, TAllocator, TObject>* _objects = nullptr;
+		XHandleAllocator<SSlot, TObject, THandle, TAllocator>* _objects = nullptr;
 
 	public:
 		virtual void Init() = 0;
@@ -24,14 +24,12 @@ namespace triton
 
 		explicit ISubsystem(cContext* context) : iObject(context)
 		{
-			_objects = _context->Create<XHandleAllocator<SSlot, THandle, TAllocator, TObject>>(_context);
-			_objects->Initialize();
+			_objects = _context->Create<XHandleAllocator<SSlot, TObject, THandle, TAllocator>>(_context);
 		}
 
 		virtual ~ISubsystem()
 		{
-			_objects->Free();
-			_context->Destroy<XHandleAllocator<SSlot, THandle, TAllocator, TObject>>(_objects);
+			_context->Destroy<XHandleAllocator<SSlot, TObject, THandle, TAllocator>>(_objects);
 		}
 
 		inline THandle Create()
@@ -41,11 +39,9 @@ namespace triton
 
 		inline TObject& Get(const THandle& handle)
 		{
-			TObject* p = _objects->Get(handle);
-			if (p)
-				return *p;
-			else
-				return _nullObject;
+			TObject& p = _objects->Get(handle);
+
+			return p;
 		}
 
 		inline void Destroy(const THandle& handle)
