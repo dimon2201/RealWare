@@ -9,13 +9,21 @@
 
 namespace triton
 {
-    struct SGameObject
+    struct SGameObjectData
     {
+        SGameObjectData() {}
+
         std::string name = {};
-        SBatchInstance renderable;
+        ERenderInstanceMotionType motionType = ERenderInstanceMotionType::Static;
+        union
+        {
+            HRenderInstance staticRenderInstance;
+            HRenderInstance dynamicRenderInstance;
+        };
         HMaterial material;
         cVector3 worldPosition = cVector3(0.0f);
         cVector3 worldRotation = cVector3(0.0f);
+        cVector3 scale = cVector3(1.0f);
         HSkeleton skeleton = {};
     };
 }
