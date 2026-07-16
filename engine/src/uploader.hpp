@@ -10,31 +10,35 @@
 #include "gpu_resource.hpp"
 #include "render_subsystem.hpp"
 #include "subsystem.hpp"
+#include "handle_allocator.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-    template <typename TCPUStorage, typename TCPUObjectHandle, typename TGPUElementLayout>
-    class XUploader : public iObject
+    template <typename TCPUObject, typename TCPUObjectHandle, typename TCPUObjectAllocator, typename TGPUElementLayout>
+    class XUploader : public XHandleAllocator<SSlot, TCPUObject, TCPUObjectHandle, TCPUObjectAllocator>
     {
         TRITON_OBJECT(XUploader)
 
-        types::boolean _bIsPermanentDirty = types::K_FALSE;
-        types::boolean _bIsDirty = types::K_FALSE;
+        types::boolean _bNeedsPersistentGpuWrite = types::K_FALSE;
+        types::boolean _bNeedsGpuWrite = types::K_FALSE;
         cGPUResource* _resource = nullptr;
         types::usize _stagingBufferByteSize = 0;
         TGPUElementLayout* _stagingBuffer = nullptr;
 
     public:
+        XUploader() = delete;
+
         explicit XUploader(
             cContext* context,
             cGPUResource* resource,
             types::usize stagingBufferElementCount,
-            types::boolean bIsPermanentDirty
-        ) : iObject(context)
+            types::boolean bNeedsPersistentGpuWrite
+        ) : XHandleAllocator(context)
         {
             const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-            _bIsPermanentDirty = bIsPermanentDirty;
+            _bNeedsPersistentGpuWrite = bNeedsPersistentGpuWrite;
+            _bNeedsGpuWrite = types::K_FALSE;
             _resource = resource;
             _stagingBufferByteSize = stagingBufferElementCount * sizeof(TGPUElementLayout);
             _stagingBuffer = (TGPUElementLayout*)_context->GetMemoryAllocator()->Allocate(_stagingBufferByteSize, 64);
@@ -46,44 +50,64 @@ namespace triton
         }
 
         template <typename TElementField>
-        void WriteField(
+        void WriteFieldToStaging(
             const TCPUObjectHandle& object,
             types::usize gpuLayoutByteOffset,
             const TElementField& field
         )
         {
-            const types::usize elementIndex = _context->GetSubsystem<TSubsystem>()->GetBufferIndex(object);
+            const types::usize elementIndex = GetHandleBufferIndex(object);
             TElementField* ef = (TElementField*)((types::u8*)&_stagingBuffer[elementIndex] + gpuLayoutByteOffset);
             *ef = field;
             MarkDirty();
         }
 
-        void Update()
+        void WriteFieldToStaging(
+            types::usize elementIndex,
+            const TGPUElementLayout& gpuElementData
+        )
         {
-            if (_bIsPermanentDirty == types::K_TRUE || _bIsDirty == types::K_TRUE)
-                Upload(0, _stagingBufferByteSize);
+            _stagingBuffer[elementIndex] = gpuElementData;
+            MarkDirty();
         }
 
-        void Upload(types::usize byteOffset, types::usize byteSize)
+        void WriteToStaging(
+            types::usize elementOffset,
+            const TGPUElementLayout* srcData,
+            types::usize srcDataElementSize
+        )
         {
-            if (_bIsDirty == K_TRUE)
+            memcpy(&_stagingBuffer[elementOffset], &srcData[0], srcDataElementSize * sizeof(TGPUElementLayout));
+            MarkDirty();
+        }
+
+        void UploadStagingToGpuIfDirty()
+        {
+            if (_bNeedsPersistentGpuWrite == types::K_TRUE ||
+                _bNeedsGpuWrite == types::K_TRUE)
+                UploadStagingToGpu(0, _stagingBufferByteSize);
+        }
+
+        void UploadStagingToGpu(types::usize byteOffset, types::usize byteSize)
+        {
+            if (_bNeedsGpuWrite == types::K_TRUE)
             {
                 XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
                 renderSubsystem->PushCommand(SRenderCommand(
                     ERenderCommand::WRITE_BUFFER,
-                    (cpuword)_resource,
+                    (types::cpuword)_resource,
                     byteOffset,
                     byteSize,
-                    (cpuword)&_stagingBuffer[0]
+                    (types::cpuword)&_stagingBuffer[0]
                 ));
-                _bIsDirty = types::K_FALSE;
+                _bNeedsGpuWrite = types::K_FALSE;
             }
         }
 
     private:
-        void MarkDirty()
+        inline void MarkDirty()
         {
-            _bIsDirty = types::K_TRUE;
+            _bNeedsGpuWrite = types::K_TRUE;
         }
     };
 }
