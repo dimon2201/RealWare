@@ -18,7 +18,7 @@ triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(
     s.bones = bones;
     s.globSkinnedBoneOffset = globSkinnedBoneOffset;
 
-    _uploader->WriteField<decltype(s.globSkinnedBoneOffset)>(
+    _uploader->WriteFieldToStaging<decltype(s.globSkinnedBoneOffset)>(
         skeleton,
         0,
         s.globSkinnedBoneOffset
@@ -37,7 +37,7 @@ void triton::XSkeletonSubsystem::SetSkin(const HSkeleton& skeleton, const SSkinD
     SSkeleton& s = Get(skeleton);
     s.globSkinnedBoneOffset = skin.globSkinnedBoneOffset;
 
-    _uploader->WriteField<decltype(s.globSkinnedBoneOffset)>(
+    _uploader->WriteFieldToStaging<decltype(s.globSkinnedBoneOffset)>(
         skeleton,
         0,
         s.globSkinnedBoneOffset
@@ -57,7 +57,7 @@ void triton::XSkeletonSubsystem::Init()
         3
     ));
     _skeletonBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    _uploader = _context->Create<XUploader<XSkeletonSubsystem, HSkeleton, SGPUSkeletonLayout>>(
+    _uploader = _context->Create<XUploader<SSkeleton, HSkeleton, XLinearArray<SSkeleton>, SGPUSkeletonLayout>>(
         _context,
         _skeletonBuffer,
         caps->maxSkeletonCount,
@@ -67,7 +67,7 @@ void triton::XSkeletonSubsystem::Init()
 
 void triton::XSkeletonSubsystem::Free()
 {
-    _context->Destroy<XUploader<XSkeletonSubsystem, HSkeleton, SGPUSkeletonLayout>>(_uploader);
+    _context->Destroy<XUploader<SSkeleton, HSkeleton, XLinearArray<SSkeleton>, SGPUSkeletonLayout>>(_uploader);
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
@@ -80,5 +80,4 @@ void triton::XSkeletonSubsystem::Free()
 
 void triton::XSkeletonSubsystem::Update()
 {
-    _uploader->Update();
 }

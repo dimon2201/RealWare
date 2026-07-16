@@ -6,13 +6,12 @@
 #include "skeleton.hpp"
 #include "subsystem.hpp"
 #include "skinning_subsystem.hpp"
+#include "uploader.hpp"
 #include "types.hpp"
 
 namespace triton
 {
 	class cBuffer;
-	template <typename TSubsystem, typename TCPUObjectHandle, typename TGPUElementLayout>
-	class XUploader;
 
 	struct SGPUSkeletonLayout
 	{
@@ -25,7 +24,7 @@ namespace triton
 		TRITON_SUBSYSTEM
 
 		cBuffer* _skeletonBuffer = nullptr;
-		XUploader<XSkeletonSubsystem, HSkeleton, SGPUSkeletonLayout>* _uploader = nullptr;
+		XUploader<SSkeleton, HSkeleton, XLinearArray<SSkeleton>, SGPUSkeletonLayout>* _uploader = nullptr;
 
 	public:
 		HSkeleton CreateSkeleton(
