@@ -32,7 +32,7 @@ triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(
     materialData.roughnessTexture = roughnessTexture;
     materialData.metallicTexture = metallicTexture;
 
-    *_objects->Get(material) = materialData;
+    _objects->Get(material) = materialData;
     Set(material._indexInArray, materialData);
 
     return material;
