@@ -29,6 +29,7 @@ namespace triton::ecs
 		XDynamicArray<components::SRenderInstanceComponent>* _renderInstancesDynamic = nullptr;
 
 	public:
+		cScene() = default;
 		explicit cScene(cContext* context, const ::std::string& name);
 		virtual ~cScene() override final;
 
