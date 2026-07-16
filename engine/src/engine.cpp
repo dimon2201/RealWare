@@ -38,6 +38,7 @@
 #include "skinning_subsystem.hpp"
 #include "static_instance_storage.hpp"
 #include "dynamic_instance_storage.hpp"
+#include "batcher.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -95,6 +96,7 @@ void triton::cEngine::Initialize()
 	_context->GetSubsystem<XSkeletonSubsystem>()->Init();
 	_context->RegisterSubsystem(new XSkinningSubsystem(_context));
 	_context->GetSubsystem<XSkinningSubsystem>()->Init();
+	_context->RegisterSubsystem(new XBatchSubsystem(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
