@@ -85,39 +85,41 @@ void triton::XRenderPass::Draw()
     {
         case ERenderPassDispatch::GEOMETRY:
         {
-            SBufferView<XRenderBatch> batchBuffer = _context->GetSubsystem<cGraphics>()->GetBatches();
-            for (usize i = 0; i < batchBuffer._elementCount; i++)
+            XCamera& camera = gfx->GetCamera(_camera);
+            CGPUShader shader = _shader->GetGPUShader();
+
+            // TODO: remove this line
+            cInputWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->at(0);
+            cVector2 cursorPos = _context->GetSubsystem<cInput>()->GetCursorPosition(&ibw);
+            camera.Update(cursorPos, 800, 600, 65.0f, 0.01f, 10000.0f, 0.1f);
+            cVector4 cameraWorldPos = cVector4(camera._worldPosition.GetX(), camera._worldPosition.GetY(), camera._worldPosition.GetZ(), 0.0f);
+            ///////////////////////////////////////////////////////////////////////////
+
+            camera.Bind(this);
+
+            static u32 time = 0;
+            time += 1;
+
+            gfxDrawcallBackend->ClearColor(cVector4(0.45f, 0.0f, 0.8f, 1.0f));
+            gfxDrawcallBackend->ClearDepth(1.0f);
+
+            gfxPipelineBackend->SetShaderUniform(&shader, "UniformTime", (u32)time);
+            gfxPipelineBackend->SetShaderUniform(&shader, "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
+            
+            SBufferView<SBatchData> bvBatches = _context->GetSubsystem<XBatchSubsystem>()->GetBatches();
+            for (usize i = 0; i < bvBatches.elementCount; i++)
             {
-                const XRenderBatch& batch = batchBuffer._elements[i];
-                const SGeometryView geometry = batch.GetGeometry();
-                XCamera* camera = gfx->GetCamera(_camera);
-                CGPUShader shader = _shader->GetGPUShader();
-
-                // TODO: remove this line
-                cInputWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->at(0);
-                cVector2 cursorPos = _context->GetSubsystem<cInput>()->GetCursorPosition(&ibw);
-                camera->Update(cursorPos, 800, 600, 65.0f, 0.01f, 10000.0f, 0.1f);
-                ///////////////////////////////////////////////////////////////////////////
-
-                camera->Bind(this);
-
-                gfxDrawcallBackend->ClearColor(cVector4(0.45f, 0.0f, 0.8f, 1.0f));
-                gfxDrawcallBackend->ClearDepth(1.0f);
-
                 // Static
-                static u32 time = 0;
-                time += 1;
-				// TODO: remove this
-                cVector4 cameraWorldPos = cVector4(camera->_worldPosition.GetX(), camera->_worldPosition.GetY(), camera->_worldPosition.GetZ(), 0.0f);
-                gfxPipelineBackend->SetShaderUniform(&shader, "UniformTime", (u32)time);
-                gfxPipelineBackend->SetShaderUniform(&shader, "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
-                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", (u32)0);
-                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.GetInstanceOffset(ERenderInstanceMotionType::Static));
+                const SBatchData& batch = bvBatches.elements[i];
+                const SGeometryView geometry = batch.sharedGeometry;
+
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", (u32)batch.motionType);
+                gfxPipelineBackend->SetShaderUniform(&shader, "InstanceOffset", (u32)batch.bufferOffset);
                 gfxDrawcallBackend->Draw(
                     geometry._indexCount,
                     geometry._vertexElementOffset,
                     geometry._indexElementOffset,
-                    batch.GetInstanceCount(ERenderInstanceMotionType::Static)
+                    batch.instanceCount
                 );
 
                 // Dynamic
