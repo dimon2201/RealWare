@@ -76,7 +76,7 @@ triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& fil
     auto tff = CreateTextureFromFile(dataFormat, filePath);;
 
     HTexture texture = Create();
-    *_objects->Get(texture) = tff.has_value() ? *tff : STexture();
+    _objects->Get(texture) = tff.has_value() ? *tff : STexture();
 
     return texture;
 }
@@ -84,7 +84,7 @@ triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& fil
 triton::HTexture triton::XTextureSubsystem::CreateTexture(const types::u8* byteData, types::usize byteSize, ETextureFormat fileFormat, cTexture::eFormat dataFormat)
 {
     HTexture texture = Create();
-    *_objects->Get(texture) = *CreateTextureFromBytes(dataFormat, byteData, byteSize, fileFormat);
+    _objects->Get(texture) = *CreateTextureFromBytes(dataFormat, byteData, byteSize, fileFormat);
 
     return texture;
 }
@@ -112,8 +112,8 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
     const usize width = size.GetX();
     const usize height = size.GetY();
     const SBufferView<STexture> textureBuffer = _objects->GetData();
-    const STexture* textures = textureBuffer._elements;
-    const usize textureCount = textureBuffer._elementCount;
+    const STexture* textures = textureBuffer.elements;
+    const usize textureCount = textureBuffer.elementCount;
     STexture candidateTexture;
     for (usize layer = 0; layer < atlas->GetDepth(); layer++)
     {
