@@ -24,6 +24,7 @@ namespace triton
         cVector2 _cursorPosition = cVector2(0.0f);
 
     public:
+        XCamera() = default; // TODO: remove this <<<<<-----
         explicit XCamera(cContext* context) : iObject(context) {}
         ~XCamera() override = default;
 
