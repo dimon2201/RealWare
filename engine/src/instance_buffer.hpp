@@ -7,7 +7,7 @@
 #include "tag.hpp"
 #include "render_data.hpp"
 #include "handle.hpp"
-#include "render_batch.hpp"
+#include "batcher.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -18,7 +18,7 @@ namespace triton
 	class cContext;
 	template <typename TValue>
 	class XLinearArray;
-	class SRenderInstance;
+	struct SRenderInstance;
 
 	class SInstanceBufferOffset final
 	{
