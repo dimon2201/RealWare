@@ -3,6 +3,7 @@
 #pragma once
 
 #include "math.hpp"
+#include "handles.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -19,7 +20,7 @@ namespace triton
         Dynamic
     };
 
-    types::dword EvaluatePropertyBits(
+    inline types::dword EvaluatePropertyBits(
         ERenderInstanceMotionType motionType,
         types::boolean isSkinned
     )
@@ -33,13 +34,24 @@ namespace triton
         return pb;
     }
 
-    class SRenderInstance
+    struct SRenderInstanceData
+    {
+        ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
+        HGameObject gameObject;
+        HBatch batch;
+        HMaterial material;
+        HSkeleton skeleton;
+        HRenderInstance instance;
+        cMatrix4 worldMatrix = cMatrix4();
+    };
+
+    class SGPURenderInstanceLayout
     {
     public:
-        SRenderInstance() = default;
-        SRenderInstance(types::s32 materialIndex, const cTransform& transform);
+        SGPURenderInstanceLayout() = default;
+        SGPURenderInstanceLayout(types::s32 materialIndex, const cTransform& transform);
 
-        SRenderInstance(
+        SGPURenderInstanceLayout(
             types::s32 materialIndex,
             types::s32 skeletonIndex,
             ERenderInstanceMotionType motionType,
