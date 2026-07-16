@@ -14,10 +14,9 @@
 #include "geometry_view.hpp"
 #include "render_pass.hpp"
 #include "buffer_view.hpp"
-#include "batch_storage.hpp"
+#include "batcher.hpp"
 #include "handle.hpp"
 #include "camera_handle.hpp"
-#include "batch_storage.hpp"
 
 namespace triton
 {
@@ -185,12 +184,8 @@ namespace triton
         types::usize _materialCountCPU = 0;
 
         XGeometryStorage* _geometryStorage = nullptr;
-        XBatchStorage* _batchStorage = nullptr;
         XRenderPassExecutor* _renderPassExecutor = nullptr;
-        XInstanceBuffer* _instanceBufferStatic = nullptr;
-        XInstanceBuffer* _instanceBufferDynamic = nullptr;
         cBuffer* _materialBuffer = nullptr;
-        types::boolean _isStaticBufferDirty = types::K_FALSE;
         XRenderPass* _opaque = nullptr;
         XRenderPass* _transparent = nullptr;
         XRenderPass* _text = nullptr;
@@ -198,38 +193,27 @@ namespace triton
         XRenderPass* _compositeFinal = nullptr;
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
-        XHandleAllocator<SCameraSlot, HCamera, XLinearArray<XCamera>, XCamera>* _cameras = nullptr;
-        types::u8* _tempBuffer = nullptr;
+        XHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>* _cameras = nullptr;
 
         void CreateGeometryStorage();
-        void CreateBatchStorage();
-        void CreateInstanceBuffers();
         void CreateMaterialBuffer();
         void CreateDefaultRenderTargets();
         void CreateDefaultRenderPasses();
         void CreateCameraAllocator();
         void DestroyGeometryStorage();
-        void DestroyBatchStorage();
-        void DestroyInstanceBuffers();
         void DestroyMaterialBuffer();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
         void DestroyCameraAllocator();
         void BindVertexIndexBuffers();
-        void BindInstanceBuffers();
         void BindMaterialBuffer();
         void BindSkeletonBuffer();
         void BindSkinnedBoneBuffer();
         void UnbindVertexIndexBuffers();
-        void UnbindInstanceBuffers();
         void UnbindMaterialBuffer();
         void UnbindSkeletonBuffer();
         void UnbindSkinnedBoneBuffer();
         void ExecuteDefaultPasses();
-        void MarkStaticBufferDirty();
-        void WriteBatchInstances(ERenderInstanceMotionType usage);
-        void WriteDirtyStaticInstances();
-        void WriteDynamicInstances();
 
 	public:
         enum class eAPI
@@ -250,16 +234,10 @@ namespace triton
         void ExecutePasses();
         CVertexArray* CreateDefaultVertexArray();
         std::optional<triton::SGeometryView> StoreGeometry(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize);
-        std::optional<HBatch> CreateBatch(const SGeometryView& geometry);
-        void RemoveBatch(const HBatch& handle);
-        std::optional<SBatchInstance> CreateInstance(ERenderInstanceMotionType usage, const HBatch& batch);
-        void SetInstance(const SBatchInstance& instance, const SRenderInstance& renderInstance); // TODO: remove this temporary method completely
-        void DestroyInstance(const SBatchInstance& instance);
         std::optional<HCamera> CreateCamera();
-        XCamera* GetCamera(const HCamera& camera);
+        XCamera& GetCamera(const HCamera& camera);
         void DestroyCamera(const HCamera& camera);
         sPrimitive* CreatePrimitive(eCategory primitive);
-        sModel* CreateModel(const std::string& filename);
 
         // TODO: Remove material finding from cGraphics
         //cCacheObject<cMaterial> FindMaterial(const cTag& id);
@@ -295,24 +273,9 @@ namespace triton
         cBuffer* GetVertexBuffer() const;
         cBuffer* GetIndexBuffer() const;
 
-        inline cBuffer* GetStaticInstanceBuffer() const
-        {
-            return _instanceBufferStatic;
-        }
-
-        inline cBuffer* GetDynamicInstanceBuffer() const
-        {
-            return _instanceBufferDynamic;
-        }
-
         inline cBuffer* GetMaterialBuffer() const
         {
             return _materialBuffer;
-        }
-
-        inline SBufferView<XRenderBatch> GetBatches() const
-        {
-            return _batchStorage->GetBatches();
         }
 
         inline XRenderPass* GetOpaqueRenderPass() const

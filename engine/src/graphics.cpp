@@ -25,9 +25,7 @@
 #include "render_pass.hpp"
 #include "dynamic_array.hpp"
 #include "render_subsystem.hpp"
-#include "render_batch.hpp"
 #include "handle_allocator.hpp"
-#include "batch_storage.hpp"
 #include "camera.hpp"
 #include "material_uploader.hpp"
 #include "skeleton_subsystem.hpp"
@@ -60,8 +58,6 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
 void triton::cGraphics::Init()
 {
     CreateGeometryStorage();
-    CreateBatchStorage();
-    CreateInstanceBuffers();
     CreateMaterialBuffer();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
@@ -73,8 +69,6 @@ void triton::cGraphics::Free()
     DestroyDefaultRenderPasses();
     DestroyDefaultRenderTargets();
     DestroyMaterialBuffer();
-    DestroyInstanceBuffers();
-    DestroyBatchStorage();
     DestroyGeometryStorage();
     DestroyCameraAllocator();
 }
@@ -185,19 +179,20 @@ void triton::cGraphics::ExecutePasses()
     // |||||||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 
-    WriteDirtyStaticInstances();
-    WriteDynamicInstances();
-
     BindVertexIndexBuffers();
-    BindInstanceBuffers();
     BindMaterialBuffer();
     BindSkeletonBuffer();
     BindSkinnedBoneBuffer();
 
+    _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceGPUBuffer().Bind();
+    _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceGPUBuffer().Bind();
+
     ExecuteDefaultPasses();
 
+    _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceGPUBuffer().Unbind();
+    _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceGPUBuffer().Unbind();
+
     UnbindVertexIndexBuffers();
-    UnbindInstanceBuffers();
     UnbindMaterialBuffer();
     UnbindSkeletonBuffer();
     UnbindSkinnedBoneBuffer();
@@ -227,43 +222,12 @@ std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsB
     return _geometryStorage->Store(format, vertices, verticesByteSize, indices, indicesByteSize);
 }
 
-std::optional<triton::HBatch> triton::cGraphics::CreateBatch(const SGeometryView& geometry)
-{
-    return _batchStorage->Create(geometry);
-}
-
-void triton::cGraphics::RemoveBatch(const HBatch& handle)
-{
-    _batchStorage->Remove(handle);
-}
-
-std::optional<triton::SBatchInstance> triton::cGraphics::CreateInstance(ERenderInstanceMotionType usage, const HBatch& batch)
-{
-    if (usage == ERenderInstanceMotionType::Static)
-        MarkStaticBufferDirty();
-
-    return _batchStorage->AddInstance(batch, usage);
-}
-
-void triton::cGraphics::SetInstance(const SBatchInstance& instance, const SRenderInstance& renderInstance)
-{
-    _batchStorage->Get(instance.batch)->Set(instance, renderInstance);
-}
-
-void triton::cGraphics::DestroyInstance(const SBatchInstance& instance)
-{
-    if (instance.usage == ERenderInstanceMotionType::Static)
-        MarkStaticBufferDirty();
-
-    _batchStorage->RemoveInstance(instance);
-}
-
 std::optional<triton::HCamera> triton::cGraphics::CreateCamera()
 {
     return _cameras->Create(_context);
 }
 
-triton::XCamera* triton::cGraphics::GetCamera(const HCamera& camera)
+triton::XCamera& triton::cGraphics::GetCamera(const HCamera& camera)
 {
     return _cameras->Get(camera);
 }
@@ -928,45 +892,6 @@ void triton::cGraphics::CreateGeometryStorage()
     _geometryStorage->Initialize();
 }
 
-void triton::cGraphics::CreateBatchStorage()
-{
-    _batchStorage = _context->Create<XBatchStorage>(_context);
-}
-
-void triton::cGraphics::CreateInstanceBuffers()
-{
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
-    const sCapabilities* caps = app->GetCapabilities();
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::STORAGE,
-        (cpuword)nullptr,
-        caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance),
-        0
-    ));
-    cBuffer* instanceBufferStatic = renderSubsystem->FetchResult<cBuffer*>();
-    _instanceBufferStatic = _context->Create<XInstanceBuffer>(
-        _context,
-        ERenderInstanceMotionType::Static,
-        instanceBufferStatic
-    );
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::STORAGE,
-        (cpuword)nullptr,
-        caps->maxRenderDynamicInstanceCount * sizeof(SRenderInstance),
-        1
-    ));
-    cBuffer* instanceBufferDynamic = renderSubsystem->FetchResult<cBuffer*>();
-    _instanceBufferDynamic = _context->Create<XInstanceBuffer>(
-        _context,
-        ERenderInstanceMotionType::Dynamic,
-        instanceBufferDynamic
-    );
-    _tempBuffer = (u8*)_context->GetMemoryAllocator()->Allocate(caps->maxRenderStaticInstanceCount * sizeof(SRenderInstance), 64);
-}
-
 void triton::cGraphics::CreateMaterialBuffer()
 {
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
@@ -1212,36 +1137,13 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 
 void triton::cGraphics::CreateCameraAllocator()
 {
-    _cameras = _context->Create<XHandleAllocator<SCameraSlot, HCamera, XLinearArray<XCamera>, XCamera>>(_context);
-    _cameras->Initialize();
+    _cameras = _context->Create<XHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>>(_context);
 }
 
 void triton::cGraphics::DestroyGeometryStorage()
 {
     if (_geometryStorage)
         _context->Destroy<XGeometryStorage>(_geometryStorage);
-}
-
-void triton::cGraphics::DestroyBatchStorage()
-{
-    if (_batchStorage)
-        _context->Destroy<XBatchStorage>(_batchStorage);
-}
-
-void triton::cGraphics::DestroyInstanceBuffers()
-{
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    _context->GetMemoryAllocator()->Deallocate(_tempBuffer);
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        _instanceBufferDynamic->GetInstance()
-    ));
-    _context->Destroy<XInstanceBuffer>(_instanceBufferDynamic);
-    renderSubsystem->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        _instanceBufferStatic->GetInstance()
-    ));
-    _context->Destroy<XInstanceBuffer>(_instanceBufferStatic);
 }
 
 void triton::cGraphics::DestroyMaterialBuffer()
@@ -1306,8 +1208,7 @@ void triton::cGraphics::DestroyCameraAllocator()
 {
     if (_cameras)
     {
-        _cameras->Free();
-        _context->Destroy<XHandleAllocator<SCameraSlot, HCamera, XLinearArray<XCamera>, XCamera>>(_cameras);
+        _context->Destroy<XHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>>(_cameras);
     }
 }
 
@@ -1315,12 +1216,6 @@ void triton::cGraphics::BindVertexIndexBuffers()
 {
     _geometryStorage->GetVertexBuffer()->Bind();
     _geometryStorage->GetIndexBuffer()->Bind();
-}
-
-void triton::cGraphics::BindInstanceBuffers()
-{
-    _instanceBufferStatic->Bind();
-    _instanceBufferDynamic->Bind();
 }
 
 void triton::cGraphics::BindMaterialBuffer()
@@ -1344,12 +1239,6 @@ void triton::cGraphics::UnbindVertexIndexBuffers()
     _geometryStorage->GetIndexBuffer()->Unbind();
 }
 
-void triton::cGraphics::UnbindInstanceBuffers()
-{
-    _instanceBufferStatic->Unbind();
-    _instanceBufferDynamic->Unbind();
-}
-
 void triton::cGraphics::UnbindMaterialBuffer()
 {
     _materialBuffer->Unbind();
@@ -1369,46 +1258,4 @@ void triton::cGraphics::ExecuteDefaultPasses()
 {
     _opaque->Execute();
     _compositeFinal->Execute();
-}
-
-void triton::cGraphics::MarkStaticBufferDirty()
-{
-    _isStaticBufferDirty = K_TRUE;
-}
-
-void triton::cGraphics::WriteBatchInstances(ERenderInstanceMotionType usage)
-{
-    usize instanceBufferByteSize;
-    if (usage == ERenderInstanceMotionType::Static)
-        instanceBufferByteSize = _instanceBufferStatic->GetByteSize();
-    else if (usage == ERenderInstanceMotionType::Dynamic)
-        instanceBufferByteSize = _instanceBufferDynamic->GetByteSize();
-    else
-        return;
-
-    SBufferView<XRenderBatch> batchBuffer = _batchStorage->GetBatches();
-    usize nextOffset = 0;
-    for (usize i = 0; i < batchBuffer._elementCount; i++)
-    {
-        XRenderBatch& batch = batchBuffer._elements[i];
-        nextOffset = batch.Write(usage, nextOffset, &_tempBuffer[0]);
-    }
-    if (usage == ERenderInstanceMotionType::Static)
-        _instanceBufferStatic->Write(0, &_tempBuffer[0], nextOffset);
-    else if (usage == ERenderInstanceMotionType::Dynamic)
-        _instanceBufferDynamic->Write(0, &_tempBuffer[0], nextOffset);
-}
-
-void triton::cGraphics::WriteDirtyStaticInstances()
-{
-    if (_isStaticBufferDirty == K_TRUE)
-    {
-        WriteBatchInstances(ERenderInstanceMotionType::Static);
-        _isStaticBufferDirty = K_FALSE;
-    }
-}
-
-void triton::cGraphics::WriteDynamicInstances()
-{
-    WriteBatchInstances(ERenderInstanceMotionType::Dynamic);
 }
