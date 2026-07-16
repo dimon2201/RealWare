@@ -10,7 +10,7 @@ in vec3 FragPosWorldSpace;
 flat in vec4 DiffuseColor;
 flat in mat3 TBNMatrix;
 in mat3 TangentToWorld;
-flat in uint OutTripleSixty;
+flat in uint Out666;
 
 struct TextureAtlasTexture
 {

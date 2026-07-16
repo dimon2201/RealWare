@@ -16,7 +16,7 @@ out vec3 FragPosWorldSpace;
 flat out vec4 DiffuseColor;
 flat out mat3 TBNMatrix;
 out mat3 TangentToWorld;
-flat out uint OutTripleSixty;
+flat out uint Out666;
 
 uniform mat4 ViewProjection;
 uniform uint InstanceBatchType;
@@ -27,6 +27,7 @@ struct Instance
 	float Use2D;
 	int MaterialIndex;
 	int SkeletonIndex;
+	uint PropertyBits;
 	mat4 World;
 };
 
@@ -82,9 +83,9 @@ void main()
 {
 	Instance instance;
 	if (InstanceBatchType == 0)
-		instance = staticInstances[gl_InstanceID];
+		instance = staticInstances[gl_InstanceID + InstanceOffset];
 	else if (InstanceBatchType == 1)
-		instance = dynamicInstances[gl_InstanceID];
+		instance = dynamicInstances[gl_InstanceID + InstanceOffset];
 	Material material;
 	if (InMaterialIndex == -1)
 		material = materials[instance.MaterialIndex];
@@ -92,12 +93,15 @@ void main()
 		material = materials[InMaterialIndex];
 	
 	uint skBoneOffset = skeletons[instance.SkeletonIndex].globBoneOffset;
-	mat4 skinMatrix =
-      InBoneWeights.x * skinnedBones[skBoneOffset + InBoneIndices.x].modelToModelMatrix
-    + InBoneWeights.y * skinnedBones[skBoneOffset + InBoneIndices.y].modelToModelMatrix
-    + InBoneWeights.z * skinnedBones[skBoneOffset + InBoneIndices.z].modelToModelMatrix
-    + InBoneWeights.w * skinnedBones[skBoneOffset + InBoneIndices.w].modelToModelMatrix;
-	//mat4 skinMatrix = InBoneWeights.x * skinnedBones[skBoneOffset + InBoneIndices.x].modelToModelMatrix;
+	mat4 skinMatrix = mat4(1.0f);
+	if (instance.SkeletonIndex > -1)
+	{
+		skinMatrix = 
+			InBoneWeights.x * skinnedBones[skBoneOffset + InBoneIndices.x].modelToModelMatrix
+			+ InBoneWeights.y * skinnedBones[skBoneOffset + InBoneIndices.y].modelToModelMatrix
+			+ InBoneWeights.z * skinnedBones[skBoneOffset + InBoneIndices.z].modelToModelMatrix
+			+ InBoneWeights.w * skinnedBones[skBoneOffset + InBoneIndices.w].modelToModelMatrix;
+	}
 
 	DiffuseTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Diffuse.AtlasLayer);
 	DiffuseTexcoordAtlas.xy *= vec2(material.Diffuse.AtlasNormSize);
@@ -117,7 +121,7 @@ void main()
 	FragPosWorldSpace = vec3(instance.World * posLocal);
 	DiffuseColor = material.DiffuseColor;
 
-	OutTripleSixty = skeletons[0].globBoneOffset;
+	Out666 = skeletons[0].globBoneOffset;
 
 	mat3 normalMatrix = transpose(inverse(mat3(instance.World)));
 	vec3 N = normalize(normalMatrix * Normal);
