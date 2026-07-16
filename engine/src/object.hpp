@@ -53,6 +53,9 @@ namespace triton
 		cTag _id;
 
 	public:
+
+		iObject() = default; // TODO: remove this <<<<<-----
+
 		explicit iObject(cContext* context) : _context(context) {}
 		virtual ~iObject() = default;
 
