@@ -10,10 +10,15 @@ namespace triton
 	class SBufferView
 	{
 	public:
-		SBufferView(TValue* elements, types::usize byteSize) : _elements(elements), _byteSize(byteSize), _elementCount(byteSize / sizeof(TValue)) {}
+		SBufferView(
+			TValue* elements,
+			types::usize byteSize
+		) : elements(elements),
+			byteSize(byteSize),
+			elementCount(byteSize / sizeof(TValue)) {}
 
-		TValue* _elements = nullptr;
-		types::usize _byteSize = 0;
-		types::usize _elementCount = 0;
+		TValue* elements = nullptr;
+		types::usize byteSize = 0;
+		types::usize elementCount = 0;
 	};
 }
