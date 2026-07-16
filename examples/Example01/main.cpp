@@ -6,7 +6,6 @@
 #include "components.hpp"
 #include "graphics.hpp"
 #include "vertex.hpp"
-#include "render_batch.hpp"
 #include "camera.hpp"
 #include "game_object_subsystem.hpp"
 #include "texture_subsystem.hpp"
@@ -28,6 +27,8 @@ class cMyApplication final : public IApplication
     HModel3D m3d, m3d_2;
     XDynamicArray<int>* da;
     XHandleAllocator<SSlot, HSkinnedBone, XDynamicArray<SSkinnedBoneData>, SSkinnedBoneData>* ha;
+    SGameObjectData* god;
+    HRenderInstance ri;
 
 public:
     cMyApplication(cContext* context, const sCapabilities* caps) : IApplication(context, caps)
@@ -45,8 +46,8 @@ public:
         );
 
         HCamera cameraHandle = *_context->GetSubsystem<cGraphics>()->CreateCamera();
-        XCamera* camera = _context->GetSubsystem<cGraphics>()->GetCamera(cameraHandle);
-        camera->_worldPosition = cVector3(0.0f, 1.0f, 1.0f);
+        XCamera& camera = _context->GetSubsystem<cGraphics>()->GetCamera(cameraHandle);
+        camera._worldPosition = cVector3(0.0f, 1.0f, 1.0f);
         _context->GetSubsystem<cGraphics>()->GetOpaqueRenderPass()->SetCamera(cameraHandle);
         
         /*m3d = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModel(
@@ -72,17 +73,70 @@ public:
         triVerts[1].position = cVector3(0.0f, 1.0f, 0.0f);
         triVerts[2].position = cVector3(1.0f, -1.0f, 0.0f);
         u32 triInds[3] = { 0, 1, 2 };
+
+        SVertex quadVerts[4];
+        quadVerts[0].position = cVector3(-1.0f, -1.0f, 0.0f);
+        quadVerts[1].position = cVector3(-1.0f, 1.0f, 0.0f);
+        quadVerts[2].position = cVector3(1.0f, 1.0f, 0.0f);
+        quadVerts[3].position = cVector3(1.0f, -1.0f, 0.0f);
+        u32 quadInds[6] = { 0, 1, 2, 0, 2, 3 };
+
         XGameObjectSubsystem* gos = _context->GetSubsystem<XGameObjectSubsystem>();
+        XStaticInstanceStorage& sis = _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage();
+        XDynamicInstanceStorage& dis = _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage();
+
         HGameObject triObj1 = gos->CreateGameObject("MyTriangle1");
-        gos->AddRenderable(
+        SGameObjectData& triGod1 = gos->Get(triObj1);
+        HRenderInstance triRi1 = gos->SetRenderable(
             triObj1,
             ERenderInstanceMotionType::Static,
             EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
             (u8*)&triVerts[0],
-            3,
+            sizeof(SVertex) * 3,
             (u8*)&triInds[0],
-            3
+            sizeof(u32) * 3
         );
+        triGod1.worldPosition = cVector3(-1.0f, 0.0f, 0.0f);
+        triGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
+        //triGod1.scale = cVector3(0.25f * 0.5f);
+        sis.UpdateTransform(triRi1);
+
+        HGameObject quadObj1 = gos->CreateGameObject("MyQuad1");
+        SGameObjectData& quadGod1 = gos->Get(quadObj1);
+        god = &quadGod1;
+        HRenderInstance quadRi1 = gos->SetRenderable(
+            quadObj1,
+            ERenderInstanceMotionType::Dynamic,
+            EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
+            (u8*)&quadVerts[0],
+            sizeof(SVertex) * 4,
+            (u8*)&quadInds[0],
+            sizeof(u32) * 6
+        );
+        ri = quadRi1;
+        quadGod1.worldPosition = cVector3(1.0f, 0.0f, 0.0f);
+        quadGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
+        //quadGod1.scale = cVector3(0.5f * 0.5f);
+        dis.UpdateTransform(quadRi1);
+
+        HGameObject triObj2 = gos->CreateGameObject("MyTriangle2");
+        SGameObjectData& triGod2 = gos->Get(triObj2);
+        SRenderInstanceData& triRid1 =
+            _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage().Get(triRi1);
+        HRenderInstance triRi2 = gos->SetRenderable(
+            triObj2,
+            ERenderInstanceMotionType::Static,
+            EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
+            (u8*)&triVerts[0],
+            sizeof(SVertex) * 3,
+            (u8*)&triInds[0],
+            sizeof(u32) * 3,
+            triRid1.batch
+        );
+        triGod2.worldPosition = cVector3(3.0f, 0.0f, 0.0f);
+        triGod2.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
+        //triGod2.scale = cVector3(0.75f * 0.5f);
+        sis.UpdateTransform(triRi2);
 
         /*XTextureSubsystem* ts = _context->GetSubsystem<XTextureSubsystem>();
         HTexture t1 = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/dirt.png");
@@ -112,6 +166,11 @@ public:
 
     virtual void Update() override final
     {
+        //XDynamicInstanceStorage& dis = _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage();
+        //god->worldPosition._vec.y += 0.01f;
+        //god->worldRotation._vec.z += 0.01f;
+        //dis.UpdateTransform(ri);
+
         /*auto h0 = ha->Create();
         ha->Destroy(h0);*/
 
