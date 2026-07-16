@@ -52,7 +52,7 @@ triton::SSkinData triton::XSkinningSubsystem::CreateSkin(
         // Sync with GPU
         SGPUSkinnedBoneLayout gpusbl;
         gpusbl.modelMatrix = sbd.modelMatrix;
-        _uploader->WriteField<SGPUSkinnedBoneLayout>(
+        _uploader->WriteFieldToStaging<SGPUSkinnedBoneLayout>(
             skinnedBones[boneIndex],
             0,
             gpusbl
@@ -83,7 +83,7 @@ void triton::XSkinningSubsystem::Init()
         4
     ));
     _skinnedBoneBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    _uploader = _context->Create<XUploader<XSkinningSubsystem, HSkinnedBone, SGPUSkinnedBoneLayout>>(
+    _uploader = _context->Create<XUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>>(
         _context,
         _skinnedBoneBuffer,
         caps->maxSkinnedBoneCount,
@@ -93,7 +93,7 @@ void triton::XSkinningSubsystem::Init()
 
 void triton::XSkinningSubsystem::Free()
 {
-    _context->Destroy<XUploader<XSkinningSubsystem, HSkinnedBone, SGPUSkinnedBoneLayout>>(_uploader);
+    _context->Destroy<XUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>>(_uploader);
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
@@ -106,7 +106,6 @@ void triton::XSkinningSubsystem::Free()
 
 void triton::XSkinningSubsystem::Update()
 {
-    _uploader->Update();
 }
 
 void triton::XSkinningSubsystem::CalculateBone(

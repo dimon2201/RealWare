@@ -8,13 +8,12 @@
 #include "handles.hpp"
 #include "skinned_bone_data.hpp"
 #include "animation.hpp"
+#include "uploader.hpp"
 #include "types.hpp"
 
 namespace triton
 {
 	class cBuffer;
-	template <typename HSkinnedBone, typename XSkinningSubsystem, typename SSkinnedBoneGPULayout>
-	class XUploader;
 	struct SBone;
 	struct SFrame;
 
@@ -35,7 +34,7 @@ namespace triton
 		TRITON_SUBSYSTEM
 
 		cBuffer* _skinnedBoneBuffer = nullptr;
-		XUploader<XSkinningSubsystem, HSkinnedBone, SGPUSkinnedBoneLayout>* _uploader = nullptr;
+		XUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>* _uploader = nullptr;
 
 	public:
 		// TODO: create separate structure for skin instead of std::vector<HSkinnedBone>
