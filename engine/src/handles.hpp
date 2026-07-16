@@ -17,6 +17,4 @@ namespace triton
 	using HAnimation = SHandle;
 	using HSkeleton = SHandle;
 	using HSkinnedBone = SHandle;
-	using HStaticRenderInstance = SHandle;
-	using HDynamicRenderInstance = SHandle;
 }
