@@ -1,12 +1,12 @@
 // game_object_subsystem.cpp
 
 #include "game_object_subsystem.hpp"
-#include "batch_storage.hpp"
 #include "graphics.hpp"
 #include "material_subsystem.hpp"
 #include "model3d_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "math.hpp"
+#include "static_instance_storage.hpp"
 
 using namespace types;
 
@@ -20,37 +20,54 @@ void triton::XGameObjectSubsystem::Free()
 
 void triton::XGameObjectSubsystem::Update()
 {
-	WriteDirty();
 }
 
-void triton::XGameObjectSubsystem::AddRenderable(
+triton::HRenderInstance triton::XGameObjectSubsystem::SetRenderable(
 	const HGameObject& gameObject,
 	ERenderInstanceMotionType motionType,
 	EGraphicsBufferFormat format,
 	const types::u8* vertexBytes,
 	types::usize vertexBytesCount,
 	const types::u8* indexBytes,
-	types::usize indexBytesCount
+	types::usize indexBytesCount,
+	const std::optional<HBatch>& existingBatch
 )
 {
-	SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
-		format,
-		vertexBytes,
-		vertexBytesCount,
-		indexBytes,
-		indexBytesCount
-	);
-	HBatch batchHandle = *_context->GetSubsystem<cGraphics>()->CreateBatch(geometry);
-	SBatchInstance bi = *_context->GetSubsystem<cGraphics>()->CreateInstance(
-		motionType,
-		batchHandle
-	);
-	SRenderInstance ri;
-	
-	SGameObject& go = *_objects->Get(gameObject);
-	go.renderable = bi;
+	SGameObjectData& go = _objects->Get(gameObject);
+	if (go.motionType == ERenderInstanceMotionType::Static)
+	{
+		if (_context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage().Exists(go.staticRenderInstance))
+			return {};
+	}
+	else if (go.motionType == ERenderInstanceMotionType::Dynamic)
+	{
+		if (_context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage().Exists(go.dynamicRenderInstance))
+			return {};
+	}
 
-	AddDirty(bi, ri, go.worldPosition, go.worldRotation);
+	HBatch batch;
+	if (!existingBatch.has_value())
+	{
+		SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
+			format,
+			vertexBytes,
+			vertexBytesCount,
+			indexBytes,
+			indexBytesCount
+		);
+		batch = *_context->GetSubsystem<XBatchSubsystem>()->Create(motionType, geometry);
+	}
+	else
+	{
+		batch = *existingBatch;
+	}
+	
+	if (motionType == ERenderInstanceMotionType::Static)
+		return _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch, gameObject);
+	else if (motionType == ERenderInstanceMotionType::Dynamic)
+		return _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch, gameObject);
+	else
+		return HRenderInstance();
 }
 
 void triton::XGameObjectSubsystem::AddRenderable(
@@ -68,74 +85,6 @@ void triton::XGameObjectSubsystem::AddRenderable(
 		(u8*)m3dd.indexData,
 		m3dd.indexCount * sizeof(u32)
 	);
-	HBatch batchHandle = *_context->GetSubsystem<cGraphics>()->CreateBatch(geometry);
-	SBatchInstance bi = *_context->GetSubsystem<cGraphics>()->CreateInstance(
-		usage,
-		batchHandle
-	);
 
-	SRenderInstance ri;
-	ri._skeletonIndex = _context->GetSubsystem<XSkeletonSubsystem>()->GetBufferIndex(m3dd.skeleton);
-
-	SGameObject& go = Get(gameObject);
-
-	AddDirty(go.renderable, {}, go.worldPosition, go.worldRotation);
-}
-
-void triton::XGameObjectSubsystem::SetWorldPosition(const HGameObject& gameObject, const cVector3& worldPosition)
-{
-	SGameObject& go = *_objects->Get(gameObject);
-	go.worldPosition = worldPosition;
-
-	AddDirty(go.renderable, {}, go.worldPosition, go.worldRotation);
-}
-
-void triton::XGameObjectSubsystem::SetWorldRotation(const HGameObject& gameObject, const cVector3& worldRotation)
-{
-	SGameObject& go = *_objects->Get(gameObject);
-	go.worldRotation = worldRotation;
-
-	AddDirty(go.renderable, {}, go.worldPosition, go.worldRotation);
-}
-
-void triton::XGameObjectSubsystem::SetMaterial(const HGameObject& gameObject, const HMaterial& material)
-{
-	SGameObject& go = *_objects->Get(gameObject);
-	go.material = material;
-
-	SRenderInstance ri;
-	ri._materialIndex = material._indexInArray;
-
-	AddDirty(go.renderable, ri, go.worldPosition, go.worldRotation);
-}
-
-void triton::XGameObjectSubsystem::AddDirty(const SBatchInstance& batchInstance, const SRenderInstance& renderInstance, const cVector3& worldPosition, const cVector3& worldRotation)
-{
-	SDirtyBufferItem dbi;
-	dbi.renderable = batchInstance;
-	dbi.renderInstance = renderInstance;
-	// TODO: encapsulate GLM code to proper math-related backend
-	glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(worldRotation.GetX()), glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(worldRotation.GetY()), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), glm::radians(worldRotation.GetZ()), glm::vec3(0.0f, 0.0f, 1.0f));
-	dbi.renderInstance._world =
-		cMatrix4(
-			glm::translate(glm::mat4(1.0f), glm::vec3(worldPosition.GetX(), worldPosition.GetY(), worldPosition.GetZ())) *
-			rotX * rotY * rotZ
-		);
-	_dirtyBuffer.push_back(dbi);
-}
-
-void triton::XGameObjectSubsystem::WriteDirty()
-{
-	if (!_dirtyBuffer.empty())
-	{
-		for (auto& item : _dirtyBuffer)
-		{
-			// TODO: make batch storage as separate subsystem
-			XRenderBatch* batch = _context->GetSubsystem<cGraphics>()->_batchStorage->Get(item.renderable.batch);
-			batch->Set(item.renderable, item.renderInstance);
-		}
-		_dirtyBuffer.clear();
-	}
+	SGameObjectData& go = Get(gameObject);
 }

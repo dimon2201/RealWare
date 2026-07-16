@@ -17,18 +17,10 @@ namespace triton
     class cVector3;
     struct SBatchInstance;
 
-    struct SDirtyBufferItem
-    {
-        SBatchInstance renderable;
-        SRenderInstance renderInstance;
-    };
-
-    class XGameObjectSubsystem : public ISubsystem<HGameObject, SGameObject, XLinearArray<SGameObject>>
+    class XGameObjectSubsystem : public ISubsystem<HGameObject, SGameObjectData, XLinearArray<SGameObjectData>>
     {
         TRITON_OBJECT(XGameObjectSubsystem)
         TRITON_SUBSYSTEM
-
-        std::vector<SDirtyBufferItem> _dirtyBuffer = {};
 
     public:
         inline HGameObject CreateGameObject(const std::string& name)
@@ -42,7 +34,17 @@ namespace triton
         void Init() override;
         void Free() override;
         void Update() override;
-        void AddRenderable(const HGameObject& gameObject, ERenderInstanceMotionType usage, EGraphicsBufferFormat format, const types::u8* vertexBytes, types::usize vertexBytesCount, const types::u8* indexBytes, types::usize indexBytesCount);
+
+        HRenderInstance SetRenderable(
+            const HGameObject& gameObject,
+            ERenderInstanceMotionType usage,
+            EGraphicsBufferFormat format,
+            const types::u8* vertexBytes,
+            types::usize vertexBytesCount,
+            const types::u8* indexBytes,
+            types::usize indexBytesCount,
+            const std::optional<HBatch>& existingBatch = std::nullopt
+        );
         
         void AddRenderable(
             const HGameObject& gameObject,
@@ -50,12 +52,9 @@ namespace triton
             const HModel3D& model
         );
         
-        void SetWorldPosition(const HGameObject& gameObject, const cVector3& worldPosition);
-        void SetWorldRotation(const HGameObject& gameObject, const cVector3& worldRotation);
-        void SetMaterial(const HGameObject& gameObject, const HMaterial& material);
-
-    private:
-        void AddDirty(const SBatchInstance& batchInstance, const SRenderInstance& renderInstance, const cVector3& worldPosition, const cVector3& worldRotation);
-        void WriteDirty();
+        void SetMaterial(
+            const HGameObject& gameObject,
+            const HMaterial& material
+        );
     };
 }
