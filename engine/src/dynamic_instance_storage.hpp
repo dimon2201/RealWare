@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "storage.hpp"
 #include "render_instance.hpp"
 #include "handles.hpp"
 #include "uploader.hpp"
@@ -12,26 +11,22 @@ namespace triton
 {
 	class cBuffer;
 
-	struct SDynamicRenderInstance
-	{
-		ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
-		HBatch batch;
-		HRenderInstance instance;
-	};
-
-	struct SGPUDynamicRenderInstanceLayout final : public SRenderInstance {};
-
-	class XDynamicInstanceStorage : public IStorage<HDynamicRenderInstance, SDynamicRenderInstance, XLinearArray<SDynamicRenderInstance>>
+	class XDynamicInstanceStorage : public XUploader<SRenderInstanceData, HRenderInstance, XLinearArray<SRenderInstanceData>, SGPURenderInstanceLayout>
 	{
 		TRITON_OBJECT(XDynamicInstanceStorage)
-		TRITON_STORAGE
 
-		cBuffer* _dynamicInstanceBuffer = nullptr;
-		XUploader<XDynamicInstanceStorage, HDynamicRenderInstance, SGPUDynamicRenderInstanceLayout>* _uploader = nullptr;
-	
 	public:
-		HDynamicRenderInstance CreateDynamicInstance(const HBatch& batch);
+		explicit XDynamicInstanceStorage(
+			cContext* context,
+			cGPUResource* resource,
+			types::usize stagingBufferElementCount,
+			types::boolean bNeedsPersistentGpuWrite
+		) : XUploader(context, resource, stagingBufferElementCount, bNeedsPersistentGpuWrite) {}
 
-		void Update() override;
+		HRenderInstance CreateDynamicInstance(const HBatch& batch);
+
+		void DestroyDynamicInstance(const HRenderInstance& instance);
+
+		void UpdateTransform(const HRenderInstance& instance);
 	};
 }
