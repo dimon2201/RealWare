@@ -19,7 +19,6 @@ triton::XMaterialSubsystem::XMaterialSubsystem(cContext* context)
           K_FALSE
       )
 {
-    auto p = this;
     const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetCapabilities();
 
     XRenderSubsystem* renderSubsystem = context->GetSubsystem<XRenderSubsystem>();

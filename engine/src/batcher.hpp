@@ -12,6 +12,7 @@
 #include "static_instance_storage.hpp"
 #include "dynamic_instance_storage.hpp"
 #include "material_subsystem.hpp"
+#include "skeleton_subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -132,7 +133,8 @@ namespace triton
                 SGPURenderInstanceLayout gpuElementData;
                 gpuElementData._use2D = 0.0f;
                 gpuElementData._world = rid.worldMatrix;
-                gpuElementData._skeletonIndex = -1;
+                gpuElementData._skeletonIndex =
+                    _context->GetSubsystem<XSkeletonSubsystem>()->GetHandleBufferIndex(rid.skeleton);
                 gpuElementData._materialIndex =
                     _context->GetSubsystem<XMaterialSubsystem>()->GetHandleBufferIndex(rid.material);
 

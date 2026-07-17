@@ -47,10 +47,12 @@ namespace triton
             const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
         
-        void AddRenderable(
+        HRenderInstance SetRenderable(
             const HGameObject& gameObject,
-            ERenderInstanceMotionType usage,
-            const HModel3D& model
+            ERenderInstanceMotionType motionType,
+            const HModel3D& model,
+            const std::optional<HBatch>& existingBatch = std::nullopt,
+            const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
         
         void SetMaterial(

@@ -23,7 +23,7 @@ namespace triton
     class XAnimationSubsystem;
     struct SBone;
     struct SAnimation;
-    struct SSkeleton;
+    struct SSkeletonData;
 
     struct SModel3DMaterialData final
     {

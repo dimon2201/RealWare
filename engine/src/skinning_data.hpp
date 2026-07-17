@@ -6,7 +6,12 @@
 
 namespace triton
 {
-	struct SSkinnedBoneData
+	struct SGPUSkinningLayout
+	{
+		cMatrix4 modelMatrix = cMatrix4();
+	};
+
+	struct SSkinningData
 	{
 		cMatrix4 modelMatrix = cMatrix4();
 	};

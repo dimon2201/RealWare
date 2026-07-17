@@ -14,8 +14,30 @@ namespace triton
 	{
 		static constexpr types::usize kInvalidValue = SIZE_MAX;
 
-		types::usize _slotIndex = kInvalidValue;
-		types::usize _indexInArray = kInvalidValue;
-		types::usize _generation = kInvalidValue;
+		SHandle()
+		{
+			Invalidate();
+		}
+
+		void Invalidate()
+		{
+			_slotIndex = kInvalidValue;
+			_indexInArray = kInvalidValue;
+			_generation = kInvalidValue;
+		}
+
+		types::boolean IsInvalid() const
+		{
+			return (_slotIndex == kInvalidValue &&
+				   _indexInArray == kInvalidValue &&
+				   _generation == kInvalidValue)
+					== true ? types::K_TRUE : types::K_FALSE;
+		}
+
+		types::usize _slotIndex;
+		types::usize _indexInArray;
+		types::usize _generation;
 	};
+
+	struct SInvalidHandle : SHandle {};
 }

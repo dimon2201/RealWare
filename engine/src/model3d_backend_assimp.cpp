@@ -306,7 +306,10 @@ void triton::XModel3DBackendAssimp::CreateMaterials(const std::string& modelFold
 void triton::XModel3DBackendAssimp::SetAbsoluteMaterialIndices(SVertex*& vertexData, usize vertexCount, const std::vector<HMaterial>& modelMaterials)
 {
     for (usize i = 0; i < vertexCount; i++)
-        vertexData[i].materialIndex = modelMaterials.at(vertexData[i].materialIndex)._indexInArray;
+        vertexData[i].materialIndex =
+            _context->GetSubsystem<XMaterialSubsystem>()->GetHandleBufferIndex(
+                modelMaterials.at(vertexData[i].materialIndex)
+           );
 }
 
 void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bitangents)
@@ -476,7 +479,6 @@ void triton::XModel3DBackendAssimp::CreateSkeleton(
 {
     modelSkeleton = skeletonSubsystem->CreateSkeleton(
         bones,
-        0,
         ConvertMatrix(accumulatedRootTransform)
     );
 }

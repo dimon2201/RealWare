@@ -49,19 +49,19 @@ struct Material
 
 struct Skeleton
 {
-	uint globBoneOffset;
+	uint globSkinnedBoneBufferOffset;
 };
 
-struct SkinnedBone
+struct Skinning
 {
-	mat4 modelToModelMatrix;
+	mat4 modelMatrix;
 };
 
 layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[1024]; };
 layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[1024]; };
 layout(std430, binding = 2) buffer MaterialBuffer { Material materials[]; };
 layout(std430, binding = 3) buffer SkeletonBuffer { Skeleton skeletons[]; };
-layout(std430, binding = 4) buffer SkinnedBoneBuffer { SkinnedBone skinnedBones[]; };
+layout(std430, binding = 4) buffer SkinningBuffer { Skinning skinning[]; };
 
 void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
 {
@@ -92,15 +92,15 @@ void main()
 	else
 		material = materials[InMaterialIndex];
 	
-	uint skBoneOffset = skeletons[instance.SkeletonIndex].globBoneOffset;
+	uint skBoneOffset = skeletons[instance.SkeletonIndex].globSkinnedBoneBufferOffset;
 	mat4 skinMatrix = mat4(1.0f);
-	if (instance.SkeletonIndex > -1)
+	if (instance.SkeletonIndex != -1)
 	{
 		skinMatrix = 
-			InBoneWeights.x * skinnedBones[skBoneOffset + InBoneIndices.x].modelToModelMatrix
-			+ InBoneWeights.y * skinnedBones[skBoneOffset + InBoneIndices.y].modelToModelMatrix
-			+ InBoneWeights.z * skinnedBones[skBoneOffset + InBoneIndices.z].modelToModelMatrix
-			+ InBoneWeights.w * skinnedBones[skBoneOffset + InBoneIndices.w].modelToModelMatrix;
+			InBoneWeights.x * skinning[skBoneOffset + InBoneIndices.x].modelMatrix
+			+ InBoneWeights.y * skinning[skBoneOffset + InBoneIndices.y].modelMatrix
+			+ InBoneWeights.z * skinning[skBoneOffset + InBoneIndices.z].modelMatrix
+			+ InBoneWeights.w * skinning[skBoneOffset + InBoneIndices.w].modelMatrix;
 	}
 
 	DiffuseTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Diffuse.AtlasLayer);
@@ -121,7 +121,7 @@ void main()
 	FragPosWorldSpace = vec3(instance.World * posLocal);
 	DiffuseColor = material.DiffuseColor;
 
-	Out666 = skeletons[0].globBoneOffset;
+	Out666 = skeletons[0].globSkinnedBoneBufferOffset;
 
 	mat3 normalMatrix = transpose(inverse(mat3(instance.World)));
 	vec3 N = normalize(normalMatrix * Normal);

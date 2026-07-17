@@ -6,49 +6,18 @@
 
 using namespace types;
 
-triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(
-    const std::vector<SBone>& bones,
-    usize globSkinnedBoneOffset,
-    const cMatrix4& accumulatedRootTransform
-)
+triton::XSkeletonSubsystem::XSkeletonSubsystem(cContext* context)
+    : ISubsys(context),
+      XSkeletonStorage(
+        context,
+        (cGPUResource**)&_skeletonGPUBuffer,
+        context->GetSubsystem<cEngine>()->GetCapabilities()->maxSkeletonCount,
+        K_FALSE
+    )
 {
-    HSkeleton skeleton = Create();
-    SSkeleton& s = Get(skeleton);
-    s.accumulatedRootTransform = accumulatedRootTransform;
-    s.bones = bones;
-    s.globSkinnedBoneOffset = globSkinnedBoneOffset;
+    const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetCapabilities();
 
-    _uploader->WriteFieldToStaging<decltype(s.globSkinnedBoneOffset)>(
-        skeleton,
-        0,
-        s.globSkinnedBoneOffset
-    );
-
-    return skeleton;
-}
-
-void triton::XSkeletonSubsystem::DestroySkeleton(const HSkeleton& skeleton)
-{
-    Destroy(skeleton);
-}
-
-void triton::XSkeletonSubsystem::SetSkin(const HSkeleton& skeleton, const SSkinData& skin)
-{
-    SSkeleton& s = Get(skeleton);
-    s.globSkinnedBoneOffset = skin.globSkinnedBoneOffset;
-
-    _uploader->WriteFieldToStaging<decltype(s.globSkinnedBoneOffset)>(
-        skeleton,
-        0,
-        s.globSkinnedBoneOffset
-    );
-}
-
-void triton::XSkeletonSubsystem::Init()
-{
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
-    const sCapabilities* caps = app->GetCapabilities();
+    XRenderSubsystem* renderSubsystem = context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
@@ -56,28 +25,71 @@ void triton::XSkeletonSubsystem::Init()
         caps->maxSkeletonCount * sizeof(SGPUSkeletonLayout),
         3
     ));
-    _skeletonBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    _uploader = _context->Create<CUploader<SSkeleton, HSkeleton, XLinearArray<SSkeleton>, SGPUSkeletonLayout>>(
-        _context,
-        (cGPUResource**)&_skeletonBuffer,
-        caps->maxSkeletonCount,
-        K_FALSE
-    );
+    _skeletonGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
 }
 
-void triton::XSkeletonSubsystem::Free()
+triton::XSkeletonSubsystem::~XSkeletonSubsystem()
 {
-    _context->Destroy<CUploader<SSkeleton, HSkeleton, XLinearArray<SSkeleton>, SGPUSkeletonLayout>>(_uploader);
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_skeletonBuffer,
+        (cpuword)_skeletonGPUBuffer,
         0,
         0,
         0
     ));
 }
 
+triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(
+    const std::vector<SBone>& bones,
+    const cMatrix4& accumulatedRootTransform
+)
+{
+    HSkeleton skeleton = CHandleAllocator::Create();
+    SSkeletonData& s = CHandleAllocator::Get(skeleton);
+    s.accumulatedRootTransform = accumulatedRootTransform;
+    s.bones = bones;
+
+    return skeleton;
+}
+
+void triton::XSkeletonSubsystem::DestroySkeleton(const HSkeleton& skeleton)
+{
+    CHandleAllocator::Destroy(skeleton);
+}
+
+void triton::XSkeletonSubsystem::Init()
+{
+}
+
+void triton::XSkeletonSubsystem::Free()
+{
+}
+
 void triton::XSkeletonSubsystem::Update()
 {
+    UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+}
+
+void triton::XSkeletonSubsystem::SetSkin(const HSkeleton& skeleton, const SSkinData& skin)
+{
+    SSkeletonData& s = CHandleAllocator::Get(skeleton);
+    s.globSkinnedBoneBufferOffset = skin.globSkinnedBoneBufferOffset;
+
+    SGPUSkeletonLayout gsl = ConvertToGPULayout(skeleton);
+    WriteToStaging(
+        GetHandleBufferIndex(skeleton),
+        &gsl,
+        1
+    );
+}
+
+triton::SGPUSkeletonLayout triton::XSkeletonSubsystem::ConvertToGPULayout(const HSkeleton& skeleton)
+{
+    SSkeletonData& s = CHandleAllocator::Get(skeleton);
+
+    SGPUSkeletonLayout gsl;
+    gsl.globSkinnedBoneBufferOffset = s.globSkinnedBoneBufferOffset;
+
+    return gsl;
 }

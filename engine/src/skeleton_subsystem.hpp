@@ -5,31 +5,30 @@
 #include "handles.hpp"
 #include "skeleton.hpp"
 #include "subsystem.hpp"
+#include "skeleton_storage.hpp"
 #include "skinning_subsystem.hpp"
 #include "uploader.hpp"
 #include "types.hpp"
+
+#include "DELETE_THIS_FILE_ASAP.hpp"
 
 namespace triton
 {
 	class cBuffer;
 
-	struct SGPUSkeletonLayout
-	{
-		types::u32 globSkinnedBoneOffset = 0;
-	};
-
-	class XSkeletonSubsystem : public ISubsystem<HSkeleton, SSkeleton, XLinearArray<SSkeleton>>
+	class XSkeletonSubsystem : public ISubsys,
+							   public XSkeletonStorage
 	{
 		TRITON_OBJECT(XSkeletonSubsystem)
-		TRITON_SUBSYSTEM
-
-		cBuffer* _skeletonBuffer = nullptr;
-		CUploader<SSkeleton, HSkeleton, XLinearArray<SSkeleton>, SGPUSkeletonLayout>* _uploader = nullptr;
+		
+		cBuffer* _skeletonGPUBuffer = nullptr;
 
 	public:
+		explicit XSkeletonSubsystem(cContext* context);
+		~XSkeletonSubsystem() override;
+
 		HSkeleton CreateSkeleton(
 			const std::vector<SBone>& bones,
-			types::usize globSkinnedBoneOffset = 0,
 			const cMatrix4& accumulatedRootTransform = cMatrix4()
 		);
 
@@ -43,9 +42,12 @@ namespace triton
 
 		void Update() override;
 
-		inline cBuffer* GetSkeletonBuffer()
+		inline cBuffer& GetSkeletonGPUBuffer() const
 		{
-			return _skeletonBuffer;
+			return *_skeletonGPUBuffer;
 		}
+
+	private:
+		SGPUSkeletonLayout ConvertToGPULayout(const HSkeleton& skeleton);
 	};
 }

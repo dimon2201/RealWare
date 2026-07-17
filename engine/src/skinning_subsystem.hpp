@@ -6,10 +6,13 @@
 #include <vector>
 #include "subsystem.hpp"
 #include "handles.hpp"
-#include "skinned_bone_data.hpp"
+#include "skinning_data.hpp"
+#include "skinning_storage.hpp"
 #include "animation.hpp"
 #include "uploader.hpp"
 #include "types.hpp"
+
+#include "DELETE_THIS_FILE_ASAP.hpp"
 
 namespace triton
 {
@@ -17,26 +20,23 @@ namespace triton
 	struct SBone;
 	struct SFrame;
 
-	struct SGPUSkinnedBoneLayout
-	{
-		cMatrix4 modelMatrix = cMatrix4();
-	};
-
 	struct SSkinData
 	{
-		types::usize globSkinnedBoneOffset = 0;
-		std::vector<HSkinnedBone> skinnedBones = {};
+		types::usize globSkinnedBoneBufferOffset = 0;
+		std::vector<HSkinning> skinnedBones = {};
 	};
 
-	class XSkinningSubsystem : public ISubsystem<HSkinnedBone, SSkinnedBoneData, XLinearArray<SSkinnedBoneData>>
+	class XSkinningSubsystem :	public ISubsys,
+								public XSkinningStorage
 	{
 		TRITON_OBJECT(XSkinningSubsystem)
-		TRITON_SUBSYSTEM
 
-		cBuffer* _skinnedBoneBuffer = nullptr;
-		CUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>* _uploader = nullptr;
+		cBuffer* _skinningGPUBuffer = nullptr;
 
 	public:
+		explicit XSkinningSubsystem(cContext* context);
+		~XSkinningSubsystem() override;
+
 		// TODO: create separate structure for skin instead of std::vector<HSkinnedBone>
 		SSkinData CreateSkin(
 			const HSkeleton& skeleton,
@@ -51,9 +51,9 @@ namespace triton
 
 		void Update() override;
 
-		inline cBuffer* GetSkinnedBoneBuffer()
+		inline cBuffer& GetSkinningGPUBuffer()
 		{
-			return _skinnedBoneBuffer;
+			return *_skinningGPUBuffer;
 		}
 
 	private:

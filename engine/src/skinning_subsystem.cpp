@@ -9,57 +9,91 @@
 #include "handles.hpp"
 #include "uploader.hpp"
 #include "context.hpp"
+#include "skinning_storage.hpp"
 
 using namespace types;
+
+triton::XSkinningSubsystem::XSkinningSubsystem(cContext* context)
+    : ISubsys(context),
+      XSkinningStorage(
+        context,
+        (cGPUResource**)&_skinningGPUBuffer,
+        context->GetSubsystem<cEngine>()->GetCapabilities()->maxSkinnedBoneCount,
+        K_FALSE
+    )
+{
+    const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetCapabilities();
+
+    XRenderSubsystem* renderSubsystem = context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxSkinnedBoneCount * sizeof(SGPUSkeletonLayout),
+        4
+    ));
+    _skinningGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
+}
+
+triton::XSkinningSubsystem::~XSkinningSubsystem()
+{
+    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_skinningGPUBuffer,
+        0,
+        0,
+        0
+    ));
+}
 
 triton::SSkinData triton::XSkinningSubsystem::CreateSkin(
     const HSkeleton& skeleton,
     const SFrame& frame
 )
 {
-    const SSkeleton& skeletonData = _context->GetSubsystem<XSkeletonSubsystem>()->Get(skeleton);
+    const SSkeletonData& skeletonData = _context->GetSubsystem<XSkeletonSubsystem>()->Get(skeleton);
     const usize boneCount = skeletonData.bones.size();
 
-    SSkinData sd = {};
-    sd.globSkinnedBoneOffset = GetBufferSize();
-
-    std::vector<HSkinnedBone> skinnedBones = {};
-    skinnedBones.resize(boneCount);
-
+    // Bone transform in Local space
     std::vector<cMatrix4> totalTransform = {};
     totalTransform.resize(boneCount);
-
-    // Bone transform in Local space
     for (usize boneIndex = 0; boneIndex < boneCount; ++boneIndex)
     {
         if (skeletonData.bones[boneIndex].localParentBoneIndex == -1)
             CalculateBone(skeletonData.bones, boneIndex, frame, totalTransform);
     }
 
+    // Record current skinned bone count in CHandleAllocator's array
+    SSkinData sd = {};
+    sd.globSkinnedBoneBufferOffset = GetSize();
+
     // Bone transform in Model space
+    std::vector<HSkinning> skinnedBones = {};
+    skinnedBones.resize(boneCount);
+    std::vector<SGPUSkinningLayout> gpuSkinnedBones = {};
+    gpuSkinnedBones.resize(boneCount);
     for (usize boneIndex = 0; boneIndex < boneCount; ++boneIndex)
     {
-        skinnedBones[boneIndex] = Create();
-
-        SSkinnedBoneData& sbd = Get(skinnedBones[boneIndex]);
-        sbd.modelMatrix =
+        skinnedBones[boneIndex] = Create(); // Reserve space for skinned bones in CHandleAllocator's array
+        SSkinningData& skd = Get(skinnedBones[boneIndex]);
+        skd.modelMatrix =
             skeletonData.accumulatedRootTransform *
             totalTransform[boneIndex] *
             skeletonData.bones[boneIndex].modelMatrix;
 
-        //sbd.modelMatrix = cMatrix4(glm::mat4(1.0f));
-
-        // Sync with GPU
-        SGPUSkinnedBoneLayout gpusbl;
-        gpusbl.modelMatrix = sbd.modelMatrix;
-        _uploader->WriteFieldToStaging<SGPUSkinnedBoneLayout>(
-            skinnedBones[boneIndex],
-            0,
-            gpusbl
-        );
+        gpuSkinnedBones[boneIndex].modelMatrix = skd.modelMatrix;
     }
-
     sd.skinnedBones = skinnedBones;
+
+    // Sync with GPU
+    SGPUSkinningLayout gsl;
+    gsl.modelMatrix = gsl.modelMatrix;
+    WriteToStaging(
+        GetHandleBufferIndex(skinnedBones[0]),
+        &gpuSkinnedBones.data()[0],
+        boneCount
+    );
 
     return sd;
 }
@@ -79,25 +113,18 @@ void triton::XSkinningSubsystem::Init()
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
-        caps->maxSkinnedBoneCount * sizeof(SGPUSkinnedBoneLayout),
+        caps->maxSkinnedBoneCount * sizeof(SGPUSkinningLayout),
         4
     ));
-    _skinnedBoneBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    _uploader = _context->Create<CUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>>(
-        _context,
-        (cGPUResource**)&_skinnedBoneBuffer,
-        caps->maxSkinnedBoneCount,
-        K_TRUE
-    );
+    _skinningGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
 }
 
 void triton::XSkinningSubsystem::Free()
 {
-    _context->Destroy<CUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>>(_uploader);
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_skinnedBoneBuffer,
+        (cpuword)_skinningGPUBuffer,
         0,
         0,
         0
@@ -106,6 +133,7 @@ void triton::XSkinningSubsystem::Free()
 
 void triton::XSkinningSubsystem::Update()
 {
+    UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
 }
 
 void triton::XSkinningSubsystem::CalculateBone(

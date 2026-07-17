@@ -42,7 +42,7 @@ triton::SFrame triton::XAnimationSubsystem::Evaluate(
 )
 {
     const SAnimation& a = Get(animation);
-    const SSkeleton& s = _context->GetSubsystem<XSkeletonSubsystem>()->Get(skeleton);
+    const SSkeletonData& s = _context->GetSubsystem<XSkeletonSubsystem>()->Get(skeleton);
     
     SFrame frame = {};
     frame.frameBones.resize(s.bones.size());

@@ -241,9 +241,12 @@ namespace triton
 			return _objects->GetByteSize();
 		}
 
-		inline types::usize GetHandleBufferIndex(const TCPUObjectHandle& handle) const
+		inline types::s32 GetHandleBufferIndex(const TCPUObjectHandle& handle) const
 		{
-			return handle._indexInArray;
+			if (handle.IsInvalid())
+				return -1;
+			else
+				return handle._indexInArray;
 		}
 	};
 }

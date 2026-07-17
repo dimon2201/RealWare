@@ -182,23 +182,23 @@ void triton::cGraphics::ExecutePasses()
 
     BindVertexIndexBuffers();
     BindMaterialBuffer();
-    BindSkeletonBuffer();
-    BindSkinnedBoneBuffer();
 
     _context->GetSubsystem<XMaterialSubsystem>()->GetMaterialGPUBuffer().Bind();
     _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceGPUBuffer().Bind();
     _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceGPUBuffer().Bind();
+    _context->GetSubsystem<XSkeletonSubsystem>()->GetSkeletonGPUBuffer().Bind();
+    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinningGPUBuffer().Bind();
 
     ExecuteDefaultPasses();
 
+    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinningGPUBuffer().Unbind();
+    _context->GetSubsystem<XSkeletonSubsystem>()->GetSkeletonGPUBuffer().Unbind();
     _context->GetSubsystem<XMaterialSubsystem>()->GetMaterialGPUBuffer().Unbind();
     _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceGPUBuffer().Unbind();
     _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceGPUBuffer().Unbind();
 
     UnbindVertexIndexBuffers();
     UnbindMaterialBuffer();
-    UnbindSkeletonBuffer();
-    UnbindSkinnedBoneBuffer();
 }
 
 triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
@@ -1232,16 +1232,6 @@ void triton::cGraphics::BindMaterialBuffer()
     _materialBuffer->Bind();
 }
 
-void triton::cGraphics::BindSkeletonBuffer()
-{
-    _context->GetSubsystem<XSkeletonSubsystem>()->GetSkeletonBuffer()->Bind();
-}
-
-void triton::cGraphics::BindSkinnedBoneBuffer()
-{
-    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBoneBuffer()->Bind();
-}
-
 void triton::cGraphics::UnbindVertexIndexBuffers()
 {
     _geometryStorage->GetVertexBuffer()->Unbind();
@@ -1251,16 +1241,6 @@ void triton::cGraphics::UnbindVertexIndexBuffers()
 void triton::cGraphics::UnbindMaterialBuffer()
 {
     _materialBuffer->Unbind();
-}
-
-void triton::cGraphics::UnbindSkeletonBuffer()
-{
-    _context->GetSubsystem<XSkeletonSubsystem>()->GetSkeletonBuffer()->Unbind();
-}
-
-void triton::cGraphics::UnbindSkinnedBoneBuffer()
-{
-    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBoneBuffer()->Unbind();
 }
 
 void triton::cGraphics::ExecuteDefaultPasses()

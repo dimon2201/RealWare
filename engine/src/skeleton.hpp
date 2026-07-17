@@ -8,9 +8,14 @@
 
 namespace triton
 {
-	struct SSkeleton
+	struct SGPUSkeletonLayout
 	{
-		types::u32 globSkinnedBoneOffset = 0;
+		types::u32 globSkinnedBoneBufferOffset;
+	};
+
+	struct SSkeletonData
+	{
+		types::u32 globSkinnedBoneBufferOffset = 0;
 		cMatrix4 accumulatedRootTransform = cMatrix4();
 		std::vector<SBone> bones = {};
 	};

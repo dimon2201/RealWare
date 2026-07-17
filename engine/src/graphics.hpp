@@ -207,12 +207,8 @@ namespace triton
         void DestroyCameraAllocator();
         void BindVertexIndexBuffers();
         void BindMaterialBuffer();
-        void BindSkeletonBuffer();
-        void BindSkinnedBoneBuffer();
         void UnbindVertexIndexBuffers();
         void UnbindMaterialBuffer();
-        void UnbindSkeletonBuffer();
-        void UnbindSkinnedBoneBuffer();
         void ExecuteDefaultPasses();
 
 	public:

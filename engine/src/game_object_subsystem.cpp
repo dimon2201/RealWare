@@ -83,21 +83,73 @@ triton::HRenderInstance triton::XGameObjectSubsystem::SetRenderable(
 	return ri;
 }
 
-void triton::XGameObjectSubsystem::AddRenderable(
+triton::HRenderInstance triton::XGameObjectSubsystem::SetRenderable(
 	const HGameObject& gameObject,
-	ERenderInstanceMotionType usage,
-	const HModel3D& model
+	ERenderInstanceMotionType motionType,
+	const HModel3D& model,
+	const std::optional<HBatch>& existingBatch,
+	const std::optional<HMaterial>& existingMaterial
 )
 {
-	SModel3DData& m3dd = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
-
-	SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
-		EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
-		(u8*)m3dd.vertexData,
-		m3dd.vertexCount * sizeof(SVertex),
-		(u8*)m3dd.indexData,
-		m3dd.indexCount * sizeof(u32)
-	);
-
 	SGameObjectData& go = Get(gameObject);
+	if (go.motionType == ERenderInstanceMotionType::Static)
+	{
+		if (_context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage().Exists(go.staticRenderInstance))
+			return {};
+	}
+	else if (go.motionType == ERenderInstanceMotionType::Dynamic)
+	{
+		if (_context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage().Exists(go.dynamicRenderInstance))
+			return {};
+	}
+
+	SModel3DData& m3dd = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
+	
+	HBatch batch;
+	if (!existingBatch.has_value())
+	{
+		SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
+			EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
+			(u8*)m3dd.vertexData,
+			m3dd.vertexCount * sizeof(SVertex),
+			(u8*)m3dd.indexData,
+			m3dd.indexCount * sizeof(u32)
+		);
+		batch = *_context->GetSubsystem<XBatchSubsystem>()->Create(motionType, geometry);
+	}
+	else
+	{
+		batch = *existingBatch;
+	}
+
+	HRenderInstance ri;
+	
+	if (motionType == ERenderInstanceMotionType::Static)
+		ri = _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch, gameObject);
+	else if (motionType == ERenderInstanceMotionType::Dynamic)
+		ri = _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch, gameObject);
+	else
+		return HRenderInstance();
+
+	if (motionType == ERenderInstanceMotionType::Static)
+		_context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage().Get(ri).skeleton = m3dd.skeleton;
+	else if (motionType == ERenderInstanceMotionType::Dynamic)
+		_context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage().Get(ri).material = m3dd.skeleton;
+
+	if (existingMaterial.has_value())
+	{
+		if (motionType == ERenderInstanceMotionType::Static)
+			_context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage().Get(ri).material = *existingMaterial;
+		else if (motionType == ERenderInstanceMotionType::Dynamic)
+			_context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage().Get(ri).material = *existingMaterial;
+	}
+	else
+	{
+		if (motionType == ERenderInstanceMotionType::Static)
+			_context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage().Get(ri).material.Invalidate();
+		else if (motionType == ERenderInstanceMotionType::Dynamic)
+			_context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage().Get(ri).material.Invalidate();
+	}
+
+	return ri;
 }
