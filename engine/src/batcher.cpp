@@ -11,7 +11,21 @@
 
 using namespace types;
 
-triton::XBatchSubsystem::XBatchSubsystem(cContext* context) : iObject(context)
+triton::XBatchSubsystem::XBatchSubsystem(cContext* context)
+	:
+	ISubsys(context),
+	CUploader<SStaticRenderInstanceData, HStaticRenderInstance, XLinearArray<SStaticRenderInstanceData>, SGPUStaticRenderInstanceLayout>(
+		context,
+		(cGPUResource**)&_staticGPUBuffer,
+		context->GetSubsystem<cEngine>()->GetCapabilities()->maxRenderStaticInstanceCount,
+		K_FALSE
+	),
+	CUploader<SDynamicRenderInstanceData, HDynamicRenderInstance, XLinearArray<SDynamicRenderInstanceData>, SGPUDynamicRenderInstanceLayout>(
+		context,
+		(cGPUResource**)&_dynamicGPUBuffer,
+		context->GetSubsystem<cEngine>()->GetCapabilities()->maxRenderDynamicInstanceCount,
+		K_TRUE
+	)
 {
 	_batches = _context->Create<CHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>>(
 		_context,
@@ -28,7 +42,7 @@ triton::XBatchSubsystem::XBatchSubsystem(cContext* context) : iObject(context)
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
-        caps->maxRenderInstanceCount * sizeof(SGPURenderInstanceLayout),
+        caps->maxRenderStaticInstanceCount * sizeof(SGPUStaticRenderInstanceLayout),
         0
     ));
     _staticGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
@@ -36,23 +50,10 @@ triton::XBatchSubsystem::XBatchSubsystem(cContext* context) : iObject(context)
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
-        caps->maxRenderInstanceCount * sizeof(SGPURenderInstanceLayout),
+        caps->maxRenderDynamicInstanceCount * sizeof(SGPUDynamicRenderInstanceLayout),
         1
     ));
     _dynamicGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
-
-	_staticStorage = _context->Create<CStaticInstanceStorage>(
-		_context,
-		(cGPUResource**)&_staticGPUBuffer,
-		caps->maxRenderInstanceCount,
-		K_FALSE
-	);
-	_dynamicStorage = _context->Create<CDynamicInstanceStorage>(
-		_context,
-		(cGPUResource**)&_dynamicGPUBuffer,
-		caps->maxRenderInstanceCount,
-		K_TRUE
-	);
 
 	_tempStaticCounterBuffer = (u32*)_context->GetMemoryAllocator()->Allocate(
 		caps->maxRenderBatchCount * sizeof(u32),
@@ -68,9 +69,6 @@ triton::XBatchSubsystem::~XBatchSubsystem()
 {
 	_context->GetMemoryAllocator()->Deallocate(_tempDynamicCounterBuffer);
 	_context->GetMemoryAllocator()->Deallocate(_tempStaticCounterBuffer);
-
-	_context->Destroy<CDynamicInstanceStorage>(_dynamicStorage);
-	_context->Destroy<CStaticInstanceStorage>(_staticStorage);
 
 	XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
 	renderSubsystem->PushCommand(SRenderCommand(
@@ -109,15 +107,27 @@ void triton::XBatchSubsystem::Destroy(const HBatch& batch)
 	_batches->Destroy(batch);
 }
 
-triton::HRenderInstance triton::XBatchSubsystem::AddStaticInstance(
+triton::HStaticRenderInstance triton::XBatchSubsystem::AddStaticInstance(
 	const HBatch& batch,
 	const HGameObject& gameObject
 )
 {
-	HRenderInstance ri = _staticStorage->CreateStaticInstance(batch);
-	SRenderInstanceData& rid = _staticStorage->Get(ri);
+	HStaticRenderInstance ri = CUploader<
+		SStaticRenderInstanceData,
+		HStaticRenderInstance,
+		XLinearArray<SStaticRenderInstanceData>,
+		SGPUStaticRenderInstanceLayout
+	>::Create();
+
+	SStaticRenderInstanceData& rid = CUploader<
+		SStaticRenderInstanceData,
+		HStaticRenderInstance,
+		XLinearArray<SStaticRenderInstanceData>,
+		SGPUStaticRenderInstanceLayout
+	>::Get(ri);
 	rid.batch = batch;
 	rid.gameObject = gameObject;
+
 	SBatchData& bd = _batches->Get(batch);
 	bd.instanceCount += 1;
 
@@ -126,15 +136,27 @@ triton::HRenderInstance triton::XBatchSubsystem::AddStaticInstance(
 	return ri;
 }
 
-triton::HRenderInstance triton::XBatchSubsystem::AddDynamicInstance(
+triton::HDynamicRenderInstance triton::XBatchSubsystem::AddDynamicInstance(
 	const HBatch& batch,
 	const HGameObject& gameObject
 )
 {
-	HRenderInstance ri = _dynamicStorage->CreateDynamicInstance(batch);
-	SRenderInstanceData& rid = _dynamicStorage->Get(ri);
+	HDynamicRenderInstance ri = CUploader<
+		SDynamicRenderInstanceData,
+		HDynamicRenderInstance,
+		XLinearArray<SDynamicRenderInstanceData>,
+		SGPUDynamicRenderInstanceLayout
+	>::Create();
+
+	SDynamicRenderInstanceData& rid = CUploader<
+		SDynamicRenderInstanceData,
+		HDynamicRenderInstance,
+		XLinearArray<SDynamicRenderInstanceData>,
+		SGPUDynamicRenderInstanceLayout
+	>::Get(ri);
 	rid.batch = batch;
 	rid.gameObject = gameObject;
+
 	SBatchData& bd = _batches->Get(batch);
 	bd.instanceCount += 1;
 
@@ -143,24 +165,45 @@ triton::HRenderInstance triton::XBatchSubsystem::AddDynamicInstance(
 	return ri;
 }
 
-void triton::XBatchSubsystem::RemoveStaticInstance(const HRenderInstance& instance)
+void triton::XBatchSubsystem::RemoveStaticInstance(const HStaticRenderInstance& instance)
 {
-	SRenderInstanceData sri = _staticStorage->Get(instance);
+	SStaticRenderInstanceData sri = CUploader<
+		SStaticRenderInstanceData,
+		HStaticRenderInstance,
+		XLinearArray<SStaticRenderInstanceData>,
+		SGPUStaticRenderInstanceLayout
+	>::Get(instance);
+
 	SBatchData& bd = _batches->Get(sri.batch);
 	bd.instanceCount -= 1;
 
-	_staticStorage->DestroyStaticInstance(instance);
+	CUploader<
+		SStaticRenderInstanceData,
+		HStaticRenderInstance,
+		XLinearArray<SStaticRenderInstanceData>,
+		SGPUStaticRenderInstanceLayout
+	>::Destroy(instance);
 
 	MarkDirtyStatic();
 }
 
-void triton::XBatchSubsystem::RemoveDynamicInstance(const HRenderInstance& instance)
+void triton::XBatchSubsystem::RemoveDynamicInstance(const HDynamicRenderInstance& instance)
 {
-	SRenderInstanceData& rid = _dynamicStorage->Get(instance);
+	SDynamicRenderInstanceData& rid = CUploader<
+		SDynamicRenderInstanceData,
+		HDynamicRenderInstance,
+		XLinearArray<SDynamicRenderInstanceData>,
+		SGPUDynamicRenderInstanceLayout>::Get(instance);
+
 	SBatchData& bd = _batches->Get(rid.batch);
 	bd.instanceCount -= 1;
 
-	_dynamicStorage->DestroyDynamicInstance(instance);
+	CUploader<
+		SDynamicRenderInstanceData,
+		HDynamicRenderInstance,
+		XLinearArray<SDynamicRenderInstanceData>,
+		SGPUDynamicRenderInstanceLayout
+	>::Destroy(instance);
 
 	MarkDirtyDynamic();
 }
@@ -191,10 +234,9 @@ void triton::XBatchSubsystem::Update()
 	if (StaticBufferNeedsPacking())
 	{
 		RecalcBufferOffsetsAndResetCounters(_tempStaticCounterBuffer);
-		PackInstancesToStagingBuffer(
+		PackInstancesToStagingBuffers(
 			ERenderInstanceMotionType::Static,
-			_tempStaticCounterBuffer,
-			_staticStorage
+			_tempStaticCounterBuffer
 		);
 
 		_bStaticBufferNeedsPacking = K_FALSE;
@@ -202,17 +244,26 @@ void triton::XBatchSubsystem::Update()
 	if (DynamicBufferNeedsPacking())
 	{
 		RecalcBufferOffsetsAndResetCounters(_tempDynamicCounterBuffer);
-		PackInstancesToStagingBuffer(
+		PackInstancesToStagingBuffers(
 			ERenderInstanceMotionType::Dynamic,
-			_tempDynamicCounterBuffer,
-			_dynamicStorage
+			_tempDynamicCounterBuffer
 		);
 
 		_bDynamicBufferNeedsPacking = K_FALSE;
 	}
 
-	_staticStorage->UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
-	_dynamicStorage->UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+	CUploader<
+		SStaticRenderInstanceData,
+		HStaticRenderInstance,
+		XLinearArray<SStaticRenderInstanceData>,
+		SGPUStaticRenderInstanceLayout
+	>::UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+	CUploader<
+		SDynamicRenderInstanceData,
+		HDynamicRenderInstance,
+		XLinearArray<SDynamicRenderInstanceData>,
+		SGPUDynamicRenderInstanceLayout
+	>::UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
 }
 
 void triton::XBatchSubsystem::MarkDirtyStatic()
@@ -249,5 +300,95 @@ void triton::XBatchSubsystem::RecalcBufferOffsetsAndResetCounters(u32* counterBu
 		cumInstanceCount[(int)bd.motionType] += bd.instanceCount;
 
 		counterBuffer[batchIdx] = 0;
+	}
+}
+
+void triton::XBatchSubsystem::PackInstancesToStagingBuffers(
+	ERenderInstanceMotionType motionType,
+	types::u32* counterBuffer
+)
+{
+	// Static
+	const SBufferView<SStaticRenderInstanceData> bvStaticInstances =
+		CUploader<
+			SStaticRenderInstanceData,
+			HStaticRenderInstance,
+			XLinearArray<SStaticRenderInstanceData>,
+			SGPUStaticRenderInstanceLayout
+		>::GetData();
+	for (usize instanceIdx = 0; instanceIdx < bvStaticInstances.elementCount; instanceIdx++)
+	{
+		SStaticRenderInstanceData& rid = bvStaticInstances.elements[instanceIdx];
+		SBatchData& bd = _batches->Get(rid.batch);
+
+		if (bd.motionType != motionType)
+			continue;
+
+		SGPUStaticRenderInstanceLayout gpuElementData;
+		gpuElementData._use2D = 0.0f;
+		gpuElementData._world = rid.worldMatrix;
+		gpuElementData._skeletonIndex =
+			_context->GetSubsystem<XSkeletonSubsystem>()->GetHandleBufferIndex(rid.skeleton);
+		gpuElementData._materialIndex =
+			_context->GetSubsystem<XMaterialSubsystem>()->GetHandleBufferIndex(rid.material);
+
+		const usize batchIdx = _batches->GetHandleBufferIndex(rid.batch);
+		const usize globElementIndex =
+			bd.bufferOffset +
+			counterBuffer[batchIdx];
+		counterBuffer[batchIdx] += 1;
+
+		CUploader<
+			SStaticRenderInstanceData,
+			HStaticRenderInstance,
+			XLinearArray<SStaticRenderInstanceData>,
+			SGPUStaticRenderInstanceLayout
+		>::WriteToStaging(
+			globElementIndex,
+			&gpuElementData,
+			1
+		);
+	}
+
+	// Dynamic
+	const SBufferView<SDynamicRenderInstanceData> bvDynamicInstances =
+		CUploader<
+			SDynamicRenderInstanceData,
+			HDynamicRenderInstance,
+			XLinearArray<SDynamicRenderInstanceData>,
+			SGPUDynamicRenderInstanceLayout
+		>::GetData();
+	for (usize instanceIdx = 0; instanceIdx < bvDynamicInstances.elementCount; instanceIdx++)
+	{
+		SDynamicRenderInstanceData& rid = bvDynamicInstances.elements[instanceIdx];
+		SBatchData& bd = _batches->Get(rid.batch);
+
+		if (bd.motionType != motionType)
+			continue;
+
+		SGPUDynamicRenderInstanceLayout gpuElementData;
+		gpuElementData._use2D = 0.0f;
+		gpuElementData._world = rid.worldMatrix;
+		gpuElementData._skeletonIndex =
+			_context->GetSubsystem<XSkeletonSubsystem>()->GetHandleBufferIndex(rid.skeleton);
+		gpuElementData._materialIndex =
+			_context->GetSubsystem<XMaterialSubsystem>()->GetHandleBufferIndex(rid.material);
+
+		const usize batchIdx = _batches->GetHandleBufferIndex(rid.batch);
+		const usize globElementIndex =
+			bd.bufferOffset +
+			counterBuffer[batchIdx];
+		counterBuffer[batchIdx] += 1;
+
+		CUploader<
+			SDynamicRenderInstanceData,
+			HDynamicRenderInstance,
+			XLinearArray<SDynamicRenderInstanceData>,
+			SGPUDynamicRenderInstanceLayout
+		>::WriteToStaging(
+			globElementIndex,
+			&gpuElementData,
+			1
+		);
 	}
 }

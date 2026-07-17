@@ -8,7 +8,7 @@ using namespace types;
 
 triton::XSkeletonSubsystem::XSkeletonSubsystem(cContext* context)
     : ISubsys(context),
-      XSkeletonStorage(
+      CUploader<SSkeletonData, HSkeleton, XLinearArray<SSkeletonData>, SGPUSkeletonLayout>(
         context,
         (cGPUResource**)&_skeletonGPUBuffer,
         context->GetSubsystem<cEngine>()->GetCapabilities()->maxSkeletonCount,

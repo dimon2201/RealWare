@@ -9,13 +9,12 @@
 #include "handles.hpp"
 #include "uploader.hpp"
 #include "context.hpp"
-#include "skinning_storage.hpp"
 
 using namespace types;
 
 triton::XSkinningSubsystem::XSkinningSubsystem(cContext* context)
     : ISubsys(context),
-      XSkinningStorage(
+      CUploader<SSkinningData, HSkinning, XLinearArray<SSkinningData>, SGPUSkinningLayout>(
         context,
         (cGPUResource**)&_skinningGPUBuffer,
         context->GetSubsystem<cEngine>()->GetCapabilities()->maxSkinnedBoneCount,

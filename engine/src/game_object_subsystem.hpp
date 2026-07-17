@@ -35,9 +35,8 @@ namespace triton
         void Free() override;
         void Update() override;
 
-        HRenderInstance SetRenderable(
+        HStaticRenderInstance SetRenderableStatic(
             const HGameObject& gameObject,
-            ERenderInstanceMotionType usage,
             EGraphicsBufferFormat format,
             const types::u8* vertexBytes,
             types::usize vertexBytesCount,
@@ -47,17 +46,29 @@ namespace triton
             const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
         
-        HRenderInstance SetRenderable(
+        HStaticRenderInstance SetRenderableStatic(
             const HGameObject& gameObject,
-            ERenderInstanceMotionType motionType,
             const HModel3D& model,
             const std::optional<HBatch>& existingBatch = std::nullopt,
             const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
-        
-        void SetMaterial(
+
+        HDynamicRenderInstance SetRenderableDynamic(
             const HGameObject& gameObject,
-            const HMaterial& material
+            EGraphicsBufferFormat format,
+            const types::u8* vertexBytes,
+            types::usize vertexBytesCount,
+            const types::u8* indexBytes,
+            types::usize indexBytesCount,
+            const std::optional<HBatch>& existingBatch = std::nullopt,
+            const std::optional<HMaterial>& existingMaterial = std::nullopt
+        );
+
+        HDynamicRenderInstance SetRenderableDynamic(
+            const HGameObject& gameObject,
+            const HModel3D& model,
+            const std::optional<HBatch>& existingBatch = std::nullopt,
+            const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
     };
 }

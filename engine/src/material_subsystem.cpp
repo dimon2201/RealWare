@@ -10,8 +10,8 @@
 using namespace types;
 
 triton::XMaterialSubsystem::XMaterialSubsystem(cContext* context)
-    : ISubsystem(context),
-      XMaterialStorage(
+    : ISubsys(context),
+      CUploader<SMaterial, HMaterial, XLinearArray<SMaterial>, SGPUMaterialLayout>(
           context,
           (cGPUResource**)&_materialGPUBuffer,
           context->GetSubsystem<cEngine>()->GetCapabilities()->maxRenderMaterialCount,
@@ -39,13 +39,14 @@ triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(
     const HTexture& metallicTexture
 )
 {
-    HMaterial material = XMaterialStorage::CreateMaterial(
-        diffuseColor,
-        diffuseTexture,
-        normalTexture,
-        roughnessTexture,
-        metallicTexture
-    );
+    HMaterial material = Create();
+
+    SMaterial& m = Get(material);
+    m.diffuseColor = diffuseColor;
+    m.diffuseTexture = diffuseTexture;
+    m.normalTexture = normalTexture;
+    m.roughnessTexture = roughnessTexture;
+    m.metallicTexture = metallicTexture;
 
     SGPUMaterialLayout gml = ConvertToGPULayout(material);
     WriteToStaging(
@@ -72,7 +73,7 @@ void triton::XMaterialSubsystem::Update()
 
 triton::SGPUMaterialLayout triton::XMaterialSubsystem::ConvertToGPULayout(const HMaterial& material)
 {
-    SMaterial& m = XMaterialStorage::Get(material);
+    SMaterial& m = Get(material);
 
     STexture& dif = _context->GetSubsystem<XTextureSubsystem>()->Get(m.diffuseTexture);
     STexture& nor = _context->GetSubsystem<XTextureSubsystem>()->Get(m.normalTexture);

@@ -11,6 +11,7 @@ namespace triton
     {
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
         HBatch batch;
-        HRenderInstance instance;
+        HStaticRenderInstance staticInstance;
+        HDynamicRenderInstance dynamicInstance;
     };
 }

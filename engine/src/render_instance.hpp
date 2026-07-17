@@ -34,24 +34,34 @@ namespace triton
         return pb;
     }
 
-    struct SRenderInstanceData
+    struct SStaticRenderInstanceData
     {
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
         HGameObject gameObject;
         HBatch batch;
         HMaterial material;
         HSkeleton skeleton;
-        HRenderInstance instance;
+        HStaticRenderInstance instance;
         cMatrix4 worldMatrix = cMatrix4();
     };
 
-    class SGPURenderInstanceLayout
+    struct SDynamicRenderInstanceData
     {
-    public:
-        SGPURenderInstanceLayout() = default;
-        SGPURenderInstanceLayout(types::s32 materialIndex, const cTransform& transform);
+        ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
+        HGameObject gameObject;
+        HBatch batch;
+        HMaterial material;
+        HSkeleton skeleton;
+        HDynamicRenderInstance instance;
+        cMatrix4 worldMatrix = cMatrix4();
+    };
 
-        SGPURenderInstanceLayout(
+    struct SGPUStaticRenderInstanceLayout
+    {
+        SGPUStaticRenderInstanceLayout() = default;
+        SGPUStaticRenderInstanceLayout(types::s32 materialIndex, const cTransform& transform);
+
+        SGPUStaticRenderInstanceLayout(
             types::s32 materialIndex,
             types::s32 skeletonIndex,
             ERenderInstanceMotionType motionType,
@@ -61,6 +71,30 @@ namespace triton
             _materialIndex(materialIndex),
             _skeletonIndex(skeletonIndex),
             _propertyBits(EvaluatePropertyBits(motionType, isSkinned)) {}
+
+        types::f32 _use2D = 0.0f;
+        types::s32 _materialIndex = -1;
+        types::s32 _skeletonIndex = -1;
+        types::dword _propertyBits = 0;
+        cMatrix4 _world = cMatrix4(1.0f);
+    };
+
+    struct SGPUDynamicRenderInstanceLayout
+    {
+        SGPUDynamicRenderInstanceLayout() = default;
+        SGPUDynamicRenderInstanceLayout(types::s32 materialIndex, const cTransform& transform);
+
+        SGPUDynamicRenderInstanceLayout(
+            types::s32 materialIndex,
+            types::s32 skeletonIndex,
+            ERenderInstanceMotionType motionType,
+            types::boolean isSkinned
+        )
+            :
+            _materialIndex(materialIndex),
+            _skeletonIndex(skeletonIndex),
+            _propertyBits(EvaluatePropertyBits(motionType, isSkinned)) {
+        }
 
         types::f32 _use2D = 0.0f;
         types::s32 _materialIndex = -1;

@@ -5,7 +5,6 @@
 #include "handles.hpp"
 #include "skeleton.hpp"
 #include "subsystem.hpp"
-#include "skeleton_storage.hpp"
 #include "skinning_subsystem.hpp"
 #include "uploader.hpp"
 #include "types.hpp"
@@ -17,7 +16,7 @@ namespace triton
 	class cBuffer;
 
 	class XSkeletonSubsystem : public ISubsys,
-							   public XSkeletonStorage
+							   public CUploader<SSkeletonData, HSkeleton, XLinearArray<SSkeletonData>, SGPUSkeletonLayout>
 	{
 		TRITON_OBJECT(XSkeletonSubsystem)
 		

@@ -6,7 +6,8 @@
 
 namespace triton
 {
-	using HRenderInstance = SHandle;
+	using HStaticRenderInstance = SHandle;
+	using HDynamicRenderInstance = SHandle;
 	using HBatch = SHandle;
 	using HCamera = SHandle;
 	using HScene = SHandle;

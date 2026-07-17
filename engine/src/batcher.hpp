@@ -9,11 +9,11 @@
 #include "handle_allocator.hpp"
 #include "batch_data.hpp"
 #include "handles.hpp"
-#include "static_instance_storage.hpp"
-#include "dynamic_instance_storage.hpp"
 #include "material_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "types.hpp"
+
+#include "DELETE_THIS_FILE_ASAP.hpp"
 
 namespace triton
 {
@@ -23,15 +23,15 @@ namespace triton
     class SGeometryView;
     struct SBatchData;
 
-    class XBatchSubsystem : public iObject
+    class XBatchSubsystem : public ISubsys,
+                            public CUploader<SStaticRenderInstanceData, HStaticRenderInstance, XLinearArray<SStaticRenderInstanceData>, SGPUStaticRenderInstanceLayout>,
+                            public CUploader<SDynamicRenderInstanceData, HDynamicRenderInstance, XLinearArray<SDynamicRenderInstanceData>, SGPUDynamicRenderInstanceLayout>
     {
         TRITON_OBJECT(XBatchSubsystem)
 
         CHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>* _batches = nullptr;
         cBuffer* _staticGPUBuffer = nullptr;
         cBuffer* _dynamicGPUBuffer = nullptr;
-        CStaticInstanceStorage* _staticStorage = nullptr;
-        CDynamicInstanceStorage* _dynamicStorage = nullptr;
         types::u32* _tempStaticCounterBuffer = nullptr;
         types::u32* _tempDynamicCounterBuffer = nullptr;
         types::boolean _bStaticBufferNeedsPacking = types::K_FALSE;
@@ -50,19 +50,19 @@ namespace triton
 
         void Destroy(const HBatch& batch);
 
-        HRenderInstance AddStaticInstance(
+        HStaticRenderInstance AddStaticInstance(
             const HBatch& batch,
             const HGameObject& gameObject
         );
 
-        HRenderInstance AddDynamicInstance(
+        HDynamicRenderInstance AddDynamicInstance(
             const HBatch& batch,
             const HGameObject& gameObject
         );
 
-        void RemoveStaticInstance(const HRenderInstance& instance);
+        void RemoveStaticInstance(const HStaticRenderInstance& instance);
 
-        void RemoveDynamicInstance(const HRenderInstance& instance);
+        void RemoveDynamicInstance(const HDynamicRenderInstance& instance);
 
         std::optional<HBatch> FindSimilarBatch(
             const types::u8* vertexBytes,
@@ -71,7 +71,9 @@ namespace triton
             types::usize indexBytesCount
         );
 
-        void Update();
+        void Init() override {}
+        void Free() override {}
+        void Update() override;
 
         inline const SBufferView<SBatchData>& GetBatches() const
         {
@@ -88,16 +90,6 @@ namespace triton
             return *_dynamicGPUBuffer;
         }
 
-        inline CStaticInstanceStorage& GetStaticInstanceStorage() const
-        {
-            return *_staticStorage;
-        }
-
-        inline CDynamicInstanceStorage& GetDynamicInstanceStorage() const
-        {
-            return *_dynamicStorage;
-        }
-
     private:
         void MarkDirtyStatic();
 
@@ -109,46 +101,9 @@ namespace triton
 
         void RecalcBufferOffsetsAndResetCounters(types::u32* counterBuffer);
 
-        template <
-            typename TCPUObject,
-            typename TCPUObjectHandle,
-            typename TCPUObjectAllocator,
-            typename TGPUObjectLayout
-        >
-        void PackInstancesToStagingBuffer(
+        void PackInstancesToStagingBuffers(
             ERenderInstanceMotionType motionType,
-            types::u32* counterBuffer,
-            CUploader<TCPUObject, TCPUObjectHandle, TCPUObjectAllocator, TGPUObjectLayout>* uploader
-        )
-        {
-            const SBufferView<SRenderInstanceData> bvInstances = uploader->GetData();
-            for (usize instanceIdx = 0; instanceIdx < bvInstances.elementCount; instanceIdx++)
-            {
-                SRenderInstanceData& rid = bvInstances.elements[instanceIdx];
-                SBatchData& bd = _batches->Get(rid.batch);
-
-                if (bd.motionType != motionType)
-                    continue;
-
-                SGPURenderInstanceLayout gpuElementData;
-                gpuElementData._use2D = 0.0f;
-                gpuElementData._world = rid.worldMatrix;
-                gpuElementData._skeletonIndex =
-                    _context->GetSubsystem<XSkeletonSubsystem>()->GetHandleBufferIndex(rid.skeleton);
-                gpuElementData._materialIndex =
-                    _context->GetSubsystem<XMaterialSubsystem>()->GetHandleBufferIndex(rid.material);
-
-                const usize batchIdx = _batches->GetHandleBufferIndex(rid.batch);
-                const usize globElementIndex =
-                    bd.bufferOffset +
-                    counterBuffer[batchIdx];
-                counterBuffer[batchIdx] += 1;
-
-                uploader->WriteFieldToStaging(
-                    globElementIndex,
-                    gpuElementData
-                );
-            }
-        }
+            types::u32* counterBuffer
+        );
     };
 }

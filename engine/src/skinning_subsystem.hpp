@@ -7,7 +7,6 @@
 #include "subsystem.hpp"
 #include "handles.hpp"
 #include "skinning_data.hpp"
-#include "skinning_storage.hpp"
 #include "animation.hpp"
 #include "uploader.hpp"
 #include "types.hpp"
@@ -20,14 +19,19 @@ namespace triton
 	struct SBone;
 	struct SFrame;
 
+	// TODO: rethink this or move this to separate file
+	// ||||||||||||||||||||||||||||||||||||||||||||||||
+	// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 	struct SSkinData
 	{
 		types::usize globSkinnedBoneBufferOffset = 0;
 		std::vector<HSkinning> skinnedBones = {};
 	};
+	// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	// ||||||||||||||||||||||||||||||||||||||||||||||||
 
 	class XSkinningSubsystem :	public ISubsys,
-								public XSkinningStorage
+								public CUploader<SSkinningData, HSkinning, XLinearArray<SSkinningData>, SGPUSkinningLayout>
 	{
 		TRITON_OBJECT(XSkinningSubsystem)
 

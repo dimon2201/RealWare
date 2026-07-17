@@ -9,15 +9,17 @@
 #include "graphics_buffer_formats.hpp"
 #include "render_instance.hpp"
 #include "material.hpp"
-#include "material_storage.hpp"
+#include "uploader.hpp"
 #include "types.hpp"
+
+#include "DELETE_THIS_FILE_ASAP.hpp"
 
 namespace triton
 {
     class XMaterialUploader;
 
-    class XMaterialSubsystem : public ISubsystem<HMaterial, SMaterial, XLinearArray<SMaterial>>,
-                               public XMaterialStorage
+    class XMaterialSubsystem : public ISubsys,
+                               public CUploader<SMaterial, HMaterial, XLinearArray<SMaterial>, SGPUMaterialLayout>
     {
         TRITON_OBJECT(XMaterialSubsystem)
 
