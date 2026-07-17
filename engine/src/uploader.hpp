@@ -11,42 +11,40 @@
 #include "render_subsystem.hpp"
 #include "subsystem.hpp"
 #include "handle_allocator.hpp"
+#include "object_allocator.hpp"
 #include "types.hpp"
 
 namespace triton
 {
     template <typename TCPUObject, typename TCPUObjectHandle, typename TCPUObjectAllocator, typename TGPUElementLayout>
-    class XUploader : public XHandleAllocator<SSlot, TCPUObject, TCPUObjectHandle, TCPUObjectAllocator>
+    class CUploader : public CHandleAllocator<SSlot, TCPUObject, TCPUObjectHandle, TCPUObjectAllocator>
     {
-        TRITON_OBJECT(XUploader)
-
         types::boolean _bNeedsPersistentGpuWrite = types::K_FALSE;
         types::boolean _bNeedsGpuWrite = types::K_FALSE;
-        cGPUResource* _resource = nullptr;
+        cGPUResource** _resource = nullptr;
         types::usize _stagingBufferByteSize = 0;
         TGPUElementLayout* _stagingBuffer = nullptr;
 
     public:
-        XUploader() = delete;
+        CUploader() = delete;
 
-        explicit XUploader(
+        explicit CUploader(
             cContext* context,
-            cGPUResource* resource,
+            cGPUResource** resource,
             types::usize stagingBufferElementCount,
             types::boolean bNeedsPersistentGpuWrite
-        ) : XHandleAllocator(context)
+        ) : CHandleAllocator(context, 4096, 4096, 65536 * 64, 1024) // TODO: use values from capabilities here <<<<<-----
         {
-            const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
             _bNeedsPersistentGpuWrite = bNeedsPersistentGpuWrite;
             _bNeedsGpuWrite = types::K_FALSE;
             _resource = resource;
             _stagingBufferByteSize = stagingBufferElementCount * sizeof(TGPUElementLayout);
-            _stagingBuffer = (TGPUElementLayout*)_context->GetMemoryAllocator()->Allocate(_stagingBufferByteSize, 64);
+            _stagingBuffer = (TGPUElementLayout*)CObjectAllocator::Allocate(_stagingBufferByteSize, 64);
         }
 
-        ~XUploader() override
+        ~CUploader()
         {
-            _context->GetMemoryAllocator()->Deallocate(_stagingBuffer);
+            CObjectAllocator::Deallocate(_stagingBuffer);
         }
 
         template <typename TElementField>
@@ -81,21 +79,20 @@ namespace triton
             MarkDirty();
         }
 
-        void UploadStagingToGpuIfDirty()
+        void UploadStagingToGpuIfDirty(XRenderSubsystem* renderSubsystem)
         {
             if (_bNeedsPersistentGpuWrite == types::K_TRUE ||
                 _bNeedsGpuWrite == types::K_TRUE)
-                UploadStagingToGpu(0, _stagingBufferByteSize);
+                UploadStagingToGpu(0, _stagingBufferByteSize, renderSubsystem);
         }
 
-        void UploadStagingToGpu(types::usize byteOffset, types::usize byteSize)
+        void UploadStagingToGpu(types::usize byteOffset, types::usize byteSize, XRenderSubsystem* renderSubsystem)
         {
             if (_bNeedsGpuWrite == types::K_TRUE)
             {
-                XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
                 renderSubsystem->PushCommand(SRenderCommand(
                     ERenderCommand::WRITE_BUFFER,
-                    (types::cpuword)_resource,
+                    (types::cpuword)*_resource,
                     byteOffset,
                     byteSize,
                     (types::cpuword)&_stagingBuffer[0]

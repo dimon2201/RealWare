@@ -30,6 +30,7 @@
 #include "material_uploader.hpp"
 #include "skeleton_subsystem.hpp"
 #include "skinning_subsystem.hpp"
+#include "material.hpp"
 
 using namespace types;
 
@@ -901,7 +902,7 @@ void triton::cGraphics::CreateMaterialBuffer()
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
-        caps->maxRenderMaterialCount * sizeof(SMaterialLayout),
+        caps->maxRenderMaterialCount * sizeof(SGPUMaterialLayout),
         2
     ));
     _materialBuffer = renderSubsystem->FetchResult<cBuffer*>();
@@ -1137,7 +1138,13 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 
 void triton::cGraphics::CreateCameraAllocator()
 {
-    _cameras = _context->Create<XHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>>(_context);
+    _cameras = _context->Create<CHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>>(
+        _context,
+        4096,
+        4096,
+        65536 * 64,
+        1024
+    );
 }
 
 void triton::cGraphics::DestroyGeometryStorage()
@@ -1208,7 +1215,7 @@ void triton::cGraphics::DestroyCameraAllocator()
 {
     if (_cameras)
     {
-        _context->Destroy<XHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>>(_cameras);
+        _context->Destroy<CHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>>(_cameras);
     }
 }
 

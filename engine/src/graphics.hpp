@@ -42,7 +42,7 @@ namespace triton
     class XRenderPassExecutor;
     class XInstanceBuffer;
     template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
-    class XHandleAllocator;
+    class CHandleAllocator;
     template <typename TValue>
     class XLinearArray;
     class XCamera;
@@ -193,7 +193,7 @@ namespace triton
         XRenderPass* _compositeFinal = nullptr;
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
-        XHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>* _cameras = nullptr;
+        CHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>* _cameras = nullptr;
 
         void CreateGeometryStorage();
         void CreateMaterialBuffer();

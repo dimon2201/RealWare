@@ -34,7 +34,7 @@ namespace triton
 		TRITON_SUBSYSTEM
 
 		cBuffer* _skinnedBoneBuffer = nullptr;
-		XUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>* _uploader = nullptr;
+		CUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>* _uploader = nullptr;
 
 	public:
 		// TODO: create separate structure for skin instead of std::vector<HSkinnedBone>

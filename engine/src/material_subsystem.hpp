@@ -9,21 +9,23 @@
 #include "graphics_buffer_formats.hpp"
 #include "render_instance.hpp"
 #include "material.hpp"
+#include "material_storage.hpp"
 #include "types.hpp"
 
 namespace triton
 {
     class XMaterialUploader;
 
-    class XMaterialSubsystem : public ISubsystem<HMaterial, SMaterial, XLinearArray<SMaterial>>
+    class XMaterialSubsystem : public ISubsystem<HMaterial, SMaterial, XLinearArray<SMaterial>>,
+                               public XMaterialStorage
     {
         TRITON_OBJECT(XMaterialSubsystem)
 
-        XMaterialUploader* _uploader = nullptr;
+        cBuffer* _materialGPUBuffer = nullptr;
 
     public:
         explicit XMaterialSubsystem(cContext* context);
-        ~XMaterialSubsystem() override;
+        ~XMaterialSubsystem() override = default;
 
         HMaterial CreateMaterial(
             const cVector4& diffuseColor,
@@ -32,12 +34,18 @@ namespace triton
             const HTexture& roughnessTexture,
             const HTexture& metallicTexture
         );
+
+        void DestroyMaterial(const HMaterial& material);
+
         void Set(types::usize materialIndex, const SMaterial& materialData);
+
         void Init() override;
+
         void Free() override;
+
         void Update() override;
 
     private:
-        void MarkDirty();
+        SGPUMaterialLayout ConvertToGPULayout(const HMaterial& material);
     };
 }

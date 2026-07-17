@@ -4,24 +4,23 @@
 #include "game_object.hpp"
 #include "game_object_subsystem.hpp"
 
-triton::HRenderInstance triton::XStaticInstanceStorage::CreateStaticInstance(const HBatch& batch)
+triton::HRenderInstance triton::CStaticInstanceStorage::CreateStaticInstance(const HBatch& batch)
 {
 	HRenderInstance srih = Create();
-	SRenderInstanceData& srid = Get(srih);
-	srid.batch = batch;
-
+	Get(srih).batch = batch;
+	
 	return srih;
 }
 
-void triton::XStaticInstanceStorage::DestroyStaticInstance(const HRenderInstance& instance)
+void triton::CStaticInstanceStorage::DestroyStaticInstance(const HRenderInstance& instance)
 {
 	Destroy(instance);
 }
 
-void triton::XStaticInstanceStorage::UpdateTransform(const HRenderInstance& instance)
+void triton::CStaticInstanceStorage::UpdateTransform(const HRenderInstance& instance, XGameObjectSubsystem* gameObjectSubsystem)
 {
 	SRenderInstanceData& rid = Get(instance);
-	SGameObjectData& god = _context->GetSubsystem<XGameObjectSubsystem>()->Get(rid.gameObject);
+	SGameObjectData& god = gameObjectSubsystem->Get(rid.gameObject);
 	
 	rid.worldMatrix = cMath::Transform(
 		god.worldPosition,

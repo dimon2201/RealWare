@@ -11,23 +11,22 @@
 namespace triton
 {
 	class cBuffer;
+	class XGameObjectSubsystem;
 
-	class XStaticInstanceStorage : public XUploader<SRenderInstanceData, HRenderInstance, XLinearArray<SRenderInstanceData>, SGPURenderInstanceLayout>
+	class CStaticInstanceStorage : public CUploader<SRenderInstanceData, HRenderInstance, XLinearArray<SRenderInstanceData>, SGPURenderInstanceLayout>
 	{
-		TRITON_OBJECT(XStaticInstanceStorage)
-
 	public:
-		explicit XStaticInstanceStorage(
+		explicit CStaticInstanceStorage(
 			cContext* context,
-			cGPUResource* resource,
+			cGPUResource** resource,
 			types::usize stagingBufferElementCount,
 			types::boolean bIsPermanentDirty
-		) : XUploader(context, resource, stagingBufferElementCount, bIsPermanentDirty) {}
+		) : CUploader(context, resource, stagingBufferElementCount, bIsPermanentDirty) {}
 
 		HRenderInstance CreateStaticInstance(const HBatch& batch);
 
 		void DestroyStaticInstance(const HRenderInstance& instance);
 
-		void UpdateTransform(const HRenderInstance& instance);
+		void UpdateTransform(const HRenderInstance& instance, XGameObjectSubsystem* gameObjectSubsystem);
 	};
 }

@@ -10,23 +10,22 @@
 namespace triton
 {
 	class cBuffer;
+	class XGameObjectSubsystem;
 
-	class XDynamicInstanceStorage : public XUploader<SRenderInstanceData, HRenderInstance, XLinearArray<SRenderInstanceData>, SGPURenderInstanceLayout>
+	class CDynamicInstanceStorage : public CUploader<SRenderInstanceData, HRenderInstance, XLinearArray<SRenderInstanceData>, SGPURenderInstanceLayout>
 	{
-		TRITON_OBJECT(XDynamicInstanceStorage)
-
 	public:
-		explicit XDynamicInstanceStorage(
+		explicit CDynamicInstanceStorage(
 			cContext* context,
-			cGPUResource* resource,
+			cGPUResource** resource,
 			types::usize stagingBufferElementCount,
 			types::boolean bNeedsPersistentGpuWrite
-		) : XUploader(context, resource, stagingBufferElementCount, bNeedsPersistentGpuWrite) {}
+		) : CUploader(context, resource, stagingBufferElementCount, bNeedsPersistentGpuWrite) {}
 
 		HRenderInstance CreateDynamicInstance(const HBatch& batch);
 
 		void DestroyDynamicInstance(const HRenderInstance& instance);
 
-		void UpdateTransform(const HRenderInstance& instance);
+		void UpdateTransform(const HRenderInstance& instance, XGameObjectSubsystem* gameObjectSubsystem);
 	};
 }

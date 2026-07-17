@@ -12,7 +12,7 @@ using namespace types;
 triton::XMaterialUploader::XMaterialUploader(cContext* context) : _context(context)
 {
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-	_stagingBuffer = (SMaterialLayout*)_context->GetMemoryAllocator()->Allocate(caps->maxRenderMaterialCount * sizeof(SMaterialLayout), 64);
+	_stagingBuffer = (SGPUMaterialLayout*)_context->GetMemoryAllocator()->Allocate(caps->maxRenderMaterialCount * sizeof(SGPUMaterialLayout), 64);
 }
 
 triton::XMaterialUploader::~XMaterialUploader()
@@ -46,7 +46,7 @@ void triton::XMaterialUploader::Set(XTextureSubsystem* textureSubsystem, types::
 	metallicTextureLayout.normOffset = metallicTexture.normOffset;
 	metallicTextureLayout.normSize = metallicTexture.normSize;
 
-	SMaterialLayout materialLayout;
+	SGPUMaterialLayout materialLayout;
 	materialLayout.diffuseColor = material.diffuseColor;
 	materialLayout.diffuseTextureLayout = diffuseTextureLayout;
 	materialLayout.normalTextureLayout = normalTextureLayout;

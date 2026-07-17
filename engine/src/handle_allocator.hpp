@@ -6,6 +6,7 @@
 #include "object.hpp"
 #include "buffer_view.hpp"
 #include "linear_array.hpp"
+#include "object_allocator.hpp"
 
 namespace triton
 {
@@ -13,7 +14,7 @@ namespace triton
 	template <typename T>
 	class XDynamicArray;
 
-	// Concept to check if XHandleAllocator member data structure is derived from stack class XDynamicArray<TValue>
+	// Concept to check if CHandleAllocator member data structure is derived from stack class XDynamicArray<TValue>
 	/*template<typename T>
 	concept IsDerivedFromIStack =
 		requires
@@ -23,10 +24,8 @@ namespace triton
 	std::derived_from<T, XDynamicArray<typename T::ValueType>>;*/
 
 	template <typename TSlot, typename TCPUObject, typename TCPUObjectHandle, typename TCPUObjectAllocator>
-	class XHandleAllocator : public iObject
+	class CHandleAllocator
 	{
-		TRITON_OBJECT(XHandleAllocator)
-
 		//static_assert(IsDerivedFromIStack<TDataStructure>, "TDataStructure must inherit from XDynamicArray<TValue>");
 
 		XDynamicArray<TSlot>* _slots = nullptr;
@@ -36,29 +35,34 @@ namespace triton
 		TCPUObject _nullObject = {};
 
 	public:
-		XHandleAllocator() = delete;
+		CHandleAllocator() = delete;
 
-		explicit XHandleAllocator(cContext* context) : iObject(context)
+		explicit CHandleAllocator(
+			cContext* context,
+			types::usize maxHandleElementCount,
+			types::usize hashTableElementSize,
+			types::usize maxChunkCount,
+			types::usize chunkByteSize
+		)
 		{
-			const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
-			sChunkAllocatorDescriptor cad = {};
-			cad.chunkByteSize = caps->hashTableChunkByteSize;
-			cad.maxChunkCount = caps->hashTableMaxChunkCount;
-			cad.hashTableSize = caps->hashTableSize;
-			_slots = _context->Create<XDynamicArray<TSlot>>(_context, cad);
-			_freeSlots = _context->Create<XDynamicArray<types::usize>>(_context, cad);
-			_objectIndexToSlotIndex = _context->Create<XDynamicArray<types::usize>>(_context, cad);
+			sChunkAllocatorDescriptor cad;
+			cad.chunkByteSize = chunkByteSize;
+			cad.hashTableSize = hashTableElementSize;
+			cad.maxChunkCount = maxChunkCount;
+			_slots = CObjectAllocator::Create<XDynamicArray<TSlot>>(64, context, cad);
+			_freeSlots = CObjectAllocator::Create<XDynamicArray<types::usize>>(64, context, cad);
+			_objectIndexToSlotIndex = CObjectAllocator::Create<XDynamicArray<types::usize>>(64, context, cad);
 			sChunkAllocatorDescriptor cadObjects = {};
-			cadObjects.chunkByteSize = caps->handleAllocatorObjectCount * sizeof(TCPUObject);
-			_objects = _context->Create<TCPUObjectAllocator>(_context, cadObjects);
+			cadObjects.chunkByteSize = maxHandleElementCount * sizeof(TCPUObject);
+			_objects = CObjectAllocator::Create<TCPUObjectAllocator>(64, context, cadObjects);
 		}
 
-		virtual ~XHandleAllocator() override
+		~CHandleAllocator()
 		{
-			_context->Destroy<TCPUObjectAllocator>(_objects);
-			_context->Destroy<XDynamicArray<types::usize>>(_objectIndexToSlotIndex);
-			_context->Destroy<XDynamicArray<types::usize>>(_freeSlots);
-			_context->Destroy<XDynamicArray<TSlot>>(_slots);
+			CObjectAllocator::Destroy<TCPUObjectAllocator>(_objects);
+			CObjectAllocator::Destroy<XDynamicArray<types::usize>>(_objectIndexToSlotIndex);
+			CObjectAllocator::Destroy<XDynamicArray<types::usize>>(_freeSlots);
+			CObjectAllocator::Destroy<XDynamicArray<TSlot>>(_slots);
 		}
 
 		template <typename... Args>

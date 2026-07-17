@@ -4,7 +4,7 @@
 #include "game_object.hpp"
 #include "game_object_subsystem.hpp"
 
-triton::HRenderInstance triton::XDynamicInstanceStorage::CreateDynamicInstance(const HBatch& batch)
+triton::HRenderInstance triton::CDynamicInstanceStorage::CreateDynamicInstance(const HBatch& batch)
 {
 	HRenderInstance drih = Create();
 	SRenderInstanceData drid = Get(drih);
@@ -13,15 +13,15 @@ triton::HRenderInstance triton::XDynamicInstanceStorage::CreateDynamicInstance(c
 	return drih;
 }
 
-void triton::XDynamicInstanceStorage::DestroyDynamicInstance(const HRenderInstance& instance)
+void triton::CDynamicInstanceStorage::DestroyDynamicInstance(const HRenderInstance& instance)
 {
 	Destroy(instance);
 }
 
-void triton::XDynamicInstanceStorage::UpdateTransform(const HRenderInstance& instance)
+void triton::CDynamicInstanceStorage::UpdateTransform(const HRenderInstance& instance, XGameObjectSubsystem* gameObjectSubsystem)
 {
 	SRenderInstanceData& rid = Get(instance);
-	SGameObjectData& god = _context->GetSubsystem<XGameObjectSubsystem>()->Get(rid.gameObject);
+	SGameObjectData& god = gameObjectSubsystem->Get(rid.gameObject);
 
 	rid.worldMatrix = cMath::Transform(
 		god.worldPosition,

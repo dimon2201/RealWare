@@ -25,11 +25,11 @@ namespace triton
     {
         TRITON_OBJECT(XBatchSubsystem)
 
-        XHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>* _batches = nullptr;
+        CHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>* _batches = nullptr;
         cBuffer* _staticGPUBuffer = nullptr;
         cBuffer* _dynamicGPUBuffer = nullptr;
-        XStaticInstanceStorage* _staticStorage = nullptr;
-        XDynamicInstanceStorage* _dynamicStorage = nullptr;
+        CStaticInstanceStorage* _staticStorage = nullptr;
+        CDynamicInstanceStorage* _dynamicStorage = nullptr;
         types::u32* _tempStaticCounterBuffer = nullptr;
         types::u32* _tempDynamicCounterBuffer = nullptr;
         types::boolean _bStaticBufferNeedsPacking = types::K_FALSE;
@@ -86,12 +86,12 @@ namespace triton
             return *_dynamicGPUBuffer;
         }
 
-        inline XStaticInstanceStorage& GetStaticInstanceStorage() const
+        inline CStaticInstanceStorage& GetStaticInstanceStorage() const
         {
             return *_staticStorage;
         }
 
-        inline XDynamicInstanceStorage& GetDynamicInstanceStorage() const
+        inline CDynamicInstanceStorage& GetDynamicInstanceStorage() const
         {
             return *_dynamicStorage;
         }
@@ -116,7 +116,7 @@ namespace triton
         void PackInstancesToStagingBuffer(
             ERenderInstanceMotionType motionType,
             types::u32* counterBuffer,
-            XUploader<TCPUObject, TCPUObjectHandle, TCPUObjectAllocator, TGPUObjectLayout>* uploader
+            CUploader<TCPUObject, TCPUObjectHandle, TCPUObjectAllocator, TGPUObjectLayout>* uploader
         )
         {
             const SBufferView<SRenderInstanceData> bvInstances = uploader->GetData();

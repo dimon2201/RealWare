@@ -62,6 +62,8 @@ void triton::cEngine::Initialize()
 	// Create memory allocator
 	_context->CreateMemoryAllocator();
 
+	CObjectAllocator::Initialize(_context->GetMemoryAllocator());
+
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputBackendSDL(_context));
 	_context->RegisterBackend<iGraphicsResourceBackend>(new cGraphicsResourceBackendOGL(_context));

@@ -3,17 +3,34 @@
 #include "material_subsystem.hpp"
 #include "material_uploader.hpp"
 #include "graphics.hpp"
+#include "context.hpp"
+#include "engine.hpp"
+#include "capabilities.hpp"
+#include "texture_subsystem.hpp"
 
 using namespace types;
 
-triton::XMaterialSubsystem::XMaterialSubsystem(cContext* context) : ISubsystem(context)
+triton::XMaterialSubsystem::XMaterialSubsystem(cContext* context)
+    : ISubsystem(context),
+      XMaterialStorage(
+          context,
+          (cGPUResource**)&_materialGPUBuffer,
+          context->GetSubsystem<cEngine>()->GetCapabilities()->maxRenderMaterialCount,
+          K_FALSE
+      )
 {
-    _uploader = _context->Create<XMaterialUploader>(_context);
-}
+    auto p = this;
+    const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetCapabilities();
 
-triton::XMaterialSubsystem::~XMaterialSubsystem()
-{
-    _context->Destroy<XMaterialUploader>(_uploader);
+    XRenderSubsystem* renderSubsystem = context->GetSubsystem<XRenderSubsystem>();
+    renderSubsystem->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::STORAGE,
+        (cpuword)nullptr,
+        caps->maxRenderMaterialCount * sizeof(SGPUMaterialLayout),
+        0
+    ));
+    _materialGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
 }
 
 triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(
@@ -24,23 +41,22 @@ triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(
     const HTexture& metallicTexture
 )
 {
-    HMaterial material = Create();
-    SMaterial materialData;
-    materialData.diffuseColor = diffuseColor;
-    materialData.diffuseTexture = diffuseTexture;
-    materialData.normalTexture = normalTexture;
-    materialData.roughnessTexture = roughnessTexture;
-    materialData.metallicTexture = metallicTexture;
+    HMaterial material = XMaterialStorage::CreateMaterial(
+        diffuseColor,
+        diffuseTexture,
+        normalTexture,
+        roughnessTexture,
+        metallicTexture
+    );
 
-    _objects->Get(material) = materialData;
-    Set(material._indexInArray, materialData);
+    SGPUMaterialLayout gml = ConvertToGPULayout(material);
+    WriteToStaging(
+        GetHandleBufferIndex(material),
+        &gml,
+        1
+    );
 
     return material;
-}
-
-void triton::XMaterialSubsystem::Set(types::usize materialIndex, const SMaterial& materialData)
-{
-    _uploader->Set(_context->GetSubsystem<XTextureSubsystem>(), materialIndex, materialData);
 }
 
 void triton::XMaterialSubsystem::Init()
@@ -53,12 +69,32 @@ void triton::XMaterialSubsystem::Free()
 
 void triton::XMaterialSubsystem::Update()
 {
-    cGraphics* gfx = _context->GetSubsystem<cGraphics>();
-    const usize byteSizeToUpload = _objects->GetSize() * sizeof(SMaterialLayout);
-    _uploader->Upload(gfx->GetMaterialBuffer(), byteSizeToUpload);
+    UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
 }
 
-void triton::XMaterialSubsystem::MarkDirty()
+triton::SGPUMaterialLayout triton::XMaterialSubsystem::ConvertToGPULayout(const HMaterial& material)
 {
-    _uploader->MarkDirty();
+    SMaterial& m = XMaterialStorage::Get(material);
+
+    STexture& dif = _context->GetSubsystem<XTextureSubsystem>()->Get(m.diffuseTexture);
+    STexture& nor = _context->GetSubsystem<XTextureSubsystem>()->Get(m.normalTexture);
+    STexture& rgh = _context->GetSubsystem<XTextureSubsystem>()->Get(m.roughnessTexture);
+    STexture& met = _context->GetSubsystem<XTextureSubsystem>()->Get(m.metallicTexture);
+
+    SGPUMaterialLayout gml;
+    gml.diffuseColor = m.diffuseColor;
+    gml.diffuseTextureLayout.layer = dif.layer;
+    gml.diffuseTextureLayout.normOffset = dif.normOffset;
+    gml.diffuseTextureLayout.normSize = dif.normSize;
+    gml.normalTextureLayout.layer = nor.layer;
+    gml.normalTextureLayout.normOffset = nor.normOffset;
+    gml.normalTextureLayout.normSize = nor.normSize;
+    gml.roughnessTextureLayout.layer = rgh.layer;
+    gml.roughnessTextureLayout.normOffset = rgh.normOffset;
+    gml.roughnessTextureLayout.normSize = rgh.normSize;
+    gml.metallicTextureLayout.layer = met.layer;
+    gml.metallicTextureLayout.normOffset = met.normOffset;
+    gml.metallicTextureLayout.normSize = met.normSize;
+
+    return gml;
 }

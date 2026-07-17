@@ -83,9 +83,9 @@ void triton::XSkinningSubsystem::Init()
         4
     ));
     _skinnedBoneBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    _uploader = _context->Create<XUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>>(
+    _uploader = _context->Create<CUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>>(
         _context,
-        _skinnedBoneBuffer,
+        (cGPUResource**)&_skinnedBoneBuffer,
         caps->maxSkinnedBoneCount,
         K_TRUE
     );
@@ -93,7 +93,7 @@ void triton::XSkinningSubsystem::Init()
 
 void triton::XSkinningSubsystem::Free()
 {
-    _context->Destroy<XUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>>(_uploader);
+    _context->Destroy<CUploader<SSkinnedBoneData, HSkinnedBone, XLinearArray<SSkinnedBoneData>, SGPUSkinnedBoneLayout>>(_uploader);
     XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     renderSubsystem->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,

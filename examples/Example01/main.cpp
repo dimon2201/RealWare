@@ -26,7 +26,7 @@ class cMyApplication final : public IApplication
 {
     HModel3D m3d, m3d_2;
     XDynamicArray<int>* da;
-    XHandleAllocator<SSlot, HSkinnedBone, XDynamicArray<SSkinnedBoneData>, SSkinnedBoneData>* ha;
+    CHandleAllocator<SSlot, HSkinnedBone, XDynamicArray<SSkinnedBoneData>, SSkinnedBoneData>* ha;
     SGameObjectData* god;
     HRenderInstance ri;
 
@@ -82,8 +82,8 @@ public:
         u32 quadInds[6] = { 0, 1, 2, 0, 2, 3 };
 
         XGameObjectSubsystem* gos = _context->GetSubsystem<XGameObjectSubsystem>();
-        XStaticInstanceStorage& sis = _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage();
-        XDynamicInstanceStorage& dis = _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage();
+        CStaticInstanceStorage& sis = _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage();
+        CDynamicInstanceStorage& dis = _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage();
 
         HGameObject triObj1 = gos->CreateGameObject("MyTriangle1");
         SGameObjectData& triGod1 = gos->Get(triObj1);
@@ -99,7 +99,7 @@ public:
         triGod1.worldPosition = cVector3(-1.0f, 0.0f, 0.0f);
         triGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
         //triGod1.scale = cVector3(0.25f * 0.5f);
-        sis.UpdateTransform(triRi1);
+        sis.UpdateTransform(triRi1, _context->GetSubsystem<XGameObjectSubsystem>());
 
         HGameObject quadObj1 = gos->CreateGameObject("MyQuad1");
         SGameObjectData& quadGod1 = gos->Get(quadObj1);
@@ -117,7 +117,7 @@ public:
         quadGod1.worldPosition = cVector3(1.0f, 0.0f, 0.0f);
         quadGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
         //quadGod1.scale = cVector3(0.5f * 0.5f);
-        dis.UpdateTransform(quadRi1);
+        dis.UpdateTransform(quadRi1, _context->GetSubsystem<XGameObjectSubsystem>());
 
         HGameObject triObj2 = gos->CreateGameObject("MyTriangle2");
         SGameObjectData& triGod2 = gos->Get(triObj2);
@@ -136,7 +136,7 @@ public:
         triGod2.worldPosition = cVector3(3.0f, 0.0f, 0.0f);
         triGod2.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
         //triGod2.scale = cVector3(0.75f * 0.5f);
-        sis.UpdateTransform(triRi2);
+        sis.UpdateTransform(triRi2, _context->GetSubsystem<XGameObjectSubsystem>());
 
         /*XTextureSubsystem* ts = _context->GetSubsystem<XTextureSubsystem>();
         HTexture t1 = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/dirt.png");

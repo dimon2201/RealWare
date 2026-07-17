@@ -24,7 +24,7 @@ namespace triton
 		TRITON_SUBSYSTEM
 
 		cBuffer* _skeletonBuffer = nullptr;
-		XUploader<SSkeleton, HSkeleton, XLinearArray<SSkeleton>, SGPUSkeletonLayout>* _uploader = nullptr;
+		CUploader<SSkeleton, HSkeleton, XLinearArray<SSkeleton>, SGPUSkeletonLayout>* _uploader = nullptr;
 
 	public:
 		HSkeleton CreateSkeleton(

@@ -15,4 +15,21 @@ namespace triton
         HTexture metallicTexture;
         cVector4 diffuseColor = cVector4(0.0f);
     };
+
+    struct STextureLayout
+    {
+        types::u32 layer = 0;
+        types::u32 _pad = 0;
+        cVector2 normOffset = cVector2(0.0f);
+        cVector2 normSize = cVector2(0.0f);
+    };
+
+    struct SGPUMaterialLayout
+    {
+        STextureLayout diffuseTextureLayout;
+        STextureLayout normalTextureLayout;
+        STextureLayout roughnessTextureLayout;
+        STextureLayout metallicTextureLayout;
+        cVector4 diffuseColor = cVector4(0.0f);
+    };
 }

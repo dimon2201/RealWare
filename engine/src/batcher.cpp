@@ -13,7 +13,13 @@ using namespace types;
 
 triton::XBatchSubsystem::XBatchSubsystem(cContext* context) : iObject(context)
 {
-	_batches = _context->Create<XHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>>(_context);
+	_batches = _context->Create<CHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>>(
+		_context,
+		4096,
+		4096,
+		65536 * 64,
+		1024
+	);
 	
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 
@@ -35,15 +41,15 @@ triton::XBatchSubsystem::XBatchSubsystem(cContext* context) : iObject(context)
     ));
     _dynamicGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
 
-	_staticStorage = _context->Create<XStaticInstanceStorage>(
+	_staticStorage = _context->Create<CStaticInstanceStorage>(
 		_context,
-		_staticGPUBuffer,
+		(cGPUResource**)&_staticGPUBuffer,
 		caps->maxRenderInstanceCount,
 		K_FALSE
 	);
-	_dynamicStorage = _context->Create<XDynamicInstanceStorage>(
+	_dynamicStorage = _context->Create<CDynamicInstanceStorage>(
 		_context,
-		_dynamicGPUBuffer,
+		(cGPUResource**)&_dynamicGPUBuffer,
 		caps->maxRenderInstanceCount,
 		K_TRUE
 	);
@@ -63,8 +69,8 @@ triton::XBatchSubsystem::~XBatchSubsystem()
 	_context->GetMemoryAllocator()->Deallocate(_tempDynamicCounterBuffer);
 	_context->GetMemoryAllocator()->Deallocate(_tempStaticCounterBuffer);
 
-	_context->Destroy<XDynamicInstanceStorage>(_dynamicStorage);
-	_context->Destroy<XStaticInstanceStorage>(_staticStorage);
+	_context->Destroy<CDynamicInstanceStorage>(_dynamicStorage);
+	_context->Destroy<CStaticInstanceStorage>(_staticStorage);
 
 	XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
 	renderSubsystem->PushCommand(SRenderCommand(
@@ -76,7 +82,7 @@ triton::XBatchSubsystem::~XBatchSubsystem()
 		(cpuword)_staticGPUBuffer
 	));
 
-	_context->Destroy<XHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>>(_batches);
+	_context->Destroy<CHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>>(_batches);
 }
 
 std::optional<triton::HBatch> triton::XBatchSubsystem::Create(
@@ -205,8 +211,8 @@ void triton::XBatchSubsystem::Update()
 		_bDynamicBufferNeedsPacking = K_FALSE;
 	}
 
-	_staticStorage->UploadStagingToGpuIfDirty();
-	_dynamicStorage->UploadStagingToGpuIfDirty();
+	_staticStorage->UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+	_dynamicStorage->UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
 }
 
 void triton::XBatchSubsystem::MarkDirtyStatic()

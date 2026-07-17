@@ -14,7 +14,7 @@ namespace triton
 {
 	class XDataBuffer;
 	template <typename TSlot, typename THandle, typename TDataStructure, typename TObject>
-	class XHandleAllocator;
+	class CHandleAllocator;
 	class cContext;
 	template <typename TValue>
 	class XLinearArray;
