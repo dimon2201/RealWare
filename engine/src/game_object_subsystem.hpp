@@ -43,7 +43,8 @@ namespace triton
             types::usize vertexBytesCount,
             const types::u8* indexBytes,
             types::usize indexBytesCount,
-            const std::optional<HBatch>& existingBatch = std::nullopt
+            const std::optional<HBatch>& existingBatch = std::nullopt,
+            const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
         
         void AddRenderable(

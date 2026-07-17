@@ -30,7 +30,8 @@ triton::HRenderInstance triton::XGameObjectSubsystem::SetRenderable(
 	types::usize vertexBytesCount,
 	const types::u8* indexBytes,
 	types::usize indexBytesCount,
-	const std::optional<HBatch>& existingBatch
+	const std::optional<HBatch>& existingBatch,
+	const std::optional<HMaterial>& existingMaterial
 )
 {
 	SGameObjectData& go = _objects->Get(gameObject);
@@ -62,12 +63,24 @@ triton::HRenderInstance triton::XGameObjectSubsystem::SetRenderable(
 		batch = *existingBatch;
 	}
 	
+	HRenderInstance ri;
+
 	if (motionType == ERenderInstanceMotionType::Static)
-		return _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch, gameObject);
+		ri = _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch, gameObject);
 	else if (motionType == ERenderInstanceMotionType::Dynamic)
-		return _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch, gameObject);
+		ri = _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch, gameObject);
 	else
 		return HRenderInstance();
+
+	if (existingMaterial.has_value())
+	{
+		if (motionType == ERenderInstanceMotionType::Static)
+			_context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage().Get(ri).material = *existingMaterial;
+		else if (motionType == ERenderInstanceMotionType::Dynamic)
+			_context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage().Get(ri).material = *existingMaterial;
+	}
+
+	return ri;
 }
 
 void triton::XGameObjectSubsystem::AddRenderable(

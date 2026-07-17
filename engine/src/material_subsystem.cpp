@@ -28,7 +28,7 @@ triton::XMaterialSubsystem::XMaterialSubsystem(cContext* context)
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxRenderMaterialCount * sizeof(SGPUMaterialLayout),
-        0
+        2
     ));
     _materialGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
 }

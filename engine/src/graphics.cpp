@@ -185,11 +185,13 @@ void triton::cGraphics::ExecutePasses()
     BindSkeletonBuffer();
     BindSkinnedBoneBuffer();
 
+    _context->GetSubsystem<XMaterialSubsystem>()->GetMaterialGPUBuffer().Bind();
     _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceGPUBuffer().Bind();
     _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceGPUBuffer().Bind();
 
     ExecuteDefaultPasses();
 
+    _context->GetSubsystem<XMaterialSubsystem>()->GetMaterialGPUBuffer().Unbind();
     _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceGPUBuffer().Unbind();
     _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceGPUBuffer().Unbind();
 

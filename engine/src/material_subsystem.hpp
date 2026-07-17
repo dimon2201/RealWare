@@ -45,6 +45,11 @@ namespace triton
 
         void Update() override;
 
+        inline cBuffer& GetMaterialGPUBuffer() const
+        {
+            return *_materialGPUBuffer;
+        }
+
     private:
         SGPUMaterialLayout ConvertToGPULayout(const HMaterial& material);
     };

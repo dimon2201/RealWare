@@ -11,6 +11,7 @@
 #include "handles.hpp"
 #include "static_instance_storage.hpp"
 #include "dynamic_instance_storage.hpp"
+#include "material_subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -132,6 +133,8 @@ namespace triton
                 gpuElementData._use2D = 0.0f;
                 gpuElementData._world = rid.worldMatrix;
                 gpuElementData._skeletonIndex = -1;
+                gpuElementData._materialIndex =
+                    _context->GetSubsystem<XMaterialSubsystem>()->GetHandleBufferIndex(rid.material);
 
                 const usize batchIdx = _batches->GetHandleBufferIndex(rid.batch);
                 const usize globElementIndex =
