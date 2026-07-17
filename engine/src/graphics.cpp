@@ -27,7 +27,6 @@
 #include "render_subsystem.hpp"
 #include "handle_allocator.hpp"
 #include "camera.hpp"
-#include "material_uploader.hpp"
 #include "skeleton_subsystem.hpp"
 #include "skinning_subsystem.hpp"
 #include "material.hpp"

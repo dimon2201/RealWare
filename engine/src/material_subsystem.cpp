@@ -1,7 +1,6 @@
 // material_subsystem.cpp
 
 #include "material_subsystem.hpp"
-#include "material_uploader.hpp"
 #include "graphics.hpp"
 #include "context.hpp"
 #include "engine.hpp"
