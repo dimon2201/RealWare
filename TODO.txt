@@ -24,18 +24,22 @@
 - Refactor: Create separate structure for skin instead of std::vector<HSkinnedBone> (skinning_subsystem.cpp:43)
 - Refactor: Do something with subsystem pointers aka references return for ISubsystem subsystems, centralize subsystems ownership
 - Refactor: Rename ISubsystem to ICentralizedStorage, also create ISubsystem interface with Init/Update/Free methods
+- Feature: GPU-driven renderer
+- Feature: Move everything in engine to "Handle-based Resource Management" foundation
 - GFX: PBR optimization using LUT
 - GFX: HDR
 - GFX: Tonemapping
 - GFX: Shadows (classical, with shadow acne and peter-panning)
+- GFX: Shadows (cascaded shadow maps)
 - GFX: IBL
 - GFX: SSAO
 - GFX: Bloom
 - GFX: Auto Exposure
 - GFX: Color Grading LUT
-- GFX: Contact Shadows
+- GFX: Frustum and Occlusion culling (HiZ)
 - GFX: SSR
-- GFX: Volumetric Fog
 - GFX: TAA
+- GFX: Volumetric Fog
+- GFX: Contact Shadows
 - GFX: World Space Global Illumination using surfels
 - GFX: Shadows (NVIDIA Hybrid Ray Traced Shadows)
