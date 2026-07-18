@@ -9,7 +9,6 @@
 #include <stb_image.h>
 #include "TRF.hpp"
 #include "log.hpp"
-#include "vertex.hpp"
 
 using namespace triton::resource_file;
 using namespace types;
@@ -145,7 +144,7 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
     free(bitangents);
 
     ////////// Parse material data //////////
-    std::vector<SModel3DMaterialData> materials = {};
+    std::vector<SModel3DMaterialData> materialData = {};
     for (usize materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
     {
         const aiMaterial* material = scene->mMaterials[materialIndex];
@@ -174,11 +173,11 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
         m3dmd.bIsRoughnessEmbedded = bIsRoughnessEmbedded;
         m3dmd.bIsMetallicEmbedded = bIsMetallicEmbedded;
 
-        materials.push_back(m3dmd);
+        materialData.push_back(m3dmd);
     }
 
     ////////// Create materials //////////
-    for (auto& material : materials)
+    for (auto& material : materialData)
     {
         auto diffOpt = ParseModel3DTexture(
             material.bIsDiffuseEmbedded,
@@ -374,7 +373,7 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
     );
     
     ////////// Create animations //////////
-    std::vector<SModel3DAnimationData> animations = {};
+    std::vector<SModel3DAnimationData> animationData = {};
     for (usize animIdx = 0; animIdx < scene->mNumAnimations; ++animIdx)
     {
         const aiAnimation* srcAnim = scene->mAnimations[animIdx];
@@ -431,19 +430,21 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
 
             animation.keys.push_back(std::move(key));
         }
+
+        animationData.push_back(animation);
     }
 
     ////////// Return //////////
-    /*SModel3DData m3dd;
+    SModel3DData m3dd;
     m3dd.vertexData = vertexData;
     m3dd.indexData = indexData;
     m3dd.vertexCount = vertexCount;
     m3dd.indexCount = indexCount;
-    m3dd.materials = modelMaterials;
-    m3dd.skeleton = modelSkeleton;
-    m3dd.animations = modelAnimations;*/
+    m3dd.materialData = materialData;
+    m3dd.boneData = boneData;
+    m3dd.animationData = animationData;
 
-    return std::nullopt;
+    return m3dd;
 }
 
 template <EResourceFormat TResourceFormat>

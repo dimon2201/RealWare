@@ -15,6 +15,7 @@
 #include <gtc/quaternion.hpp>
 #include <gtx/quaternion.hpp>
 #include "types.hpp"
+#include "vertex.hpp"
 
 namespace triton
 {
@@ -39,8 +40,18 @@ namespace triton
 			RGBA8_SRGB
 		};
 
+		struct SModel3DMaterialData;
+		struct SModel3DBoneData;
+		struct SModel3DAnimationData;
 		struct SModel3DData
 		{
+			SVertex* vertexData = nullptr;
+			types::u32* indexData = nullptr;
+			types::usize vertexCount = 0;
+			types::usize indexCount = 0;
+			std::vector<SModel3DMaterialData> materialData;
+			std::vector<SModel3DBoneData> boneData;
+			std::vector<SModel3DAnimationData> animationData;
 		};
 
 		struct STextureData
