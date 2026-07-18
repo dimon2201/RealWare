@@ -8,10 +8,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "TRF.hpp"
-#include "log.hpp"
 
 using namespace triton::resource_file;
 using namespace types;
+
+void triton::resource_file::Print(const std::string& message)
+{
+    std::cout << message << std::endl;
+}
 
 template <EResourceFormat TResourceFormat>
 CResourceFile<TResourceFormat>::CResourceFile(const std::filesystem::path& filePath)
@@ -102,7 +106,7 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
     u32* indexData = (u32*)malloc(indexCount * sizeof(u32));
 
     ////////// Allocate temporary bitangent buffer //////////
-    cVector3* bitangents = (cVector3*)malloc(vertexCount * sizeof(cVector3));
+    glm::vec3* bitangents = (glm::vec3*)malloc(vertexCount * sizeof(glm::vec3));
     
     ////////// Parse vertex data //////////
     usize globalVertexIndex = 0;
@@ -118,13 +122,13 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
             const aiVector3D bitangent = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[vertexIndex] : aiVector3D(0.0f);
             const s32 materialIndex = mesh->mMaterialIndex;
 
-            vertexData[globalVertexIndex].position = cVector3(position.x, position.y, position.z);
-            vertexData[globalVertexIndex].texcoord = cVector2(texcoord.x, texcoord.y);
-            vertexData[globalVertexIndex].normal = cVector3(normal.x, normal.y, normal.z);
-            vertexData[globalVertexIndex].tangent = cVector4(tangent.x, tangent.y, tangent.z, 0.0f);
+            vertexData[globalVertexIndex].position = glm::vec3(position.x, position.y, position.z);
+            vertexData[globalVertexIndex].texcoord = glm::vec2(texcoord.x, texcoord.y);
+            vertexData[globalVertexIndex].normal = glm::vec3(normal.x, normal.y, normal.z);
+            vertexData[globalVertexIndex].tangent = glm::vec4(tangent.x, tangent.y, tangent.z, 0.0f);
             vertexData[globalVertexIndex].materialIndex = materialIndex;
             
-            bitangents[globalVertexIndex] = cVector3(bitangent.x, bitangent.y, bitangent.z);
+            bitangents[globalVertexIndex] = glm::vec3(bitangent.x, bitangent.y, bitangent.z);
 
             globalVertexIndex += 1;
         }
@@ -133,11 +137,11 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
     ////////// Calculate handness //////////
     for (usize i = 0; i < vertexCount; i++)
     {
-        glm::vec3 normal = glm::vec3(vertexData[i].normal.GetX(), vertexData[i].normal.GetY(), vertexData[i].normal.GetZ());
-        glm::vec3 tangent = glm::vec3(vertexData[i].tangent.GetX(), vertexData[i].tangent.GetY(), vertexData[i].tangent.GetZ());
-        glm::vec3 bitangent = glm::vec3(bitangents[i].GetX(), bitangents[i].GetY(), bitangents[i].GetZ());
+        glm::vec3 normal = glm::vec3(vertexData[i].normal.x, vertexData[i].normal.y, vertexData[i].normal.z);
+        glm::vec3 tangent = glm::vec3(vertexData[i].tangent.x, vertexData[i].tangent.y, vertexData[i].tangent.z);
+        glm::vec3 bitangent = glm::vec3(bitangents[i].x, bitangents[i].y, bitangents[i].z);
         f32 handedness = (glm::dot(glm::cross(normal, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
-        vertexData[i].tangent.SetW(handedness);
+        vertexData[i].tangent.w = handedness;
     }
     
     ////////// Deallocate temp bitangent buffer //////////

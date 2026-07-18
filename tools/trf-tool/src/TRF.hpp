@@ -15,12 +15,13 @@
 #include <gtc/quaternion.hpp>
 #include <gtx/quaternion.hpp>
 #include "types.hpp"
-#include "vertex.hpp"
 
 namespace triton
 {
 	namespace resource_file
 	{
+		void Print(const std::string& message);
+
 		enum class EResourceFormat
 		{
 			Model3D
@@ -38,6 +39,19 @@ namespace triton
 			RGB8,
 			RGBA8,
 			RGBA8_SRGB
+		};
+
+		struct SVertex
+		{
+			static constexpr types::usize kMaxBonesPerVertex = 4;
+
+			glm::vec3 position = glm::vec3(0.0f);
+			glm::vec2 texcoord = glm::vec2(0.0f);
+			glm::vec3 normal = glm::vec3(0.0f);
+			glm::vec4 tangent = glm::vec4(0.0f);
+			types::s32 materialIndex = -1;
+			types::u32 boneIndices[4] = {};
+			types::f32 boneWeights[4] = {};
 		};
 
 		struct SModel3DMaterialData;
