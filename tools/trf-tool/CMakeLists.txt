@@ -13,6 +13,7 @@ target_include_directories(
 target_link_libraries(
     TritonTRFTool
 	PRIVATE
+    assimp
 	TritonEngine
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
