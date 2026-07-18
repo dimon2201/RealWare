@@ -1,20 +1,53 @@
-project(TritonTRFTool)
+project(TritonTRF)
 
-file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.hpp)
-add_executable(TritonTRFTool ${SOURCE_FILES})
+add_library(
+    TritonTRFLib
+    src/TRF.cpp
+    src/TRF.hpp
+)
 target_include_directories(
-    TritonTRFTool
+    TritonTRFLib
     PRIVATE
     ../../engine/submodules/glm/glm
 	../../engine/submodules/stb
     ../../engine/submodules/tinyddsloader
 )
 target_link_libraries(
-    TritonTRFTool
+    TritonTRFLib
 	PRIVATE
     assimp
 )
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+
+add_executable(
+    TritonTRFTool
+    src/trf_tool.cpp
+)
+target_link_libraries(
+    TritonTRFTool
+	PRIVATE
+    TritonTRFLib
+)
+
+file(
+    MAKE_DIRECTORY
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib"
+)
+add_custom_command(
+    TARGET
+    TritonTRFLib
+    POST_BUILD
+    COMMAND
+    ${CMAKE_COMMAND}
+    -E
+    copy
+    "$<TARGET_FILE:TritonTRFLib>"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib"
+)
+
+file(
+    MAKE_DIRECTORY
+    "${CMAKE_CURRENT_SOURCE_DIR}/bin"
+)
 add_custom_command(
     TARGET
     TritonTRFTool
