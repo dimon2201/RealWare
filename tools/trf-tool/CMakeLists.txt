@@ -5,9 +5,10 @@ add_executable(TritonTRFTool ${SOURCE_FILES})
 target_include_directories(
     TritonTRFTool
     PRIVATE
-    submodules/glm/glm
-	submodules/stb
-    submodules/tinyddsloader
+    ../../engine/src
+    ../../engine/submodules/glm/glm
+	../../engine/submodules/stb
+    ../../engine/submodules/tinyddsloader
 )
 target_link_libraries(
     TritonTRFTool

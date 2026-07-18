@@ -20,7 +20,16 @@ namespace triton
         explicit IModel3DBackend(cContext* context) : iBackend(context) {}
         ~IModel3DBackend() override = default;
 
-        virtual std::optional<SModel3DData> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath) = 0;
+        virtual std::optional<SModel3DData> CreateModel(
+            const std::string& modelFolderPath,
+            const std::string& modelLocalPath
+        ) = 0;
+
+        virtual std::optional<SModel3DData> CreateModel(
+            const types::u8* byteData,
+            types::usize byteSize
+        ) = 0;
+
         virtual void DestroyModel(SModel3DData& model) = 0;
     };
 }

@@ -52,11 +52,38 @@ namespace triton
         explicit XModel3DBackendAssimp(cContext* context) : IModel3DBackend(context) {}
         ~XModel3DBackendAssimp() override = default;
 
-        std::optional<SModel3DData> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath) override final;
+        std::optional<SModel3DData> CreateModel(
+            const std::string& modelFolderPath,
+            const std::string& modelLocalPath
+        ) override final;
+
+        std::optional<SModel3DData> CreateModel(
+            const types::u8* byteData,
+            types::usize byteSize
+        ) override final;
+
         void DestroyModel(SModel3DData& model) override final;
 
     private:
-        void ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath);
+        void ImportScene(
+            Assimp::Importer& importer,
+            const aiScene*& scene,
+            const std::string& filePath
+        );
+
+        void ImportScene(
+            Assimp::Importer& importer,
+            const aiScene*& scene,
+            const types::u8* byteData,
+            types::usize byteSize
+        );
+        
+        std::optional<SModel3DData> ParseImportedScene(
+            const Assimp::Importer& importer,
+            const aiScene* scene,
+            const std::string& modelFolderPath = ""
+        );
+        
         void CountVerticesIndices(const aiScene* scene, types::usize& vertexCount, types::usize& indexCount, std::vector<types::usize>& indexOffsets);
         void AllocateVertexIndexBuffers(SVertex*& vertexData, types::u32*& indices, types::usize vertexCount, types::usize indexCount);
         void AllocateTempBitangentBuffer(cVector3*& bitangents, types::usize vertexCount);

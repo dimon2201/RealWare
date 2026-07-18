@@ -19,11 +19,49 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(c
     Assimp::Importer importer;
     const aiScene* scene = nullptr;
 
-    ImportScene(importer, scene, modelFolderPath + "/" + modelLocalPath);
+    ImportScene(
+        importer,
+        scene,
+        modelFolderPath + "/" + modelLocalPath
+    );
 
+    return ParseImportedScene(
+        importer,
+        scene,
+        modelFolderPath
+    );
+}
+
+std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(
+    const types::u8* byteData,
+    const types::usize byteSize
+)
+{
+    Assimp::Importer importer;
+    const aiScene* scene = nullptr;
+
+    ImportScene(
+        importer,
+        scene,
+        byteData,
+        byteSize
+    );
+
+    return ParseImportedScene(
+        importer,
+        scene
+    );
+}
+
+std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImportedScene(
+    const Assimp::Importer& importer,
+    const aiScene* scene,
+    const std::string& modelFolderPath
+)
+{
     if (!scene)
         return std::nullopt;
-    
+
     usize vertexCount = 0;
     usize indexCount = 0;
     std::vector<usize> indexOffsets = {};
@@ -51,16 +89,20 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(c
     CalculateHandedness(vertexData, bitangents, vertexCount);
     DeallocateTempBitangentBuffer(bitangents);
 
-    ParseMaterialData(scene, materials);
-    CreateMaterials(
-        modelFolderPath,
-        _context->GetSubsystem<XTextureSubsystem>(),
-        _context->GetSubsystem<XMaterialSubsystem>(), 
-        materials,
-        modelMaterials,
-        scene
-    );
-    SetAbsoluteMaterialIndices(vertexData, vertexCount, modelMaterials);
+    // TODO: encapsulate "is_directory()" check to proper file system backend
+    if (std::filesystem::is_directory(modelFolderPath))
+    {
+        ParseMaterialData(scene, materials);
+        CreateMaterials(
+            modelFolderPath,
+            _context->GetSubsystem<XTextureSubsystem>(),
+            _context->GetSubsystem<XMaterialSubsystem>(),
+            materials,
+            modelMaterials,
+            scene
+        );
+        SetAbsoluteMaterialIndices(vertexData, vertexCount, modelMaterials);
+    }
 
     ParseIndexData(scene, indexData, indexOffsets);
 
@@ -95,7 +137,11 @@ void triton::XModel3DBackendAssimp::DestroyModel(SModel3DData& model)
         _context->GetMemoryAllocator()->Deallocate((void*)model.vertexData);
 }
 
-void triton::XModel3DBackendAssimp::ImportScene(Assimp::Importer& importer, const aiScene*& scene, const std::string& filePath)
+void triton::XModel3DBackendAssimp::ImportScene(
+    Assimp::Importer& importer,
+    const aiScene*& scene,
+    const std::string& filePath
+)
 {
     importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, aiComponent_NORMALS);
     scene = importer.ReadFile(
@@ -108,7 +154,29 @@ void triton::XModel3DBackendAssimp::ImportScene(Assimp::Importer& importer, cons
         aiProcess_ImproveCacheLocality
     );
     if (!scene)
-        Print("Error: can't load mesh from file '" + filePath + "'");
+        Print("Error: can't load 3d model from file '" + filePath + "'");
+}
+
+void triton::XModel3DBackendAssimp::ImportScene(
+    Assimp::Importer& importer,
+    const aiScene*& scene,
+    const types::u8* byteData,
+    types::usize byteSize
+)
+{
+    importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, aiComponent_NORMALS);
+    scene = importer.ReadFileFromMemory(
+        byteData,
+        byteSize,
+        // aiProcess_RemoveComponent |
+        aiProcess_GenSmoothNormals |
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_CalcTangentSpace |
+        aiProcess_Triangulate |
+        aiProcess_ImproveCacheLocality
+    );
+    if (!scene)
+        Print("Error: can't load 3d model from byte data");
 }
 
 void triton::XModel3DBackendAssimp::CountVerticesIndices(const aiScene* scene, usize& vertexCount, usize& indexCount, std::vector<usize>& indexOffsets)
