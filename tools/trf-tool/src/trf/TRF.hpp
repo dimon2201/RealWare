@@ -5,10 +5,6 @@
 #include <optional>
 #include <filesystem>
 #include <unordered_map>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/mesh.h>
-#include <assimp/postprocess.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
@@ -152,68 +148,21 @@ namespace triton
 			types::usize _dataByteSize = 0;
 			types::u8* _data = nullptr;
 			std::string _dataFolderPath = "";
+			std::string _dataLocalFilePath = "";
 			types::usize _parsedDataByteSize = 0;
 			types::u8* _parsedData = nullptr;
 
 		public:
 			CResourceFile() = delete;
-			explicit CResourceFile(const std::filesystem::path& filePath);
+			CResourceFile(const CResourceFile& other) = delete;
+			CResourceFile& operator=(const CResourceFile& other) = delete;
+			CResourceFile(CResourceFile&& other) = delete;
+			CResourceFile& operator=(CResourceFile&& other) = delete;
 			~CResourceFile();
 
+			explicit CResourceFile(const std::filesystem::path& filePath);
+
 			void Parse();
-
-		private:
-			std::optional<SModel3DData> ParseModel3D();
-
-			std::optional<STextureData> ParseModel3DTexture(
-				types::boolean bIsEmbeddedTexture,
-				const aiTexture* assimpTexture,
-				const std::filesystem::path& modelFolderPath,
-				const std::filesystem::path& textureLocalFilePath
-			);
-
-			types::boolean ParsePNG(
-				types::usize width,
-				types::usize height,
-				types::usize channels,
-				types::u8* pixels,
-				ETextureFormat& outFormat,
-				ETextureDataFormat& outDataFormat,
-				types::usize& outWidth,
-				types::usize& outHeight,
-				types::usize& outChannels,
-				types::u8*& outPixels
-			);
-
-			types::boolean CResourceFile::ParseDDS(
-				types::usize width,
-				types::usize height,
-				tinyddsloader::DDSFile::DXGIFormat format,
-				types::u8* pixels,
-				ETextureFormat& outFormat,
-				ETextureDataFormat& outDataFormat,
-				types::usize& outWidth,
-				types::usize& outHeight,
-				types::usize& outChannels,
-				types::u8*& outPixels
-			);
-
-			types::boolean AccumulateBoneTransform(
-				const aiNode* root,
-				aiNode*& outBoneRoot,
-				const aiMatrix4x4& parentTransform,
-				const std::unordered_map<std::string, types::usize>& boneIndices,
-				aiMatrix4x4& outAccumulatedTransform
-			);
-
-			void ConstructBoneHierarchy(
-				const aiNode* node,
-				types::s32 parentBoneIndex,
-				const std::unordered_map<std::string, types::usize>& boneIndexData,
-				std::vector<SModel3DBoneData>& boneData
-			);
-
-			glm::mat4 ConvertMatrix(const aiMatrix4x4& matrix);
 		};
 	}
 }
