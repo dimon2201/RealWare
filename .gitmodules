@@ -25,3 +25,6 @@
 [submodule "engine/submodules/jolt-physics"]
 	path = engine/submodules/jolt-physics
 	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "engine/submodules/tracy"]
+	path = engine/submodules/tracy
+	url = https://github.com/wolfpld/tracy.git
