@@ -3,10 +3,6 @@
 #include <fstream>
 #include <vector>
 #include <cstdlib>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/mesh.h>
-#include <assimp/postprocess.h>
 #define TINYDDSLOADER_IMPLEMENTATION
 #include <tinyddsloader.h>
 #define STB_IMAGE_IMPLEMENTATION
@@ -88,18 +84,6 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
     if (!scene)
         Print("Error: can't load 3d model from byte data");
 
-    ////////// Prepare temp memory //////////
-    /*std::unordered_map<std::string, types::usize> boneIndices = {};
-    std::vector<SBone> bones = {};
-    std::vector<std::vector<SBoneWeight>> vertexWeights;
-    std::vector<SAnimation> animations = {};
-    HSkeleton modelSkeleton = {};
-    usize boneOffset = 0;
-    std::vector<HAnimation> modelAnimations = {};
-    aiNode* boneRootNode = nullptr;
-    aiMatrix4x4 parentRootTransform = aiMatrix4x4();
-    aiMatrix4x4 accumulatedRootTransform = aiMatrix4x4();*/
-
     ////////// Count vertices and indices //////////
     usize vertexCount = 0;
     usize indexCount = 0;
@@ -116,7 +100,7 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
 
     ////////// Allocate vertex and index buffers //////////
     SVertex* vertexData = (SVertex*)malloc(vertexCount * sizeof(SVertex));
-    u32* indices = (u32*)malloc(indexCount * sizeof(u32));
+    u32* indexData = (u32*)malloc(indexCount * sizeof(u32));
 
     ////////// Allocate temporary bitangent buffer //////////
     cVector3* bitangents = (cVector3*)malloc(vertexCount * sizeof(cVector3));
@@ -271,13 +255,6 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
         material.metallicTexture = *metlOpt;
     }
 
-    ////////// Set absolute material indices //////////
-    /*for (usize i = 0; i < vertexCount; i++)
-        vertexData[i].materialIndex =
-        _context->GetSubsystem<XMaterialSubsystem>()->GetHandleBufferIndex(
-            modelMaterials.at(vertexData[i].materialIndex)
-        );
-
     ////////// Parse index data //////////
     usize globalIndicesIndex = 0;
     for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
@@ -298,8 +275,11 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
     }
 
     ////////// Create bones //////////
-    vertexWeights.resize(vertexCount);
     usize vertexOffset = 0;
+    std::vector<SModel3DBoneData> boneData = {};
+    std::unordered_map<std::string, types::usize> boneIndexData = {};
+    std::vector<std::vector<SModel3DVertexWeightData>> vertexWeights;
+    vertexWeights.resize(vertexCount);
     for (usize meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
     {
         const aiMesh* mesh = scene->mMeshes[meshIndex];
@@ -307,37 +287,40 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
         {
             const aiBone* bone = mesh->mBones[boneIndex];
 
-            std::string boneName = bone->mName.C_Str();
             usize realBoneIndex = 0;
-            if (boneIndices.find(boneName) == boneIndices.end())
+            std::string boneName = bone->mName.C_Str();
+            if (boneIndexData.find(boneName) == boneIndexData.end())
             {
-                SBone b = {};
+                SModel3DBoneData b = {};
                 b.name = boneName;
                 b.modelMatrix = ConvertMatrix(bone->mOffsetMatrix);
 
-                realBoneIndex = bones.size();
-                boneIndices.insert({ boneName, realBoneIndex });
-                bones.push_back(std::move(b));
+                realBoneIndex = boneData.size();
+                boneIndexData.insert({ boneName, realBoneIndex });
+                boneData.push_back(std::move(b));
             }
             else
             {
-                realBoneIndex = boneIndices[boneName];
+                realBoneIndex = boneIndexData[boneName];
             }
 
             for (usize weightIndex = 0; weightIndex < bone->mNumWeights; weightIndex++)
             {
                 const aiVertexWeight& vw = bone->mWeights[weightIndex];
                 const usize vertexIndex = vertexOffset + vw.mVertexId;
-                vertexWeights[vertexIndex].push_back({
-                    realBoneIndex,
-                    vw.mWeight
-                    });
+
+                SModel3DVertexWeightData m3dvwd;
+                m3dvwd.boneIndex = realBoneIndex;
+                m3dvwd.weight = vw.mWeight;
+
+                vertexWeights[vertexIndex].push_back(m3dvwd);
             }
         }
+
         vertexOffset += mesh->mNumVertices;
     }
     
-    ////////// Finalize bone weights //////////
+    ////////// Finalize vertex weights //////////
     for (usize vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
     {
         auto& weights = vertexWeights[vertexIndex];
@@ -345,7 +328,7 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
         std::sort(
             weights.begin(),
             weights.end(),
-            [](const SBoneWeight& a, const SBoneWeight& b)
+            [](const SModel3DVertexWeightData& a, const SModel3DVertexWeightData& b)
             {
                 return a.weight > b.weight;
             }
@@ -367,139 +350,91 @@ std::optional<SModel3DData> CResourceFile<TResourceFormat>::ParseModel3D()
         {
             vertexData[vertexIndex].boneIndices[i] = weights[i].boneIndex;
             vertexData[vertexIndex].boneWeights[i] = weights[i].weight;
-
-            vertexData[vertexIndex].boneWeights[0] = 1.0f;
-            vertexData[vertexIndex].boneWeights[1] = 0.0f;
-            vertexData[vertexIndex].boneWeights[2] = 0.0f;
-            vertexData[vertexIndex].boneWeights[3] = 0.0f;
         }
     }
     
     ////////// Accumulate bone transform //////////
-    aiMatrix4x4 current = parentRootTransform * node->mTransformation;
-    auto it = boneIndices.find(node->mName.C_Str());
-    if (it != boneIndices.end())
-    {
-        boneRootNode = (aiNode*)node;
-        accumulatedRootTransform = parentRootTransform;
-        return K_TRUE;
-    }
-
-    for (uint32_t i = 0; i < node->mNumChildren; i++)
-    {
-        if (AccumulateRootTransform(
-            node->mChildren[i],
-            boneRootNode,
-            current,
-            accumulatedRootTransform,
-            boneIndices
-        ))
-            return K_TRUE;
-    }
-
-    return K_FALSE;
+    aiNode* boneRootNode = nullptr;
+    aiMatrix4x4 parentRootTransform = aiMatrix4x4();
+    aiMatrix4x4 accumulatedRootTransform = aiMatrix4x4();
+    AccumulateBoneTransform(
+        scene->mRootNode,
+        boneRootNode,
+        parentRootTransform,
+        boneIndexData,
+        accumulatedRootTransform
+    );
     
     ////////// Create bone hierarchy //////////
-    s32 currentBone = -1;
-
-    auto it = boneIndices.find(node->mName.C_Str());
-    if (it != boneIndices.end())
-    {
-        currentBone = it->second;
-
-        bones[currentBone].localParentBoneIndex = parentBone;
-        bones[currentBone].localMatrix = ConvertMatrix(node->mTransformation);
-
-        if (parentBone != -1)
-            bones[parentBone].localChildBoneIndices.push_back(currentBone);
-    }
-
-    for (uint32_t i = 0; i < node->mNumChildren; i++)
-    {
-        CreateBoneHierarchy(
-            node->mChildren[i],
-            currentBone == -1 ? parentBone : currentBone,
-            boneIndices,
-            bones
-        );
-    }
-    
-    ////////// Create skeleton //////////
-    modelSkeleton = skeletonSubsystem->CreateSkeleton(
-        bones,
-        ConvertMatrix(accumulatedRootTransform)
+    ConstructBoneHierarchy(
+        boneRootNode,
+        -1,
+        boneIndexData,
+        boneData
     );
     
     ////////// Create animations //////////
+    std::vector<SModel3DAnimationData> animations = {};
     for (usize animIdx = 0; animIdx < scene->mNumAnimations; ++animIdx)
     {
         const aiAnimation* srcAnim = scene->mAnimations[animIdx];
 
-        SAnimation animation = {};
+        SModel3DAnimationData animation = {};
         animation.name = srcAnim->mName.C_Str();
         animation.duration = srcAnim->mDuration;
         animation.ticksPerSecond = srcAnim->mTicksPerSecond;
-        animation.animKeys.reserve(srcAnim->mNumChannels);
+        animation.keys.reserve(srcAnim->mNumChannels);
 
         for (usize channelIdx = 0; channelIdx < srcAnim->mNumChannels; ++channelIdx)
         {
             const aiNodeAnim* channel = srcAnim->mChannels[channelIdx];
 
-            auto it = boneIndices.find(channel->mNodeName.C_Str());
-            if (it == boneIndices.end())
+            auto it = boneIndexData.find(channel->mNodeName.C_Str());
+            if (it == boneIndexData.end())
                 continue;
 
-            SAnimationKey animKey = {};
-            animKey.localBoneIndex = it->second;
+            SModel3DAnimationKeyData key = {};
+            key.localBoneIndex = it->second;
 
             // Position
-            animKey.positionKeys.reserve(channel->mNumPositionKeys);
+            key.positionKeys.reserve(channel->mNumPositionKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumPositionKeys; ++keyIdx)
             {
-                const aiVectorKey& key = channel->mPositionKeys[keyIdx];
-                SBonePositionKey bpk = {};
-                bpk.time = key.mTime;
-                bpk.position = cVector3(key.mValue.x, key.mValue.y, key.mValue.z);
-                animKey.positionKeys.push_back(bpk);
+                const aiVectorKey& assimpKey = channel->mPositionKeys[keyIdx];
+                SModel3DBonePositionKeyData bpk = {};
+                bpk.time = assimpKey.mTime;
+                bpk.position = glm::vec3(assimpKey.mValue.x, assimpKey.mValue.y, assimpKey.mValue.z);
+                key.positionKeys.push_back(bpk);
             }
 
             // Rotation
-            animKey.rotationKeys.reserve(channel->mNumRotationKeys);
+            key.rotationKeys.reserve(channel->mNumRotationKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumRotationKeys; ++keyIdx)
             {
-                const aiQuatKey& key = channel->mRotationKeys[keyIdx];
-                SBoneRotationKey brk = {};
-                brk.time = key.mTime;
-                brk.rotation = cQuaternion(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z);
-                animKey.rotationKeys.push_back(brk);
+                const aiQuatKey& assimpKey = channel->mRotationKeys[keyIdx];
+                SModel3DBoneRotationKeyData brk = {};
+                brk.time = assimpKey.mTime;
+                brk.rotation = glm::quat(assimpKey.mValue.w, assimpKey.mValue.x, assimpKey.mValue.y, assimpKey.mValue.z);
+                key.rotationKeys.push_back(brk);
             }
 
             // Scale
-            animKey.scaleKeys.reserve(channel->mNumScalingKeys);
+            key.scaleKeys.reserve(channel->mNumScalingKeys);
             for (usize keyIdx = 0; keyIdx < channel->mNumScalingKeys; ++keyIdx)
             {
-                const aiVectorKey& key = channel->mScalingKeys[keyIdx];
-                SBoneScaleKey bsk = {};
-                bsk.time = key.mTime;
-                bsk.scale = cVector3(key.mValue.x, key.mValue.y, key.mValue.z);
-                animKey.scaleKeys.push_back(bsk);
+                const aiVectorKey& assimpKey = channel->mScalingKeys[keyIdx];
+                SModel3DBoneScaleKeyData bsk = {};
+                bsk.time = assimpKey.mTime;
+                bsk.scale = glm::vec3(assimpKey.mValue.x, assimpKey.mValue.y, assimpKey.mValue.z);
+                key.scaleKeys.push_back(bsk);
             }
 
-            animation.animKeys.push_back(std::move(animKey));
+            animation.keys.push_back(std::move(key));
         }
-
-        modelAnimations.push_back(
-            animationSubsystem->CreateAnimation(
-                animation.name,
-                animation.duration,
-                animation.ticksPerSecond,
-                modelSkeleton,
-                animation.animKeys
-            ));
     }
 
     ////////// Return //////////
-    SModel3DData m3dd;
+    /*SModel3DData m3dd;
     m3dd.vertexData = vertexData;
     m3dd.indexData = indexData;
     m3dd.vertexCount = vertexCount;
@@ -836,6 +771,85 @@ boolean CResourceFile<TResourceFormat>::ParseDDS(
     outPixels = texPixels;
 
     return K_TRUE;
+}
+
+template <EResourceFormat TResourceFormat>
+boolean CResourceFile<TResourceFormat>::AccumulateBoneTransform(
+    const aiNode* root,
+    aiNode*& outBoneRoot,
+    const aiMatrix4x4& parentTransform,
+    const std::unordered_map<std::string, usize>& boneIndexData,
+    aiMatrix4x4& outAccumulatedTransform
+)
+{
+    auto it = boneIndexData.find(root->mName.C_Str());
+    if (it != boneIndexData.end())
+    {
+        outBoneRoot = (aiNode*)root;
+        outAccumulatedTransform = parentTransform;
+
+        return K_TRUE;
+    }
+
+    aiMatrix4x4 currentTransform = parentTransform * root->mTransformation;
+    for (usize i = 0; i < root->mNumChildren; i++)
+    {
+        if (AccumulateBoneTransform(
+            root->mChildren[i],
+            outBoneRoot,
+            currentTransform,
+            boneIndexData,
+            outAccumulatedTransform
+        ))
+            return K_TRUE;
+    }
+
+    return K_FALSE;
+}
+
+template <EResourceFormat TResourceFormat>
+void CResourceFile<TResourceFormat>::ConstructBoneHierarchy(
+    const aiNode* node,
+    s32 parentBoneIndex,
+    const std::unordered_map<std::string, usize>& boneIndexData,
+    std::vector<SModel3DBoneData>& outBoneData
+)
+{
+    s32 currentBoneIndex = -1;
+
+    auto it = boneIndexData.find(node->mName.C_Str());
+    if (it != boneIndexData.end())
+    {
+        currentBoneIndex = it->second;
+
+        outBoneData[currentBoneIndex].parentLocalBoneIndex = parentBoneIndex;
+        outBoneData[currentBoneIndex].localMatrix = ConvertMatrix(node->mTransformation);
+
+        if (parentBoneIndex != -1)
+            outBoneData[parentBoneIndex].childLocalBoneIndices.push_back(currentBoneIndex);
+    }
+
+    for (uint32_t i = 0; i < node->mNumChildren; i++)
+    {
+        ConstructBoneHierarchy(
+            node->mChildren[i],
+            currentBoneIndex == -1 ? parentBoneIndex : currentBoneIndex,
+            boneIndexData,
+            outBoneData
+        );
+    }
+}
+
+template <EResourceFormat TResourceFormat>
+glm::mat4 CResourceFile<TResourceFormat>::ConvertMatrix(const aiMatrix4x4& matrix)
+{
+    glm::mat4 result;
+    result[0] = glm::vec4(matrix.a1, matrix.b1, matrix.c1, matrix.d1);
+    result[1] = glm::vec4(matrix.a2, matrix.b2, matrix.c2, matrix.d2);
+    result[2] = glm::vec4(matrix.a3, matrix.b3, matrix.c3, matrix.d3);
+    result[3] = glm::vec4(matrix.a4, matrix.b4, matrix.c4, matrix.d4);
+
+    return result;
 }
 
 template class CResourceFile<EResourceFormat::Model3D>;
