@@ -129,6 +129,8 @@ CResourceFile<TResourceFormat>::~CResourceFile()
 template <EResourceFormat TResourceFormat>
 void CResourceFile<TResourceFormat>::Parse()
 {
+    auto timeStart = std::chrono::high_resolution_clock::now();
+
     switch (TResourceFormat)
     {
     case EResourceFormat::Model3D:
@@ -144,6 +146,11 @@ void CResourceFile<TResourceFormat>::Parse()
     }
 
     Print("Info: resource was parsed successfully!");
+
+    auto timeEnd = std::chrono::high_resolution_clock::now();
+    f64 seconds = std::chrono::duration<f64>(timeEnd - timeStart).count();
+
+    Print("Info: elapsed time = " + std::to_string(seconds) + " sec");
 }
 
 std::optional<SModel3DData> ParseModel3D(
