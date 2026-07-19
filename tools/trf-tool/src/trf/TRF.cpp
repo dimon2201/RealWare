@@ -143,11 +143,12 @@ void CResourceFile<TResourceFormat>::Parse()
                 _dataFolderPath,
                 _dataLocalFilePath
             );
-            break;
 
             if (result.has_value())
             {
                 bIsOk = K_TRUE;
+
+                SModel3DData model = *result;
             }
         }
     }
@@ -174,7 +175,7 @@ std::optional<SModel3DData> ParseModel3D(
         "Info: parsing 3d model resource at '" +
         dataFolderPath + "/" +
         dataLocalFilePath +
-        "'"
+        "'..."
     );
 
     Assimp::Importer importer;
@@ -1052,3 +1053,360 @@ glm::mat4 ConvertMatrix(const aiMatrix4x4& matrix)
 }
 
 template class CResourceFile<EResourceFormat::Model3D>;
+
+void ReadFileBytes(
+    const std::filesystem::path& filePath,
+    u8*& byteData,
+    usize& byteSize
+)
+{
+    Print("Info: opening file '" + filePath.generic_string() + "'...");
+
+    std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+
+    if (!file.is_open())
+    {
+        Print("Error: failed to open file");
+
+        return;
+    }
+
+    byteSize = (types::usize)file.tellg();
+
+    Print("Info: file byte size = " + std::to_string(byteSize));
+
+    file.seekg(0, std::ios::beg);
+
+    Print("Info: reading file data bytes...");
+
+    byteData = new types::u8[byteSize];
+    if (!file.read((char*)byteData, byteSize))
+    {
+        delete[] byteData;
+        byteData = nullptr;
+        byteSize = 0;
+
+        Print("Error: failed to read file");
+
+        return;
+    }
+
+    Print("Info: file was opened & read successfully!");
+}
+
+boolean CModel3DResource::LoadRawFile(const std::filesystem::path& rawFilePath)
+{
+    auto timeStart = std::chrono::high_resolution_clock::now();
+
+    boolean bIsOk = K_FALSE;
+
+    ReadFileBytes(
+        rawFilePath,
+        data,
+        dataByteSize
+    );
+
+    const std::string rawFileDirPath = rawFilePath.parent_path().generic_string();
+    const std::string rawFileLocalPath = rawFilePath.filename().generic_string();
+    auto result = ParseModel3D(
+        data,
+        dataByteSize,
+        rawFileDirPath,
+        rawFileLocalPath
+    );
+
+    if (result.has_value())
+        bIsOk = K_TRUE;
+
+    if (bIsOk == K_TRUE)
+    {
+        *((SModel3DData*)this) = *result;
+
+        Print("Info: resource was parsed successfully!");
+    }
+    else
+    {
+        Print("Error: failed to parse resource!");
+        return K_FALSE;
+    }
+
+    auto timeEnd = std::chrono::high_resolution_clock::now();
+    f64 seconds = std::chrono::duration<f64>(timeEnd - timeStart).count();
+
+    Print("Info: elapsed time = " + std::to_string(seconds) + " sec");
+
+    return K_TRUE;
+}
+
+types::boolean CModel3DResource::LoadResourceFile(const std::filesystem::path& resourceFilePath)
+{
+    return K_FALSE;
+}
+
+boolean CModel3DResource::WriteResourceFile(const std::filesystem::path& resourceFilePath)
+{
+    auto timeStart = std::chrono::high_resolution_clock::now();
+    boolean bIsOk = K_FALSE;
+
+    const std::string& resourceFilePathStr = resourceFilePath.generic_string();
+
+    Print(
+        "Info: writing 3d model resource at '" +
+        resourceFilePathStr +
+        "'..."
+    );
+
+    if (kStringByteSize <= 1)
+    {
+        Print("Error: string byte size is too short = " + std::to_string(kStringByteSize));
+        return K_FALSE;
+    }
+    const usize kStringByteSizeWithoutZero = kStringByteSize - 1;
+
+    Print("Info: opening file '" + resourceFilePathStr + "'...");
+
+    std::ofstream resourceStream(resourceFilePath.generic_string().c_str(), std::ios::binary);
+    if (!resourceStream)
+    {
+        Print("Error: failed to open file '" + resourceFilePath.generic_string() + "'");
+
+        return K_FALSE;
+    }
+
+    ////////// Header //////////
+    Print("Info: writing header...");
+
+    format = EResourceFormat::Model3D;
+    reserved = 0;
+    const usize kHeaderNumByteSize = sizeof(usize);
+    resourceStream.write((const char*)&kMagic[0], kMagicByteCount);
+    resourceStream.write((const char*)&kHeaderNumByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kUCharByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kSIntByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kUIntByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kUSizeByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kDWordByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kQWordByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kFloatByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kVectorByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kQuaternionByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kMatrixByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&kStringByteSize, kHeaderNumByteSize);
+    resourceStream.write((const char*)&format, kDWordByteSize);
+    resourceStream.write((const char*)&reserved, kQWordByteSize);
+
+    const SModel3DData& myData = (const SModel3DData&)*this;
+    
+    ////////// Vertices //////////
+    Print("Info: writing vertex data...");
+
+    const usize kVertexByteSize = sizeof(SVertex);
+    resourceStream.write((const char*)&kVertexByteSize, kUSizeByteSize);
+    resourceStream.write((const char*)&myData.vertexCount, kUSizeByteSize);
+    for (usize i = 0; i < myData.vertexCount; i++)
+        resourceStream.write((const char*)&myData.vertexData[i], kVertexByteSize);
+
+    ////////// Indices //////////
+    Print("Info: writing index data...");
+
+    const usize kIndexByteSize = sizeof(u32);
+    resourceStream.write((const char*)&kIndexByteSize, kUSizeByteSize);
+    resourceStream.write((const char*)&myData.indexCount, kUSizeByteSize);
+    for (usize i = 0; i < myData.indexCount; i++)
+        resourceStream.write((const char*)&myData.indexData[i], kIndexByteSize);
+
+    ////////// Materials //////////
+    Print("Info: writing material data...");
+
+    const usize materialCount = (usize)myData.materialData.size();
+    resourceStream.write((const char*)&materialCount, kUSizeByteSize);
+    for (usize i = 0; i < materialCount; i++)
+    {
+        const SModel3DMaterialData& myMaterialData = myData.materialData[i];
+
+        if (myMaterialData.diffuseTexturePath.size() > kStringByteSizeWithoutZero ||
+            myMaterialData.normalTexturePath.size() > kStringByteSizeWithoutZero ||
+            myMaterialData.roughnessTexturePath.size() > kStringByteSizeWithoutZero ||
+            myMaterialData.metallicTexturePath.size() > kStringByteSizeWithoutZero)
+        {
+            Print("Error: texture path exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
+            return K_FALSE;
+        }
+
+        u8 diffuseTexturePath[kStringByteSize] = {};
+        u8 normalTexturePath[kStringByteSize] = {};
+        u8 roughnessTexturePath[kStringByteSize] = {};
+        u8 metallicTexturePath[kStringByteSize] = {};
+        memcpy(
+            &diffuseTexturePath[0],
+            &myMaterialData.diffuseTexturePath.c_str()[0],
+            myMaterialData.diffuseTexturePath.size()
+        );
+        memcpy(
+            &normalTexturePath[0],
+            &myMaterialData.normalTexturePath.c_str()[0],
+            myMaterialData.normalTexturePath.size()
+        );
+        memcpy(
+            &roughnessTexturePath[0],
+            &myMaterialData.roughnessTexturePath.c_str()[0],
+            myMaterialData.roughnessTexturePath.size()
+        );
+        memcpy(
+            &metallicTexturePath[0],
+            &myMaterialData.metallicTexturePath.c_str()[0],
+            myMaterialData.metallicTexturePath.size()
+        );
+
+        resourceStream.write((const char*)&diffuseTexturePath[0], kStringByteSize);
+        resourceStream.write((const char*)&normalTexturePath[0], kStringByteSize);
+        resourceStream.write((const char*)&roughnessTexturePath[0], kStringByteSize);
+        resourceStream.write((const char*)&metallicTexturePath[0], kStringByteSize);
+
+        auto WriteTextureData = [this](std::ofstream& stream, const STextureData& texture, const std::string& label)
+        {
+            Print("Info: writing " + label + " texture data...");
+
+            stream.write((const char*)&texture.format, kDWordByteSize);
+            stream.write((const char*)&texture.dataFormat, kDWordByteSize);
+            stream.write((const char*)&texture.width, kUSizeByteSize);
+            stream.write((const char*)&texture.height, kUSizeByteSize);
+            stream.write((const char*)&texture.channelCount, kUSizeByteSize);
+            const usize pixelDataByteSize = texture.width * texture.height * texture.channelCount;
+            for (usize j = 0; j < pixelDataByteSize; j++)
+                stream.write((const char*)&texture.pixelByteData[j], kUCharByteSize);
+        };
+        WriteTextureData(resourceStream, myMaterialData.diffuseTexture, "diffuse");
+        WriteTextureData(resourceStream, myMaterialData.normalTexture, "normal");
+        WriteTextureData(resourceStream, myMaterialData.roughnessTexture, "roughness");
+        WriteTextureData(resourceStream, myMaterialData.metallicTexture, "metallic");
+    }
+
+    ////////// Bones & Animations //////////
+    const usize boneCount = (usize)myData.boneData.size();
+    resourceStream.write((const char*)&boneCount, kUSizeByteSize);
+    if (boneCount > 0)
+    {
+        Print("Info: writing bone data...");
+
+        ////////// Bones //////////
+        for (usize i = 0; i < boneCount; i++)
+        {
+            const SModel3DBoneData& myBoneData = myData.boneData[i];
+
+            if (myBoneData.name.size() > kStringByteSizeWithoutZero)
+            {
+                Print("Error: bone name exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
+                return K_FALSE;
+            }
+            u8 boneName[kStringByteSize] = {};
+            memcpy(
+                &boneName[0],
+                &myBoneData.name.c_str()[0],
+                myBoneData.name.size()
+            );
+            resourceStream.write((const char*)&boneName[0], kStringByteSize);
+
+            resourceStream.write((const char*)&myBoneData.localMatrix[0][0], kMatrixByteSize);
+            resourceStream.write((const char*)&myBoneData.modelMatrix[0][0], kMatrixByteSize);
+            resourceStream.write((const char*)&myBoneData.parentLocalBoneIndex, kSIntByteSize);
+
+            const usize childBoneCount = (usize)myBoneData.childLocalBoneIndices.size();
+            resourceStream.write((const char*)&childBoneCount, kUSizeByteSize);
+            for (usize j = 0; j < childBoneCount; j++)
+                resourceStream.write((const char*)&myBoneData.childLocalBoneIndices.data()[j], kUSizeByteSize);
+        }
+
+        ////////// Animations //////////
+        Print("Info: writing animation data...");
+
+        const usize animationCount = myData.animationData.size();
+        resourceStream.write((const char*)&animationCount, kUSizeByteSize);
+        for (usize i = 0; i < animationCount; i++)
+        {
+            const SModel3DAnimationData& myAnimationData = myData.animationData[i];
+
+            if (myAnimationData.name.size() > kStringByteSizeWithoutZero)
+            {
+                Print("Error: animation name exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
+                return K_FALSE;
+            }
+            u8 animationName[kStringByteSize] = {};
+            memcpy(
+                &animationName[0],
+                &myAnimationData.name.c_str()[0],
+                myAnimationData.name.size()
+            );
+            resourceStream.write((const char*)&animationName[0], kStringByteSize);
+
+            resourceStream.write((const char*)&myAnimationData.duration, kFloatByteSize);
+            resourceStream.write((const char*)&myAnimationData.ticksPerSecond, kFloatByteSize);
+
+            Print("Info: writing key data...");
+
+            const usize keyCount = myAnimationData.keys.size();
+            resourceStream.write((const char*)&keyCount, kUSizeByteSize);
+            for (usize j = 0; j < keyCount; j++)
+            {
+                types::usize localBoneIndex = 0;
+                std::vector<SModel3DBonePositionKeyData> positionKeys = {};
+                std::vector<SModel3DBoneRotationKeyData> rotationKeys = {};
+                std::vector<SModel3DBoneScaleKeyData> scaleKeys = {};
+
+                const SModel3DAnimationKeyData& myAnimationKeyData = myAnimationData.keys[j];
+
+                resourceStream.write((const char*)&myAnimationKeyData.localBoneIndex, kUSizeByteSize);
+
+                Print("Info: writing position key data...");
+
+                const usize positionKeyCount = myAnimationKeyData.positionKeys.size();
+                for (usize k = 0; k < positionKeyCount; k++)
+                {
+                    const SModel3DBonePositionKeyData& myBonePositionKeyData = myAnimationKeyData.positionKeys[k];
+                    resourceStream.write((const char*)&myBonePositionKeyData.time, kFloatByteSize);
+                    resourceStream.write((const char*)&myBonePositionKeyData.position, kVectorByteSize);
+                }
+
+                Print("Info: writing rotation key data...");
+
+                const usize rotationKeyCount = myAnimationKeyData.rotationKeys.size();
+                for (usize k = 0; k < rotationKeyCount; k++)
+                {
+                    const SModel3DBoneRotationKeyData& myBoneRotationKeyData = myAnimationKeyData.rotationKeys[k];
+                    resourceStream.write((const char*)&myBoneRotationKeyData.time, kFloatByteSize);
+                    resourceStream.write((const char*)&myBoneRotationKeyData.rotation, kQuaternionByteSize);
+                }
+
+                Print("Info: writing scale key data...");
+
+                const usize scaleKeyCount = myAnimationKeyData.scaleKeys.size();
+                for (usize k = 0; k < scaleKeyCount; k++)
+                {
+                    const SModel3DBoneScaleKeyData& myBoneScaleKeyData = myAnimationKeyData.scaleKeys[k];
+                    resourceStream.write((const char*)&myBoneScaleKeyData.time, kFloatByteSize);
+                    resourceStream.write((const char*)&myBoneScaleKeyData.scale, kVectorByteSize);
+                }
+            }
+        }
+    }
+    else
+    {
+        Print("Info: no any bone data to write");
+    }
+
+    resourceStream.close();
+
+    Print("Info: resource file was written successfully!");
+
+    auto timeEnd = std::chrono::high_resolution_clock::now();
+    f64 seconds = std::chrono::duration<f64>(timeEnd - timeStart).count();
+
+    Print("Info: elapsed time = " + std::to_string(seconds) + " sec");
+
+    return K_TRUE;
+}
+
+boolean CModel3DResource::Destroy()
+{
+    return K_FALSE;
+}

@@ -18,23 +18,49 @@ namespace triton
 	{
 		void Print(const std::string& message);
 
-		enum class EResourceFormat
+		enum class EResourceFormat : types::dword
 		{
-			Model3D
+			Model3D = 0
 		};
 
-		enum class ETextureFormat
+		enum class ETextureFormat : types::dword
 		{
 			PNG,
 			DDS
 		};
 
-		enum class ETextureDataFormat
+		enum class ETextureDataFormat : types::dword
 		{
 			R8,
 			RGB8,
 			RGBA8,
 			RGBA8_SRGB
+		};
+
+		struct SBaseData
+		{
+			types::u8* data = nullptr;
+			types::usize dataByteSize = 0;
+		};
+
+		struct SBaseResourceFileHeader
+		{
+			static constexpr types::usize kMagicByteCount = 4;
+			static constexpr types::u8 kMagic[kMagicByteCount] = { 'T', 'R', 'F', ' ' };
+			static constexpr types::usize kUCharByteSize = sizeof(types::u8);
+			static constexpr types::usize kSIntByteSize = sizeof(types::s32);
+			static constexpr types::usize kUIntByteSize = sizeof(types::u32);
+			static constexpr types::usize kUSizeByteSize = sizeof(types::usize);
+			static constexpr types::usize kDWordByteSize = sizeof(types::dword);
+			static constexpr types::usize kQWordByteSize = sizeof(types::qword);
+			static constexpr types::usize kFloatByteSize = sizeof(types::f32);
+			static constexpr types::usize kVectorByteSize = sizeof(glm::vec3);
+			static constexpr types::usize kQuaternionByteSize = sizeof(glm::quat);
+			static constexpr types::usize kMatrixByteSize = sizeof(glm::mat4);
+			static constexpr types::usize kStringByteSize = 256;
+
+			EResourceFormat format;
+			types::qword reserved;
 		};
 
 		struct SVertex
@@ -53,7 +79,7 @@ namespace triton
 		struct SModel3DMaterialData;
 		struct SModel3DBoneData;
 		struct SModel3DAnimationData;
-		struct SModel3DData
+		struct SModel3DData : public SBaseData
 		{
 			SVertex* vertexData = nullptr;
 			types::u32* indexData = nullptr;
@@ -142,6 +168,42 @@ namespace triton
 			std::vector<SModel3DAnimationKeyData> keys = {};
 		};
 
+		class IResource
+		{
+		public:
+			IResource() = default;
+			IResource(const IResource& other) = delete;
+			IResource& operator=(const IResource& other) = delete;
+			IResource(IResource&& other) = delete;
+			IResource& operator=(IResource&& other) = delete;
+			virtual ~IResource() = default;
+			
+			virtual types::boolean LoadRawFile(const std::filesystem::path& rawFilePath) = 0;
+
+			virtual types::boolean LoadResourceFile(const std::filesystem::path& resourceFilePath) = 0;
+
+			virtual types::boolean WriteResourceFile(const std::filesystem::path& resourceFilePath) = 0;
+
+			virtual types::boolean Destroy() = 0;
+		};
+
+		class CModel3DResource : public IResource,
+								 protected SModel3DData,
+								 protected SBaseResourceFileHeader
+		{
+		public:
+			CModel3DResource() = default;
+			~CModel3DResource() override = default;
+
+			types::boolean LoadRawFile(const std::filesystem::path& rawFilePath) override;
+
+			types::boolean LoadResourceFile(const std::filesystem::path& resourceFilePath) override;
+
+			types::boolean WriteResourceFile(const std::filesystem::path& resourceFilePath) override;
+
+			types::boolean Destroy() override;
+		};
+
 		template <EResourceFormat TResourceFormat>
 		class CResourceFile
 		{
@@ -163,6 +225,9 @@ namespace triton
 			explicit CResourceFile(const std::filesystem::path& filePath);
 
 			void Parse();
+
+			template <typename TData>
+			void GetData();
 		};
 	}
 }
