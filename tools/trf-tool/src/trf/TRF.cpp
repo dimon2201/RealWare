@@ -131,21 +131,31 @@ void CResourceFile<TResourceFormat>::Parse()
 {
     auto timeStart = std::chrono::high_resolution_clock::now();
 
+    boolean bIsOk = K_FALSE;
+
     switch (TResourceFormat)
     {
-    case EResourceFormat::Model3D:
-    {
-        ParseModel3D(
-            _data,
-            _dataByteSize,
-            _dataFolderPath,
-            _dataLocalFilePath
-        );
-        break;
-    }
+        case EResourceFormat::Model3D:
+        {
+            auto result = ParseModel3D(
+                _data,
+                _dataByteSize,
+                _dataFolderPath,
+                _dataLocalFilePath
+            );
+            break;
+
+            if (result.has_value())
+            {
+                bIsOk = K_TRUE;
+            }
+        }
     }
 
-    Print("Info: resource was parsed successfully!");
+    if (bIsOk == K_TRUE)
+        Print("Info: resource was parsed successfully!");
+    else
+        Print("Error: failed to parse resource!");
 
     auto timeEnd = std::chrono::high_resolution_clock::now();
     f64 seconds = std::chrono::duration<f64>(timeEnd - timeStart).count();
