@@ -37,6 +37,10 @@
 - GFX: Bloom
 - GFX: Auto Exposure
 - GFX: Color Grading LUT
+- GFX: White Balance
+- GFX: Film Grain
+- GFX: Chromatic Abberation
+- GFX: Sharpen
 - GFX: Frustum and Occlusion culling (HiZ)
 - GFX: SSR
 - GFX: TAA
