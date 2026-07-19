@@ -156,7 +156,8 @@ std::optional<SModel3DData> ParseModel3D(
     Print(
         "Info: parsing 3d model resource at '" +
         dataFolderPath + "/" +
-        dataLocalFilePath
+        dataLocalFilePath +
+        "'"
     );
 
     Assimp::Importer importer;
