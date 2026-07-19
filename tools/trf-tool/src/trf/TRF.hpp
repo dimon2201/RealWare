@@ -20,7 +20,8 @@ namespace triton
 
 		enum class EResourceFormat : types::dword
 		{
-			Model3D = 0
+			Unknown = 0,
+			Model3D = 1
 		};
 
 		enum class ETextureFormat : types::dword
@@ -47,6 +48,7 @@ namespace triton
 		{
 			static constexpr types::usize kMagicByteCount = 4;
 			static constexpr types::u8 kMagic[kMagicByteCount] = { 'T', 'R', 'F', ' ' };
+			static constexpr types::usize kHeaderNumByteSize = sizeof(types::usize);
 			static constexpr types::usize kUCharByteSize = sizeof(types::u8);
 			static constexpr types::usize kSIntByteSize = sizeof(types::s32);
 			static constexpr types::usize kUIntByteSize = sizeof(types::u32);
