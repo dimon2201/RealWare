@@ -7,7 +7,7 @@ void PrintHelp()
 	Print("tasset - Triton Asset Tool");
 	Print("");
 	Print("Usage:");
-	Print("  tasset <command> <input> <output>");
+	Print("  tasset <command> <input>");
 	Print("");
 	Print("Commands:");
 	Print("  -c     Convert");
@@ -30,15 +30,15 @@ int main(int argc, char** argv)
 		}
 		else if (flag == "-c")
 		{
-			if (argc == 4)
+			if (argc == 3)
 			{
-				const std::filesystem::path inFilePath = std::filesystem::path(argv[2]);
+				std::filesystem::path inFilePath = std::filesystem::path(argv[2]);
 				if (inFilePath.extension() == ".fbx")
 				{
 					Print("Info: converting FBX 3d model file...");
 
 					const std::string inFilePathStr = inFilePath.generic_string();
-					const std::string outFilePathStr = std::string(argv[3]);
+					const std::string outFilePathStr = std::string(inFilePath.replace_extension(".tasset").generic_string());
 
 					CModel3DAsset asset;
 					asset.LoadRawFile(inFilePathStr);
