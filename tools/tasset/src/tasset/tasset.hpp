@@ -47,7 +47,7 @@ namespace triton
 		struct SBaseResourceFileHeader
 		{
 			static constexpr types::usize kMagicByteCount = 4;
-			static constexpr types::u8 kMagic[kMagicByteCount] = { 'T', 'R', 'F', ' ' };
+			static constexpr types::u8 kMagic[kMagicByteCount] = { 'T', 'A', '0', '1' };
 			static constexpr types::usize kHeaderNumByteSize = sizeof(types::usize);
 			static constexpr types::usize kUCharByteSize = sizeof(types::u8);
 			static constexpr types::usize kSIntByteSize = sizeof(types::s32);
