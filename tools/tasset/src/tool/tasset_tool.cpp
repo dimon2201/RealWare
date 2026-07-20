@@ -1,6 +1,7 @@
 #include "tasset.hpp"
 
 using namespace triton::asset;
+using namespace types;
 
 void PrintHelp()
 {
@@ -41,12 +42,16 @@ int main(int argc, char** argv)
 					const std::string outFilePathStr = std::string(inFilePath.replace_extension(".tasset").generic_string());
 
 					CModel3DAsset asset;
-					asset.LoadRawFile(inFilePathStr);
-					asset.WriteAssetFile(outFilePathStr);
+					if (asset.LoadRawFile(inFilePathStr) == K_TRUE)
+					{
+						if (asset.WriteAssetFile(outFilePathStr) == K_TRUE)
+						{
+							Print("Info: file was converted successfully!");
+							return 0;
+						}
+					}
 
-					Print("Info: file was converted successfully!");
-
-					return 0;
+					Print("Error: failed to convert file");
 				}
 			}
 			else

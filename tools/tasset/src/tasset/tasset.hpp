@@ -26,12 +26,14 @@ namespace triton
 
 		enum class ETextureFormat : types::dword
 		{
+			Unknown,
 			PNG,
 			DDS
 		};
 
 		enum class ETextureDataFormat : types::dword
 		{
+			Unknown,
 			R8,
 			RGB8,
 			RGBA8,
@@ -94,8 +96,8 @@ namespace triton
 
 		struct STextureData
 		{
-			ETextureFormat format;
-			ETextureDataFormat dataFormat;
+			ETextureFormat format = ETextureFormat::Unknown;
+			ETextureDataFormat dataFormat = ETextureDataFormat::Unknown;
 			types::usize width = 0;
 			types::usize height = 0;
 			types::usize channelCount = 0;

@@ -182,11 +182,13 @@ std::optional<SModel3DData> ParseModel3D(
     if (scene->mNumMaterials > 0)
     {
         Print("Info: resource contains material data");
-
         Print("Info: parsing material data...");
+        Print("Info: total material count = " + std::to_string(scene->mNumMaterials));
 
         for (usize materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
         {
+            Print("Info: parsing material " + std::to_string(materialIndex) + "...");
+
             const aiMaterial* material = scene->mMaterials[materialIndex];
 
             aiString diffuseTexturePath = aiString("");
@@ -220,8 +222,12 @@ std::optional<SModel3DData> ParseModel3D(
 
         Print("Info: creating materials...");
 
+        usize idx = 0;
         for (auto& material : materialData)
         {
+            Print("Info: creating material " + std::to_string(idx) + "...");
+            idx += 1;
+
             auto diffOpt = ParseModel3DTexture(
                 material.bIsDiffuseEmbedded,
                 scene->GetEmbeddedTexture(material.diffuseTexturePath.c_str()),
@@ -247,56 +253,53 @@ std::optional<SModel3DData> ParseModel3D(
                 material.metallicTexturePath
             );
 
-            Print("Info: checking material textures...");
+            Print("Info: checking material " + std::to_string(idx) + " textures...");
+
+            STextureData nullTex;
 
             if (!diffOpt.has_value())
             {
                 Print("Error: diffuse texture is NULL");
-
-                return std::nullopt;
+                material.diffuseTexture = nullTex;
             }
             else
             {
                 Print("Info: diffuse texture is OK");
+                material.diffuseTexture = *diffOpt;
             }
 
             if (!normOpt.has_value())
             {
                 Print("Error: normal texture is NULL");
-
-                return std::nullopt;
+                material.normalTexture = nullTex;
             }
             else
             {
                 Print("Info: normal texture is OK");
+                material.normalTexture = *normOpt;
             }
 
             if (!rghnOpt.has_value())
             {
                 Print("Error: roughness texture is NULL");
-
-                return std::nullopt;
+                material.roughnessTexture = nullTex;
             }
             else
             {
                 Print("Info: roughness texture is OK");
+                material.roughnessTexture = *rghnOpt;
             }
 
             if (!metlOpt.has_value())
             {
                 Print("Error: metallic texture is NULL");
-
-                return std::nullopt;
+                material.metallicTexture = nullTex;
             }
             else
             {
                 Print("Info: metallic texture is OK");
+                material.metallicTexture = *metlOpt;
             }
-
-            material.diffuseTexture = *diffOpt;
-            material.normalTexture = *normOpt;
-            material.roughnessTexture = *rghnOpt;
-            material.metallicTexture = *metlOpt;
         }
     }
     else
@@ -343,7 +346,6 @@ std::optional<SModel3DData> ParseModel3D(
     if (bHasBones == K_TRUE)
     {
         Print("Info: resource contains bone data");
-
         Print("Info: creating bone data...");
 
         usize vertexOffset = 0;
@@ -977,8 +979,11 @@ boolean LoadModel3D(
     usize materialCount = 0;
     resourceStream.read((char*)&materialCount, SBaseResourceFileHeader::kUSizeByteSize);
     myData.materialData.resize(materialCount);
+    Print("Info: total material count = " + std::to_string(materialCount));
     for (usize i = 0; i < materialCount; i++)
     {
+        Print("Info: reading material " + std::to_string(i) + "...");
+
         SModel3DMaterialData& myMaterialData = myData.materialData[i];
 
         u8 diffuseTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
@@ -1017,6 +1022,7 @@ boolean LoadModel3D(
     ////////// Bones & Animations //////////
     usize boneCount = 0;
     resourceStream.read((char*)&boneCount, SBaseResourceFileHeader::kUSizeByteSize);
+    Print("Info: total bone count = " + std::to_string(boneCount));
     if (boneCount > 0)
     {
         Print("Info: reading bone data...");
@@ -1026,6 +1032,8 @@ boolean LoadModel3D(
         ////////// Bones //////////
         for (usize i = 0; i < boneCount; i++)
         {
+            Print("Info: reading bone " + std::to_string(i) + "...");
+
             SModel3DBoneData& myBoneData = myData.boneData[i];
 
             u8 boneName[SBaseResourceFileHeader::kStringByteSize] = {};
@@ -1049,8 +1057,11 @@ boolean LoadModel3D(
         usize animationCount = 0;
         resourceStream.read((char*)&animationCount, SBaseResourceFileHeader::kUSizeByteSize);
         myData.animationData.resize(animationCount);
+        Print("Info: total animation count = " + std::to_string(animationCount));
         for (usize i = 0; i < animationCount; i++)
         {
+            Print("Info: reading animation " + std::to_string(i) + "...");
+
             SModel3DAnimationData& myAnimationData = myData.animationData[i];
 
             u8 animationName[SBaseResourceFileHeader::kStringByteSize] = {};
@@ -1065,8 +1076,11 @@ boolean LoadModel3D(
             usize keyCount = myAnimationData.keys.size();
             resourceStream.read((char*)&keyCount, SBaseResourceFileHeader::kUSizeByteSize);
             myAnimationData.keys.resize(keyCount);
+            Print("Info: total key count = " + std::to_string(keyCount));
             for (usize j = 0; j < keyCount; j++)
             {
+                Print("Info: reading key " + std::to_string(j) + "...");
+
                 SModel3DAnimationKeyData& myAnimationKeyData = myAnimationData.keys[j];
 
                 resourceStream.read((char*)&myAnimationKeyData.localBoneIndex, SBaseResourceFileHeader::kUSizeByteSize);
@@ -1147,8 +1161,11 @@ boolean WriteModel3D(
 
     const usize materialCount = (usize)myData.materialData.size();
     resourceStream.write((const char*)&materialCount, SBaseResourceFileHeader::kUSizeByteSize);
+    Print("Info: total material count = " + std::to_string(materialCount));
     for (usize i = 0; i < materialCount; i++)
     {
+        Print("Info: writing material " + std::to_string(i) + "...");
+
         const SModel3DMaterialData& myMaterialData = myData.materialData[i];
 
         if (myMaterialData.diffuseTexturePath.size() > kStringByteSizeWithoutZero ||
@@ -1215,10 +1232,13 @@ boolean WriteModel3D(
     if (boneCount > 0)
     {
         Print("Info: writing bone data...");
+        Print("Info: total bone count = " + std::to_string(boneCount));
 
         ////////// Bones //////////
         for (usize i = 0; i < boneCount; i++)
         {
+            Print("Info: writing bone " + std::to_string(i) + "...");
+
             const SModel3DBoneData& myBoneData = myData.boneData[i];
 
             if (myBoneData.name.size() > kStringByteSizeWithoutZero)
@@ -1249,8 +1269,11 @@ boolean WriteModel3D(
 
         const usize animationCount = myData.animationData.size();
         resourceStream.write((const char*)&animationCount, SBaseResourceFileHeader::kUSizeByteSize);
+        Print("Info: total animation count = " + std::to_string(animationCount));
         for (usize i = 0; i < animationCount; i++)
         {
+            Print("Info: writing animation " + std::to_string(i) + "...");
+
             const SModel3DAnimationData& myAnimationData = myData.animationData[i];
 
             if (myAnimationData.name.size() > kStringByteSizeWithoutZero)
@@ -1273,6 +1296,7 @@ boolean WriteModel3D(
 
             const usize keyCount = myAnimationData.keys.size();
             resourceStream.write((const char*)&keyCount, SBaseResourceFileHeader::kUSizeByteSize);
+            Print("Info: total key count = " + std::to_string(keyCount));
             for (usize j = 0; j < keyCount; j++)
             {
                 const SModel3DAnimationKeyData& myAnimationKeyData = myAnimationData.keys[j];
