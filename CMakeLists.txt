@@ -38,5 +38,5 @@ add_subdirectory(engine/submodules/jolt-physics/Build)
 
 add_subdirectory(engine)
 #add_subdirectory(editor)
-add_subdirectory(examples)
 add_subdirectory(tools)
+add_subdirectory(examples)
