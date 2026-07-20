@@ -12,7 +12,6 @@ target_link_libraries(
     TritonExample01
     PUBLIC
     TritonEngine
-    TritonTAssetLib
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 add_custom_command(

@@ -36,7 +36,7 @@ add_subdirectory(engine/submodules/sdl)
 add_subdirectory(engine/submodules/glbinding)
 add_subdirectory(engine/submodules/jolt-physics/Build)
 
+add_subdirectory(tools)
 add_subdirectory(engine)
 #add_subdirectory(editor)
-add_subdirectory(tools)
 add_subdirectory(examples)

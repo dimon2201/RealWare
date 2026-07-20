@@ -8,6 +8,7 @@ target_include_directories(
     submodules/glm/glm
 	submodules/stb
     submodules/tinyddsloader
+    ${CMAKE_SOURCE_DIR}/tools/tasset/src/tasset
 )
 target_link_libraries(
     TritonEngine
@@ -18,6 +19,7 @@ target_link_libraries(
 	SDL3-static
     glbinding
     Jolt
+    TritonTAssetLib
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 add_custom_command(
