@@ -14,11 +14,11 @@
 
 namespace triton
 {
-	namespace resource_file
+	namespace asset
 	{
 		void Print(const std::string& message);
 
-		enum class EResourceFormat : types::dword
+		enum class EAssetFormat : types::dword
 		{
 			Unknown = 0,
 			Model3D = 1
@@ -61,7 +61,7 @@ namespace triton
 			static constexpr types::usize kMatrixByteSize = sizeof(glm::mat4);
 			static constexpr types::usize kStringByteSize = 256;
 
-			EResourceFormat format;
+			EAssetFormat format;
 			types::qword reserved;
 		};
 
@@ -170,38 +170,38 @@ namespace triton
 			std::vector<SModel3DAnimationKeyData> keys = {};
 		};
 
-		class IResource
+		class IAsset
 		{
 		public:
-			IResource() = default;
-			IResource(const IResource& other) = delete;
-			IResource& operator=(const IResource& other) = delete;
-			IResource(IResource&& other) = delete;
-			IResource& operator=(IResource&& other) = delete;
-			virtual ~IResource() = default;
+			IAsset() = default;
+			IAsset(const IAsset& other) = delete;
+			IAsset& operator=(const IAsset& other) = delete;
+			IAsset(IAsset&& other) = delete;
+			IAsset& operator=(IAsset&& other) = delete;
+			virtual ~IAsset() = default;
 			
 			virtual types::boolean LoadRawFile(const std::filesystem::path& rawFilePath) = 0;
 
-			virtual types::boolean LoadResourceFile(const std::filesystem::path& resourceFilePath) = 0;
+			virtual types::boolean LoadAssetFile(const std::filesystem::path& assetFilePath) = 0;
 
-			virtual types::boolean WriteResourceFile(const std::filesystem::path& resourceFilePath) = 0;
+			virtual types::boolean WriteAssetFile(const std::filesystem::path& assetFilePath) = 0;
 
 			virtual types::boolean Destroy() = 0;
 		};
 
-		class CModel3DResource : public IResource,
-								 protected SModel3DData,
-								 protected SBaseResourceFileHeader
+		class CModel3DAsset : public IAsset,
+							  protected SModel3DData,
+							  protected SBaseResourceFileHeader
 		{
 		public:
-			CModel3DResource() = default;
-			~CModel3DResource() override = default;
+			CModel3DAsset() = default;
+			~CModel3DAsset() override = default;
 
 			types::boolean LoadRawFile(const std::filesystem::path& rawFilePath) override;
 
-			types::boolean LoadResourceFile(const std::filesystem::path& resourceFilePath) override;
+			types::boolean LoadAssetFile(const std::filesystem::path& assetFilePath) override;
 
-			types::boolean WriteResourceFile(const std::filesystem::path& resourceFilePath) override;
+			types::boolean WriteAssetFile(const std::filesystem::path& assetFilePath) override;
 
 			types::boolean Destroy() override;
 		};

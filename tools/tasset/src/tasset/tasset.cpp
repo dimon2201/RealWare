@@ -12,9 +12,9 @@
 #include <stb_image.h>
 #define TINYDDSLOADER_IMPLEMENTATION
 #include <tinyddsloader.h>
-#include "TRF.hpp"
+#include "tasset.hpp"
 
-using namespace triton::resource_file;
+using namespace triton::asset;
 using namespace types;
 
 std::optional<SModel3DData> ParseModel3D(
@@ -74,7 +74,7 @@ void ConstructBoneHierarchy(
 
 glm::mat4 ConvertMatrix(const aiMatrix4x4& matrix);
 
-void triton::resource_file::Print(const std::string& message)
+void triton::asset::Print(const std::string& message)
 {
     std::cout << message << std::endl;
 }
@@ -1383,7 +1383,7 @@ boolean WriteModel3D(
     return K_TRUE;
 }
 
-boolean CModel3DResource::LoadRawFile(const std::filesystem::path& rawFilePath)
+boolean CModel3DAsset::LoadRawFile(const std::filesystem::path& rawFilePath)
 {
     auto timeStart = std::chrono::high_resolution_clock::now();
 
@@ -1427,12 +1427,12 @@ boolean CModel3DResource::LoadRawFile(const std::filesystem::path& rawFilePath)
     return K_TRUE;
 }
 
-boolean CModel3DResource::LoadResourceFile(const std::filesystem::path& resourceFilePath)
+boolean CModel3DAsset::LoadAssetFile(const std::filesystem::path& assetFilePath)
 {
     auto timeStart = std::chrono::high_resolution_clock::now();
     boolean bIsOk = K_FALSE;
 
-    const std::string& resourceFilePathStr = resourceFilePath.generic_string();
+    const std::string& resourceFilePathStr = assetFilePath.generic_string();
 
     Print(
         "Info: reading 3d model resource at '" +
@@ -1442,10 +1442,10 @@ boolean CModel3DResource::LoadResourceFile(const std::filesystem::path& resource
 
     Print("Info: opening file '" + resourceFilePathStr + "'...");
 
-    std::ifstream resourceStream(resourceFilePath.generic_string().c_str(), std::ios::binary);
+    std::ifstream resourceStream(assetFilePath.generic_string().c_str(), std::ios::binary);
     if (!resourceStream)
     {
-        Print("Error: failed to open file '" + resourceFilePath.generic_string() + "'");
+        Print("Error: failed to open file '" + assetFilePath.generic_string() + "'");
 
         return K_FALSE;
     }
@@ -1466,7 +1466,7 @@ boolean CModel3DResource::LoadResourceFile(const std::filesystem::path& resource
     usize headerQuaternionByteSize = 0;
     usize headerMatrixByteSize = 0;
     usize headerStringByteSize = 0;
-    EResourceFormat headerFormat = EResourceFormat::Unknown;
+    EAssetFormat headerFormat = EAssetFormat::Unknown;
     qword headerReserved = 0;
     resourceStream.read((char*)&headerMagic, kMagicByteCount);
     resourceStream.read((char*)&headerUCharByteSize, kHeaderNumByteSize);
@@ -1483,7 +1483,7 @@ boolean CModel3DResource::LoadResourceFile(const std::filesystem::path& resource
     resourceStream.read((char*)&headerFormat, headerDWordByteSize);
     resourceStream.read((char*)&headerReserved, headerQWordByteSize);
 
-    if (headerFormat != EResourceFormat::Model3D)
+    if (headerFormat != EAssetFormat::Model3D)
     {
         Print("Error: resource format mismatch");
         return K_FALSE;
@@ -1515,12 +1515,12 @@ boolean CModel3DResource::LoadResourceFile(const std::filesystem::path& resource
     return result;
 }
 
-boolean CModel3DResource::WriteResourceFile(const std::filesystem::path& resourceFilePath)
+boolean CModel3DAsset::WriteAssetFile(const std::filesystem::path& assetFilePath)
 {
     auto timeStart = std::chrono::high_resolution_clock::now();
     boolean bIsOk = K_FALSE;
 
-    const std::string& resourceFilePathStr = resourceFilePath.generic_string();
+    const std::string& resourceFilePathStr = assetFilePath.generic_string();
 
     Print(
         "Info: writing 3d model resource at '" +
@@ -1537,10 +1537,10 @@ boolean CModel3DResource::WriteResourceFile(const std::filesystem::path& resourc
 
     Print("Info: opening file '" + resourceFilePathStr + "'...");
 
-    std::ofstream resourceStream(resourceFilePath.generic_string().c_str(), std::ios::binary);
+    std::ofstream resourceStream(assetFilePath.generic_string().c_str(), std::ios::binary);
     if (!resourceStream)
     {
-        Print("Error: failed to open file '" + resourceFilePath.generic_string() + "'");
+        Print("Error: failed to open file '" + assetFilePath.generic_string() + "'");
 
         return K_FALSE;
     }
@@ -1548,7 +1548,7 @@ boolean CModel3DResource::WriteResourceFile(const std::filesystem::path& resourc
     ////////// Header //////////
     Print("Info: writing header...");
 
-    format = EResourceFormat::Model3D;
+    format = EAssetFormat::Model3D;
     reserved = 0;
     resourceStream.write((const char*)&kMagic[0], kMagicByteCount);
     resourceStream.write((const char*)&kUCharByteSize, kHeaderNumByteSize);
@@ -1591,7 +1591,7 @@ boolean CModel3DResource::WriteResourceFile(const std::filesystem::path& resourc
     return result;
 }
 
-boolean CModel3DResource::Destroy()
+boolean CModel3DAsset::Destroy()
 {
     return K_FALSE;
 }

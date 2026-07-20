@@ -1,21 +1,21 @@
-project(TritonTRFLib)
+project(TritonTAssetLib)
 
 add_library(
-    TritonTRFLib
-    TRF.cpp
-    TRF.hpp
+    TritonTAssetLib
+    tasset.cpp
+    tasset.hpp
     types.hpp
 )
 
 target_include_directories(
-    TritonTRFLib
+    TritonTAssetLib
     PRIVATE
     ../../../../engine/submodules/glm/glm
 	../../../../engine/submodules/stb
     ../../../../engine/submodules/tinyddsloader
 )
 target_link_libraries(
-    TritonTRFLib
+    TritonTAssetLib
 	PRIVATE
     assimp
 )
@@ -26,12 +26,12 @@ file(
 )
 add_custom_command(
     TARGET
-    TritonTRFLib
+    TritonTAssetLib
     POST_BUILD
     COMMAND
     ${CMAKE_COMMAND}
     -E
     copy
-    "$<TARGET_FILE:TritonTRFLib>"
+    "$<TARGET_FILE:TritonTAssetLib>"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../lib"
 )
