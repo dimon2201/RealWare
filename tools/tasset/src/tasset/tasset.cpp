@@ -31,30 +31,15 @@ std::optional<STextureData> ParseModel3DTexture(
     const std::filesystem::path& textureLocalFilePath
 );
 
-types::boolean ParsePNG(
-    types::usize width,
-    types::usize height,
-    types::usize channels,
-    types::u8* pixels,
-    ETextureFormat& outFormat,
-    ETextureDataFormat& outDataFormat,
-    types::usize& outWidth,
-    types::usize& outHeight,
-    types::usize& outChannels,
-    types::u8*& outPixels
+boolean DecidePNGFormat(
+    usize channels,
+    ETextureDataFormat& outDataFormat
 );
 
-types::boolean ParseDDS(
-    types::usize width,
-    types::usize height,
+boolean DecideDDSFormat(
     tinyddsloader::DDSFile::DXGIFormat format,
-    types::u8* pixels,
-    ETextureFormat& outFormat,
-    ETextureDataFormat& outDataFormat,
-    types::usize& outWidth,
-    types::usize& outHeight,
-    types::usize& outChannels,
-    types::u8*& outPixels
+    usize& outChannels,
+    ETextureDataFormat& outDataFormat
 );
 
 types::boolean AccumulateBoneTransform(
@@ -601,24 +586,26 @@ std::optional<STextureData> ParseModel3DTexture(
                     &channels,
                     0
                 );
-
-                if (ParsePNG(
-                    (usize)width,
-                    (usize)height,
-                    (usize)channels,
-                    (u8*)pixels,
-                    td.format,
-                    td.dataFormat,
-                    td.width,
-                    td.height,
-                    td.channelCount,
-                    td.pixelByteData
-                ) == K_FALSE)
+                if (!pixels)
                 {
-                    Print("Error: can't create PNG texture");
+                    Print("Error: can't read PNG texture");
 
                     return std::nullopt;
                 }
+                usize texByteSize = (usize)(width * height * channels);
+                u8* texPixels = (u8*)malloc(texByteSize);
+                memset(&texPixels[0], texByteSize, 0);
+                memcpy(&texPixels[0], &pixels[0], texByteSize);
+                stbi_image_free(pixels);
+
+                if (DecidePNGFormat(channels, td.dataFormat) == K_FALSE)
+                    return std::nullopt;
+
+                td.format = ETextureFormat::PNG;
+                td.width = (usize)width;
+                td.height = (usize)height;
+                td.channelCount = (usize)channels;
+                td.pixelByteData = texPixels;
             }
             else if (assimpTexture->achFormatHint[0] == 'd' ||
                 assimpTexture->achFormatHint[1] == 'd' ||
@@ -640,24 +627,26 @@ std::optional<STextureData> ParseModel3DTexture(
                 uint32_t channels = 0;
                 tinyddsloader::DDSFile::DXGIFormat format = dds.GetFormat();
                 void* pixels = dds.GetImageData()->m_mem;
-
-                if (ParseDDS(
-                    (usize)width,
-                    (usize)height,
-                    format,
-                    (u8*)pixels,
-                    td.format,
-                    td.dataFormat,
-                    td.width,
-                    td.height,
-                    td.channelCount,
-                    td.pixelByteData
-                ) == K_FALSE)
+                if (!pixels)
                 {
-                    Print("Error: can't create DDS texture");
+                    Print("Error: can't read DDS texture");
 
                     return std::nullopt;
                 }
+
+                if (DecideDDSFormat(format, td.channelCount, td.dataFormat) == K_FALSE)
+                    return std::nullopt;
+
+                channels = td.channelCount;
+                usize texByteSize = (usize)(width * height * channels);
+                u8* texPixels = (u8*)malloc(texByteSize);
+                memset(&texPixels[0], texByteSize, 0);
+                memcpy(&texPixels[0], pixels, texByteSize);
+
+                td.format = ETextureFormat::DDS;
+                td.width = (usize)width;
+                td.height = (usize)height;
+                td.pixelByteData = texPixels;
             }
             else
             {
@@ -716,24 +705,26 @@ std::optional<STextureData> ParseModel3DTexture(
                 &channels,
                 0
             );
-
-            if (ParsePNG(
-                (usize)width,
-                (usize)height,
-                (usize)channels,
-                (u8*)pixels,
-                td.format,
-                td.dataFormat,
-                td.width,
-                td.height,
-                td.channelCount,
-                td.pixelByteData
-            ) == K_FALSE)
+            if (!pixels)
             {
-                Print("Error: can't create PNG texture");
+                Print("Error: can't read PNG texture");
 
                 return std::nullopt;
             }
+            usize texByteSize = (usize)(width * height * channels);
+            u8* texPixels = (u8*)malloc(texByteSize);
+            memset(&texPixels[0], texByteSize, 0);
+            memcpy(&texPixels[0], &pixels[0], texByteSize);
+            stbi_image_free(pixels);
+
+            if (DecidePNGFormat(channels, td.dataFormat) == K_FALSE)
+                return std::nullopt;
+
+            td.format = ETextureFormat::PNG;
+            td.width = (usize)width;
+            td.height = (usize)height;
+            td.channelCount = (usize)channels;
+            td.pixelByteData = texPixels;
         }
         else if (textureLocalFilePath.extension() == ".dds")
         {
@@ -746,24 +737,26 @@ std::optional<STextureData> ParseModel3DTexture(
             uint32_t channels = 0;
             tinyddsloader::DDSFile::DXGIFormat format = dds.GetFormat();
             void* pixels = dds.GetImageData()->m_mem;
-
-            if (ParseDDS(
-                (usize)width,
-                (usize)height,
-                format,
-                (u8*)pixels,
-                td.format,
-                td.dataFormat,
-                td.width,
-                td.height,
-                td.channelCount,
-                td.pixelByteData
-            ) == K_FALSE)
+            if (!pixels)
             {
-                Print("Error: can't create DDS texture");
+                Print("Error: can't read DDS texture");
 
                 return std::nullopt;
             }
+
+            if (DecideDDSFormat(format, td.channelCount, td.dataFormat) == K_FALSE)
+                return std::nullopt;
+
+            channels = td.channelCount;
+            usize texByteSize = (usize)(width * height * channels);
+            u8* texPixels = (u8*)malloc(texByteSize);
+            memset(&texPixels[0], texByteSize, 0);
+            memcpy(&texPixels[0], pixels, texByteSize);
+
+            td.format = ETextureFormat::DDS;
+            td.width = (usize)width;
+            td.height = (usize)height;
+            td.pixelByteData = texPixels;
         }
         else
         {
@@ -779,33 +772,11 @@ std::optional<STextureData> ParseModel3DTexture(
     return td;
 }
 
-boolean ParsePNG(
-    usize width,
-    usize height,
+boolean DecidePNGFormat(
     usize channels,
-    u8* pixels,
-    ETextureFormat& outFormat,
-    ETextureDataFormat& outDataFormat,
-    usize& outWidth,
-    usize& outHeight,
-    usize& outChannels,
-    u8*& outPixels
+    ETextureDataFormat& outDataFormat
 )
 {
-    if (!pixels)
-    {
-        Print("Error: can't read PNG texture");
-
-        return K_FALSE;
-    }
-
-    usize texByteSize = (usize)(width * height * channels);
-    u8* texPixels = (u8*)malloc(texByteSize);
-    memset(&texPixels[0], texByteSize, 0);
-    memcpy(&texPixels[0], &pixels[0], texByteSize);
-
-    stbi_image_free(pixels);
-
     if (channels == 1)
     {
         outDataFormat = ETextureDataFormat::R8;
@@ -825,41 +796,15 @@ boolean ParsePNG(
         return K_FALSE;
     }
 
-    outFormat = ETextureFormat::PNG;
-    outWidth = (usize)width;
-    outHeight = (usize)height;
-    outChannels = (usize)channels;
-    outPixels = texPixels;
-
     return K_TRUE;
 }
 
-boolean ParseDDS(
-    usize width,
-    usize height,
+boolean DecideDDSFormat(
     tinyddsloader::DDSFile::DXGIFormat format,
-    u8* pixels,
-    ETextureFormat& outFormat,
-    ETextureDataFormat& outDataFormat,
-    usize& outWidth,
-    usize& outHeight,
     usize& outChannels,
-    u8*& outPixels
+    ETextureDataFormat& outDataFormat
 )
 {
-    if (!pixels)
-    {
-        Print("Error: can't read DDS texture");
-
-        return K_FALSE;
-    }
-
-    const usize channels = outChannels;
-    usize texByteSize = (usize)(width * height * channels);
-    u8* texPixels = (u8*)malloc(texByteSize);
-    memset(&texPixels[0], texByteSize, 0);
-    memcpy(&texPixels[0], &pixels[0], texByteSize);
-
     if (format == tinyddsloader::DDSFile::DXGIFormat::R8_UNorm)
     {
         outChannels = 1;
@@ -881,12 +826,6 @@ boolean ParseDDS(
 
         return K_FALSE;
     }
-
-    outFormat = ETextureFormat::DDS;
-    outWidth = (usize)width;
-    outHeight = (usize)height;
-    outChannels = (usize)channels;
-    outPixels = texPixels;
 
     return K_TRUE;
 }
