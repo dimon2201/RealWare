@@ -247,7 +247,7 @@ std::optional<SModel3DData> ParseModel3D(
                 material.metallicTexturePath
             );
 
-            Print("Info: checking textures...");
+            Print("Info: checking material textures...");
 
             if (!diffOpt.has_value())
             {
