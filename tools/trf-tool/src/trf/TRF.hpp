@@ -205,31 +205,5 @@ namespace triton
 
 			types::boolean Destroy() override;
 		};
-
-		template <EResourceFormat TResourceFormat>
-		class CResourceFile
-		{
-			types::usize _dataByteSize = 0;
-			types::u8* _data = nullptr;
-			std::string _dataFolderPath = "";
-			std::string _dataLocalFilePath = "";
-			types::usize _parsedDataByteSize = 0;
-			types::u8* _parsedData = nullptr;
-
-		public:
-			CResourceFile() = delete;
-			CResourceFile(const CResourceFile& other) = delete;
-			CResourceFile& operator=(const CResourceFile& other) = delete;
-			CResourceFile(CResourceFile&& other) = delete;
-			CResourceFile& operator=(CResourceFile&& other) = delete;
-			~CResourceFile();
-
-			explicit CResourceFile(const std::filesystem::path& filePath);
-
-			void Parse();
-
-			template <typename TData>
-			void GetData();
-		};
 	}
 }

@@ -79,91 +79,6 @@ void triton::resource_file::Print(const std::string& message)
     std::cout << message << std::endl;
 }
 
-template <EResourceFormat TResourceFormat>
-CResourceFile<TResourceFormat>::CResourceFile(const std::filesystem::path& filePath)
-{
-    Print("Info: opening file '" + filePath.generic_string() + "'...");
-
-    std::ifstream file(filePath, std::ios::binary | std::ios::ate);
-
-    if (!file.is_open())
-    {
-        Print("Error: failed to open file");
-
-        return;
-    }
-
-    _dataFolderPath = filePath.parent_path().generic_string();
-    _dataLocalFilePath = filePath.filename().generic_string();
-    _dataByteSize = (types::usize)file.tellg();
-
-    Print("Info: file byte size = " + std::to_string(_dataByteSize));
-
-    file.seekg(0, std::ios::beg);
-
-    Print("Info: reading file data bytes...");
-
-    _data = new types::u8[_dataByteSize];
-    if (!file.read((char*)_data, _dataByteSize))
-    {
-        delete[] _data;
-        _data = nullptr;
-        _dataByteSize = 0;
-
-        Print("Error: failed to read file");
-
-        return;
-    }
-
-    Print("Info: file was opened & read successfully!");
-}
-
-template <EResourceFormat TResourceFormat>
-CResourceFile<TResourceFormat>::~CResourceFile()
-{
-    if (_data)
-        delete[] _data;
-    _dataByteSize = 0;
-}
-
-template <EResourceFormat TResourceFormat>
-void CResourceFile<TResourceFormat>::Parse()
-{
-    auto timeStart = std::chrono::high_resolution_clock::now();
-
-    boolean bIsOk = K_FALSE;
-
-    switch (TResourceFormat)
-    {
-        case EResourceFormat::Model3D:
-        {
-            auto result = ParseModel3D(
-                _data,
-                _dataByteSize,
-                _dataFolderPath,
-                _dataLocalFilePath
-            );
-
-            if (result.has_value())
-            {
-                bIsOk = K_TRUE;
-
-                SModel3DData model = *result;
-            }
-        }
-    }
-
-    if (bIsOk == K_TRUE)
-        Print("Info: resource was parsed successfully!");
-    else
-        Print("Error: failed to parse resource!");
-
-    auto timeEnd = std::chrono::high_resolution_clock::now();
-    f64 seconds = std::chrono::duration<f64>(timeEnd - timeStart).count();
-
-    Print("Info: elapsed time = " + std::to_string(seconds) + " sec");
-}
-
 std::optional<SModel3DData> ParseModel3D(
     u8* data,
     usize dataByteSize,
@@ -1052,8 +967,6 @@ glm::mat4 ConvertMatrix(const aiMatrix4x4& matrix)
     return result;
 }
 
-template class CResourceFile<EResourceFormat::Model3D>;
-
 void ReadFileBytes(
     const std::filesystem::path& filePath,
     u8*& byteData,
@@ -1092,6 +1005,382 @@ void ReadFileBytes(
     }
 
     Print("Info: file was opened & read successfully!");
+}
+
+boolean LoadModel3D(
+    std::ifstream& resourceStream,
+    SModel3DData& myData
+)
+{
+    ////////// Vertices //////////
+    Print("Info: reading vertex data...");
+
+    usize kVertexByteSize = sizeof(SVertex);
+    resourceStream.read((char*)&kVertexByteSize, SBaseResourceFileHeader::kUSizeByteSize);
+    resourceStream.read((char*)&myData.vertexCount, SBaseResourceFileHeader::kUSizeByteSize);
+    myData.vertexData = (SVertex*)malloc(myData.vertexCount * kVertexByteSize);
+    for (usize i = 0; i < myData.vertexCount; i++)
+        resourceStream.read((char*)&myData.vertexData[i], kVertexByteSize);
+
+    ////////// Indices //////////
+    Print("Info: reading index data...");
+
+    usize kIndexByteSize = sizeof(u32);
+    resourceStream.read((char*)&kIndexByteSize, SBaseResourceFileHeader::kUSizeByteSize);
+    resourceStream.read((char*)&myData.indexCount, SBaseResourceFileHeader::kUSizeByteSize);
+    myData.indexData = (u32*)malloc(myData.indexCount * kIndexByteSize);
+    for (usize i = 0; i < myData.indexCount; i++)
+        resourceStream.read((char*)&myData.indexData[i], kIndexByteSize);
+
+    ////////// Materials //////////
+    Print("Info: reading material data...");
+
+    usize materialCount = 0;
+    resourceStream.read((char*)&materialCount, SBaseResourceFileHeader::kUSizeByteSize);
+    myData.materialData.resize(materialCount);
+    for (usize i = 0; i < materialCount; i++)
+    {
+        SModel3DMaterialData& myMaterialData = myData.materialData[i];
+
+        u8 diffuseTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
+        u8 normalTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
+        u8 roughnessTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
+        u8 metallicTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
+        resourceStream.read((char*)&diffuseTexturePath[0], SBaseResourceFileHeader::kStringByteSize);
+        resourceStream.read((char*)&normalTexturePath[0], SBaseResourceFileHeader::kStringByteSize);
+        resourceStream.read((char*)&roughnessTexturePath[0], SBaseResourceFileHeader::kStringByteSize);
+        resourceStream.read((char*)&metallicTexturePath[0], SBaseResourceFileHeader::kStringByteSize);
+        myMaterialData.diffuseTexturePath = std::string((const char*)&diffuseTexturePath[0]);
+        myMaterialData.normalTexturePath = std::string((const char*)&normalTexturePath[0]);
+        myMaterialData.roughnessTexturePath = std::string((const char*)&roughnessTexturePath[0]);
+        myMaterialData.metallicTexturePath = std::string((const char*)&metallicTexturePath[0]);
+
+        auto ReadTextureData = [&](std::ifstream& stream, STextureData& texture, const std::string& label)
+            {
+                Print("Info: reading " + label + " texture data...");
+
+                stream.read((char*)&texture.format, SBaseResourceFileHeader::kDWordByteSize);
+                stream.read((char*)&texture.dataFormat, SBaseResourceFileHeader::kDWordByteSize);
+                stream.read((char*)&texture.width, SBaseResourceFileHeader::kUSizeByteSize);
+                stream.read((char*)&texture.height, SBaseResourceFileHeader::kUSizeByteSize);
+                stream.read((char*)&texture.channelCount, SBaseResourceFileHeader::kUSizeByteSize);
+                const usize pixelDataByteSize = texture.width * texture.height * texture.channelCount;
+                texture.pixelByteData = (u8*)malloc(pixelDataByteSize);
+                for (usize j = 0; j < pixelDataByteSize; j++)
+                    stream.read((char*)&texture.pixelByteData[j], SBaseResourceFileHeader::kUCharByteSize);
+            };
+        ReadTextureData(resourceStream, myMaterialData.diffuseTexture, "diffuse");
+        ReadTextureData(resourceStream, myMaterialData.normalTexture, "normal");
+        ReadTextureData(resourceStream, myMaterialData.roughnessTexture, "roughness");
+        ReadTextureData(resourceStream, myMaterialData.metallicTexture, "metallic");
+    }
+
+    ////////// Bones & Animations //////////
+    usize boneCount = 0;
+    resourceStream.read((char*)&boneCount, SBaseResourceFileHeader::kUSizeByteSize);
+    if (boneCount > 0)
+    {
+        Print("Info: reading bone data...");
+
+        myData.boneData.resize(boneCount);
+
+        ////////// Bones //////////
+        for (usize i = 0; i < boneCount; i++)
+        {
+            SModel3DBoneData& myBoneData = myData.boneData[i];
+
+            u8 boneName[SBaseResourceFileHeader::kStringByteSize] = {};
+            resourceStream.read((char*)&boneName[0], SBaseResourceFileHeader::kStringByteSize);
+            myBoneData.name = std::string((const char*)&boneName[0]);
+
+            resourceStream.read((char*)&myBoneData.localMatrix[0][0], SBaseResourceFileHeader::kMatrixByteSize);
+            resourceStream.read((char*)&myBoneData.modelMatrix[0][0], SBaseResourceFileHeader::kMatrixByteSize);
+            resourceStream.read((char*)&myBoneData.parentLocalBoneIndex, SBaseResourceFileHeader::kSIntByteSize);
+
+            usize childBoneCount = (usize)myBoneData.childLocalBoneIndices.size();
+            resourceStream.read((char*)&childBoneCount, SBaseResourceFileHeader::kUSizeByteSize);
+            myBoneData.childLocalBoneIndices.resize(childBoneCount);
+            for (usize j = 0; j < childBoneCount; j++)
+                resourceStream.read((char*)&myBoneData.childLocalBoneIndices[j], SBaseResourceFileHeader::kUSizeByteSize);
+        }
+
+        ////////// Animations //////////
+        Print("Info: reading animation data...");
+
+        usize animationCount = 0;
+        resourceStream.read((char*)&animationCount, SBaseResourceFileHeader::kUSizeByteSize);
+        myData.animationData.resize(animationCount);
+        for (usize i = 0; i < animationCount; i++)
+        {
+            SModel3DAnimationData& myAnimationData = myData.animationData[i];
+
+            u8 animationName[SBaseResourceFileHeader::kStringByteSize] = {};
+            resourceStream.read((char*)&animationName[0], SBaseResourceFileHeader::kStringByteSize);
+            myAnimationData.name = std::string((const char*)&animationName[0]);
+
+            resourceStream.read((char*)&myAnimationData.duration, SBaseResourceFileHeader::kFloatByteSize);
+            resourceStream.read((char*)&myAnimationData.ticksPerSecond, SBaseResourceFileHeader::kFloatByteSize);
+
+            Print("Info: reading key data...");
+
+            usize keyCount = myAnimationData.keys.size();
+            resourceStream.read((char*)&keyCount, SBaseResourceFileHeader::kUSizeByteSize);
+            myAnimationData.keys.resize(keyCount);
+            for (usize j = 0; j < keyCount; j++)
+            {
+                SModel3DAnimationKeyData& myAnimationKeyData = myAnimationData.keys[j];
+
+                resourceStream.read((char*)&myAnimationKeyData.localBoneIndex, SBaseResourceFileHeader::kUSizeByteSize);
+
+                Print("Info: reading position key data...");
+
+                usize positionKeyCount = 0;
+                resourceStream.read((char*)&positionKeyCount, SBaseResourceFileHeader::kUSizeByteSize);
+                myAnimationKeyData.positionKeys.resize(positionKeyCount);
+                for (usize k = 0; k < positionKeyCount; k++)
+                {
+                    SModel3DBonePositionKeyData& myBonePositionKeyData = myAnimationKeyData.positionKeys[k];
+                    resourceStream.read((char*)&myBonePositionKeyData.time, SBaseResourceFileHeader::kFloatByteSize);
+                    resourceStream.read((char*)&myBonePositionKeyData.position, SBaseResourceFileHeader::kVectorByteSize);
+                }
+
+                Print("Info: reading rotation key data...");
+
+                usize rotationKeyCount = myAnimationKeyData.rotationKeys.size();
+                resourceStream.read((char*)&rotationKeyCount, SBaseResourceFileHeader::kUSizeByteSize);
+                myAnimationKeyData.rotationKeys.resize(rotationKeyCount);
+                for (usize k = 0; k < rotationKeyCount; k++)
+                {
+                    SModel3DBoneRotationKeyData& myBoneRotationKeyData = myAnimationKeyData.rotationKeys[k];
+                    resourceStream.read((char*)&myBoneRotationKeyData.time, SBaseResourceFileHeader::kFloatByteSize);
+                    resourceStream.read((char*)&myBoneRotationKeyData.rotation, SBaseResourceFileHeader::kQuaternionByteSize);
+                }
+
+                Print("Info: reading scale key data...");
+
+                usize scaleKeyCount = myAnimationKeyData.scaleKeys.size();
+                resourceStream.read((char*)&scaleKeyCount, SBaseResourceFileHeader::kUSizeByteSize);
+                myAnimationKeyData.scaleKeys.resize(scaleKeyCount);
+                for (usize k = 0; k < scaleKeyCount; k++)
+                {
+                    SModel3DBoneScaleKeyData& myBoneScaleKeyData = myAnimationKeyData.scaleKeys[k];
+                    resourceStream.read((char*)&myBoneScaleKeyData.time, SBaseResourceFileHeader::kFloatByteSize);
+                    resourceStream.read((char*)&myBoneScaleKeyData.scale, SBaseResourceFileHeader::kVectorByteSize);
+                }
+            }
+        }
+    }
+    else
+    {
+        Print("Info: no any bone data to read");
+    }
+
+    return K_TRUE;
+}
+
+boolean WriteModel3D(
+    std::ofstream& resourceStream,
+    const SModel3DData& myData
+)
+{
+    const usize kStringByteSizeWithoutZero = SBaseResourceFileHeader::kStringByteSize - 1;
+
+    ////////// Vertices //////////
+    Print("Info: writing vertex data...");
+
+    const usize kVertexByteSize = sizeof(SVertex);
+    resourceStream.write((const char*)&kVertexByteSize, SBaseResourceFileHeader::kUSizeByteSize);
+    resourceStream.write((const char*)&myData.vertexCount, SBaseResourceFileHeader::kUSizeByteSize);
+    for (usize i = 0; i < myData.vertexCount; i++)
+        resourceStream.write((const char*)&myData.vertexData[i], kVertexByteSize);
+
+    ////////// Indices //////////
+    Print("Info: writing index data...");
+
+    const usize kIndexByteSize = sizeof(u32);
+    resourceStream.write((const char*)&kIndexByteSize, SBaseResourceFileHeader::kUSizeByteSize);
+    resourceStream.write((const char*)&myData.indexCount, SBaseResourceFileHeader::kUSizeByteSize);
+    for (usize i = 0; i < myData.indexCount; i++)
+        resourceStream.write((const char*)&myData.indexData[i], kIndexByteSize);
+
+    ////////// Materials //////////
+    Print("Info: writing material data...");
+
+    const usize materialCount = (usize)myData.materialData.size();
+    resourceStream.write((const char*)&materialCount, SBaseResourceFileHeader::kUSizeByteSize);
+    for (usize i = 0; i < materialCount; i++)
+    {
+        const SModel3DMaterialData& myMaterialData = myData.materialData[i];
+
+        if (myMaterialData.diffuseTexturePath.size() > kStringByteSizeWithoutZero ||
+            myMaterialData.normalTexturePath.size() > kStringByteSizeWithoutZero ||
+            myMaterialData.roughnessTexturePath.size() > kStringByteSizeWithoutZero ||
+            myMaterialData.metallicTexturePath.size() > kStringByteSizeWithoutZero)
+        {
+            Print("Error: texture path exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
+            return K_FALSE;
+        }
+
+        u8 diffuseTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
+        u8 normalTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
+        u8 roughnessTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
+        u8 metallicTexturePath[SBaseResourceFileHeader::kStringByteSize] = {};
+        memcpy(
+            &diffuseTexturePath[0],
+            &myMaterialData.diffuseTexturePath.c_str()[0],
+            myMaterialData.diffuseTexturePath.size()
+        );
+        memcpy(
+            &normalTexturePath[0],
+            &myMaterialData.normalTexturePath.c_str()[0],
+            myMaterialData.normalTexturePath.size()
+        );
+        memcpy(
+            &roughnessTexturePath[0],
+            &myMaterialData.roughnessTexturePath.c_str()[0],
+            myMaterialData.roughnessTexturePath.size()
+        );
+        memcpy(
+            &metallicTexturePath[0],
+            &myMaterialData.metallicTexturePath.c_str()[0],
+            myMaterialData.metallicTexturePath.size()
+        );
+
+        resourceStream.write((const char*)&diffuseTexturePath[0], SBaseResourceFileHeader::kStringByteSize);
+        resourceStream.write((const char*)&normalTexturePath[0], SBaseResourceFileHeader::kStringByteSize);
+        resourceStream.write((const char*)&roughnessTexturePath[0], SBaseResourceFileHeader::kStringByteSize);
+        resourceStream.write((const char*)&metallicTexturePath[0], SBaseResourceFileHeader::kStringByteSize);
+
+        auto WriteTextureData = [](std::ofstream& stream, const STextureData& texture, const std::string& label)
+        {
+            Print("Info: writing " + label + " texture data...");
+
+            stream.write((const char*)&texture.format, SBaseResourceFileHeader::kDWordByteSize);
+            stream.write((const char*)&texture.dataFormat, SBaseResourceFileHeader::kDWordByteSize);
+            stream.write((const char*)&texture.width, SBaseResourceFileHeader::kUSizeByteSize);
+            stream.write((const char*)&texture.height, SBaseResourceFileHeader::kUSizeByteSize);
+            stream.write((const char*)&texture.channelCount, SBaseResourceFileHeader::kUSizeByteSize);
+            const usize pixelDataByteSize = texture.width * texture.height * texture.channelCount;
+            for (usize j = 0; j < pixelDataByteSize; j++)
+                stream.write((const char*)&texture.pixelByteData[j], SBaseResourceFileHeader::kUCharByteSize);
+        };
+        WriteTextureData(resourceStream, myMaterialData.diffuseTexture, "diffuse");
+        WriteTextureData(resourceStream, myMaterialData.normalTexture, "normal");
+        WriteTextureData(resourceStream, myMaterialData.roughnessTexture, "roughness");
+        WriteTextureData(resourceStream, myMaterialData.metallicTexture, "metallic");
+    }
+
+    ////////// Bones & Animations //////////
+    const usize boneCount = (usize)myData.boneData.size();
+    resourceStream.write((const char*)&boneCount, SBaseResourceFileHeader::kUSizeByteSize);
+    if (boneCount > 0)
+    {
+        Print("Info: writing bone data...");
+
+        ////////// Bones //////////
+        for (usize i = 0; i < boneCount; i++)
+        {
+            const SModel3DBoneData& myBoneData = myData.boneData[i];
+
+            if (myBoneData.name.size() > kStringByteSizeWithoutZero)
+            {
+                Print("Error: bone name exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
+                return K_FALSE;
+            }
+            u8 boneName[SBaseResourceFileHeader::kStringByteSize] = {};
+            memcpy(
+                &boneName[0],
+                &myBoneData.name.c_str()[0],
+                myBoneData.name.size()
+            );
+            resourceStream.write((const char*)&boneName[0], SBaseResourceFileHeader::kStringByteSize);
+
+            resourceStream.write((const char*)&myBoneData.localMatrix[0][0], SBaseResourceFileHeader::kMatrixByteSize);
+            resourceStream.write((const char*)&myBoneData.modelMatrix[0][0], SBaseResourceFileHeader::kMatrixByteSize);
+            resourceStream.write((const char*)&myBoneData.parentLocalBoneIndex, SBaseResourceFileHeader::kSIntByteSize);
+
+            const usize childBoneCount = (usize)myBoneData.childLocalBoneIndices.size();
+            resourceStream.write((const char*)&childBoneCount, SBaseResourceFileHeader::kUSizeByteSize);
+            for (usize j = 0; j < childBoneCount; j++)
+                resourceStream.write((const char*)&myBoneData.childLocalBoneIndices[j], SBaseResourceFileHeader::kUSizeByteSize);
+        }
+
+        ////////// Animations //////////
+        Print("Info: writing animation data...");
+
+        const usize animationCount = myData.animationData.size();
+        resourceStream.write((const char*)&animationCount, SBaseResourceFileHeader::kUSizeByteSize);
+        for (usize i = 0; i < animationCount; i++)
+        {
+            const SModel3DAnimationData& myAnimationData = myData.animationData[i];
+
+            if (myAnimationData.name.size() > kStringByteSizeWithoutZero)
+            {
+                Print("Error: animation name exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
+                return K_FALSE;
+            }
+            u8 animationName[SBaseResourceFileHeader::kStringByteSize] = {};
+            memcpy(
+                &animationName[0],
+                &myAnimationData.name.c_str()[0],
+                myAnimationData.name.size()
+            );
+            resourceStream.write((const char*)&animationName[0], SBaseResourceFileHeader::kStringByteSize);
+
+            resourceStream.write((const char*)&myAnimationData.duration, SBaseResourceFileHeader::kFloatByteSize);
+            resourceStream.write((const char*)&myAnimationData.ticksPerSecond, SBaseResourceFileHeader::kFloatByteSize);
+
+            Print("Info: writing key data...");
+
+            const usize keyCount = myAnimationData.keys.size();
+            resourceStream.write((const char*)&keyCount, SBaseResourceFileHeader::kUSizeByteSize);
+            for (usize j = 0; j < keyCount; j++)
+            {
+                const SModel3DAnimationKeyData& myAnimationKeyData = myAnimationData.keys[j];
+
+                resourceStream.write((const char*)&myAnimationKeyData.localBoneIndex, SBaseResourceFileHeader::kUSizeByteSize);
+
+                Print("Info: writing position key data...");
+
+                const usize positionKeyCount = myAnimationKeyData.positionKeys.size();
+                resourceStream.write((const char*)&positionKeyCount, SBaseResourceFileHeader::kUSizeByteSize);
+                for (usize k = 0; k < positionKeyCount; k++)
+                {
+                    const SModel3DBonePositionKeyData& myBonePositionKeyData = myAnimationKeyData.positionKeys[k];
+                    resourceStream.write((const char*)&myBonePositionKeyData.time, SBaseResourceFileHeader::kFloatByteSize);
+                    resourceStream.write((const char*)&myBonePositionKeyData.position, SBaseResourceFileHeader::kVectorByteSize);
+                }
+
+                Print("Info: writing rotation key data...");
+
+                const usize rotationKeyCount = myAnimationKeyData.rotationKeys.size();
+                resourceStream.write((const char*)&rotationKeyCount, SBaseResourceFileHeader::kUSizeByteSize);
+                for (usize k = 0; k < rotationKeyCount; k++)
+                {
+                    const SModel3DBoneRotationKeyData& myBoneRotationKeyData = myAnimationKeyData.rotationKeys[k];
+                    resourceStream.write((const char*)&myBoneRotationKeyData.time, SBaseResourceFileHeader::kFloatByteSize);
+                    resourceStream.write((const char*)&myBoneRotationKeyData.rotation, SBaseResourceFileHeader::kQuaternionByteSize);
+                }
+
+                Print("Info: writing scale key data...");
+
+                const usize scaleKeyCount = myAnimationKeyData.scaleKeys.size();
+                resourceStream.write((const char*)&scaleKeyCount, SBaseResourceFileHeader::kUSizeByteSize);
+                for (usize k = 0; k < scaleKeyCount; k++)
+                {
+                    const SModel3DBoneScaleKeyData& myBoneScaleKeyData = myAnimationKeyData.scaleKeys[k];
+                    resourceStream.write((const char*)&myBoneScaleKeyData.time, SBaseResourceFileHeader::kFloatByteSize);
+                    resourceStream.write((const char*)&myBoneScaleKeyData.scale, SBaseResourceFileHeader::kVectorByteSize);
+                }
+            }
+        }
+    }
+    else
+    {
+        Print("Info: no any bone data to write");
+    }
+
+    return K_TRUE;
 }
 
 boolean CModel3DResource::LoadRawFile(const std::filesystem::path& rawFilePath)
@@ -1202,179 +1491,28 @@ boolean CModel3DResource::LoadResourceFile(const std::filesystem::path& resource
 
     SModel3DData& myData = *((SModel3DData*)this);
 
-    ////////// Vertices //////////
-    Print("Info: reading vertex data...");
-
-    usize kVertexByteSize = sizeof(SVertex);
-    resourceStream.read((char*)&kVertexByteSize, headerUSizeByteSize);
-    resourceStream.read((char*)&myData.vertexCount, headerUSizeByteSize);
-    myData.vertexData = (SVertex*)malloc(myData.vertexCount * kVertexByteSize);
-    for (usize i = 0; i < myData.vertexCount; i++)
-        resourceStream.read((char*)&myData.vertexData[i], kVertexByteSize);
-
-    ////////// Indices //////////
-    Print("Info: reading index data...");
-
-    usize kIndexByteSize = sizeof(u32);
-    resourceStream.read((char*)&kIndexByteSize, headerUSizeByteSize);
-    resourceStream.read((char*)&myData.indexCount, headerUSizeByteSize);
-    myData.indexData = (u32*)malloc(myData.indexCount * kIndexByteSize);
-    for (usize i = 0; i < myData.indexCount; i++)
-        resourceStream.read((char*)&myData.indexData[i], kIndexByteSize);
-
-    ////////// Materials //////////
-    Print("Info: reading material data...");
-
-    usize materialCount = 0;
-    resourceStream.read((char*)&materialCount, headerUSizeByteSize);
-    myData.materialData.resize(materialCount);
-    for (usize i = 0; i < materialCount; i++)
-    {
-        SModel3DMaterialData& myMaterialData = myData.materialData[i];
-
-        u8 diffuseTexturePath[kStringByteSize] = {};
-        u8 normalTexturePath[kStringByteSize] = {};
-        u8 roughnessTexturePath[kStringByteSize] = {};
-        u8 metallicTexturePath[kStringByteSize] = {};
-        resourceStream.read((char*)&diffuseTexturePath[0], headerStringByteSize);
-        resourceStream.read((char*)&normalTexturePath[0], headerStringByteSize);
-        resourceStream.read((char*)&roughnessTexturePath[0], headerStringByteSize);
-        resourceStream.read((char*)&metallicTexturePath[0], headerStringByteSize);
-        myMaterialData.diffuseTexturePath = std::string((const char*)&diffuseTexturePath[0]);
-        myMaterialData.normalTexturePath = std::string((const char*)&normalTexturePath[0]);
-        myMaterialData.roughnessTexturePath = std::string((const char*)&roughnessTexturePath[0]);
-        myMaterialData.metallicTexturePath = std::string((const char*)&metallicTexturePath[0]);
-
-        auto ReadTextureData = [&](std::ifstream& stream, STextureData& texture, const std::string& label)
-        {
-            Print("Info: reading " + label + " texture data...");
-
-            stream.read((char*)&texture.format, headerDWordByteSize);
-            stream.read((char*)&texture.dataFormat, headerDWordByteSize);
-            stream.read((char*)&texture.width, headerUSizeByteSize);
-            stream.read((char*)&texture.height, headerUSizeByteSize);
-            stream.read((char*)&texture.channelCount, headerUSizeByteSize);
-            const usize pixelDataByteSize = texture.width * texture.height * texture.channelCount;
-            texture.pixelByteData = (u8*)malloc(pixelDataByteSize);
-            for (usize j = 0; j < pixelDataByteSize; j++)
-                stream.read((char*)&texture.pixelByteData[j], headerUCharByteSize);
-        };
-        ReadTextureData(resourceStream, myMaterialData.diffuseTexture, "diffuse");
-        ReadTextureData(resourceStream, myMaterialData.normalTexture, "normal");
-        ReadTextureData(resourceStream, myMaterialData.roughnessTexture, "roughness");
-        ReadTextureData(resourceStream, myMaterialData.metallicTexture, "metallic");
-    }
-
-    ////////// Bones & Animations //////////
-    usize boneCount = 0;
-    resourceStream.read((char*)&boneCount, headerUSizeByteSize);
-    if (boneCount > 0)
-    {
-        Print("Info: reading bone data...");
-
-        myData.boneData.resize(boneCount);
-
-        ////////// Bones //////////
-        for (usize i = 0; i < boneCount; i++)
-        {
-            SModel3DBoneData& myBoneData = myData.boneData[i];
-
-            u8 boneName[kStringByteSize] = {};
-            resourceStream.read((char*)&boneName[0], headerStringByteSize);
-            myBoneData.name = std::string((const char*)&boneName[0]);
-
-            resourceStream.read((char*)&myBoneData.localMatrix[0][0], headerMatrixByteSize);
-            resourceStream.read((char*)&myBoneData.modelMatrix[0][0], headerMatrixByteSize);
-            resourceStream.read((char*)&myBoneData.parentLocalBoneIndex, headerSIntByteSize);
-
-            usize childBoneCount = (usize)myBoneData.childLocalBoneIndices.size();
-            resourceStream.read((char*)&childBoneCount, headerUSizeByteSize);
-            myBoneData.childLocalBoneIndices.resize(childBoneCount);
-            for (usize j = 0; j < childBoneCount; j++)
-                resourceStream.read((char*)&myBoneData.childLocalBoneIndices[j], headerUSizeByteSize);
-        }
-
-        ////////// Animations //////////
-        Print("Info: reading animation data...");
-
-        usize animationCount = 0;
-        resourceStream.read((char*)&animationCount, headerUSizeByteSize);
-        myData.animationData.resize(animationCount);
-        for (usize i = 0; i < animationCount; i++)
-        {
-            SModel3DAnimationData& myAnimationData = myData.animationData[i];
-
-            u8 animationName[kStringByteSize] = {};
-            resourceStream.read((char*)&animationName[0], headerStringByteSize);
-            myAnimationData.name = std::string((const char*)&animationName[0]);
-
-            resourceStream.read((char*)&myAnimationData.duration, headerFloatByteSize);
-            resourceStream.read((char*)&myAnimationData.ticksPerSecond, headerFloatByteSize);
-
-            Print("Info: reading key data...");
-
-            usize keyCount = myAnimationData.keys.size();
-            resourceStream.read((char*)&keyCount, headerUSizeByteSize);
-            myAnimationData.keys.resize(keyCount);
-            for (usize j = 0; j < keyCount; j++)
-            {
-                SModel3DAnimationKeyData& myAnimationKeyData = myAnimationData.keys[j];
-
-                resourceStream.read((char*)&myAnimationKeyData.localBoneIndex, headerUSizeByteSize);
-
-                Print("Info: reading position key data...");
-
-                usize positionKeyCount = 0;
-                resourceStream.read((char*)&positionKeyCount, headerUSizeByteSize);
-                myAnimationKeyData.positionKeys.resize(positionKeyCount);
-                for (usize k = 0; k < positionKeyCount; k++)
-                {
-                    SModel3DBonePositionKeyData& myBonePositionKeyData = myAnimationKeyData.positionKeys[k];
-                    resourceStream.read((char*)&myBonePositionKeyData.time, headerFloatByteSize);
-                    resourceStream.read((char*)&myBonePositionKeyData.position, headerVectorByteSize);
-                }
-
-                Print("Info: reading rotation key data...");
-
-                usize rotationKeyCount = myAnimationKeyData.rotationKeys.size();
-                resourceStream.read((char*)&rotationKeyCount, headerUSizeByteSize);
-                myAnimationKeyData.rotationKeys.resize(rotationKeyCount);
-                for (usize k = 0; k < rotationKeyCount; k++)
-                {
-                    SModel3DBoneRotationKeyData& myBoneRotationKeyData = myAnimationKeyData.rotationKeys[k];
-                    resourceStream.read((char*)&myBoneRotationKeyData.time, headerFloatByteSize);
-                    resourceStream.read((char*)&myBoneRotationKeyData.rotation, headerQuaternionByteSize);
-                }
-
-                Print("Info: reading scale key data...");
-
-                usize scaleKeyCount = myAnimationKeyData.scaleKeys.size();
-                resourceStream.read((char*)&scaleKeyCount, headerUSizeByteSize);
-                myAnimationKeyData.scaleKeys.resize(scaleKeyCount);
-                for (usize k = 0; k < scaleKeyCount; k++)
-                {
-                    SModel3DBoneScaleKeyData& myBoneScaleKeyData = myAnimationKeyData.scaleKeys[k];
-                    resourceStream.read((char*)&myBoneScaleKeyData.time, headerFloatByteSize);
-                    resourceStream.read((char*)&myBoneScaleKeyData.scale, headerVectorByteSize);
-                }
-            }
-        }
-    }
-    else
-    {
-        Print("Info: no any bone data to read");
-    }
+    boolean result = LoadModel3D(
+        resourceStream,
+        myData
+    );
 
     resourceStream.close();
 
-    Print("Info: resource file was read successfully!");
+    if (result == K_FALSE)
+    {
+        Print("Info: failed to read resource");
+    }
+    else
+    {
+        Print("Info: resource file was read successfully!");
+    }
 
     auto timeEnd = std::chrono::high_resolution_clock::now();
     f64 seconds = std::chrono::duration<f64>(timeEnd - timeStart).count();
 
     Print("Info: elapsed time = " + std::to_string(seconds) + " sec");
 
-    return K_TRUE;
+    return result;
 }
 
 boolean CModel3DResource::WriteResourceFile(const std::filesystem::path& resourceFilePath)
@@ -1429,211 +1567,28 @@ boolean CModel3DResource::WriteResourceFile(const std::filesystem::path& resourc
 
     const SModel3DData& myData = (const SModel3DData&)*this;
     
-    ////////// Vertices //////////
-    Print("Info: writing vertex data...");
-
-    const usize kVertexByteSize = sizeof(SVertex);
-    resourceStream.write((const char*)&kVertexByteSize, kUSizeByteSize);
-    resourceStream.write((const char*)&myData.vertexCount, kUSizeByteSize);
-    for (usize i = 0; i < myData.vertexCount; i++)
-        resourceStream.write((const char*)&myData.vertexData[i], kVertexByteSize);
-
-    ////////// Indices //////////
-    Print("Info: writing index data...");
-
-    const usize kIndexByteSize = sizeof(u32);
-    resourceStream.write((const char*)&kIndexByteSize, kUSizeByteSize);
-    resourceStream.write((const char*)&myData.indexCount, kUSizeByteSize);
-    for (usize i = 0; i < myData.indexCount; i++)
-        resourceStream.write((const char*)&myData.indexData[i], kIndexByteSize);
-
-    ////////// Materials //////////
-    Print("Info: writing material data...");
-
-    const usize materialCount = (usize)myData.materialData.size();
-    resourceStream.write((const char*)&materialCount, kUSizeByteSize);
-    for (usize i = 0; i < materialCount; i++)
-    {
-        const SModel3DMaterialData& myMaterialData = myData.materialData[i];
-
-        if (myMaterialData.diffuseTexturePath.size() > kStringByteSizeWithoutZero ||
-            myMaterialData.normalTexturePath.size() > kStringByteSizeWithoutZero ||
-            myMaterialData.roughnessTexturePath.size() > kStringByteSizeWithoutZero ||
-            myMaterialData.metallicTexturePath.size() > kStringByteSizeWithoutZero)
-        {
-            Print("Error: texture path exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
-            return K_FALSE;
-        }
-
-        u8 diffuseTexturePath[kStringByteSize] = {};
-        u8 normalTexturePath[kStringByteSize] = {};
-        u8 roughnessTexturePath[kStringByteSize] = {};
-        u8 metallicTexturePath[kStringByteSize] = {};
-        memcpy(
-            &diffuseTexturePath[0],
-            &myMaterialData.diffuseTexturePath.c_str()[0],
-            myMaterialData.diffuseTexturePath.size()
-        );
-        memcpy(
-            &normalTexturePath[0],
-            &myMaterialData.normalTexturePath.c_str()[0],
-            myMaterialData.normalTexturePath.size()
-        );
-        memcpy(
-            &roughnessTexturePath[0],
-            &myMaterialData.roughnessTexturePath.c_str()[0],
-            myMaterialData.roughnessTexturePath.size()
-        );
-        memcpy(
-            &metallicTexturePath[0],
-            &myMaterialData.metallicTexturePath.c_str()[0],
-            myMaterialData.metallicTexturePath.size()
-        );
-
-        resourceStream.write((const char*)&diffuseTexturePath[0], kStringByteSize);
-        resourceStream.write((const char*)&normalTexturePath[0], kStringByteSize);
-        resourceStream.write((const char*)&roughnessTexturePath[0], kStringByteSize);
-        resourceStream.write((const char*)&metallicTexturePath[0], kStringByteSize);
-
-        auto WriteTextureData = [this](std::ofstream& stream, const STextureData& texture, const std::string& label)
-        {
-            Print("Info: writing " + label + " texture data...");
-
-            stream.write((const char*)&texture.format, kDWordByteSize);
-            stream.write((const char*)&texture.dataFormat, kDWordByteSize);
-            stream.write((const char*)&texture.width, kUSizeByteSize);
-            stream.write((const char*)&texture.height, kUSizeByteSize);
-            stream.write((const char*)&texture.channelCount, kUSizeByteSize);
-            const usize pixelDataByteSize = texture.width * texture.height * texture.channelCount;
-            for (usize j = 0; j < pixelDataByteSize; j++)
-                stream.write((const char*)&texture.pixelByteData[j], kUCharByteSize);
-        };
-        WriteTextureData(resourceStream, myMaterialData.diffuseTexture, "diffuse");
-        WriteTextureData(resourceStream, myMaterialData.normalTexture, "normal");
-        WriteTextureData(resourceStream, myMaterialData.roughnessTexture, "roughness");
-        WriteTextureData(resourceStream, myMaterialData.metallicTexture, "metallic");
-    }
-
-    ////////// Bones & Animations //////////
-    const usize boneCount = (usize)myData.boneData.size();
-    resourceStream.write((const char*)&boneCount, kUSizeByteSize);
-    if (boneCount > 0)
-    {
-        Print("Info: writing bone data...");
-
-        ////////// Bones //////////
-        for (usize i = 0; i < boneCount; i++)
-        {
-            const SModel3DBoneData& myBoneData = myData.boneData[i];
-
-            if (myBoneData.name.size() > kStringByteSizeWithoutZero)
-            {
-                Print("Error: bone name exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
-                return K_FALSE;
-            }
-            u8 boneName[kStringByteSize] = {};
-            memcpy(
-                &boneName[0],
-                &myBoneData.name.c_str()[0],
-                myBoneData.name.size()
-            );
-            resourceStream.write((const char*)&boneName[0], kStringByteSize);
-
-            resourceStream.write((const char*)&myBoneData.localMatrix[0][0], kMatrixByteSize);
-            resourceStream.write((const char*)&myBoneData.modelMatrix[0][0], kMatrixByteSize);
-            resourceStream.write((const char*)&myBoneData.parentLocalBoneIndex, kSIntByteSize);
-
-            const usize childBoneCount = (usize)myBoneData.childLocalBoneIndices.size();
-            resourceStream.write((const char*)&childBoneCount, kUSizeByteSize);
-            for (usize j = 0; j < childBoneCount; j++)
-                resourceStream.write((const char*)&myBoneData.childLocalBoneIndices[j], kUSizeByteSize);
-        }
-
-        ////////// Animations //////////
-        Print("Info: writing animation data...");
-
-        const usize animationCount = myData.animationData.size();
-        resourceStream.write((const char*)&animationCount, kUSizeByteSize);
-        for (usize i = 0; i < animationCount; i++)
-        {
-            const SModel3DAnimationData& myAnimationData = myData.animationData[i];
-
-            if (myAnimationData.name.size() > kStringByteSizeWithoutZero)
-            {
-                Print("Error: animation name exceeds string byte size = " + std::to_string(kStringByteSizeWithoutZero));
-                return K_FALSE;
-            }
-            u8 animationName[kStringByteSize] = {};
-            memcpy(
-                &animationName[0],
-                &myAnimationData.name.c_str()[0],
-                myAnimationData.name.size()
-            );
-            resourceStream.write((const char*)&animationName[0], kStringByteSize);
-
-            resourceStream.write((const char*)&myAnimationData.duration, kFloatByteSize);
-            resourceStream.write((const char*)&myAnimationData.ticksPerSecond, kFloatByteSize);
-
-            Print("Info: writing key data...");
-
-            const usize keyCount = myAnimationData.keys.size();
-            resourceStream.write((const char*)&keyCount, kUSizeByteSize);
-            for (usize j = 0; j < keyCount; j++)
-            {
-                const SModel3DAnimationKeyData& myAnimationKeyData = myAnimationData.keys[j];
-
-                resourceStream.write((const char*)&myAnimationKeyData.localBoneIndex, kUSizeByteSize);
-
-                Print("Info: writing position key data...");
-
-                const usize positionKeyCount = myAnimationKeyData.positionKeys.size();
-                resourceStream.write((const char*)&positionKeyCount, kUSizeByteSize);
-                for (usize k = 0; k < positionKeyCount; k++)
-                {
-                    const SModel3DBonePositionKeyData& myBonePositionKeyData = myAnimationKeyData.positionKeys[k];
-                    resourceStream.write((const char*)&myBonePositionKeyData.time, kFloatByteSize);
-                    resourceStream.write((const char*)&myBonePositionKeyData.position, kVectorByteSize);
-                }
-
-                Print("Info: writing rotation key data...");
-
-                const usize rotationKeyCount = myAnimationKeyData.rotationKeys.size();
-                resourceStream.write((const char*)&rotationKeyCount, kUSizeByteSize);
-                for (usize k = 0; k < rotationKeyCount; k++)
-                {
-                    const SModel3DBoneRotationKeyData& myBoneRotationKeyData = myAnimationKeyData.rotationKeys[k];
-                    resourceStream.write((const char*)&myBoneRotationKeyData.time, kFloatByteSize);
-                    resourceStream.write((const char*)&myBoneRotationKeyData.rotation, kQuaternionByteSize);
-                }
-
-                Print("Info: writing scale key data...");
-
-                const usize scaleKeyCount = myAnimationKeyData.scaleKeys.size();
-                resourceStream.write((const char*)&scaleKeyCount, kUSizeByteSize);
-                for (usize k = 0; k < scaleKeyCount; k++)
-                {
-                    const SModel3DBoneScaleKeyData& myBoneScaleKeyData = myAnimationKeyData.scaleKeys[k];
-                    resourceStream.write((const char*)&myBoneScaleKeyData.time, kFloatByteSize);
-                    resourceStream.write((const char*)&myBoneScaleKeyData.scale, kVectorByteSize);
-                }
-            }
-        }
-    }
-    else
-    {
-        Print("Info: no any bone data to write");
-    }
+    boolean result = WriteModel3D(
+        resourceStream,
+        myData
+    );
 
     resourceStream.close();
 
-    Print("Info: resource file was written successfully!");
+    if (result == K_FALSE)
+    {
+        Print("Info: failed to write resource");
+    }
+    else
+    {
+        Print("Info: resource file was written successfully!");
+    }
 
     auto timeEnd = std::chrono::high_resolution_clock::now();
     f64 seconds = std::chrono::duration<f64>(timeEnd - timeStart).count();
 
     Print("Info: elapsed time = " + std::to_string(seconds) + " sec");
 
-    return K_TRUE;
+    return result;
 }
 
 boolean CModel3DResource::Destroy()
