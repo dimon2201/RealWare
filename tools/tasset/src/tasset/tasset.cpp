@@ -41,19 +41,19 @@ boolean DecideDDSFormat(
     ETextureDataFormat& outDataFormat
 );
 
-types::boolean AccumulateBoneTransform(
-    const aiNode* root,
-    aiNode*& outBoneRoot,
-    const aiMatrix4x4& parentTransform,
-    const std::unordered_map<std::string, types::usize>& boneIndices,
-    aiMatrix4x4& outAccumulatedTransform
-);
-
 void ConstructBoneHierarchy(
     const aiNode* node,
     types::s32 parentBoneIndex,
     const std::unordered_map<std::string, types::usize>& boneIndexData,
     std::vector<SModel3DBoneData>& boneData
+);
+
+boolean AccumulateTransformForRootBone(
+    const aiNode* node,
+    aiNode*& boneRootNode,
+    const aiMatrix4x4& parentRootTransform,
+    aiMatrix4x4& accumulatedRootTransform,
+    std::unordered_map<std::string, usize>& boneIndices
 );
 
 glm::mat4 ConvertMatrix(const aiMatrix4x4& matrix);
@@ -342,6 +342,7 @@ std::optional<SModel3DData> ParseModel3D(
     std::vector<SModel3DBoneData> boneData = {};
     std::unordered_map<std::string, types::usize> boneIndexData = {};
     std::vector<SModel3DAnimationData> animationData = {};
+    glm::mat4 rootBoneAccumulatedTransform = glm::mat4(1.0f);
     if (bHasBones == K_TRUE)
     {
         Print("Info: resource contains bone data");
@@ -390,6 +391,22 @@ std::optional<SModel3DData> ParseModel3D(
             vertexOffset += mesh->mNumVertices;
         }
 
+        ////////// Accumulate transform for root bone //////////
+        std::unordered_map<std::string, usize> boneIndices;
+        for (usize i = 0; i < boneData.size(); i++)
+            boneIndices.insert({ boneData[i].name, i });
+        aiNode* boneRootNode = nullptr;
+        aiMatrix4x4 parentRootTransform = aiMatrix4x4();
+        aiMatrix4x4 accumulatedTransform = aiMatrix4x4();
+        AccumulateTransformForRootBone(
+            scene->mRootNode,
+            boneRootNode,
+            parentRootTransform,
+            accumulatedTransform,
+            boneIndices
+        );
+        rootBoneAccumulatedTransform = ConvertMatrix(accumulatedTransform);
+
         ////////// Finalize vertex weights //////////
         Print("Info: finalizing vertex data weights...");
 
@@ -424,20 +441,6 @@ std::optional<SModel3DData> ParseModel3D(
                 vertexData[vertexIndex].boneWeights[i] = weights[i].weight;
             }
         }
-
-        ////////// Accumulate bone transform //////////
-        Print("Info: accumulating bone data transforms...");
-
-        aiNode* boneRootNode = nullptr;
-        aiMatrix4x4 parentRootTransform = aiMatrix4x4();
-        aiMatrix4x4 accumulatedRootTransform = aiMatrix4x4();
-        AccumulateBoneTransform(
-            scene->mRootNode,
-            boneRootNode,
-            parentRootTransform,
-            boneIndexData,
-            accumulatedRootTransform
-        );
 
         ////////// Create bone hierarchy //////////
         Print("Info: creating bone data hierarchy...");
@@ -537,6 +540,7 @@ std::optional<SModel3DData> ParseModel3D(
     m3dd.materialData = materialData;
     m3dd.boneData = boneData;
     m3dd.animationData = animationData;
+    m3dd.rootBoneAccumulatedTransform = rootBoneAccumulatedTransform;
 
     return m3dd;
 }
@@ -831,39 +835,6 @@ boolean DecideDDSFormat(
     return K_TRUE;
 }
 
-boolean AccumulateBoneTransform(
-    const aiNode* root,
-    aiNode*& outBoneRoot,
-    const aiMatrix4x4& parentTransform,
-    const std::unordered_map<std::string, usize>& boneIndexData,
-    aiMatrix4x4& outAccumulatedTransform
-)
-{
-    auto it = boneIndexData.find(root->mName.C_Str());
-    if (it != boneIndexData.end())
-    {
-        outBoneRoot = (aiNode*)root;
-        outAccumulatedTransform = parentTransform;
-
-        return K_TRUE;
-    }
-
-    aiMatrix4x4 currentTransform = parentTransform * root->mTransformation;
-    for (usize i = 0; i < root->mNumChildren; i++)
-    {
-        if (AccumulateBoneTransform(
-            root->mChildren[i],
-            outBoneRoot,
-            currentTransform,
-            boneIndexData,
-            outAccumulatedTransform
-        ))
-            return K_TRUE;
-    }
-
-    return K_FALSE;
-}
-
 void ConstructBoneHierarchy(
     const aiNode* node,
     s32 parentBoneIndex,
@@ -894,6 +865,38 @@ void ConstructBoneHierarchy(
             outBoneData
         );
     }
+}
+
+boolean AccumulateTransformForRootBone(
+    const aiNode* node,
+    aiNode*& boneRootNode,
+    const aiMatrix4x4& parentRootTransform,
+    aiMatrix4x4& accumulatedRootTransform,
+    std::unordered_map<std::string, usize>& boneIndices
+)
+{
+    aiMatrix4x4 current = parentRootTransform * node->mTransformation;
+    auto it = boneIndices.find(node->mName.C_Str());
+    if (it != boneIndices.end())
+    {
+        boneRootNode = (aiNode*)node;
+        accumulatedRootTransform = parentRootTransform;
+        return K_TRUE;
+    }
+
+    for (uint32_t i = 0; i < node->mNumChildren; i++)
+    {
+        if (AccumulateTransformForRootBone(
+            node->mChildren[i],
+            boneRootNode,
+            current,
+            accumulatedRootTransform,
+            boneIndices
+        ))
+            return K_TRUE;
+    }
+
+    return K_FALSE;
 }
 
 glm::mat4 ConvertMatrix(const aiMatrix4x4& matrix)
@@ -1027,6 +1030,9 @@ boolean LoadModel3D(
         Print("Info: reading bone data...");
 
         myData.boneData.resize(boneCount);
+
+        ////////// Accumulated root bone transform //////////
+        resourceStream.read((char*)&myData.rootBoneAccumulatedTransform, SBaseResourceFileHeader::kMatrixByteSize);
 
         ////////// Bones //////////
         for (usize i = 0; i < boneCount; i++)
@@ -1232,6 +1238,9 @@ boolean WriteModel3D(
     {
         Print("Info: writing bone data...");
         Print("Info: total bone count = " + std::to_string(boneCount));
+
+        ////////// Accumulated root bone transform //////////
+        resourceStream.write((const char*)&myData.rootBoneAccumulatedTransform, SBaseResourceFileHeader::kMatrixByteSize);
 
         ////////// Bones //////////
         for (usize i = 0; i < boneCount; i++)

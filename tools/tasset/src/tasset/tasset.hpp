@@ -92,6 +92,7 @@ namespace triton
 			std::vector<SModel3DMaterialData> materialData;
 			std::vector<SModel3DBoneData> boneData;
 			std::vector<SModel3DAnimationData> animationData;
+			glm::mat4 rootBoneAccumulatedTransform = glm::mat4(1.0f);
 		};
 
 		struct STextureData
@@ -192,7 +193,7 @@ namespace triton
 		};
 
 		class CModel3DAsset : public IAsset,
-							  protected SModel3DData,
+							  public SModel3DData,
 							  protected SBaseResourceFileHeader
 		{
 		public:
