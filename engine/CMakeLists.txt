@@ -5,9 +5,9 @@ add_library(TritonEngine STATIC ${SOURCE_FILES})
 target_include_directories(
     TritonEngine
     PRIVATE
-    submodules/glm/glm
-	submodules/stb
-    submodules/tinyddsloader
+    ${CMAKE_SOURCE_DIR}/thirdparty/glm
+	${CMAKE_SOURCE_DIR}/thirdparty/stb
+    ${CMAKE_SOURCE_DIR}/thirdparty/tinyddsloader
     ${CMAKE_SOURCE_DIR}/tools/tasset/src/tasset
 )
 target_link_libraries(

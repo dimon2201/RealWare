@@ -4,7 +4,7 @@
 #include <tinyddsloader.h>
 #include "texture_subsystem.hpp"
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../thirdparty/stb-master/stb_image.h"
+#include <stb_image.h>
 #include "application.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"

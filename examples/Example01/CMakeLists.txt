@@ -6,7 +6,7 @@ add_executable(
 )
 target_include_directories(TritonExample01 PUBLIC
 	${CMAKE_SOURCE_DIR}/engine/src
-	${CMAKE_SOURCE_DIR}/engine/submodules/glm/glm
+	${CMAKE_SOURCE_DIR}/thirdparty/glm/glm
 )
 target_link_libraries(
     TritonExample01

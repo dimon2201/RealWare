@@ -9,8 +9,8 @@ target_include_directories(
     TritonTAssetTool
 	PRIVATE
     ../tasset
-    ../../../../engine/submodules/glm/glm
-    ../../../../engine/submodules/tinyddsloader
+    ${CMAKE_SOURCE_DIR}/thirdparty/glm
+    ${CMAKE_SOURCE_DIR}/thirdparty/tinyddsloader
 )
 target_link_libraries(
     TritonTAssetTool
