@@ -38,6 +38,7 @@ add_subdirectory(thirdparty/sdl)
 add_subdirectory(thirdparty/glbinding)
 add_subdirectory(thirdparty/jolt-physics/Build)
 add_subdirectory(thirdparty/tracy)
+add_subdirectory(thirdparty/stb_lib)
 add_subdirectory(thirdparty/tinyddsloader_lib)
 
 add_subdirectory(tools)

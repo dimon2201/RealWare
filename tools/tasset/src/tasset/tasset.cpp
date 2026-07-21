@@ -8,7 +8,6 @@
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <assimp/importerdesc.h>
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <tinyddsloader.h>
 #include "tasset.hpp"

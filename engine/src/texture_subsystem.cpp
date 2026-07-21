@@ -1,7 +1,6 @@
 // texture_subsystem.cpp
 
 #include "texture_subsystem.hpp"
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <tinyddsloader.h>
 #include "application.hpp"

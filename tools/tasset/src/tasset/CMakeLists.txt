@@ -11,12 +11,12 @@ target_include_directories(
     TritonTAssetLib
     PRIVATE
     ${CMAKE_SOURCE_DIR}/thirdparty/glm
-	${CMAKE_SOURCE_DIR}/thirdparty/stb
 )
 target_link_libraries(
     TritonTAssetLib
 	PRIVATE
     assimp
+    TritonThirdpartySTBLib
     TritonThirdpartyTinyDDSLoaderLib
 )
 
