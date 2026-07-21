@@ -10,12 +10,12 @@ target_include_directories(
 	PRIVATE
     ../tasset
     ${CMAKE_SOURCE_DIR}/thirdparty/glm
-    ${CMAKE_SOURCE_DIR}/thirdparty/tinyddsloader
 )
 target_link_libraries(
     TritonTAssetTool
 	PRIVATE
     TritonTAssetLib
+    TritonThirdpartyTinyDDSLoaderLib
 )
 
 file(

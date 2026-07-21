@@ -1,10 +1,9 @@
 // texture_subsystem.cpp
 
-#define TINYDDSLOADER_IMPLEMENTATION
-#include <tinyddsloader.h>
 #include "texture_subsystem.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <tinyddsloader.h>
 #include "application.hpp"
 #include "memory_pool.hpp"
 #include "context.hpp"

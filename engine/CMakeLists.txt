@@ -7,7 +7,6 @@ target_include_directories(
     PRIVATE
     ${CMAKE_SOURCE_DIR}/thirdparty/glm
 	${CMAKE_SOURCE_DIR}/thirdparty/stb
-    ${CMAKE_SOURCE_DIR}/thirdparty/tinyddsloader
     ${CMAKE_SOURCE_DIR}/tools/tasset/src/tasset
 )
 target_link_libraries(
@@ -20,6 +19,7 @@ target_link_libraries(
     glbinding
     Jolt
     TracyClient
+    TritonThirdpartyTinyDDSLoaderLib
     TritonTAssetLib
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
