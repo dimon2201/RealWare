@@ -79,10 +79,26 @@ triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& fil
     return texture;
 }
 
-triton::HTexture triton::XTextureSubsystem::CreateTexture(const types::u8* byteData, types::usize byteSize, ETextureFormat fileFormat, cTexture::eFormat dataFormat)
+triton::HTexture triton::XTextureSubsystem::CreateTexture(
+    const u8* byteData,
+    usize byteDataByteSize,
+    usize width,
+    usize height,
+    usize channelCount,
+    ETextureFormat byteDataFormat,
+    cTexture::eFormat pixelDataFormat
+)
 {
     HTexture texture = Create();
-    _objects->Get(texture) = *CreateTextureFromBytes(dataFormat, byteData, byteSize, fileFormat);
+    _objects->Get(texture) = *CreateTextureFromBytes(
+        pixelDataFormat,
+        byteData,
+        byteDataByteSize,
+        width,
+        height,
+        channelCount,
+        byteDataFormat
+    );
 
     return texture;
 }
@@ -308,54 +324,98 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile
     }
 }
 
-std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromBytes(cTexture::eFormat dataFormat, const u8* byteData, usize byteSize, ETextureFormat fileFormat)
+std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromBytes(
+    cTexture::eFormat expectedPixelDataFormat,
+    const u8* byteData,
+    usize byteDataByteSize,
+    usize width,
+    usize height,
+    usize channelCount,
+    ETextureFormat byteDataFormat
+)
 {
-    if (fileFormat != ETextureFormat::PNG)
+    u8* rawPixels;
+    usize rawChannelCount = channelCount;
+    cTexture::eFormat rawDataFormat = cTexture::eFormat::NONE;
+    boolean bIsPixelBufferRecreated = K_FALSE;
+
+    if (byteDataFormat == ETextureFormat::Raw)
     {
-        Print("Error: can not create texture from byte data because format is not PNG format");
+        rawPixels = (u8*)byteData;
+
+        if (expectedPixelDataFormat == cTexture::eFormat::RGBA8_SRGB_MIPS &&
+            channelCount != 4)
+        {
+            Print("Info: recreate image buffer from 3 channels to 4 channels");
+
+            u8* rgbaPixels = RecreatePixelBuffer(3, 4, cVector2(width, height), byteData);
+            free((void*)byteData);
+            rawPixels = rgbaPixels;
+            rawChannelCount = 4;
+            rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
+        }
+    }
+    else if (byteDataFormat == ETextureFormat::PNG)
+    {
+        int stbWidth = 0, stbHeight = 0, stbChannels = 0;
+        rawPixels = stbi_load_from_memory(
+            byteData,
+            byteDataByteSize,
+            &stbWidth,
+            &stbHeight,
+            &stbChannels,
+            0
+        );
+        if (stbChannels == 1)
+        {
+            rawChannelCount = stbChannels;
+            rawDataFormat = cTexture::eFormat::R8;
+        }
+        else if (stbChannels == 4)
+        {
+            rawChannelCount = stbChannels;
+            rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
+        }
+        else if (stbChannels == 3)
+        {
+            Print("Info: recreate image buffer from 3 channels to 4 channels");
+
+            u8* rgbaPixels = RecreatePixelBuffer(3, 4, cVector2(stbWidth, stbHeight), rawPixels);
+            stbi_image_free((void*)rawPixels);
+            rawPixels = rgbaPixels;
+            rawChannelCount = 4;
+            rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
+            bIsPixelBufferRecreated = K_TRUE;
+        }
+    }
+    else if (byteDataFormat == ETextureFormat::DDS)
+    {
+        tinyddsloader::DDSFile dds;
+        dds.Load(byteData, width * height * channelCount);
+        auto ddsFormat = dds.GetFormat();
+        if (ddsFormat == tinyddsloader::DDSFile::DXGIFormat::R8_UNorm)
+        {
+            rawChannelCount = 1;
+            rawDataFormat = cTexture::eFormat::R8;
+        }
+        else if (ddsFormat == tinyddsloader::DDSFile::DXGIFormat::R8G8B8A8_UNorm_SRGB)
+        {
+            rawChannelCount = 4;
+            rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
+        }
+    }
+
+    if (rawDataFormat != expectedPixelDataFormat)
+    {
+        Print("Error: current texture data format != expected texture data format, channel count: " + std::to_string(rawChannelCount));
         return std::nullopt;
     }
-    
-    int width = 0, height = 0, channels = 0;
-    stbi_uc* pixelsStbi = stbi_load_from_memory(
-        byteData,
-        byteSize,
-        &width,
-        &height,
-        &channels,
-        0
-    );
 
-    cTexture::eFormat texFmt = cTexture::eFormat::NONE;
-    if (channels == 1)
-    {
-        texFmt = cTexture::eFormat::R8;
-    }
-    else if (channels == 4)
-    {
-        texFmt = cTexture::eFormat::RGBA8_SRGB_MIPS;
-    }
-    else if (channels == 3)
-    {
-        Print("Info: recreate image buffer from 3 channels to 4 channels");
+    auto tex = CreateTexture(expectedPixelDataFormat, cVector2(width, height), (const u8*)rawPixels);
 
-        u8* rgbaPixels = RecreatePixelBuffer(3, 4, cVector2(width, height), pixelsStbi);
-        stbi_image_free(pixelsStbi);
-        auto tex = CreateTexture(cTexture::eFormat::RGBA8, cVector2(width, height), (const u8*)rgbaPixels);
-        DestroyPixelBuffer(rgbaPixels);
+    if (byteDataFormat == ETextureFormat::PNG && bIsPixelBufferRecreated == K_FALSE)
+        stbi_image_free((void*)rawPixels);
 
-        return tex;
-    }
-    else
-    {
-        Print("Error: unsupported PNG texture format, channel count: " + std::to_string(channels));
-        return std::nullopt;
-    }
-
-    auto tex = CreateTexture(texFmt, cVector2(width, height), (const u8*)pixelsStbi);
-
-    stbi_image_free(pixelsStbi);
-    
     return tex;
 }
 

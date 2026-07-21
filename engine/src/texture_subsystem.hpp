@@ -30,6 +30,7 @@ namespace triton
     enum class ETextureFormat
     {
         NONE,
+        Raw,
         PNG,
         DDS
     };
@@ -47,7 +48,15 @@ namespace triton
         ~XTextureSubsystem() override;
 
         HTexture CreateTexture(const std::string& filePath, cTexture::eFormat dataFormat);
-        HTexture CreateTexture(const types::u8* byteData, types::usize byteSize, ETextureFormat fileFormat, cTexture::eFormat dataFormat);
+        HTexture CreateTexture(
+            const types::u8* byteData,
+            types::usize byteDataByteSize,
+            types::usize width,
+            types::usize height,
+            types::usize channelCount,
+            ETextureFormat byteDataFormat,
+            cTexture::eFormat pixelDataFormat
+        );
         void Init() override {}
         void Free() override {}
         void Update() override {}
@@ -70,7 +79,15 @@ namespace triton
     private:
         std::optional<STexture> CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
         std::optional<STexture> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath);
-        std::optional<STexture> CreateTextureFromBytes(cTexture::eFormat dataFormat, const types::u8* byteData, types::usize byteSize, ETextureFormat fileFormat);
+        std::optional<STexture> CreateTextureFromBytes(
+            cTexture::eFormat expectedDataFormat,
+            const types::u8* byteData,
+            types::usize byteDataByteSize,
+            types::usize width,
+            types::usize height,
+            types::usize channelCount,
+            ETextureFormat fileFormat
+        );
         types::boolean IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture);
         types::u8* RecreatePixelBuffer(types::usize srcChannelCount, types::usize dstChannelCount, const cVector2& size, const types::u8* data);
         void DestroyPixelBuffer(const types::u8* rgbaByteData);

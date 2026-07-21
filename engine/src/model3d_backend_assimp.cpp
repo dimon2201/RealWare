@@ -646,15 +646,36 @@ std::optional<triton::HTexture> triton::XModel3DBackendAssimp::CreateTextureFrom
         const u8* fileData = (u8*)texture->pcData;
         size_t fileByteSize = texture->mWidth;
 
-        if (texture->achFormatHint[0] != 'p' ||
-            texture->achFormatHint[1] != 'n' ||
-            texture->achFormatHint[2] != 'g')
+        const char* fmtHint = &texture->achFormatHint[0];
+        if (fmtHint[0] == 'p' && fmtHint[1] == 'n' && fmtHint[2] == 'g')
         {
-            Print("Error: incorrect embedded texture format, only PNG embedded textures are supported");
+            return textureSubsystem->CreateTexture(
+                fileData,
+                fileByteSize,
+                0,
+                0,
+                0,
+                ETextureFormat::PNG,
+                dataFormat
+            );
+        }
+        else if (fmtHint[0] == 'd' && fmtHint[1] == 'd' && fmtHint[2] == 's')
+        {
+            return textureSubsystem->CreateTexture(
+                fileData,
+                fileByteSize,
+                0,
+                0,
+                0,
+                ETextureFormat::DDS,
+                dataFormat
+            );
+        }
+        else
+        {
+            Print("Error: incorrect embedded texture format, only PNG/DDS embedded textures are supported");
             return std::nullopt;
         }
-
-        return textureSubsystem->CreateTexture(fileData, fileByteSize, ETextureFormat::PNG, dataFormat);
     }
     else
     {
