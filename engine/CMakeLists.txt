@@ -19,6 +19,7 @@ target_link_libraries(
 	SDL3-static
     glbinding
     Jolt
+    TracyClient
     TritonTAssetLib
 )
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")

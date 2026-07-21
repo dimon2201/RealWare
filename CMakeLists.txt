@@ -37,6 +37,7 @@ add_subdirectory(thirdparty/openal-soft)
 add_subdirectory(thirdparty/sdl)
 add_subdirectory(thirdparty/glbinding)
 add_subdirectory(thirdparty/jolt-physics/Build)
+add_subdirectory(thirdparty/tracy)
 
 add_subdirectory(tools)
 add_subdirectory(engine)

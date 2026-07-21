@@ -1,5 +1,6 @@
 // render_thread.cpp
 
+#include <tracy/Tracy.hpp>
 #include "render_thread.hpp"
 #include "context.hpp"
 #include "engine.hpp"
@@ -29,6 +30,8 @@ void triton::cRenderThread::ThreadFunction()
 {
 	std::mutex mtx;
 	CThreadGuard::CaptureRenderThreadId();
+
+	tracy::SetThreadName("Render Thread");
 
 	// Create graphics contexts for windows
 	cInput* inputSubsystem = _context->GetSubsystem<cInput>();

@@ -1,5 +1,6 @@
 // render_susbsytem.cpp
 
+#include <tracy/Tracy.hpp>
 #include "render_subsystem.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
@@ -64,6 +65,8 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 {
 	CThreadGuard::AssertMain();
 
+	tracy::SetThreadName("Main Thread");
+
 	if (app == nullptr)
 		return;
 
@@ -81,70 +84,112 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 	boolean bIsRunning = K_TRUE;
 	while (bIsRunning)
 	{
+		FrameMark;
+
 		SEvent e = {};
-		while ((e = inputBackend->PollEvent()).type != EWindowEvent::None)
 		{
+			ZoneScopedN("SDL Event Processing");
+
+			while ((e = inputBackend->PollEvent()).type != EWindowEvent::None)
+			{
+				if (e.type == EWindowEvent::Quit)
+				{
+					bIsRunning = K_FALSE;
+					break;
+				}
+				else
+				{
+					inputBackend->ProcessEvent(e);
+				}
+			}
+		}
+
+		{
+			ZoneScopedN("Sync Wait for Free Frame");
+
+			_synchronization->WaitForFreeFrame(_cv);
+		}
+
+		{
+			ZoneScopedN("Window Checks");
+
+			s32 windowCount = windows->size();
+			if (windowCount == 0)
+				break;
+
+			// Prepare frame for render thread
+			for (s32 i = windowCount - 1; i > -1; i--)
+			{
+				if (e.type != EWindowEvent::Quit)
+				{
+					// Fill frame
+					SRenderCommand cmd = SRenderCommand(
+						ERenderCommand::CLEAR,
+						1.0f,
+						0.0f,
+						0.0f,
+						0.0f,
+						1.0f
+					);
+					PushCommand(cmd);
+				}
+				// Destroy window if needed
+				else if (e.type == EWindowEvent::Quit)
+				{
+					// input->DestroyWindow(window);
+					windows->erase(windows->begin() + i);
+
+					Kill();
+
+					_renderThread->NotifyThread();
+					break;
+				}
+			}
 			if (e.type == EWindowEvent::Quit)
-			{
-				bIsRunning = K_FALSE;
 				break;
-			}
-			else
-			{
-				inputBackend->ProcessEvent(e);
-			}
 		}
 
-		_synchronization->WaitForFreeFrame(_cv);
-
-		s32 windowCount = windows->size();
-		if (windowCount == 0)
-			break;
-
-		// Prepare frame for render thread
-		for (s32 i = windowCount - 1; i > -1; i--)
 		{
-			if (e.type != EWindowEvent::Quit)
-			{
-				// Fill frame
-				SRenderCommand cmd = SRenderCommand(
-					ERenderCommand::CLEAR,
-					1.0f,
-					0.0f,
-					0.0f,
-					0.0f,
-					1.0f
-				);
-				PushCommand(cmd);
-			}
-			// Destroy window if needed
-			else if (e.type == EWindowEvent::Quit)
-			{
-				// input->DestroyWindow(window);
-				windows->erase(windows->begin() + i);
-
-				Kill();
-
-				_renderThread->NotifyThread();
-				break;
-			}
+			ZoneScopedN("Update Application");
+			app->Update();
 		}
-		if (e.type == EWindowEvent::Quit)
-			break;
+		{
+			ZoneScopedN("Update GameObject Subsystem");
+			_context->GetSubsystem<XGameObjectSubsystem>()->Update();
+		}
+		{
+			ZoneScopedN("Update Material Subsystem");
+			_context->GetSubsystem<XMaterialSubsystem>()->Update();
+		}
+		{
+			ZoneScopedN("Update Texture Subsystem");
+			_context->GetSubsystem<XTextureSubsystem>()->Update();
+		}
+		{
+			ZoneScopedN("Update Animation Subsystem");
+			_context->GetSubsystem<XAnimationSubsystem>()->Update();
+		}
+		{
+			ZoneScopedN("Update Skeleton Subsystem");
+			_context->GetSubsystem<XSkeletonSubsystem>()->Update();
+		}
+		{
+			ZoneScopedN("Update Skinning Subsystem");
+			_context->GetSubsystem<XSkinningSubsystem>()->Update();
+		}
+		{
+			ZoneScopedN("Update Batch Subsystem");
+			_context->GetSubsystem<XBatchSubsystem>()->Update();
+		}
 
-		app->Update();
-		_context->GetSubsystem<XGameObjectSubsystem>()->Update();
-		_context->GetSubsystem<XMaterialSubsystem>()->Update();
-		_context->GetSubsystem<XTextureSubsystem>()->Update();
-		_context->GetSubsystem<XAnimationSubsystem>()->Update();
-		_context->GetSubsystem<XSkeletonSubsystem>()->Update();
-		_context->GetSubsystem<XSkinningSubsystem>()->Update();
-		_context->GetSubsystem<XBatchSubsystem>()->Update();
+		{
+			ZoneScopedN("Sync Produce Frame");
 
-		_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
-		ResetScratchFrame();
+			_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
+			ResetScratchFrame();
 
-		_renderThread->NotifyThread();
+			_renderThread->NotifyThread();
+		}
 	}
 
 	input->DestroyWindow(&window);
