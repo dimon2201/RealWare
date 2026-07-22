@@ -3,6 +3,7 @@
 #pragma once
 
 #include <optional>
+#include <filesystem>
 #include "subsystem.hpp"
 #include "handles.hpp"
 #include "model3d_data.hpp"
@@ -17,7 +18,8 @@ namespace triton
         explicit XModel3DSubsystem(cContext* context) : ISubsystem(context) {}
         ~XModel3DSubsystem() override = default;
 
-        std::optional<HModel3D> CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath);
+        std::optional<HModel3D> CreateModelFromRaw(const std::filesystem::path& modelFilePath);
+        std::optional<HModel3D> CreateModelFromAsset(const std::filesystem::path& assetFilePath);
         void DestroyModel(const HModel3D& model);
 
         void Init() override {}

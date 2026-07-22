@@ -354,6 +354,24 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromByte
             rawChannelCount = 4;
             rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
         }
+        else if (expectedPixelDataFormat == cTexture::eFormat::RGBA8 &&
+            channelCount != 4)
+        {
+            Print("Info: recreate image buffer from 3 channels to 4 channels");
+
+            u8* rgbaPixels = RecreatePixelBuffer(3, 4, cVector2(width, height), byteData);
+            free((void*)byteData);
+            rawPixels = rgbaPixels;
+            rawChannelCount = 4;
+            rawDataFormat = cTexture::eFormat::RGBA8;
+        }
+        else if (expectedPixelDataFormat == cTexture::eFormat::R8 &&
+            channelCount == 1)
+        {
+            rawPixels = (u8*)byteData;
+            rawChannelCount = 1;
+            rawDataFormat = cTexture::eFormat::R8;
+        }
     }
     else if (byteDataFormat == ETextureFormat::PNG)
     {
