@@ -87,31 +87,27 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 		FrameMark;
 
 		SEvent e = {};
+		while ((e = inputBackend->PollEvent()).type != EWindowEvent::None)
 		{
-			ZoneScopedN("SDL Event Processing");
-
-			while ((e = inputBackend->PollEvent()).type != EWindowEvent::None)
+			if (e.type == EWindowEvent::Quit)
 			{
-				if (e.type == EWindowEvent::Quit)
-				{
-					bIsRunning = K_FALSE;
-					break;
-				}
-				else
-				{
-					inputBackend->ProcessEvent(e);
-				}
+				bIsRunning = K_FALSE;
+				break;
+			}
+			else
+			{
+				inputBackend->ProcessEvent(e);
 			}
 		}
 
 		{
-			ZoneScopedN("Sync Wait for Free Frame");
+			ZoneScopedN("Wait for Free Frame");
 
 			_synchronization->WaitForFreeFrame(_cv);
 		}
 
 		{
-			ZoneScopedN("Window Checks");
+			ZoneScopedN("Main Job");
 
 			s32 windowCount = windows->size();
 			if (windowCount == 0)
@@ -147,43 +143,19 @@ void triton::XRenderSubsystem::MainThreadFunction(IApplication* app)
 			}
 			if (e.type == EWindowEvent::Quit)
 				break;
-		}
 
-		{
-			ZoneScopedN("Update Application");
 			app->Update();
-		}
-		{
-			ZoneScopedN("Update GameObject Subsystem");
 			_context->GetSubsystem<XGameObjectSubsystem>()->Update();
-		}
-		{
-			ZoneScopedN("Update Material Subsystem");
 			_context->GetSubsystem<XMaterialSubsystem>()->Update();
-		}
-		{
-			ZoneScopedN("Update Texture Subsystem");
 			_context->GetSubsystem<XTextureSubsystem>()->Update();
-		}
-		{
-			ZoneScopedN("Update Animation Subsystem");
 			_context->GetSubsystem<XAnimationSubsystem>()->Update();
-		}
-		{
-			ZoneScopedN("Update Skeleton Subsystem");
 			_context->GetSubsystem<XSkeletonSubsystem>()->Update();
-		}
-		{
-			ZoneScopedN("Update Skinning Subsystem");
 			_context->GetSubsystem<XSkinningSubsystem>()->Update();
-		}
-		{
-			ZoneScopedN("Update Batch Subsystem");
 			_context->GetSubsystem<XBatchSubsystem>()->Update();
 		}
 
 		{
-			ZoneScopedN("Sync Produce Frame");
+			ZoneScopedN("Produce Frame");
 
 			_synchronization->ProduceFrame(EFrameState::EXECUTE_FULL);
 			ResetScratchFrame();

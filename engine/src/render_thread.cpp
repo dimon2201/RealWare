@@ -64,39 +64,57 @@ void triton::cRenderThread::ThreadFunction()
 		//_synchronization->LoopStart();
 		//_renderSubsystem->NotifyMainThread();
 
-		EFrameState mainThreadSignal = _synchronization->WaitForProducedFrame(_cv);
-
-		if (!_synchronization->IsAlive())
-			break;
-
-		const CRenderFrame* renderFrame = _synchronization->AcquireProducedFrame(mainThreadSignal);
-
-		if (mainThreadSignal == EFrameState::EXECUTE_FULL)
+		EFrameState mainThreadSignal;
 		{
-			// Full job
-			cGraphics* gfx = _context->GetSubsystem<cGraphics>();
+			ZoneScopedN("Wait for Produced Frame");
 
-			// Core events
-			//MakeContextCurrent(renderFrame, gfxContextBackend);
-			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
-			
-			// Execute render passes
-			gfx->ExecutePasses();
-
-			Present(renderFrame, gfxContextBackend);
-		}
-		else if (mainThreadSignal == EFrameState::EXECUTE_COMMANDS)
-		{
-			// Execute render commands only
-			cGraphics* gfx = _context->GetSubsystem<cGraphics>();
-			//MakeContextCurrent(renderFrame, gfxContextBackend);
-			ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
+			mainThreadSignal = _synchronization->WaitForProducedFrame(_cv);
 		}
 
-		_synchronization->ReleaseFrame(renderFrame->GetIndexInSwapChain());
+		const CRenderFrame* renderFrame;
+		{
+			ZoneScopedN("Render Job");
 
-		_synchronization->LoopFinish();
-		_renderSubsystem->NotifyMainThread();
+			if (!_synchronization->IsAlive())
+				break;
+
+			renderFrame = _synchronization->AcquireProducedFrame(mainThreadSignal);
+
+			if (mainThreadSignal == EFrameState::EXECUTE_FULL)
+			{
+				// Full job
+				cGraphics* gfx = _context->GetSubsystem<cGraphics>();
+
+				// Core events
+				//MakeContextCurrent(renderFrame, gfxContextBackend);
+				ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
+
+				// Execute render passes
+				//{
+				//	ZoneScopedN("Execute render passes");
+
+				gfx->ExecutePasses();
+				//}
+
+				Present(renderFrame, gfxContextBackend);
+			}
+			else if (mainThreadSignal == EFrameState::EXECUTE_COMMANDS)
+			{
+				// Execute render commands only
+				cGraphics* gfx = _context->GetSubsystem<cGraphics>();
+				//MakeContextCurrent(renderFrame, gfxContextBackend);
+				ExecuteCommands(renderFrame, gfxDrawcallBackend, gfxResourceBackend, gfxPipelineBackend, gfx);
+			}
+		}
+
+		{
+			ZoneScopedN("Release Frame");
+
+			_synchronization->ReleaseFrame(renderFrame->GetIndexInSwapChain());
+
+			_synchronization->LoopFinish();
+			_renderSubsystem->NotifyMainThread();
+		}
 	}
 }
 
