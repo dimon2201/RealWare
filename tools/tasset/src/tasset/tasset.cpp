@@ -1563,5 +1563,21 @@ boolean CModel3DAsset::WriteAssetFile(const std::filesystem::path& assetFilePath
 
 boolean CModel3DAsset::Destroy()
 {
+    if (vertexData)
+        free(vertexData);
+    if (indexData)
+        free(indexData);
+    for (usize i = 0; i < materialData.size(); i++)
+    {
+        if (materialData[i].diffuseTexture.pixelByteData)
+            free(materialData[i].diffuseTexture.pixelByteData);
+        if (materialData[i].normalTexture.pixelByteData)
+            free(materialData[i].normalTexture.pixelByteData);
+        if (materialData[i].roughnessTexture.pixelByteData)
+            free(materialData[i].roughnessTexture.pixelByteData);
+        if (materialData[i].metallicTexture.pixelByteData)
+            free(materialData[i].metallicTexture.pixelByteData);
+    }
+
     return K_FALSE;
 }
