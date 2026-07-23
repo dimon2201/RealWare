@@ -7,7 +7,6 @@
 #include "input.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
-#include "render_subsystem.hpp"
 #include "types.hpp"
 
 using namespace types;

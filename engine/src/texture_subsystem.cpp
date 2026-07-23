@@ -8,7 +8,6 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
-#include "render_subsystem.hpp"
 #include "handle_allocator.hpp"
 #include "filesystem_manager.hpp"
 
@@ -16,8 +15,7 @@ using namespace types;
 
 triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& size) : ISubsystem(context)
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
         size.GetY(),
@@ -27,8 +25,8 @@ triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& 
         (cpuword)nullptr,
         0
     ));
-    _atlasRGBA8SRGB = renderSubsystem->FetchResult<cTexture*>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _atlasRGBA8SRGB = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
         size.GetY(),
@@ -38,8 +36,8 @@ triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& 
         (cpuword)nullptr,
         1
     ));
-    _atlasRGBA8 = renderSubsystem->FetchResult<cTexture*>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _atlasRGBA8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
         size.GetY(),
@@ -49,21 +47,20 @@ triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& 
         (cpuword)nullptr,
         2
     ));
-    _atlasR8 = renderSubsystem->FetchResult<cTexture*>();
+    _atlasR8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
 }
 
 triton::XTextureSubsystem::~XTextureSubsystem()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)_atlasR8
     ));
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)_atlasRGBA8
     ));
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)_atlasRGBA8SRGB
     ));
@@ -156,8 +153,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
                     const cVector2 pixelOffset = cVector2(x, y);
                     const cVector2 pixelSize = size;
 
-                    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-                    renderSubsystem->PushCommand(SRenderCommand(
+                    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
                         ERenderCommand::WRITE_TEXTURE,
                         (cpuword)atlas,
                         pixelOffset.GetX(),
@@ -168,11 +164,11 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
                         (cpuword)data
                     ));
                     if (format == cTexture::eFormat::RGBA8_SRGB_MIPS)
-                        renderSubsystem->PushCommand(SRenderCommand(
+                        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
                             ERenderCommand::GENERATE_TEXTURE_MIPS,
                             (cpuword)atlas
                         ));
-                    renderSubsystem->FetchResult<void*>(); // TODO: do proper synchronization here
+                    _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>(); // TODO: do proper synchronization here
 
                     STexture readyTexture;
                     readyTexture.layer = layer;

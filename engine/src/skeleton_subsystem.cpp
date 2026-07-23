@@ -17,21 +17,19 @@ triton::XSkeletonSubsystem::XSkeletonSubsystem(cContext* context)
 {
     const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetCapabilities();
 
-    XRenderSubsystem* renderSubsystem = context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxSkeletonCount * sizeof(SGPUSkeletonLayout),
         3
     ));
-    _skeletonGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _skeletonGPUBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
 }
 
 triton::XSkeletonSubsystem::~XSkeletonSubsystem()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)_skeletonGPUBuffer,
         0,
@@ -68,7 +66,7 @@ void triton::XSkeletonSubsystem::Free()
 
 void triton::XSkeletonSubsystem::Update()
 {
-    UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+    UploadStagingToGpuIfDirty(_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder());
 }
 
 void triton::XSkeletonSubsystem::SetSkin(const HSkeleton& skeleton, const SSkinData& skin)

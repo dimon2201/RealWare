@@ -17,6 +17,9 @@ namespace triton
 	class IApplication;
 	template <typename T>
 	class XDynamicArray;
+	class XSynchronization;
+	class XRenderCommandRecorder;
+	class cRenderThread;
 
 	inline std::thread::id gMainThreadId = std::this_thread::get_id();
 
@@ -26,6 +29,9 @@ namespace triton
 
 		IApplication* _app = nullptr;
 		const sCapabilities* _caps = nullptr;
+		XSynchronization* _sync = nullptr;
+		XRenderCommandRecorder* _cmdRecorder = nullptr;
+		cRenderThread* _renderThread = nullptr;
 
 	public:
 		explicit cEngine(cContext* context, IApplication* app);
@@ -37,5 +43,24 @@ namespace triton
 
 		inline IApplication* GetApplication() const { return _app; }
 		inline const sCapabilities* GetCapabilities() const { return _caps; }
+
+		inline XRenderCommandRecorder* GetRenderCommandRecorder()
+		{
+			return _cmdRecorder;
+		}
+
+		inline XSynchronization* GetSynchronization()
+		{
+			return _sync;
+		}
+
+	private:
+		void InitializeSynchronization();
+		void InitializeRenderCommandRecorder();
+		void InitializeRenderThread();
+		void ReleaseSynchronization();
+		void ReleaseRenderCommandRecorder();
+		void ReleaseRenderThread();
+		void MainThreadFunction();
 	};
 }

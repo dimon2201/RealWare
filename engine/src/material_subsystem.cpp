@@ -20,15 +20,14 @@ triton::XMaterialSubsystem::XMaterialSubsystem(cContext* context)
 {
     const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetCapabilities();
 
-    XRenderSubsystem* renderSubsystem = context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxRenderMaterialCount * sizeof(SGPUMaterialLayout),
         2
     ));
-    _materialGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _materialGPUBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
 }
 
 triton::HMaterial triton::XMaterialSubsystem::CreateMaterial(
@@ -68,7 +67,7 @@ void triton::XMaterialSubsystem::Free()
 
 void triton::XMaterialSubsystem::Update()
 {
-    UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+    UploadStagingToGpuIfDirty(_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder());
 }
 
 triton::SGPUMaterialLayout triton::XMaterialSubsystem::ConvertToGPULayout(const HMaterial& material)

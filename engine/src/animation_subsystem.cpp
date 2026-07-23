@@ -1,7 +1,6 @@
 // animation_subsystem.cpp
 
 #include "animation_subsystem.hpp"
-#include "render_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "graphics_resource_backend.hpp"
 #include "animation.hpp"

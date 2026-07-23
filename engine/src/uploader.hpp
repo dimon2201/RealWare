@@ -8,10 +8,10 @@
 #include "capabilities.hpp"
 #include "graphics_resource_backend.hpp"
 #include "gpu_resource.hpp"
-#include "render_subsystem.hpp"
 #include "subsystem.hpp"
 #include "handle_allocator.hpp"
 #include "object_allocator.hpp"
+#include "synchronization.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -33,7 +33,7 @@ namespace triton
             cGPUResource** resource,
             types::usize stagingBufferElementCount,
             types::boolean bNeedsPersistentGpuWrite
-        ) : CHandleAllocator(context, 4096, 4096, 65536 * 64, 1024) // TODO: use values from capabilities here <<<<<-----
+        ) : CHandleAllocator<SSlot, TCPUObject, TCPUObjectHandle, TCPUObjectAllocator>(context, 4096, 4096, 65536 * 64, 1024) // TODO: use values from capabilities here <<<<<-----
         {
             _bNeedsPersistentGpuWrite = bNeedsPersistentGpuWrite;
             _bNeedsGpuWrite = types::K_FALSE;
@@ -79,18 +79,18 @@ namespace triton
             MarkDirty();
         }
 
-        void UploadStagingToGpuIfDirty(XRenderSubsystem* renderSubsystem)
+        void UploadStagingToGpuIfDirty(XRenderCommandRecorder* commandRecorder)
         {
             if (_bNeedsPersistentGpuWrite == types::K_TRUE ||
                 _bNeedsGpuWrite == types::K_TRUE)
-                UploadStagingToGpu(0, _stagingBufferByteSize, renderSubsystem);
+                UploadStagingToGpu(0, _stagingBufferByteSize, commandRecorder);
         }
 
-        void UploadStagingToGpu(types::usize byteOffset, types::usize byteSize, XRenderSubsystem* renderSubsystem)
+        void UploadStagingToGpu(types::usize byteOffset, types::usize byteSize, XRenderCommandRecorder* commandRecorder)
         {
             if (_bNeedsGpuWrite == types::K_TRUE)
             {
-                renderSubsystem->PushCommand(SRenderCommand(
+                commandRecorder->PushCommand(SRenderCommand(
                     ERenderCommand::WRITE_BUFFER,
                     (types::cpuword)*_resource,
                     byteOffset,

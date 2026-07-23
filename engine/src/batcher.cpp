@@ -8,6 +8,7 @@
 #include "render_instance.hpp"
 #include "game_object_subsystem.hpp"
 #include "vertex.hpp"
+#include "synchronization.hpp"
 
 using namespace types;
 
@@ -37,23 +38,22 @@ triton::XBatchSubsystem::XBatchSubsystem(cContext* context)
 	
 	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxRenderStaticInstanceCount * sizeof(SGPUStaticRenderInstanceLayout),
         0
     ));
-    _staticGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _staticGPUBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
+	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxRenderDynamicInstanceCount * sizeof(SGPUDynamicRenderInstanceLayout),
         1
     ));
-    _dynamicGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _dynamicGPUBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
 
 	_tempStaticCounterBuffer = (u32*)_context->GetMemoryAllocator()->Allocate(
 		caps->maxRenderBatchCount * sizeof(u32),
@@ -70,12 +70,11 @@ triton::XBatchSubsystem::~XBatchSubsystem()
 	_context->GetMemoryAllocator()->Deallocate(_tempDynamicCounterBuffer);
 	_context->GetMemoryAllocator()->Deallocate(_tempStaticCounterBuffer);
 
-	XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-	renderSubsystem->PushCommand(SRenderCommand(
+	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::DESTROY_BUFFER,
 		(cpuword)_dynamicGPUBuffer
 	));
-	renderSubsystem->PushCommand(SRenderCommand(
+	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::DESTROY_BUFFER,
 		(cpuword)_staticGPUBuffer
 	));
@@ -257,13 +256,13 @@ void triton::XBatchSubsystem::Update()
 		HStaticRenderInstance,
 		XLinearArray<SStaticRenderInstanceData>,
 		SGPUStaticRenderInstanceLayout
-	>::UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+	>::UploadStagingToGpuIfDirty(_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder());
 	CUploader<
 		SDynamicRenderInstanceData,
 		HDynamicRenderInstance,
 		XLinearArray<SDynamicRenderInstanceData>,
 		SGPUDynamicRenderInstanceLayout
-	>::UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+	>::UploadStagingToGpuIfDirty(_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder());
 }
 
 void triton::XBatchSubsystem::MarkDirtyStatic()

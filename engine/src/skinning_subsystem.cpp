@@ -1,7 +1,6 @@
 // skinning_subsystem.cpp
 
 #include "skinning_subsystem.hpp"
-#include "render_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "graphics_resource_backend.hpp"
 #include "animation.hpp"
@@ -23,21 +22,19 @@ triton::XSkinningSubsystem::XSkinningSubsystem(cContext* context)
 {
     const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetCapabilities();
 
-    XRenderSubsystem* renderSubsystem = context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxSkinnedBoneCount * sizeof(SGPUSkeletonLayout),
         4
     ));
-    _skinningGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _skinningGPUBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
 }
 
 triton::XSkinningSubsystem::~XSkinningSubsystem()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)_skinningGPUBuffer,
         0,
@@ -105,23 +102,21 @@ void triton::XSkinningSubsystem::DestroySkin(const SSkinData& skin)
 
 void triton::XSkinningSubsystem::Init()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxSkinnedBoneCount * sizeof(SGPUSkinningLayout),
         4
     ));
-    _skinningGPUBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _skinningGPUBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
 }
 
 void triton::XSkinningSubsystem::Free()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)_skinningGPUBuffer,
         0,
@@ -132,7 +127,8 @@ void triton::XSkinningSubsystem::Free()
 
 void triton::XSkinningSubsystem::Update()
 {
-    UploadStagingToGpuIfDirty(_context->GetSubsystem<XRenderSubsystem>());
+    
+    UploadStagingToGpuIfDirty(_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder());
 }
 
 void triton::XSkinningSubsystem::CalculateBone(

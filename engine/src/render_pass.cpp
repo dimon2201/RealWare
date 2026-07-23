@@ -5,7 +5,6 @@
 #include "components.hpp"
 #include "dynamic_array.hpp"
 #include "application.hpp"
-#include "render_subsystem.hpp"
 #include "graphics.hpp"
 #include "buffer_view.hpp"
 #include "camera.hpp"
@@ -16,23 +15,21 @@ using namespace types;
 
 triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxRenderTextureAtlasTextureCount,
         3
     ));
-    _textureBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _textureBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
 }
 
 triton::XRenderPass::~XRenderPass()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)_textureBuffer
     ));
@@ -159,8 +156,7 @@ void triton::XRenderPass::ResizeViewport(const cVector2& size)
 
 void triton::XRenderPass::ResizeColorAttachments(const cVector2& size)
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::RESIZE_RENDER_TARGET_COLORS,
         (cpuword)_renderTarget,
         size.GetX(),
@@ -170,8 +166,7 @@ void triton::XRenderPass::ResizeColorAttachments(const cVector2& size)
 
 void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::RESIZE_RENDER_TARGET_DEPTH,
         (cpuword)_renderTarget,
         size.GetX(),

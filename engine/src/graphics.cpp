@@ -24,7 +24,6 @@
 #include "graphics_pipeline_backend.hpp"
 #include "render_pass.hpp"
 #include "dynamic_array.hpp"
-#include "render_subsystem.hpp"
 #include "handle_allocator.hpp"
 #include "camera.hpp"
 #include "skeleton_subsystem.hpp"
@@ -896,25 +895,22 @@ void triton::cGraphics::CreateGeometryStorage()
 
 void triton::cGraphics::CreateMaterialBuffer()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::STORAGE,
         (cpuword)nullptr,
         caps->maxRenderMaterialCount * sizeof(SGPUMaterialLayout),
         2
     ));
-    _materialBuffer = renderSubsystem->FetchResult<cBuffer*>();
+    _materialBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
 }
 
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->at(0).GetSize();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -924,8 +920,8 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    cTexture* color = renderSubsystem->FetchResult<cTexture*>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    cTexture* color = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -935,8 +931,8 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    cTexture* accumulation = renderSubsystem->FetchResult<cTexture*>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    cTexture* accumulation = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -946,8 +942,8 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    cTexture* revealage = renderSubsystem->FetchResult<cTexture*>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    cTexture* revealage = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -957,24 +953,24 @@ void triton::cGraphics::CreateDefaultRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    cTexture* depth = renderSubsystem->FetchResult<cTexture*>();
+    cTexture* depth = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
     
     cTexture* opaqueColorAttachments[1] = { color };
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
         1,
         (cpuword)&opaqueColorAttachments[0],
         (cpuword)depth
     ));
-    _opaqueRenderTarget = renderSubsystem->FetchResult<XRenderTarget*>();
+    _opaqueRenderTarget = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<XRenderTarget*>();
     cTexture* transparentColorAttachments[2] = { accumulation, revealage };
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
         2,
         (cpuword)&transparentColorAttachments[0],
         (cpuword)depth
     ));
-    _transparentRenderTarget = renderSubsystem->FetchResult<XRenderTarget*>();
+    _transparentRenderTarget = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<XRenderTarget*>();
 }
 
 void triton::cGraphics::CreateDefaultRenderPasses()
@@ -1156,8 +1152,7 @@ void triton::cGraphics::DestroyGeometryStorage()
 
 void triton::cGraphics::DestroyMaterialBuffer()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)_materialBuffer
     ));
@@ -1165,34 +1160,33 @@ void triton::cGraphics::DestroyMaterialBuffer()
 
 void triton::cGraphics::DestroyDefaultRenderTargets()
 {
-    XRenderSubsystem* renderSubsystem = _context->GetSubsystem<XRenderSubsystem>();
     if (_opaqueRenderTarget->GetColorAttachments()[0])
-        renderSubsystem->PushCommand(SRenderCommand(
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::DESTROY_TEXTURE,
             (cpuword)_opaqueRenderTarget->GetColorAttachments()[0]
         ));
     if (_transparentRenderTarget->GetColorAttachments()[0])
-        renderSubsystem->PushCommand(SRenderCommand(
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::DESTROY_TEXTURE,
             (cpuword)_transparentRenderTarget->GetColorAttachments()[0]
         ));
     if (_transparentRenderTarget->GetColorAttachments()[1])
-        renderSubsystem->PushCommand(SRenderCommand(
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::DESTROY_TEXTURE,
             (cpuword)_transparentRenderTarget->GetColorAttachments()[1]
         ));
     if (_opaqueRenderTarget->GetDepthAttachment())
-        renderSubsystem->PushCommand(SRenderCommand(
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::DESTROY_TEXTURE,
             (cpuword)_opaqueRenderTarget->GetDepthAttachment()
         ));
     if (_transparentRenderTarget)
-        renderSubsystem->PushCommand(SRenderCommand(
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::DESTROY_RENDER_TARGET,
             (cpuword)_transparentRenderTarget
         ));
     if (_opaqueRenderTarget)
-        renderSubsystem->PushCommand(SRenderCommand(
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::DESTROY_RENDER_TARGET,
             (cpuword)_opaqueRenderTarget
         ));

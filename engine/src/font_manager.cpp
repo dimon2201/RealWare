@@ -11,7 +11,6 @@
 #include "log.hpp"
 #include "graphics_resource_backend.hpp"
 #include "dynamic_array.hpp"
-#include "render_subsystem.hpp"
 
 using namespace types;
 
@@ -58,13 +57,12 @@ triton::cFontFace::cFontFace(cContext* context) : iObject(context) {}
 triton::cFontFace::~cFontFace()
 {
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
 
     for (const auto& glyph : _alphabet)
         memoryAllocator->Deallocate(glyph.second._bitmapData);
     _alphabet.clear();
 
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)_atlas
     ));
@@ -132,7 +130,6 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
 {
     const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-    XRenderSubsystem* renderSubsystem = _context->GetBackend<XRenderSubsystem>();
 
     usize maxGlyphHeight = 0;
 
@@ -173,7 +170,7 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         }
     }
 
-    renderSubsystem->PushCommand(SRenderCommand(
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         atlasWidth,
         atlasHeight,
@@ -183,7 +180,7 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         (cpuword)atlasPixels,
         0
     ));
-    _atlas = renderSubsystem->FetchResult<cTexture*>();
+    _atlas = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
 
     memoryAllocator->Deallocate(atlasPixels);
 }

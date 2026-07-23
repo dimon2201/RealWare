@@ -8,7 +8,6 @@
 #include "components.hpp"
 #include "handle_allocator.hpp"
 #include "buffer_view.hpp"
-#include "render_subsystem.hpp"
 
 using namespace triton::ecs::components;
 using namespace types;
