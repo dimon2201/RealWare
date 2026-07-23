@@ -1,6 +1,6 @@
 # Triton Engine
 
-High-performance C++23 game engine.
+High-performance C++20 game engine.
 
 Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 
@@ -10,6 +10,7 @@ Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 - TrueType fonts
 - Memory allocator (UE4-like)
 - Multithreading (separate thread for rendering with double buffering, work queue)
+- Skeletal animations
 - Event subscription/sending
 - PhysX 5.3 physics
 - OpenGL 4.3 rendering
