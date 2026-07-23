@@ -1,5 +1,6 @@
 // engine.cpp
 
+#include <tracy/Tracy.hpp>
 #include "engine.hpp"
 #include "application.hpp"
 #include "context.hpp"
