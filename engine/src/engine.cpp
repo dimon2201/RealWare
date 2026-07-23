@@ -223,12 +223,6 @@ void triton::cEngine::MainThreadFunction()
 				inputBackend->ProcessEvent(e);
 			}
 		}
-		
-		{
-			ZoneScopedN("Wait for Released Frame");
-
-			_sync->WaitForReleasedFrame();
-		}
 
 		if (e.type != EWindowEvent::Quit)
 		{
@@ -242,6 +236,12 @@ void triton::cEngine::MainThreadFunction()
 			_context->GetSubsystem<XSkeletonSubsystem>()->Update();
 			_context->GetSubsystem<XSkinningSubsystem>()->Update();
 			_context->GetSubsystem<XBatchSubsystem>()->Update();
+		}
+		
+		{
+			ZoneScopedN("Wait for Released Frame");
+
+			_sync->WaitForReleasedFrame();
 		}
 
 		{
