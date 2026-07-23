@@ -7,6 +7,7 @@
 #include "buffer_view.hpp"
 #include "linear_array.hpp"
 #include "object_allocator.hpp"
+#include "handle.hpp"
 
 namespace triton
 {
