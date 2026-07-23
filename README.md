@@ -24,8 +24,8 @@ Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 ## Windows
 1. Get CMake 4.4.0-rc3 or higher
 2. Get Visual Studio 17 2022
-3. For Debug, run "build_debug_all_windows.bat" (this will build engine static library, editor executable and example executables)
-4. Built files are located in "engine/lib", "editor/bin", "Example*/bin" folders respectively
+3. For Debug, run "build_debug_win64.bat" (this will build tools static libraries and executables, engine static library and example executables)
+4. Built files are located in "bin", "lib" folders respectively
 
 # License
 MIT License
