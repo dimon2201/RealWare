@@ -17,6 +17,7 @@
 #include "batcher.hpp"
 #include "handle.hpp"
 #include "camera_handle.hpp"
+#include "shader_define.hpp"
 
 namespace triton
 {
@@ -156,15 +157,6 @@ namespace triton
         XDataBuffer* _opaquePassInstance = nullptr;
         XDataBuffer* _transparentPassInstances = nullptr;
         XDataBuffer* _textPassInstance = nullptr;
-    };
-
-    class SShaderDefine final
-    {
-    public:
-        SShaderDefine(const std::string& name_, types::usize index_) : name(name_), index(index_) {}
-
-        std::string name = "";
-        types::usize index = 0;
     };
 
 	class cGraphics : public iObject

@@ -7,6 +7,7 @@
 #include "math.hpp"
 #include "category.hpp"
 #include "render_pass.hpp"
+#include "shader_define.hpp"
 #include "types.hpp"
 
 namespace triton
