@@ -5,7 +5,7 @@ High-performance C++20 game engine.
 Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 
 # Features
-- Modern C++23
+- Modern C++20
 - Disk file IO
 - TrueType fonts
 - Memory allocator (UE4-like)
