@@ -8,6 +8,7 @@ namespace triton
 	{
 		types::usize _arrayIndex = 0;
 		types::usize _generation = 0;
+		types::boolean _alive = types::K_FALSE;
 	};
 
 	struct SHandle

@@ -57,6 +57,17 @@ namespace triton
 		}
 
 		template <typename T>
+		static T* Create(T* ptr, types::u32 index, T&& obj)
+		{
+			if (!_allocator)
+				return nullptr;
+
+			new (&ptr[index]) T(std::move(obj));
+
+			return &ptr[index];
+		}
+
+		template <typename T>
 		static void Destroy(T* object)
 		{
 			if (!_allocator || !object)

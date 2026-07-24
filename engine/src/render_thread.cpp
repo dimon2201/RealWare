@@ -188,6 +188,13 @@ void triton::cRenderThread::ExecuteCommands(
 				resourceBackend->BindBuffer(buffer);
 				break;
 			}
+			case ERenderCommand::DESTROY_BUFFER:
+			{
+				resourceBackend->DestroyBuffer(
+					(cBuffer*)cmd._args._argA
+				);
+				break;
+			}
 			case ERenderCommand::CREATE_VERTEX_ARRAY:
 			{
 				CGPUVertexArray resultVertexArray = pipelineBackend->CreateVertexArray();
