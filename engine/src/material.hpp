@@ -7,14 +7,6 @@
 
 namespace triton
 {
-    struct SMaterial
-    {
-        HTexture diffuseTexture;
-        HTexture normalTexture;
-        HTexture roughnessTexture;
-        HTexture metallicTexture;
-        cVector4 diffuseColor = cVector4(0.0f);
-    };
 
     struct STextureLayout
     {
@@ -30,6 +22,18 @@ namespace triton
         STextureLayout normalTextureLayout;
         STextureLayout roughnessTextureLayout;
         STextureLayout metallicTextureLayout;
+        cVector4 diffuseColor = cVector4(0.0f);
+    };
+
+    struct SMaterial
+    {
+        using THandle = HMaterial;
+        using TGPULayout = SGPUMaterialLayout;
+
+        HTexture diffuseTexture;
+        HTexture normalTexture;
+        HTexture roughnessTexture;
+        HTexture metallicTexture;
         cVector4 diffuseColor = cVector4(0.0f);
     };
 }
