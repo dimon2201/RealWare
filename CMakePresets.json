@@ -1,68 +1,89 @@
 {
     "version": 6,
-    "configurePresets": [
-      {
-        "name": "debug_win64",
-        "displayName": "Debug",
-        "generator": "Visual Studio 17 2022",
-        "binaryDir": "${sourceDir}/build/debug_win64",
-        "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Debug",
-          "CMAKE_C_COMPILER": "cl",
-          "CMAKE_CXX_COMPILER": "cl",
-          "CMAKE_CXX_STANDARD": "17",
-          "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-          "CMAKE_CXX_EXTENSIONS": "OFF",
-          "TRITON_ENABLE_ASAN": "ON",
-          "TRITON_STATIC_RUNTIME": "ON"
-        }
-      },
-      {
-        "name": "release_win64",
-        "displayName": "Release",
-        "generator": "Visual Studio 17 2022",
-        "binaryDir": "${sourceDir}/build/release_win64",
-        "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Release",
-          "CMAKE_C_COMPILER": "cl",
-          "CMAKE_CXX_COMPILER": "cl",
-          "CMAKE_CXX_STANDARD": "17",
-          "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-          "CMAKE_CXX_EXTENSIONS": "OFF",
-          "TRITON_ENABLE_ASAN": "OFF"
-        }
-      },
-      {
-        "name": "relwithdebinfo_win64",
-        "displayName": "RelWithDebInfo",
-        "generator": "Visual Studio 17 2022",
-        "binaryDir": "${sourceDir}/build/relwithdebinfo_win64",
-        "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-          "CMAKE_C_COMPILER": "cl",
-          "CMAKE_CXX_COMPILER": "cl",
-          "CMAKE_CXX_STANDARD": "17",
-          "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-          "CMAKE_CXX_EXTENSIONS": "OFF",
-          "TRITON_ENABLE_ASAN": "OFF"
-        }
+  "configurePresets": [
+    {
+      "name": "debug_win64",
+      "displayName": "Debug",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/debug_win64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "TRITON_ENABLE_ASAN": "ON",
+        "TRITON_STATIC_RUNTIME": "ON"
       }
-    ],
-	"buildPresets": [
-        {
-            "name": "debug_win64",
-            "configurePreset": "debug_win64",
-			      "configuration": "Debug"
-        },
-        {
-            "name": "release_win64",
-            "configurePreset": "release_win64",
-            "configuration": "Debug"
-        },
-        {
-            "name": "relwithdebinfo_win64",
-            "configurePreset": "relwithdebinfo_win64",
-            "configuration": "RelWithDebInfo"
-        }
-    ]
+    },
+    {
+      "name": "debug_clang",
+      "displayName": "Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug_clang",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "TRITON_ENABLE_ASAN": "ON",
+        "TRITON_STATIC_RUNTIME": "ON"
+      }
+    },
+    {
+      "name": "release_win64",
+      "displayName": "Release",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/release_win64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_CXX_STANDARD": "17",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "TRITON_ENABLE_ASAN": "OFF"
+      }
+    },
+    {
+      "name": "relwithdebinfo_win64",
+      "displayName": "RelWithDebInfo",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/relwithdebinfo_win64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_CXX_STANDARD": "17",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "TRITON_ENABLE_ASAN": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug_win64",
+      "configurePreset": "debug_win64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "debug_clang",
+      "configurePreset": "debug_clang",
+      "configuration": "Debug"
+    },
+    {
+      "name": "release_win64",
+      "configurePreset": "release_win64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "relwithdebinfo_win64",
+      "configurePreset": "relwithdebinfo_win64",
+      "configuration": "RelWithDebInfo"
+    }
+  ]
 }
