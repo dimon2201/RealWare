@@ -211,6 +211,8 @@ namespace triton
                 _gpuBufferSlot
             );
         }
+
+        _bDirtyBit = types::K_TRUE;
     }
 
     template <typename TObject>
