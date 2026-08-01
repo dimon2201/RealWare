@@ -62,7 +62,7 @@ namespace triton
 
         // NOTE: Can be fragmented, use carefully
         template <typename... Args>
-        std::optional<SObjectFrame<TObject>> CreateFrame(types::usize count, Args&&... args);
+        std::optional<SObjectFrame<TObject>> Create(types::usize count, Args&&... args);
 
         void Destroy(const TObject::THandle& handle);
 
@@ -258,7 +258,7 @@ namespace triton
 
     template <typename TObject>
     template <typename... Args>
-    std::optional<SObjectFrame<TObject>> XObjectPoolBase<TObject>::CreateFrame(types::usize count, Args&&... args)
+    std::optional<SObjectFrame<TObject>> XObjectPoolBase<TObject>::Create(types::usize count, Args&&... args)
     {
         if (!_slots || (_bKeepCpuCopy == types::K_TRUE && !_objects))
             return std::nullopt;
