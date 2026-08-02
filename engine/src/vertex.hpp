@@ -7,6 +7,14 @@
 
 namespace triton
 {
+	struct SStaticVertex
+	{
+		cVector3 position = cVector3(0.0f);
+		cVector2 texcoord = cVector2(0.0f);
+		cVector3 normal = cVector3(0.0f);
+		types::s32 materialIndex = -1;
+	};
+
 	struct SVertex
 	{
 		static constexpr types::usize kMaxBonesPerVertex = 4;
