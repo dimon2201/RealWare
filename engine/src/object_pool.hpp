@@ -26,6 +26,7 @@ namespace triton
 
 		static void Free()
 		{
+			CObjectAllocator::Destroy<XStaticVertexPool>(_staticVertexPool);
 		}
 	};
 }
