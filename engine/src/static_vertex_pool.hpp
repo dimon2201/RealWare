@@ -16,6 +16,10 @@ namespace triton
         SStaticVertex::TGPULayout ConvertToGpuLayout(const SStaticVertex& object) override
         {
             SStaticVertex::TGPULayout gpul;
+            gpul.position = object.position;
+            gpul.texcoord = object.texcoord;
+            gpul.normal = object.normal;
+            gpul.materialIndex = object.materialIndex;
 
             return gpul;
         }
