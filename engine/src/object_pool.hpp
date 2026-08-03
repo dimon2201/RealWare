@@ -10,12 +10,13 @@ namespace triton
 {
 	class CPool final
 	{
-		XStaticVertexPool* _staticVertexPool = nullptr;
+		inline static XStaticVertexPool* _staticVertexPool = nullptr;
 
 	public:
 		static void Initialize(cContext* context)
 		{
 			_staticVertexPool = CObjectAllocator::Create<XStaticVertexPool>(
+				64,
 				context,
 				types::K_TRUE,
 				0,
