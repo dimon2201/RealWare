@@ -1,6 +1,6 @@
 // texture_subsystem.hpp
 
-#pragma once
+/*#pragma once
 
 #include <string>
 #include <vector>
@@ -35,7 +35,7 @@ namespace triton
         DDS
     };
 
-    class XTextureSubsystem : public ISubsystem<HTexture, STexture, XLinearArray<STexture>>
+    class XTextureSubsystem : public ISubsystem<HTexture, STexture, XDynamicArray<STexture>>
     {
         TRITON_OBJECT(XTextureSubsystem)
 
@@ -92,4 +92,4 @@ namespace triton
         types::u8* RecreatePixelBuffer(types::usize srcChannelCount, types::usize dstChannelCount, const cVector2& size, const types::u8* data);
         void DestroyPixelBuffer(const types::u8* rgbaByteData);
     };
-}
+}*/
