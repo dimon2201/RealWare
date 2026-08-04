@@ -3,11 +3,11 @@
 #pragma once
 
 #include "math.hpp"
+#include "handles.hpp"
 #include "texture_subsystem.hpp"
 
 namespace triton
 {
-
     struct STextureLayout
     {
         types::u32 layer = 0;
