@@ -6,6 +6,7 @@
 #include "object.hpp"
 #include "engine.hpp"
 #include "capabilities.hpp"
+#include "static_vertex_pool.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -19,6 +20,7 @@ namespace triton
 		::std::unordered_map<ClassType, std::shared_ptr<iBackend>> _backends;
 		::std::unordered_map<ClassType, iObject*> _subsystems;
 		std::unordered_map<ClassType, iObject*> _storages;
+		XStaticVertexPool* _staticVertexPool = nullptr;
 
 	public:
 		explicit cContext() = default;
@@ -43,6 +45,15 @@ namespace triton
 
 		template <typename T>
 		void ReleaseSubsystem();
+
+		void InitPools();
+
+		void FreePools();
+
+		inline XStaticVertexPool* StaticVertexPool() const
+		{
+			return _staticVertexPool;
+		}
 
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
 
@@ -121,6 +132,22 @@ void triton::cContext::ReleaseSubsystem()
 	const auto it = _subsystems.find(type);
 	if (it == _subsystems.end())
 		delete it->second;
+}
+
+void triton::cContext::InitPools()
+{
+	_staticVertexPool = CObjectAllocator::Create<XStaticVertexPool>(
+		64,
+		this,
+		types::K_TRUE,
+		0,
+		cBuffer::eType::VERTEX
+	);
+}
+
+void triton::cContext::FreePools()
+{
+	CObjectAllocator::Destroy<XStaticVertexPool>(_staticVertexPool);
 }
 
 template <typename T>
