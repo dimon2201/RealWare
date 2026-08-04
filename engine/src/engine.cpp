@@ -67,6 +67,8 @@ void triton::cEngine::Initialize()
 
 	InitializeRenderCommandRecorder();
 	InitializeSynchronization();
+
+	_context->InitPools();
 	
 	CObjectAllocator::Initialize(_context->GetMemoryAllocator());
 
@@ -86,25 +88,25 @@ void triton::cEngine::Initialize()
 	InitializeRenderThread();
 
 	//_context->RegisterSubsystem(new cAudio(_context));
-	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(8193, 8193, 4)));
-	_context->RegisterSubsystem(new XMaterialSubsystem(_context));
-	_context->RegisterSubsystem(new cFileSystem(_context));
+	//_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(8193, 8193, 4)));
+	//_context->RegisterSubsystem(new XMaterialSubsystem(_context));
+	//_context->RegisterSubsystem(new cFileSystem(_context));
 	//_context->RegisterSubsystem(new cTime(_context));
 	//_context->RegisterSubsystem(new cThreadSubsystem(_context));
-	_context->RegisterSubsystem(new XECSSubsystem(_context));
-	_context->GetSubsystem<XECSSubsystem>()->Initialize();
-	_context->RegisterSubsystem(new cGraphics(_context));
-	_context->GetSubsystem<cGraphics>()->Init();
-	_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
-	_context->GetSubsystem<XGameObjectSubsystem>()->Init();
-	_context->RegisterSubsystem(new XModel3DSubsystem(_context));
-	_context->RegisterSubsystem(new XAnimationSubsystem(_context));
-	_context->GetSubsystem<XAnimationSubsystem>()->Init();
-	_context->RegisterSubsystem(new XSkeletonSubsystem(_context));
-	_context->GetSubsystem<XSkeletonSubsystem>()->Init();
-	_context->RegisterSubsystem(new XSkinningSubsystem(_context));
-	_context->GetSubsystem<XSkinningSubsystem>()->Init();
-	_context->RegisterSubsystem(new XBatchSubsystem(_context));
+	//_context->RegisterSubsystem(new XECSSubsystem(_context));
+	//_context->GetSubsystem<XECSSubsystem>()->Initialize();
+	//_context->RegisterSubsystem(new cGraphics(_context));
+	//_context->GetSubsystem<cGraphics>()->Init();
+	//_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
+	//_context->GetSubsystem<XGameObjectSubsystem>()->Init();
+	//_context->RegisterSubsystem(new XModel3DSubsystem(_context));
+	//_context->RegisterSubsystem(new XAnimationSubsystem(_context));
+	//_context->GetSubsystem<XAnimationSubsystem>()->Init();
+	//_context->RegisterSubsystem(new XSkeletonSubsystem(_context));
+	//_context->GetSubsystem<XSkeletonSubsystem>()->Init();
+	//_context->RegisterSubsystem(new XSkinningSubsystem(_context));
+	//_context->GetSubsystem<XSkinningSubsystem>()->Init();
+	//_context->RegisterSubsystem(new XBatchSubsystem(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
@@ -136,6 +138,7 @@ void triton::cEngine::Initialize()
 void triton::cEngine::Shutdown()
 {
 	ReleaseRenderThread();
+	_context->FreePools();
 	ReleaseSynchronization();
 	ReleaseRenderCommandRecorder();
 	_context->GetSubsystem<cInput>()->Shutdown();
