@@ -10,7 +10,7 @@ namespace triton
     class XStaticVertexPool : public XObjectPoolBase<SStaticVertex>
     {
     public:
-        using XStaticVertexPool<SStaticVertex>::XObjectPoolBase;
+        using XObjectPoolBase<SStaticVertex>::XObjectPoolBase;
         ~XStaticVertexPool() override = default;
 
         SStaticVertex::TGPULayout ConvertToGpuLayout(const SStaticVertex& object) override
