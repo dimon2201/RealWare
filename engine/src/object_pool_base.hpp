@@ -22,7 +22,22 @@ namespace triton
     template <typename TObject>
     struct SObjectFrame
     {
+        std::string label = "";
         std::vector<typename TObject::THandle> handles;
+    };
+
+    struct SObjectFrameBounds
+    {
+        SObjectFrameBounds() = default;
+        SObjectFrameBounds(
+            const std::string& label,
+            types::u32 begin,
+            types::u32 end
+        ) : label(label), begin(begin), end(end) {}
+
+        std::string label = "";
+        types::u32 begin = 0;
+        types::u32 end = 0;
     };
 
     template <typename TObject>
@@ -36,6 +51,7 @@ namespace triton
         types::usize* _objectIndexToSlotIndex = nullptr;
         std::queue<types::usize> _freeSlots;
         TObject* _objects = nullptr;
+        std::vector<SObjectFrameBounds> _frames = {};
         types::usize _allocatedObjectCounter = 0;
         types::usize _slotCounter = 0;
         types::usize _objectCounter = 0;
@@ -62,13 +78,15 @@ namespace triton
 
         // NOTE: Can be fragmented, use carefully
         template <typename... Args>
-        std::optional<SObjectFrame<TObject>> Create(types::usize count, Args&&... args);
+        std::optional<SObjectFrame<TObject>> Create(const std::string& label, types::usize count, Args&&... args);
 
         void Destroy(const TObject::THandle& handle);
 
-        void DestroyFrame(const SObjectFrame<TObject>& frame);
+        void Destroy(const SObjectFrame<TObject>& frame);
 
         std::optional<std::reference_wrapper<TObject>> Get(const TObject::THandle& handle);
+
+        std::optional<SObjectFrame<TObject>> Find(const std::string& label);
 
         void WriteToStaging(const TObject::THandle& handle);
 
@@ -79,6 +97,8 @@ namespace triton
         );
 
         std::optional<types::usize> GetBufferIndex(const TObject::THandle& handle);
+
+        std::optional<typename TObject::THandle> GetHandle(const types::usize& bufferIndex);
 
         void Upload();
 
@@ -260,7 +280,11 @@ namespace triton
 
     template <typename TObject>
     template <typename... Args>
-    std::optional<SObjectFrame<TObject>> XObjectPoolBase<TObject>::Create(types::usize count, Args&&... args)
+    std::optional<SObjectFrame<TObject>> XObjectPoolBase<TObject>::Create(
+        const std::string& label,
+        types::usize count,
+        Args&&... args
+    )
     {
         if (!_slots || (_bKeepCpuCopy == types::K_TRUE && !_objects))
             return std::nullopt;
@@ -269,6 +293,7 @@ namespace triton
             return std::nullopt;
 
         SObjectFrame<TObject> frame;
+        frame.label = label;
 
         for (types::usize i = 0; i < count; i++)
         {
@@ -277,6 +302,11 @@ namespace triton
                 return std::nullopt;
             frame.handles.push_back(*opt);
         }
+
+        if (frame.handles.empty())
+            return std::nullopt;
+
+        _frames.push_back({ GetBufferIndex(frame.handles.front()), GetBufferIndex(frame.handles.back()) });
 
         return frame;
     }
@@ -318,10 +348,39 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::DestroyFrame(const SObjectFrame<TObject>& frame)
+    void XObjectPoolBase<TObject>::Destroy(const SObjectFrame<TObject>& frame)
     {
+        if (frame.handles.empty())
+            return;
+
+        SObjectFrameBounds ofb(
+            frame.label,
+            *GetBufferIndex(frame.handles.front()),
+            *GetBufferIndex(frame.handles.back())
+        );
+
         for (auto& handle : frame.handles)
             Destroy(handle);
+
+        auto foundIt = _frames.end();
+        for (auto it = _frames.begin(); it != _frames.end();)
+        {
+            if (it->begin == ofb.begin && it->end == ofb.end)
+            {
+                foundIt = _frames.erase(it);
+                break;
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        types::u32 subCount = ofb.end - ofb.begin + 1;
+        for (; foundIt != _frames.end(); ++foundIt)
+        {
+            foundIt->begin -= subCount;
+            foundIt->end -= subCount;
+        }
     }
 
     template <typename TObject>
@@ -344,6 +403,37 @@ namespace triton
             else
                 return std::nullopt;
         }
+    }
+
+    template <typename TObject>
+    std::optional<SObjectFrame<TObject>> XObjectPoolBase<TObject>::Find(const std::string& label)
+    {
+        if (_frames.empty())
+            return std::nullopt;
+
+        types::boolean bFound = types::K_FALSE;
+        auto foundFrame = _frames.end();
+        for (auto it = _frames.begin(); it != _frames.end(); ++it)
+        {
+            if (it->label == label)
+            {
+                foundFrame = it;
+                bFound = types::K_TRUE;
+                break;
+            }
+        }
+
+        if (bFound == types::K_FALSE)
+            return std::nullopt;
+
+        SObjectFrame<TObject> of;
+        of.label = label;
+        types::u32 begin = foundFrame->begin;
+        types::u32 end = foundFrame->end;
+        for (types::u32 i = begin; i < end; i++)
+            of.handles.push_back(*GetHandle(i));
+
+        return of;
     }
 
     template <typename TObject>
@@ -396,6 +486,21 @@ namespace triton
             return std::nullopt;
 
         return _slots[handle._slotIndex]._arrayIndex;
+    }
+
+    template <typename TObject>
+    std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::GetHandle(const types::usize& bufferIndex)
+    {
+        if (bufferIndex >= _allocatedObjectCounter)
+            return std::nullopt;
+
+        TObject::THandle handle;
+        handle.Invalidate();
+        handle._slotIndex = _objectIndexToSlotIndex[bufferIndex];
+        handle._generation = _slots[handle._slotIndex]._generation;
+        handle._indexInArray = bufferIndex;
+
+        return handle;
     }
 
     template <typename TObject>
