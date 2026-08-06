@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Triton)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 option(TRITON_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 if(TRITON_ENABLE_ASAN)
     if(MSVC)
