@@ -20,133 +20,137 @@ void triton::XGeometryStorage::Initialize()
     XSynchronization* sync = engine->GetSynchronization();
     IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
     const sCapabilities* caps = app->GetCapabilities();
+
     cmdRecorder->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::VERTEX,
         (cpuword)nullptr,
-        caps->vertexBufferSize,
+        caps->staticVertexBufferSize,
         0
     ));
-    _vertexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+    _staticVertexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+
+    cmdRecorder->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::VERTEX,
+        (cpuword)nullptr,
+        caps->skinnedVertexBufferSize,
+        0
+    ));
+    _skinnedVertexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+
     cmdRecorder->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)cBuffer::eType::INDEX,
         (cpuword)nullptr,
-        caps->indexBufferSize,
+        caps->staticIndexBufferSize,
         0
     ));
-    _indexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
-    _vertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->vertexBufferSize);
-    _indexBufferCPU = _context->Create<XDataBuffer>(_context, caps->indexBufferSize);
-    
-    /*_opaqueInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderOpaqueInstanceCount, 0);
-    _transparentInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTransparentInstanceCount, 0);
-    _textInstanceBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextInstanceCount, 0);
-    _opaqueMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
-    _textMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextInstanceCount, 1);
-    _transparentMaterialBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderMaterialCount, 1);
-    _lightBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderLightCount, 2);
-    _opaqueTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);
-    _transparentTextureAtlasTexturesBuffer = gfxResourceBackend->CreateBuffer(cBuffer::eType::STORAGE, nullptr, caps->maxRenderTextureAtlasTextureCount, 3);*/
+    _staticIndexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+
+    cmdRecorder->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_BUFFER,
+        (cpuword)cBuffer::eType::INDEX,
+        (cpuword)nullptr,
+        caps->skinnedIndexBufferSize,
+        0
+    ));
+    _skinnedIndexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+
+    _staticVertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->staticVertexBufferSize);
+    _skinnedVertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->skinnedVertexBufferSize);
+    _staticIndexBufferCPU = _context->Create<XDataBuffer>(_context, caps->staticIndexBufferSize);
+    _skinnedIndexBufferCPU = _context->Create<XDataBuffer>(_context, caps->skinnedIndexBufferSize);
 }
 
 void triton::XGeometryStorage::Free()
 {
-    _context->Destroy<XDataBuffer>(_indexBufferCPU);
-    _context->Destroy<XDataBuffer>(_vertexBufferCPU);
+    _context->Destroy<XDataBuffer>(_skinnedIndexBufferCPU);
+    _context->Destroy<XDataBuffer>(_staticIndexBufferCPU);
+    _context->Destroy<XDataBuffer>(_skinnedVertexBufferCPU);
+    _context->Destroy<XDataBuffer>(_staticVertexBufferCPU);
 
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_indexBuffer,
+        (cpuword)_skinnedIndexBuffer,
         0,
         0,
         0
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_vertexBuffer,
+        (cpuword)_staticIndexBuffer,
         0,
         0,
         0
     ));
-
-    /*gfxResourceBackend->DestroyBuffer(_transparentTextureAtlasTexturesBuffer);
-    gfxResourceBackend->DestroyBuffer(_opaqueTextureAtlasTexturesBuffer);
-    gfxResourceBackend->DestroyBuffer(_lightBuffer);
-    gfxResourceBackend->DestroyBuffer(_transparentMaterialBuffer);
-    gfxResourceBackend->DestroyBuffer(_textMaterialBuffer);
-    gfxResourceBackend->DestroyBuffer(_opaqueMaterialBuffer);
-    gfxResourceBackend->DestroyBuffer(_textInstanceBuffer);
-    gfxResourceBackend->DestroyBuffer(_transparentInstanceBuffer);
-    gfxResourceBackend->DestroyBuffer(_opaqueInstanceBuffer);*/
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_skinnedVertexBuffer,
+        0,
+        0,
+        0
+    ));
+    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_BUFFER,
+        (cpuword)_staticVertexBuffer,
+        0,
+        0,
+        0
+    ));
 }
 
-std::optional<triton::SGeometryView> triton::XGeometryStorage::Store(EGraphicsBufferFormat format, const types::u8* vertices, types::usize verticesByteSize, const types::u8* indices, types::usize indicesByteSize)
+std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
+    EVertexBufferFormat format,
+    const u8* vertices,
+    usize verticesByteSize,
+    const u8* indices,
+    usize indicesByteSize
+)
 {
-    usize vertexBufferByteSize = _vertexBufferPointer;
-    usize indexBufferByteSize = _indexBufferPointer;
-    _vertexBufferPointer += verticesByteSize;
-    _indexBufferPointer += indicesByteSize;
-
-    usize vertexCount;
-    usize indexCount = indicesByteSize / sizeof(u32);
-    usize vertexElementOffset;
-    usize indexElementOffset = indexBufferByteSize / sizeof(u32);
-    switch (format)
+    if (format == EVertexBufferFormat::Static_36)
     {
-        case EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4:
-        {
-            const usize kVertexByteSize = sizeof(SVertex);
-            vertexCount = verticesByteSize / kVertexByteSize;
-            vertexElementOffset = vertexBufferByteSize / kVertexByteSize;
-            break;
-        }
+        usize vertexBufferByteSize = _staticVertexBufferPointer;
+        usize indexBufferByteSize = _staticIndexBufferPointer;
+        _staticVertexBufferPointer += verticesByteSize;
+        _staticIndexBufferPointer += indicesByteSize;
 
-        default:
-        {
-            Print("Error: unsupported vertex buffer format!");
-            return std::nullopt;
-        }
+        const usize cVertexByteSize = sizeof(SStaticVertexGPULayout);
+        const usize cIndexByteSize = sizeof(u32);
+        usize vertexCount = verticesByteSize / cVertexByteSize;
+        usize indexCount = indicesByteSize / cIndexByteSize;
+        usize vertexElementOffset = vertexBufferByteSize / cVertexByteSize;
+        usize indexElementOffset = indexBufferByteSize / cIndexByteSize;
+        
+        u8* vertexData = &_staticVertexBufferCPU->GetData()[vertexBufferByteSize];
+        u8* indexData = &_staticIndexBufferCPU->GetData()[indexBufferByteSize];
+        _staticVertexBufferCPU->Write(vertices, verticesByteSize, vertexBufferByteSize);
+        _staticIndexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
+
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+            ERenderCommand::WRITE_BUFFER,
+            (cpuword)_staticVertexBuffer,
+            vertexBufferByteSize,
+            verticesByteSize,
+            (cpuword)vertexData
+        ));
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+            ERenderCommand::WRITE_BUFFER,
+            (cpuword)_staticIndexBuffer,
+            indexBufferByteSize,
+            indicesByteSize,
+            (cpuword)indexData
+        ));
+
+        SGeometryView geometry;
+        geometry._vertexCount = vertexCount;
+        geometry._indexCount = indexCount;
+        geometry._vertexElementOffset = vertexElementOffset;
+        geometry._indexElementOffset = indexElementOffset;
+        geometry._vertexData = vertexData;
+        geometry._indexData = indexData;
+        geometry._format = format;
+
+        return geometry;
     }
-    u8* vertexData = &_vertexBufferCPU->GetData()[vertexBufferByteSize];
-    u8* indexData = &_indexBufferCPU->GetData()[indexBufferByteSize];
-
-    // CPU write
-    _vertexBufferCPU->Write(vertices, verticesByteSize, vertexBufferByteSize);
-    _indexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
-
-    // GPU write
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::WRITE_BUFFER,
-        (cpuword)_vertexBuffer,
-        vertexBufferByteSize,
-        verticesByteSize,
-        (cpuword)vertexData
-    ));
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::WRITE_BUFFER,
-        (cpuword)_indexBuffer,
-        indexBufferByteSize,
-        indicesByteSize,
-        (cpuword)indexData
-    ));
-
-    SGeometryView geometry;
-    geometry._vertexCount = vertexCount;
-    geometry._indexCount = indexCount;
-    geometry._vertexElementOffset = vertexElementOffset;
-    geometry._indexElementOffset = indexElementOffset;
-    geometry._vertexData = vertexData;
-    geometry._indexData = indexData;
-    geometry._format = format;
-
-    return geometry;
-}
-
-void triton::XGeometryStorage::Bind()
-{
-    CThreadGuard::AssertRender();
-
-    _vertexBuffer->Bind();
-    _indexBuffer->Bind();
 }
