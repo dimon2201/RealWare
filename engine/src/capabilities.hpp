@@ -34,7 +34,8 @@ namespace triton
         types::usize maxRenderTextureAtlasTextureCount = 8192;
         types::usize maxRenderStaticInstanceCount = 32 * 1024;
         types::usize maxRenderDynamicInstanceCount = 32 * 1024;
-        types::usize vertexBufferSize = 64 * 1024 * 1024;
+        types::usize staticVertexBufferSize = 64 * 1024 * 1024;
+        types::usize skinnedVertexBufferSize = 64 * 1024 * 1024;
         types::usize indexBufferSize = 64 * 1024 * 1024;
         types::usize boneBufferSize = 64 * 1024 * 1024;
         types::usize hashTableChunkByteSize = 16 * 1024;
