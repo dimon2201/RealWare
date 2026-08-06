@@ -1,19 +1,18 @@
 #pragma once
 
-#include "graphics_buffer_formats.hpp"
+#include "vertex_buffer_format.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-	class SGeometryView final
+	struct SGeometryView final
 	{
-	public:
 		types::u32 _vertexCount = 0;
 		types::u32 _indexCount = 0;
 		types::u32 _vertexElementOffset = 0;
 		types::u32 _indexElementOffset = 0;
 		types::u8* _vertexData = nullptr;
 		types::u8* _indexData = nullptr;
-		EGraphicsBufferFormat _format = EGraphicsBufferFormat::NONE;
+		EVertexBufferFormat _format = EVertexBufferFormat::Unknown;
 	};
 }
