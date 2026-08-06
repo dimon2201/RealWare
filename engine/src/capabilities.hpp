@@ -36,7 +36,8 @@ namespace triton
         types::usize maxRenderDynamicInstanceCount = 32 * 1024;
         types::usize staticVertexBufferSize = 64 * 1024 * 1024;
         types::usize skinnedVertexBufferSize = 64 * 1024 * 1024;
-        types::usize indexBufferSize = 64 * 1024 * 1024;
+        types::usize staticIndexBufferSize = 2 * 1024 * 1024;
+        types::usize skinnedIndexBufferSize = 2 * 1024 * 1024;
         types::usize boneBufferSize = 64 * 1024 * 1024;
         types::usize hashTableChunkByteSize = 16 * 1024;
         types::usize hashTableMaxChunkCount = 256;
