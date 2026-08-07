@@ -153,4 +153,51 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
 
         return geometry;
     }
+    else if (format == EVertexBufferFormat::Skinned_84)
+    {
+        usize vertexBufferByteSize = _skinnedVertexBufferPointer;
+        usize indexBufferByteSize = _skinnedIndexBufferPointer;
+        _skinnedVertexBufferPointer += verticesByteSize;
+        _skinnedIndexBufferPointer += indicesByteSize;
+
+        const usize cVertexByteSize = sizeof(SSkinnedVertexGPULayout);
+        const usize cIndexByteSize = sizeof(u32);
+        usize vertexCount = verticesByteSize / cVertexByteSize;
+        usize indexCount = indicesByteSize / cIndexByteSize;
+        usize vertexElementOffset = vertexBufferByteSize / cVertexByteSize;
+        usize indexElementOffset = indexBufferByteSize / cIndexByteSize;
+
+        u8* vertexData = &_skinnedVertexBufferCPU->GetData()[vertexBufferByteSize];
+        u8* indexData = &_skinnedIndexBufferCPU->GetData()[indexBufferByteSize];
+        _skinnedVertexBufferCPU->Write(vertices, verticesByteSize, vertexBufferByteSize);
+        _skinnedIndexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
+
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+            ERenderCommand::WRITE_BUFFER,
+            (cpuword)_skinnedVertexBuffer,
+            vertexBufferByteSize,
+            verticesByteSize,
+            (cpuword)vertexData
+        ));
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+            ERenderCommand::WRITE_BUFFER,
+            (cpuword)_skinnedIndexBuffer,
+            indexBufferByteSize,
+            indicesByteSize,
+            (cpuword)indexData
+        ));
+
+        SGeometryView geometry;
+        geometry._vertexCount = vertexCount;
+        geometry._indexCount = indexCount;
+        geometry._vertexElementOffset = vertexElementOffset;
+        geometry._indexElementOffset = indexElementOffset;
+        geometry._vertexData = vertexData;
+        geometry._indexData = indexData;
+        geometry._format = format;
+
+        return geometry;
+    }
+    
+    return std::nullopt;
 }
