@@ -6,10 +6,27 @@
 #include "material_subsystem.hpp"
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
+#include "model3d_pool.hpp"
 
 using namespace types;
 
-std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModelFromRaw(const std::filesystem::path& modelFilePath)
+triton::XModel3DSubsystem::XModel3DSubsystem(cContext* context) : ISubsys(context)
+{
+	_pool = CObjectAllocator::Create<XModel3DPool>(
+		64,
+		_context,
+		K_TRUE
+	);
+}
+
+triton::XModel3DSubsystem::~XModel3DSubsystem()
+{
+	CObjectAllocator::Destroy<XModel3DPool>(_pool);
+}
+
+std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFromRaw(
+	const std::filesystem::path& modelFilePath
+)
 {
 	std::filesystem::path modelFolderPath = modelFilePath.parent_path();
 	std::filesystem::path modelLocalPath = modelFilePath.filename();
@@ -21,28 +38,44 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModelFromRaw(co
 	if (!result)
 		return std::nullopt;
 
-	SModel3DData& m3ddr = *result;
-	HModel3D model = Create();
-	SModel3DData& m3ddl = Get(model);
-	m3ddl = m3ddr;
+	auto handleResult = _pool->Create();
+	if (!handleResult.has_value())
+		return std::nullopt;
+	auto handle = *handleResult;
 
-	return model;
+	auto valueResult = _pool->Get(handle);
+	if (!valueResult.has_value())
+		return std::nullopt;
+	auto value = *valueResult;
+
+	value = *result;
+
+	return handle;
 }
 
-std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModelFromAsset(const std::filesystem::path& assetFilePath)
+std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFromAsset(
+	const std::filesystem::path& assetFilePath
+)
 {
 	std::filesystem::path assetFolderPath = assetFilePath.parent_path();
 
 	asset::CModel3DAsset asset;
 	asset.LoadAssetFile(assetFilePath);
 
-	HModel3D model = Create();
-	SModel3DData& m3dd = Get(model);
+	auto handleResult = _pool->Create();
+	if (!handleResult.has_value())
+		return std::nullopt;
+	auto handle = *handleResult;
 
-	m3dd.vertexData = (const SVertex*)asset.vertexData;
-	m3dd.vertexCount = asset.vertexCount;
-	m3dd.indexData = asset.indexData;
-	m3dd.indexCount = asset.indexCount;
+	auto valueResult = _pool->Get(handle);
+	if (!valueResult.has_value())
+		return std::nullopt;
+	auto value = *valueResult;
+
+	value.get().vertexData = (const SVertex*)asset.vertexData;
+	value.get().vertexCount = asset.vertexCount;
+	value.get().indexData = asset.indexData;
+	value.get().indexCount = asset.indexCount;
 
 	for (usize i = 0; i < asset.materialData.size(); i++)
 	{
@@ -54,18 +87,18 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModelFromAsset(
 			const asset::STextureData& assetTextureData,
 			cTexture::eFormat textureFormat,
 			XTextureSubsystem* textureSubsystem,
-			HTexture& outHandle
+			STextureData::THandle& outHandle
 		) {
 			std::filesystem::path texturePath = assetTexturePath;
 			if (!assetTexturePath.is_absolute())
 				texturePath = assetFolderPath / assetTexturePath;
 			if (std::filesystem::exists(texturePath))
-				outHandle = textureSubsystem->CreateTexture(
+				outHandle = *textureSubsystem->Create(
 					texturePath.generic_string(),
 					textureFormat
 				);
 			else
-				outHandle = textureSubsystem->CreateTexture(
+				outHandle = *textureSubsystem->Create(
 					assetTextureData.pixelByteData,
 					assetTextureData.width * assetTextureData.height * assetTextureData.channelCount,
 					assetTextureData.width,
@@ -76,10 +109,10 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModelFromAsset(
 				);
 		};
 
-		HTexture diffuseTexture;
-		HTexture normalTexture;
-		HTexture roughnessTexture;
-		HTexture metallicTexture;
+		STextureData::THandle diffuseTexture;
+		STextureData::THandle normalTexture;
+		STextureData::THandle roughnessTexture;
+		STextureData::THandle metallicTexture;
 		XTextureSubsystem* textureSubsystem = _context->GetSubsystem<XTextureSubsystem>();
 
 		ProcessTexture(
@@ -123,7 +156,7 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModelFromAsset(
 			metallicTexture
 		);
 
-		m3dd.materials.push_back(material);
+		value.get().materials.push_back(material);
 	}
 
 	std::vector<SBone> bones;
@@ -139,14 +172,14 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModelFromAsset(
 
 	if (bones.size() > 0)
 	{
-		m3dd.skeleton = _context->GetSubsystem<XSkeletonSubsystem>()->CreateSkeleton(
+		value.get().skeleton = _context->GetSubsystem<XSkeletonSubsystem>()->CreateSkeleton(
 			bones,
 			cMatrix4(asset.rootBoneAccumulatedTransform)
 		);
 	}
 	else
 	{
-		m3dd.skeleton.Invalidate();
+		value.get().skeleton.Invalidate();
 	}
 	
 	for (usize i = 0; i < asset.animationData.size(); i++)
@@ -176,21 +209,24 @@ std::optional<triton::HModel3D> triton::XModel3DSubsystem::CreateModelFromAsset(
 			}
 		}
 
-		m3dd.animations.push_back(_context->GetSubsystem<XAnimationSubsystem>()->CreateAnimation(
-			asset.animationData[i].name,
-			asset.animationData[i].duration,
-			asset.animationData[i].ticksPerSecond,
-			m3dd.skeleton,
-			keys
-		));
+		SAnimation anim;
+		anim.name = asset.animationData[i].name;
+		anim.duration = asset.animationData[i].duration;
+		anim.ticksPerSecond = asset.animationData[i].ticksPerSecond;
+		anim.animKeys = keys;
+
+		value.get().animations.push_back(std::move(anim));
 	}
 
-	return model;
+	return handle;
 }
 
-void triton::XModel3DSubsystem::DestroyModel(const HModel3D& model)
+void triton::XModel3DSubsystem::Destroy(const SModel3DData::THandle& model)
 {
-	SModel3DData& modelData = Get(model);
-	_context->GetBackend<IModel3DBackend>()->DestroyModel(modelData);
-	Destroy(model);
+	auto valueResult = _pool->Get(model);
+	if (!valueResult.has_value())
+		return;
+
+	_context->GetBackend<IModel3DBackend>()->DestroyModel(*valueResult);
+	_pool->Destroy(model);
 }

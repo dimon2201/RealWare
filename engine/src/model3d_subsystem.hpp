@@ -4,23 +4,27 @@
 
 #include <optional>
 #include <filesystem>
-#include "subsystem.hpp"
+#include "DELETE_THIS_FILE_ASAP.hpp"
 #include "handles.hpp"
 #include "model3d_data.hpp"
 
 namespace triton
 {
-    class XModel3DSubsystem : public ISubsystem<HModel3D, SModel3DData, XLinearArray<SModel3DData>>
+    class XModel3DPool;
+
+    class XModel3DSubsystem : public ISubsys
     {
         TRITON_OBJECT(XModel3DSubsystem)
 
-    public:
-        explicit XModel3DSubsystem(cContext* context) : ISubsystem(context) {}
-        ~XModel3DSubsystem() override = default;
+        XModel3DPool* _pool = nullptr;
 
-        std::optional<HModel3D> CreateModelFromRaw(const std::filesystem::path& modelFilePath);
-        std::optional<HModel3D> CreateModelFromAsset(const std::filesystem::path& assetFilePath);
-        void DestroyModel(const HModel3D& model);
+    public:
+        explicit XModel3DSubsystem(cContext* context);
+        ~XModel3DSubsystem() override;
+
+        std::optional<SModel3DData::THandle> CreateFromRaw(const std::filesystem::path& modelFilePath);
+        std::optional<SModel3DData::THandle> CreateFromAsset(const std::filesystem::path& assetFilePath);
+        void Destroy(const SModel3DData::THandle& model);
 
         void Init() override {}
         void Free() override {}
