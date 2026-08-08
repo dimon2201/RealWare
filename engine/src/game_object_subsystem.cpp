@@ -5,9 +5,41 @@
 #include "material_subsystem.hpp"
 #include "model3d_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
+#include "game_object_pool.hpp"
 #include "math.hpp"
 
 using namespace types;
+
+triton::XGameObjectSubsystem::XGameObjectSubsystem(cContext* context) : ISubsys(context)
+{
+	_pool = CObjectAllocator::Create<XGameObjectPool>(
+		64,
+		_context,
+		K_TRUE
+	);
+}
+
+triton::XGameObjectSubsystem::~XGameObjectSubsystem()
+{
+	CObjectAllocator::Destroy<XGameObjectPool>(_pool);
+}
+
+std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Create(const std::string& name)
+{
+	auto handleResult = _pool->Create();
+	if (!handleResult.has_value())
+		return std::nullopt;
+	auto handle = *handleResult;
+
+	auto valueResult = _pool->Get(handle);
+	if (!valueResult.has_value())
+		return std::nullopt;
+	auto value = *valueResult;
+
+	value.get().name = name;
+
+	return handle;
+}
 
 void triton::XGameObjectSubsystem::Init()
 {
@@ -21,8 +53,8 @@ void triton::XGameObjectSubsystem::Update()
 {
 }
 
-triton::HStaticRenderInstance triton::XGameObjectSubsystem::SetRenderableStatic(
-	const HGameObject& gameObject,
+std::optional<triton::HStaticRenderInstance> triton::XGameObjectSubsystem::SetRenderableStatic(
+	const SGameObjectData::THandle& gameObject,
 	EGraphicsBufferFormat format,
 	const types::u8* vertexBytes,
 	types::usize vertexBytesCount,
@@ -34,13 +66,17 @@ triton::HStaticRenderInstance triton::XGameObjectSubsystem::SetRenderableStatic(
 {
 	XBatchSubsystem* batchSubsystem = _context->GetSubsystem<XBatchSubsystem>();
 
-	SGameObjectData& go = _objects->Get(gameObject);
+	auto valueResult = _pool->Get(gameObject);
+	if (!valueResult.has_value())
+		return std::nullopt;
+	auto value = *valueResult;
+
 	if (batchSubsystem->CUploader<
 		SStaticRenderInstanceData,
 		HStaticRenderInstance,
 		XLinearArray<SStaticRenderInstanceData>,
 		SGPUStaticRenderInstanceLayout
-	>::Exists(go.staticRenderInstance))
+	>::Exists(value.get().staticRenderInstance))
 		return {};
 
 	HBatch batch;
@@ -77,20 +113,24 @@ triton::HStaticRenderInstance triton::XGameObjectSubsystem::SetRenderableStatic(
 	return ri;
 }
 
-triton::HStaticRenderInstance triton::XGameObjectSubsystem::SetRenderableStatic(
-	const HGameObject& gameObject,
+std::optional<triton::HStaticRenderInstance> triton::XGameObjectSubsystem::SetRenderableStatic(
+	const SGameObjectData::THandle& gameObject,
 	const HModel3D& model,
 	const std::optional<HBatch>& existingBatch,
 	const std::optional<HMaterial>& existingMaterial
 )
 {
-	SGameObjectData& go = Get(gameObject);
+	auto valueResult = _pool->Get(gameObject);
+	if (!valueResult.has_value())
+		return std::nullopt;
+	auto value = *valueResult;
+
 	if (_context->GetSubsystem<XBatchSubsystem>()->CUploader<
 		SStaticRenderInstanceData,
 		HStaticRenderInstance,
 		XLinearArray<SStaticRenderInstanceData>,
 		SGPUStaticRenderInstanceLayout
-	>::Exists(go.staticRenderInstance))
+	>::Exists(value.get().staticRenderInstance))
 		return {};
 
 	SModel3DData& m3dd = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
@@ -98,10 +138,13 @@ triton::HStaticRenderInstance triton::XGameObjectSubsystem::SetRenderableStatic(
 	HBatch batch;
 	if (!existingBatch.has_value())
 	{
+		// TODO: Use proper vertex buffer format here
+		// ||||||||||||||||||||||||||||||||||||||||||
+		// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 		SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
 			EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
 			(u8*)m3dd.vertexData,
-			m3dd.vertexCount * sizeof(SVertex),
+			m3dd.vertexCount * sizeof(SStaticVertex),
 			(u8*)m3dd.indexData,
 			m3dd.indexCount * sizeof(u32)
 		);
@@ -145,8 +188,8 @@ triton::HStaticRenderInstance triton::XGameObjectSubsystem::SetRenderableStatic(
 	return ri;
 }
 
-triton::HDynamicRenderInstance triton::XGameObjectSubsystem::SetRenderableDynamic(
-	const HGameObject& gameObject,
+std::optional<triton::HDynamicRenderInstance> triton::XGameObjectSubsystem::SetRenderableDynamic(
+	const SGameObjectData::THandle& gameObject,
 	EGraphicsBufferFormat format,
 	const types::u8* vertexBytes,
 	types::usize vertexBytesCount,
@@ -158,13 +201,17 @@ triton::HDynamicRenderInstance triton::XGameObjectSubsystem::SetRenderableDynami
 {
 	XBatchSubsystem* batchSubsystem = _context->GetSubsystem<XBatchSubsystem>();
 
-	SGameObjectData& go = _objects->Get(gameObject);
+	auto valueResult = _pool->Get(gameObject);
+	if (!valueResult.has_value())
+		return std::nullopt;
+	auto value = *valueResult;
+
 	if (batchSubsystem->CUploader<
 		SDynamicRenderInstanceData,
 		HDynamicRenderInstance,
 		XLinearArray<SDynamicRenderInstanceData>,
 		SGPUDynamicRenderInstanceLayout
-	>::Exists(go.dynamicRenderInstance))
+	>::Exists(value.get().dynamicRenderInstance))
 		return {};
 
 	HBatch batch;
@@ -201,14 +248,18 @@ triton::HDynamicRenderInstance triton::XGameObjectSubsystem::SetRenderableDynami
 	return ri;
 }
 
-triton::HDynamicRenderInstance triton::XGameObjectSubsystem::SetRenderableDynamic(
-	const HGameObject& gameObject,
+std::optional<triton::HDynamicRenderInstance> triton::XGameObjectSubsystem::SetRenderableDynamic(
+	const SGameObjectData::THandle& gameObject,
 	const HModel3D& model,
 	const std::optional<HBatch>& existingBatch,
 	const std::optional<HMaterial>& existingMaterial
 )
 {
-	SGameObjectData& go = Get(gameObject);
+	auto valueResult = _pool->Get(gameObject);
+	if (!valueResult.has_value())
+		return std::nullopt;
+	auto value = *valueResult;
+
 	if (_context->GetSubsystem<XBatchSubsystem>()->CUploader<
 		SDynamicRenderInstanceData,
 		HDynamicRenderInstance,
@@ -222,10 +273,13 @@ triton::HDynamicRenderInstance triton::XGameObjectSubsystem::SetRenderableDynami
 	HBatch batch;
 	if (!existingBatch.has_value())
 	{
+		// TODO: Use proper vertex buffer format here
+		// ||||||||||||||||||||||||||||||||||||||||||
+		// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 		SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
 			EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
 			(u8*)m3dd.vertexData,
-			m3dd.vertexCount * sizeof(SVertex),
+			m3dd.vertexCount * sizeof(SStaticVertex),
 			(u8*)m3dd.indexData,
 			m3dd.indexCount * sizeof(u32)
 		);

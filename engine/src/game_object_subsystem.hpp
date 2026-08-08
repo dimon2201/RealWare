@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <optional>
 #include "object.hpp"
-#include "subsystem.hpp"
-#include "game_object.hpp"
+#include "DELETE_THIS_FILE_ASAP.hpp"
+#include "game_object_data.hpp"
 #include "handles.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "render_instance.hpp"
@@ -12,31 +13,31 @@
 
 namespace triton
 {
+    class cContext;
     template <typename TValue>
     class XLinearArray;
     class cVector3;
     struct SBatchInstance;
+    class XGameObjectPool;
 
-    class XGameObjectSubsystem : public ISubsystem<HGameObject, SGameObjectData, XLinearArray<SGameObjectData>>
+    class XGameObjectSubsystem : public ISubsys
     {
         TRITON_OBJECT(XGameObjectSubsystem)
-        TRITON_SUBSYSTEM
+
+        XGameObjectPool* _pool = nullptr;
 
     public:
-        inline HGameObject CreateGameObject(const std::string& name)
-        {
-            HGameObject gameObject = Create();
-            Get(gameObject).name = name;
-            
-            return gameObject;
-        }
+        explicit XGameObjectSubsystem(cContext* context);
+        ~XGameObjectSubsystem() override;
+
+        std::optional<SGameObjectData::THandle> Create(const std::string& name);
 
         void Init() override;
         void Free() override;
         void Update() override;
 
-        HStaticRenderInstance SetRenderableStatic(
-            const HGameObject& gameObject,
+        std::optional<HStaticRenderInstance> SetRenderableStatic(
+            const SGameObjectData::THandle& gameObject,
             EGraphicsBufferFormat format,
             const types::u8* vertexBytes,
             types::usize vertexBytesCount,
@@ -46,15 +47,15 @@ namespace triton
             const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
         
-        HStaticRenderInstance SetRenderableStatic(
-            const HGameObject& gameObject,
+        std::optional<HStaticRenderInstance> SetRenderableStatic(
+            const SGameObjectData::THandle& gameObject,
             const HModel3D& model,
             const std::optional<HBatch>& existingBatch = std::nullopt,
             const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
 
-        HDynamicRenderInstance SetRenderableDynamic(
-            const HGameObject& gameObject,
+        std::optional<HDynamicRenderInstance> SetRenderableDynamic(
+            const SGameObjectData::THandle& gameObject,
             EGraphicsBufferFormat format,
             const types::u8* vertexBytes,
             types::usize vertexBytesCount,
@@ -64,8 +65,8 @@ namespace triton
             const std::optional<HMaterial>& existingMaterial = std::nullopt
         );
 
-        HDynamicRenderInstance SetRenderableDynamic(
-            const HGameObject& gameObject,
+        std::optional<HDynamicRenderInstance> SetRenderableDynamic(
+            const SGameObjectData::THandle& gameObject,
             const HModel3D& model,
             const std::optional<HBatch>& existingBatch = std::nullopt,
             const std::optional<HMaterial>& existingMaterial = std::nullopt
