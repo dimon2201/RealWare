@@ -11,7 +11,7 @@
 #include "subsystem.hpp"
 #include "handles.hpp"
 #include "graphics_resource_backend.hpp"
-#include "texture.hpp"
+#include "texture_data.hpp"
 #include "DELETE_THIS_FILE_ASAP.hpp"
 #include "types.hpp"
 
@@ -21,6 +21,7 @@ namespace triton
     class iGraphicsBackend;
     class cApplication;
     class cTexture;
+    class XTexturePool;
 
     struct sTextureAtlasTextureGPU
     {
@@ -40,6 +41,7 @@ namespace triton
     {
         TRITON_OBJECT(XTextureSubsystem)
 
+        XTexturePool* _pool = nullptr;
         cTexture* _atlasRGBA8SRGB = nullptr;
         cTexture* _atlasRGBA8 = nullptr;
         cTexture* _atlasR8 = nullptr;
@@ -48,8 +50,8 @@ namespace triton
         explicit XTextureSubsystem(cContext* context, const cVector3& size);
         ~XTextureSubsystem() override;
 
-        HTexture CreateTexture(const std::string& filePath, cTexture::eFormat dataFormat);
-        HTexture CreateTexture(
+        std::optional<STextureData::THandle> Create(const std::string& filePath, cTexture::eFormat dataFormat);
+        std::optional<STextureData::THandle> Create(
             const types::u8* byteData,
             types::usize byteDataByteSize,
             types::usize width,
@@ -78,9 +80,9 @@ namespace triton
         }
 
     private:
-        std::optional<STexture> CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
-        std::optional<STexture> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath);
-        std::optional<STexture> CreateTextureFromBytes(
+        std::optional<STextureData> CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
+        std::optional<STextureData> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath);
+        std::optional<STextureData> CreateTextureFromBytes(
             cTexture::eFormat expectedDataFormat,
             const types::u8* byteData,
             types::usize byteDataByteSize,
@@ -89,7 +91,7 @@ namespace triton
             types::usize channelCount,
             ETextureFormat fileFormat
         );
-        types::boolean IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture);
+        types::boolean IsOverlapping(const STextureData& candidateTexture, const STextureData& atlasTexture);
         types::u8* RecreatePixelBuffer(types::usize srcChannelCount, types::usize dstChannelCount, const cVector2& size, const types::u8* data);
         void DestroyPixelBuffer(const types::u8* rgbaByteData);
     };
