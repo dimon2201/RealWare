@@ -4,13 +4,16 @@
 
 #include <optional>
 #include "object.hpp"
-#include "render_instance.hpp"
+#include "render_instance_data.hpp"
 #include "buffer_view.hpp"
 #include "handle_allocator.hpp"
 #include "batch_data.hpp"
 #include "handles.hpp"
 #include "material_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
+#include "batch_pool.hpp"
+#include "static_render_instance_pool.hpp"
+#include "dynamic_render_instance_pool.hpp"
 #include "types.hpp"
 
 #include "DELETE_THIS_FILE_ASAP.hpp"
@@ -22,16 +25,17 @@ namespace triton
     class XLinearArray;
     class SGeometryView;
     struct SBatchData;
+    class XBatchPool;
+    class XStaticRenderInstancePool;
+    class XDynamicRenderInstancePool;
 
-    class XBatchSubsystem : public ISubsys,
-                            public CUploader<SStaticRenderInstanceData, HStaticRenderInstance, XLinearArray<SStaticRenderInstanceData>, SGPUStaticRenderInstanceLayout>,
-                            public CUploader<SDynamicRenderInstanceData, HDynamicRenderInstance, XLinearArray<SDynamicRenderInstanceData>, SGPUDynamicRenderInstanceLayout>
+    class XBatchSubsystem : public ISubsys
     {
         TRITON_OBJECT(XBatchSubsystem)
 
-        CHandleAllocator<SSlot, SBatchData, HBatch, XLinearArray<SBatchData>>* _batches = nullptr;
-        cBuffer* _staticGPUBuffer = nullptr;
-        cBuffer* _dynamicGPUBuffer = nullptr;
+        XBatchPool* _batchPool = nullptr;
+        XStaticRenderInstancePool* _staticInstancePool = nullptr;
+        XDynamicRenderInstancePool* _dynamicInstancePool = nullptr;
         types::u32* _tempStaticCounterBuffer = nullptr;
         types::u32* _tempDynamicCounterBuffer = nullptr;
         types::boolean _bStaticBufferNeedsPacking = types::K_FALSE;
@@ -41,35 +45,28 @@ namespace triton
         explicit XBatchSubsystem(cContext* context);
         ~XBatchSubsystem() override;
 
-        std::optional<HBatch> Create(
+        std::optional<SBatchData::THandle> Create(
             ERenderInstanceMotionType motionType,
             const SGeometryView& geometry
         );
 
-        SBatchData& Get(const HBatch& batch);
+        SBatchData& Get(const SBatchData::THandle& batch);
 
-        void Destroy(const HBatch& batch);
+        void Destroy(const SBatchData::THandle& batch);
 
-        HStaticRenderInstance AddStaticInstance(
-            const HBatch& batch,
+        std::optional<SStaticRenderInstanceData::THandle> AddStaticInstance(
+            const SBatchData::THandle& batch,
             const HGameObject& gameObject
         );
 
-        HDynamicRenderInstance AddDynamicInstance(
-            const HBatch& batch,
+        std::optional<SDynamicRenderInstanceData::THandle> AddDynamicInstance(
+            const SBatchData::THandle& batch,
             const HGameObject& gameObject
         );
 
-        void RemoveStaticInstance(const HStaticRenderInstance& instance);
+        void RemoveStaticInstance(const SStaticRenderInstanceData::THandle& instance);
 
-        void RemoveDynamicInstance(const HDynamicRenderInstance& instance);
-
-        std::optional<HBatch> FindSimilarBatch(
-            const types::u8* vertexBytes,
-            types::usize vertexBytesCount,
-            const types::u8* indexBytes,
-            types::usize indexBytesCount
-        );
+        void RemoveDynamicInstance(const SDynamicRenderInstanceData::THandle& instance);
 
         void Init() override {}
         void Free() override {}
@@ -77,17 +74,17 @@ namespace triton
 
         inline const SBufferView<SBatchData>& GetBatches() const
         {
-            return _batches->GetData();
+            return _batchPool->GetData();
         }
 
         inline cBuffer& GetStaticInstanceGPUBuffer() const
         {
-            return *_staticGPUBuffer;
+            return *_staticInstancePool->GetGPUBuffer();
         }
 
         inline cBuffer& GetDynamicInstanceGPUBuffer() const
         {
-            return *_dynamicGPUBuffer;
+            return *_dynamicInstancePool->GetGPUBuffer();
         }
 
     private:
