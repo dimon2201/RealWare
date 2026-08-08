@@ -91,6 +91,8 @@ namespace triton
 
         void WriteToStaging(const TObject::THandle& handle);
 
+        void WriteToStaging(types::usize bufferIndex, const TObject& object);
+
         void WriteToStaging(
             const SObjectFrame<TObject>& frame,
             const TObject::TGPULayout* data,
@@ -106,6 +108,11 @@ namespace triton
         inline SBufferView<TObject> GetData() const
         {
             return SBufferView<TObject>(&_objects[0], sizeof(TObject) * _objectCounter);
+        }
+
+        inline cBuffer* GetGPUBuffer() const
+        {
+            return _gpuBuffer;
         }
 
         virtual TObject::TGPULayout ConvertToGpuLayout(const TObject& object) = 0;
@@ -454,6 +461,20 @@ namespace triton
             _stagingBuffer[*optIndex] = ConvertToGpuLayout(*optObject);
         else
             return;
+
+        _bDirtyBit = types::K_TRUE;
+    }
+
+    template <typename TObject>
+    void XObjectPoolBase<TObject>::WriteToStaging(types::usize bufferIndex, const TObject& object)
+    {
+        if (!_stagingBuffer)
+            return;
+
+        if (bufferIndex >= _allocatedObjectCounter)
+            return;
+
+        _stagingBuffer[bufferIndex] = ConvertToGpuLayout(object);
 
         _bDirtyBit = types::K_TRUE;
     }
