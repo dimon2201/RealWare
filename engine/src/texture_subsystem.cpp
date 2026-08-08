@@ -1,5 +1,5 @@
 // texture_subsystem.cpp
-/*
+
 #include "texture_subsystem.hpp"
 #include <stb_image.h>
 #include <tinyddsloader.h>
@@ -10,11 +10,17 @@
 #include "log.hpp"
 #include "handle_allocator.hpp"
 #include "filesystem_manager.hpp"
+#include "texture_pool.hpp"
 
 using namespace types;
 
-triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& size) : ISubsystem(context)
+triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& size) : ISubsys(context)
 {
+    _pool = CObjectAllocator::Create<XTexturePool>(
+        64,
+        _context,
+        K_TRUE
+    );
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
@@ -64,19 +70,29 @@ triton::XTextureSubsystem::~XTextureSubsystem()
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)_atlasRGBA8SRGB
     ));
+    CObjectAllocator::Destroy<XTexturePool>(_pool);
 }
 
-triton::HTexture triton::XTextureSubsystem::CreateTexture(const std::string& filePath, cTexture::eFormat dataFormat)
+std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(const std::string& filePath, cTexture::eFormat dataFormat)
 {
     auto tff = CreateTextureFromFile(dataFormat, filePath);;
 
-    HTexture texture = Create();
-    _objects->Get(texture) = tff.has_value() ? *tff : STexture();
+    auto handleResult = _pool->Create();
+    if (!handleResult.has_value())
+        return std::nullopt;
 
-    return texture;
+    STextureData::THandle handle = *handleResult;
+    auto valueResult = _pool->Get(handle);
+    if (!valueResult.has_value())
+        return std::nullopt;
+    
+    STextureData value = *valueResult;
+    value = tff.has_value() ? *tff : STextureData();
+
+    return handle;
 }
 
-triton::HTexture triton::XTextureSubsystem::CreateTexture(
+std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
     const u8* byteData,
     usize byteDataByteSize,
     usize width,
@@ -86,8 +102,17 @@ triton::HTexture triton::XTextureSubsystem::CreateTexture(
     cTexture::eFormat pixelDataFormat
 )
 {
-    HTexture texture = Create();
-    _objects->Get(texture) = *CreateTextureFromBytes(
+    auto handleResult = _pool->Create();
+    if (!handleResult.has_value())
+        return std::nullopt;
+
+    STextureData::THandle handle = *handleResult;
+    auto valueResult = _pool->Get(handle);
+    if (!valueResult.has_value())
+        return std::nullopt;
+
+    STextureData value = *valueResult;
+    value = *CreateTextureFromBytes(
         pixelDataFormat,
         byteData,
         byteDataByteSize,
@@ -97,10 +122,10 @@ triton::HTexture triton::XTextureSubsystem::CreateTexture(
         byteDataFormat
     );
 
-    return texture;
+    return handle;
 }
 
-std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
+std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
 {
     if (data == nullptr ||
         (format != cTexture::eFormat::RGBA8_SRGB_MIPS &&
@@ -122,10 +147,10 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
 
     const usize width = size.GetX();
     const usize height = size.GetY();
-    const SBufferView<STexture> textureBuffer = _objects->GetData();
-    const STexture* textures = textureBuffer.elements;
+    const SBufferView<STextureData> textureBuffer = _pool->GetData();
+    const STextureData* textures = textureBuffer.elements;
     const usize textureCount = textureBuffer.elementCount;
-    STexture candidateTexture;
+    STextureData candidateTexture;
     for (usize layer = 0; layer < atlas->GetDepth(); layer++)
     {
         for (usize y = 0; y < atlas->GetHeight(); y++)
@@ -138,9 +163,9 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
                 types::boolean isOverlapping = K_FALSE;
                 for (usize i = 0; i < textureCount; i++)
                 {
-                    candidateTexture.layer = layer;
-                    candidateTexture.normOffset = normOffset;
-                    candidateTexture.normSize = normSize;
+                    candidateTexture.zAtlasLayer = layer;
+                    candidateTexture.offsetNorm = normOffset;
+                    candidateTexture.sizeNorm = normSize;
                     if (IsOverlapping(candidateTexture, textures[i]))
                     {
                         isOverlapping = K_TRUE;
@@ -170,12 +195,12 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
                         ));
                     _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>(); // TODO: do proper synchronization here
 
-                    STexture readyTexture;
-                    readyTexture.layer = layer;
-                    readyTexture.normOffset = normOffset;
-                    readyTexture.normSize = normSize;
-                    readyTexture.pixelOffset = pixelOffset;
-                    readyTexture.pixelSize = pixelSize;
+                    STextureData readyTexture;
+                    readyTexture.zAtlasLayer = layer;
+                    readyTexture.offsetNorm = normOffset;
+                    readyTexture.sizeNorm = normSize;
+                    readyTexture.offsetPixel = pixelOffset;
+                    readyTexture.sizePixel = pixelSize;
 
                     return readyTexture;
                 }
@@ -186,7 +211,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTexture(cTextur
     return std::nullopt;
 }
 
-std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath)
+std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath)
 {
     cDataFile* df = _context->GetSubsystem<cFileSystem>()->CreateDataFile(filePath, K_FALSE);
     if (!df->Exists())
@@ -320,7 +345,7 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromFile
     }
 }
 
-std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromBytes(
+std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFromBytes(
     cTexture::eFormat expectedPixelDataFormat,
     const u8* byteData,
     usize byteDataByteSize,
@@ -433,22 +458,25 @@ std::optional<triton::STexture> triton::XTextureSubsystem::CreateTextureFromByte
     return tex;
 }
 
-types::boolean triton::XTextureSubsystem::IsOverlapping(const STexture& candidateTexture, const STexture& atlasTexture)
+types::boolean triton::XTextureSubsystem::IsOverlapping(
+    const STextureData& candidateTexture,
+    const STextureData& atlasTexture
+)
 {
-    if (candidateTexture.normOffset.GetX() + candidateTexture.normSize.GetX() > 1.0f ||
-        candidateTexture.normOffset.GetY() + candidateTexture.normSize.GetY() > 1.0f)
+    if (candidateTexture.offsetNorm.GetX() + candidateTexture.sizeNorm.GetX() > 1.0f ||
+        candidateTexture.offsetNorm.GetY() + candidateTexture.sizeNorm.GetY() > 1.0f)
         return K_TRUE;
 
     return
-        candidateTexture.layer == atlasTexture.layer &&
-        candidateTexture.normOffset.GetX() <
-        atlasTexture.normOffset.GetX() + atlasTexture.normSize.GetX() &&
-        candidateTexture.normOffset.GetX() + candidateTexture.normSize.GetX() >
-        atlasTexture.normOffset.GetX() &&
-        candidateTexture.normOffset.GetY() <
-        atlasTexture.normOffset.GetY() + atlasTexture.normSize.GetY() &&
-        candidateTexture.normOffset.GetY() + candidateTexture.normSize.GetY() >
-        atlasTexture.normOffset.GetY();
+        candidateTexture.zAtlasLayer == atlasTexture.zAtlasLayer &&
+        candidateTexture.offsetNorm.GetX() <
+        atlasTexture.offsetNorm.GetX() + atlasTexture.sizeNorm.GetX() &&
+        candidateTexture.offsetNorm.GetX() + candidateTexture.sizeNorm.GetX() >
+        atlasTexture.offsetNorm.GetX() &&
+        candidateTexture.offsetNorm.GetY() <
+        atlasTexture.offsetNorm.GetY() + atlasTexture.sizeNorm.GetY() &&
+        candidateTexture.offsetNorm.GetY() + candidateTexture.sizeNorm.GetY() >
+        atlasTexture.offsetNorm.GetY();
 }
 
 types::u8* triton::XTextureSubsystem::RecreatePixelBuffer(usize srcChannelCount, usize dstChannelCount, const cVector2& size, const u8* data)
