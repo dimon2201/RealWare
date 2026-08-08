@@ -10,6 +10,10 @@ namespace triton
 {
 	struct SModel3DData final
 	{
+        struct THandle : public SHandle {};
+
+        struct TGPULayout {};
+
         const SVertex* vertexData = nullptr;
         const types::u32* indexData = nullptr;
         types::usize vertexCount = 0;
