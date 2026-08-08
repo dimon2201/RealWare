@@ -13,6 +13,7 @@
 #include "graphics_resource_backend.hpp"
 #include "material.hpp"
 #include "synchronization.hpp"
+#include "buffer_view.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -101,6 +102,11 @@ namespace triton
         std::optional<typename TObject::THandle> GetHandle(const types::usize& bufferIndex);
 
         void Upload();
+
+        inline SBufferView<TObject> GetData() const
+        {
+            return SBufferView<TObject>(&_objects[0], sizeof(TObject) * _objectCounter);
+        }
 
         virtual TObject::TGPULayout ConvertToGpuLayout(const TObject& object) = 0;
 
