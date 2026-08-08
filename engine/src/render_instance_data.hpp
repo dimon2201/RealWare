@@ -4,6 +4,7 @@
 
 #include "math.hpp"
 #include "handles.hpp"
+#include "batch_data.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -62,7 +63,7 @@ namespace triton
 
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
         HGameObject gameObject;
-        HBatch batch;
+        SBatchData::THandle batch;
         HMaterial material;
         HSkeleton skeleton;
         HStaticRenderInstance instance;
@@ -97,7 +98,7 @@ namespace triton
 
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
         HGameObject gameObject;
-        HBatch batch;
+        SBatchData::THandle batch;
         HMaterial material;
         HSkeleton skeleton;
         HDynamicRenderInstance instance;
