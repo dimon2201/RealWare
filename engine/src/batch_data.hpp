@@ -4,12 +4,17 @@
 
 #include "geometry_view.hpp"
 #include "render_instance.hpp"
+#include "handle.hpp"
 #include "types.hpp"
 
 namespace triton
 {
 	struct SBatchData final
 	{
+		struct THandle : public SHandle {};
+
+		struct TGPULayout {};
+
 		ERenderInstanceMotionType motionType = ERenderInstanceMotionType::Static;
 		SGeometryView sharedGeometry = {};
 		types::usize bufferOffset = 0;
