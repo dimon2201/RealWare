@@ -7,6 +7,7 @@
 #include "handles.hpp"
 #include "context.hpp"
 #include "animation_pool.hpp"
+#include "skeleton_pool.hpp"
 
 using namespace types;
 
@@ -56,7 +57,7 @@ void triton::XAnimationSubsystem::Destroy(const SAnimationData::THandle& animati
 }
 
 std::optional<triton::SFrame> triton::XAnimationSubsystem::Evaluate(
-    const HSkeleton& skeleton,
+    const SSkeletonData::THandle& skeleton,
     const SAnimationData::THandle& animation,
     f32 time
 )
@@ -66,7 +67,7 @@ std::optional<triton::SFrame> triton::XAnimationSubsystem::Evaluate(
         return std::nullopt;
     auto value = *valueResult;
 
-    const SSkeletonData& s = _context->GetSubsystem<XSkeletonSubsystem>()->Get(skeleton);
+    const SSkeletonData& s = *_context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Get(skeleton);
     
     SFrame frame = {};
     frame.frameBones.resize(s.bones.size());

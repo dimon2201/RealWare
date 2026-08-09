@@ -6,6 +6,7 @@
 #include <optional>
 #include "handles.hpp"
 #include "animation.hpp"
+#include "skeleton_data.hpp"
 #include "DELETE_THIS_FILE_ASAP.hpp"
 #include "types.hpp"
 
@@ -35,7 +36,7 @@ namespace triton
 		void Destroy(const SAnimationData::THandle& animation);
 
 		std::optional<triton::SFrame> Evaluate(
-			const HSkeleton& skeleton,
+			const SSkeletonData::THandle& skeleton,
 			const SAnimationData::THandle& animation,
 			types::f32 time
 		);
