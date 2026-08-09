@@ -1,59 +1,51 @@
 // skeleton_subsystem.cpp
 
 #include "skeleton_subsystem.hpp"
-#include "skeleton.hpp"
 #include "uploader.hpp"
+#include "skeleton_pool.hpp"
 
 using namespace types;
 
-triton::XSkeletonSubsystem::XSkeletonSubsystem(cContext* context)
-    : ISubsys(context),
-      CUploader<SSkeletonData, HSkeleton, XLinearArray<SSkeletonData>, SGPUSkeletonLayout>(
-        context,
-        (cGPUResource**)&_skeletonGPUBuffer,
-        context->GetSubsystem<cEngine>()->GetCapabilities()->maxSkeletonCount,
-        K_FALSE
-    )
+triton::XSkeletonSubsystem::XSkeletonSubsystem(cContext* context) : ISubsys(context)
 {
-    const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetCapabilities();
-
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::STORAGE,
-        (cpuword)nullptr,
-        caps->maxSkeletonCount * sizeof(SGPUSkeletonLayout),
-        3
-    ));
-    _skeletonGPUBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
+    _pool = CObjectAllocator::Create<XSkeletonPool>(
+        64,
+        _context,
+        K_TRUE,
+        (s32)3,
+        cBuffer::eType::STORAGE
+    );
 }
 
 triton::XSkeletonSubsystem::~XSkeletonSubsystem()
 {
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_skeletonGPUBuffer,
-        0,
-        0,
-        0
-    ));
+    CObjectAllocator::Destroy<XSkeletonPool>(_pool);
 }
 
-triton::HSkeleton triton::XSkeletonSubsystem::CreateSkeleton(
+std::optional<triton::SSkeletonData::THandle> triton::XSkeletonSubsystem::Create(
     const std::vector<SBone>& bones,
     const cMatrix4& accumulatedRootTransform
 )
 {
-    HSkeleton skeleton = CHandleAllocator::Create();
-    SSkeletonData& s = CHandleAllocator::Get(skeleton);
-    s.accumulatedRootTransform = accumulatedRootTransform;
-    s.bones = bones;
+    auto handleResult = _pool->Create();
+    if (!handleResult.has_value())
+        return std::nullopt;
+    auto handle = *handleResult;
 
-    return skeleton;
+    auto valueResult = _pool->Get(handle);
+    if (!valueResult.has_value())
+        return std::nullopt;
+    auto value = *valueResult;
+
+    value.get().accumulatedRootTransform = accumulatedRootTransform;
+    value.get().bones = bones;
+
+    return handle;
 }
 
-void triton::XSkeletonSubsystem::DestroySkeleton(const HSkeleton& skeleton)
+void triton::XSkeletonSubsystem::Destroy(const SSkeletonData::THandle& skeleton)
 {
-    CHandleAllocator::Destroy(skeleton);
+    _pool->Destroy(skeleton);
 }
 
 void triton::XSkeletonSubsystem::Init()
@@ -66,28 +58,17 @@ void triton::XSkeletonSubsystem::Free()
 
 void triton::XSkeletonSubsystem::Update()
 {
-    UploadStagingToGpuIfDirty(_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder());
+    _pool->Update();
 }
 
-void triton::XSkeletonSubsystem::SetSkin(const HSkeleton& skeleton, const SSkinData& skin)
+void triton::XSkeletonSubsystem::SetSkin(const SSkeletonData::THandle& skeleton, const SSkinData& skin)
 {
-    SSkeletonData& s = CHandleAllocator::Get(skeleton);
-    s.globSkinnedBoneBufferOffset = skin.globSkinnedBoneBufferOffset;
+    auto valueResult = _pool->Get(skeleton);
+    if (!valueResult.has_value())
+        return;
+    auto value = *valueResult;
 
-    SGPUSkeletonLayout gsl = ConvertToGPULayout(skeleton);
-    WriteToStaging(
-        GetHandleBufferIndex(skeleton),
-        &gsl,
-        1
-    );
-}
+    value.get().globSkinnedBoneBufferOffset = skin.globSkinnedBoneBufferOffset;
 
-triton::SGPUSkeletonLayout triton::XSkeletonSubsystem::ConvertToGPULayout(const HSkeleton& skeleton)
-{
-    SSkeletonData& s = CHandleAllocator::Get(skeleton);
-
-    SGPUSkeletonLayout gsl;
-    gsl.globSkinnedBoneBufferOffset = s.globSkinnedBoneBufferOffset;
-
-    return gsl;
+    _pool->WriteToStaging(skeleton);
 }

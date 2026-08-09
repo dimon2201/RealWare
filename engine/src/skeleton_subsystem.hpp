@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include <optional>
 #include "handles.hpp"
-#include "skeleton.hpp"
-#include "subsystem.hpp"
+#include "skeleton_data.hpp"
 #include "skinning_subsystem.hpp"
 #include "uploader.hpp"
 #include "types.hpp"
@@ -14,39 +14,31 @@
 namespace triton
 {
 	class cBuffer;
+	class XSkeletonPool;
 
-	class XSkeletonSubsystem : public ISubsys,
-							   public CUploader<SSkeletonData, HSkeleton, XLinearArray<SSkeletonData>, SGPUSkeletonLayout>
+	class XSkeletonSubsystem : public ISubsys
 	{
 		TRITON_OBJECT(XSkeletonSubsystem)
-		
-		cBuffer* _skeletonGPUBuffer = nullptr;
+
+		XSkeletonPool* _pool = nullptr;
 
 	public:
 		explicit XSkeletonSubsystem(cContext* context);
 		~XSkeletonSubsystem() override;
 
-		HSkeleton CreateSkeleton(
+		std::optional<SSkeletonData::THandle> Create(
 			const std::vector<SBone>& bones,
 			const cMatrix4& accumulatedRootTransform = cMatrix4()
 		);
 
-		void DestroySkeleton(const HSkeleton& skeleton);
+		void Destroy(const SSkeletonData::THandle& skeleton);
 
-		void SetSkin(const HSkeleton& skeleton, const SSkinData& skin);
+		void SetSkin(const SSkeletonData::THandle& skeleton, const SSkinData& skin);
 
 		void Init() override;
 
 		void Free() override;
 
 		void Update() override;
-
-		inline cBuffer& GetSkeletonGPUBuffer() const
-		{
-			return *_skeletonGPUBuffer;
-		}
-
-	private:
-		SGPUSkeletonLayout ConvertToGPULayout(const HSkeleton& skeleton);
 	};
 }
