@@ -4,7 +4,7 @@
 
 #include <string>
 #include <vector>
-#include "subsystem.hpp"
+#include <optional>
 #include "handles.hpp"
 #include "skinning_data.hpp"
 #include "animation.hpp"
@@ -18,47 +18,32 @@ namespace triton
 	class cBuffer;
 	struct SBone;
 	struct SFrame;
+	class XSkinnedBonesPool;
+	class XSkinPool;
 
-	// TODO: rethink this or move this to separate file
-	// ||||||||||||||||||||||||||||||||||||||||||||||||
-	// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-	struct SSkinData
-	{
-		types::usize globSkinnedBoneBufferOffset = 0;
-		std::vector<HSkinning> skinnedBones = {};
-	};
-	// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-	// ||||||||||||||||||||||||||||||||||||||||||||||||
-
-	class XSkinningSubsystem :	public ISubsys,
-								public CUploader<SSkinningData, HSkinning, XLinearArray<SSkinningData>, SGPUSkinningLayout>
+	class XSkinningSubsystem :	public ISubsys
 	{
 		TRITON_OBJECT(XSkinningSubsystem)
 
-		cBuffer* _skinningGPUBuffer = nullptr;
+		XSkinnedBonesPool* _skinnedBonesPool = nullptr;
+		XSkinPool* _skinPool = nullptr;
 
 	public:
 		explicit XSkinningSubsystem(cContext* context);
 		~XSkinningSubsystem() override;
 
-		// TODO: create separate structure for skin instead of std::vector<HSkinnedBone>
-		SSkinData CreateSkin(
-			const HSkeleton& skeleton,
+		std::optional<SSkinData::THandle> Create(
+			const SSkeletonData::THandle& skeleton,
 			const SFrame& frame
 		);
 
-		void DestroySkin(const SSkinData& skin);
+		void Destroy(const SSkinData::THandle& skin);
 
-		void Init() override;
+		void Init() override {}
 
-		void Free() override;
+		void Free() override {}
 
 		void Update() override;
-
-		inline cBuffer& GetSkinningGPUBuffer()
-		{
-			return *_skinningGPUBuffer;
-		}
 
 	private:
 		void CalculateBone(
