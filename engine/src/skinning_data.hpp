@@ -1,18 +1,31 @@
-// skinned_bone_data.hpp
+// skinning_data.hpp
 
 #pragma once
 
+#include <vector>
+#include "handle.hpp"
 #include "math.hpp"
 
 namespace triton
 {
-	struct SGPUSkinningLayout
+	struct SSkinnedBoneData
 	{
+		struct THandle : public SHandle {};
+
+		struct TGPULayout
+		{
+			cMatrix4 modelMatrix = cMatrix4();
+		};
+
 		cMatrix4 modelMatrix = cMatrix4();
 	};
 
-	struct SSkinningData
+	struct SSkinData
 	{
-		cMatrix4 modelMatrix = cMatrix4();
+		struct THandle : public SHandle {};
+
+		struct TGPULayout {};
+
+		std::vector<SSkinnedBoneData::THandle> skinnedBones;
 	};
 }
