@@ -6,7 +6,6 @@
 #include "animation.hpp"
 #include "bone.hpp"
 #include "handles.hpp"
-#include "uploader.hpp"
 #include "context.hpp"
 #include "skinned_bones_pool.hpp"
 #include "skin_pool.hpp"

@@ -6,7 +6,6 @@
 #include "handles.hpp"
 #include "skeleton_data.hpp"
 #include "skinning_subsystem.hpp"
-#include "uploader.hpp"
 #include "types.hpp"
 
 #include "DELETE_THIS_FILE_ASAP.hpp"

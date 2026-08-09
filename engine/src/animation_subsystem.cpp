@@ -5,7 +5,6 @@
 #include "graphics_resource_backend.hpp"
 #include "bone.hpp"
 #include "handles.hpp"
-#include "uploader.hpp"
 #include "context.hpp"
 #include "animation_pool.hpp"
 

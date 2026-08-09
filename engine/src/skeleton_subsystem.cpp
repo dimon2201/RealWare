@@ -1,7 +1,6 @@
 // skeleton_subsystem.cpp
 
 #include "skeleton_subsystem.hpp"
-#include "uploader.hpp"
 #include "skeleton_pool.hpp"
 
 using namespace types;

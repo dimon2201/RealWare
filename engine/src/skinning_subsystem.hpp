@@ -8,7 +8,6 @@
 #include "handles.hpp"
 #include "skinning_data.hpp"
 #include "animation.hpp"
-#include "uploader.hpp"
 #include "types.hpp"
 
 #include "DELETE_THIS_FILE_ASAP.hpp"

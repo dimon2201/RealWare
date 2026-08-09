@@ -9,7 +9,6 @@
 #include "graphics_buffer_formats.hpp"
 #include "render_instance_data.hpp"
 #include "material.hpp"
-#include "uploader.hpp"
 #include "types.hpp"
 
 #include "DELETE_THIS_FILE_ASAP.hpp"
