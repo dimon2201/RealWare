@@ -78,6 +78,11 @@ namespace triton
             return _atlasR8;
         }
 
+        inline XTexturePool* GetPool() const
+        {
+            return _pool;
+        }
+
     private:
         std::optional<STextureData> CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
         std::optional<STextureData> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath);
