@@ -3,6 +3,7 @@
 #pragma once
 
 #include "handle.hpp"
+#include "math.hpp"
 
 namespace triton
 {
