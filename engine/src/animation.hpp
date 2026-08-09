@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "handle.hpp"
+
 namespace triton
 {
     class cMatrix4;
@@ -32,8 +34,12 @@ namespace triton
         std::vector<SBoneScaleKey> scaleKeys = {};
     };
 
-    struct SAnimation
+    struct SAnimationData
     {
+        struct THandle : public SHandle {};
+
+        struct TGPULayout {};
+
         std::string name = "";
         types::f32 duration = 0.0f;
         types::f32 ticksPerSecond = 0.0f;
