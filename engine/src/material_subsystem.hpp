@@ -3,32 +3,30 @@
 #pragma once
 
 #include "object.hpp"
-#include "subsystem.hpp"
-#include "game_object.hpp"
+#include "game_object_data.hpp"
 #include "handles.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "render_instance_data.hpp"
-#include "material.hpp"
+#include "material_data.hpp"
 #include "types.hpp"
 
 #include "DELETE_THIS_FILE_ASAP.hpp"
 
 namespace triton
 {
-    class XMaterialUploader;
+    class XMaterialPool;
 
-    class XMaterialSubsystem : public ISubsys,
-                               public CUploader<SMaterial, HMaterial, XLinearArray<SMaterial>, SGPUMaterialLayout>
+    class XMaterialSubsystem : public ISubsys
     {
         TRITON_OBJECT(XMaterialSubsystem)
 
-        cBuffer* _materialGPUBuffer = nullptr;
+        XMaterialPool* _pool = nullptr;
 
     public:
         explicit XMaterialSubsystem(cContext* context);
-        ~XMaterialSubsystem() override = default;
+        ~XMaterialSubsystem() override;
 
-        HMaterial CreateMaterial(
+        std::optional<SMaterialData::THandle> Create(
             const cVector4& diffuseColor,
             const HTexture& diffuseTexture,
             const HTexture& normalTexture,
@@ -36,22 +34,12 @@ namespace triton
             const HTexture& metallicTexture
         );
 
-        void DestroyMaterial(const HMaterial& material);
+        void Destroy(const SMaterialData::THandle& material);
 
-        void Set(types::usize materialIndex, const SMaterial& materialData);
+        void Init() override {}
 
-        void Init() override;
-
-        void Free() override;
+        void Free() override {}
 
         void Update() override;
-
-        inline cBuffer& GetMaterialGPUBuffer() const
-        {
-            return *_materialGPUBuffer;
-        }
-
-    private:
-        SGPUMaterialLayout ConvertToGPULayout(const HMaterial& material);
     };
 }
