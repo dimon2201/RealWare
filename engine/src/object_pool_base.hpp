@@ -105,6 +105,11 @@ namespace triton
 
         void Upload();
 
+        inline types::usize GetSize() const
+        {
+            return _objectCounter;
+        }
+
         inline SBufferView<TObject> GetData() const
         {
             return SBufferView<TObject>(&_objects[0], sizeof(TObject) * _objectCounter);
