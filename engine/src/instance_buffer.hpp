@@ -3,7 +3,7 @@
 #pragma once
 
 #include "graphics_resource_backend.hpp"
-#include "render_instance.hpp"
+#include "render_instance_data.hpp"
 #include "tag.hpp"
 #include "render_data.hpp"
 #include "handle.hpp"

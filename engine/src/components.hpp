@@ -2,7 +2,7 @@
 
 #include "math.hpp"
 #include "stack_value.hpp"
-#include "render_instance.hpp"
+#include "render_instance_data.hpp"
 #include "geometry_view.hpp"
 
 namespace triton

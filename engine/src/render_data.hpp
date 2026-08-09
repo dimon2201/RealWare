@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "render_instance.hpp"
+#include "render_instance_data.hpp"
 #include "components.hpp"
 
 namespace triton

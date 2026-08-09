@@ -6,7 +6,7 @@
 #include "object.hpp"
 #include "category.hpp"
 #include "rasterizer_state.hpp"
-#include "render_instance.hpp"
+#include "render_instance_data.hpp"
 #include "math.hpp"
 #include "render_data.hpp"
 #include "instance_buffer.hpp"
