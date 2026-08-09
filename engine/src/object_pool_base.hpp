@@ -526,7 +526,7 @@ namespace triton
         if (bufferIndex >= _allocatedObjectCounter)
             return std::nullopt;
 
-        TObject::THandle handle;
+        typename TObject::THandle handle;
         handle.Invalidate();
         handle._slotIndex = _objectIndexToSlotIndex[bufferIndex];
         handle._generation = _slots[handle._slotIndex]._generation;
