@@ -40,5 +40,10 @@ namespace triton
 		void Free() override;
 
 		void Update() override;
+
+		inline XSkeletonPool* GetPool() const
+		{
+			return _pool;
+		}
 	};
 }
