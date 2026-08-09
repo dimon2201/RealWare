@@ -21,6 +21,6 @@ namespace triton
         types::usize indexCount = 0;
         std::vector<HMaterial> materials = {};
         HSkeleton skeleton = {};
-        std::vector<SAnimation> animations = {};
+        std::vector<SAnimationData> animations = {};
 	};
 }
