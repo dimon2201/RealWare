@@ -28,7 +28,7 @@
 #include "camera.hpp"
 #include "skeleton_subsystem.hpp"
 #include "skinning_subsystem.hpp"
-#include "material.hpp"
+#include "material_data.hpp"
 
 using namespace types;
 

@@ -5,7 +5,7 @@
 #include <string>
 #include "batch_instance.hpp"
 #include "handle.hpp"
-#include "material.hpp"
+#include "material_data.hpp"
 #include "math.hpp"
 
 namespace triton

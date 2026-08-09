@@ -11,7 +11,7 @@
 #include "handle.hpp"
 #include "object_allocator.hpp"
 #include "graphics_resource_backend.hpp"
-#include "material.hpp"
+#include "material_data.hpp"
 #include "synchronization.hpp"
 #include "buffer_view.hpp"
 #include "types.hpp"
