@@ -3,44 +3,70 @@
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "graphics_resource_backend.hpp"
-#include "animation.hpp"
 #include "bone.hpp"
 #include "handles.hpp"
 #include "uploader.hpp"
 #include "context.hpp"
+#include "animation_pool.hpp"
 
 using namespace types;
 
-triton::HAnimation triton::XAnimationSubsystem::CreateAnimation(
+triton::XAnimationSubsystem::XAnimationSubsystem(cContext* context) : ISubsys(context)
+{
+    _pool = CObjectAllocator::Create<XAnimationPool>(
+        64,
+        _context,
+        K_TRUE
+    );
+}
+
+triton::XAnimationSubsystem::~XAnimationSubsystem()
+{
+    CObjectAllocator::Destroy<XAnimationPool>(_pool);
+}
+
+std::optional<triton::SAnimationData::THandle> triton::XAnimationSubsystem::Create(
     const std::string& name,
     types::f32 duration,
     types::f32 ticksPerSecond,
     HSkeleton skeleton,
-    const std::vector<SAnimationKey>& bones
+    const std::vector<SAnimationKey>& keys
 )
 {
-    HAnimation animation = Create();
-    SAnimation& a = Get(animation);
-    a.name = name;
-    a.duration = duration;
-    a.ticksPerSecond = ticksPerSecond;
-    a.animKeys = bones;
+    auto animResult = _pool->Create();
+    if (!animResult.has_value())
+        return std::nullopt;
+    auto anim = *animResult;
+
+    auto valueResult = _pool->Get(anim);
+    if (!valueResult.has_value())
+        return std::nullopt;
+    auto value = *valueResult;
+
+    value.get().name = name;
+    value.get().duration = duration;
+    value.get().ticksPerSecond = ticksPerSecond;
+    value.get().animKeys = keys;
     
-    return animation;
+    return anim;
 }
 
-void triton::XAnimationSubsystem::DestroyAnimation(const HAnimation& animation)
+void triton::XAnimationSubsystem::Destroy(const SAnimationData::THandle& animation)
 {
-    Destroy(animation);
+    _pool->Destroy(animation);
 }
 
-triton::SFrame triton::XAnimationSubsystem::Evaluate(
+std::optional<triton::SFrame> triton::XAnimationSubsystem::Evaluate(
     const HSkeleton& skeleton,
-    const HAnimation& animation,
+    const SAnimationData::THandle& animation,
     f32 time
 )
 {
-    const SAnimation& a = Get(animation);
+    auto valueResult = _pool->Get(animation);
+    if (!valueResult.has_value())
+        return std::nullopt;
+    auto value = *valueResult;
+
     const SSkeletonData& s = _context->GetSubsystem<XSkeletonSubsystem>()->Get(skeleton);
     
     SFrame frame = {};
@@ -48,10 +74,10 @@ triton::SFrame triton::XAnimationSubsystem::Evaluate(
     for (usize i = 0; i < s.bones.size(); ++i)
         frame.frameBones[i].transformMatrix = s.bones[i].localMatrix;
 
-    if (a.duration > 0.0f)
-        time = std::fmod(time, a.duration);
+    if (value.get().duration > 0.0f)
+        time = std::fmod(time, value.get().duration);
 
-    for (const SAnimationKey& animKey : a.animKeys)
+    for (const SAnimationKey& animKey : value.get().animKeys)
     {
         cVector3 posePosition = cVector3(0.0f);
         cQuaternion poseRotation = cQuaternion();

@@ -3,34 +3,40 @@
 #pragma once
 
 #include <string>
-#include "subsystem.hpp"
+#include <optional>
 #include "handles.hpp"
 #include "animation.hpp"
+#include "DELETE_THIS_FILE_ASAP.hpp"
 #include "types.hpp"
 
 namespace triton
 {
 	struct SAnimationKey;
+	class XAnimationPool;
 
-	class XAnimationSubsystem : public ISubsystem<HAnimation, SAnimation, XLinearArray<SAnimation>>
+	class XAnimationSubsystem : public ISubsys
 	{
 		TRITON_OBJECT(XAnimationSubsystem)
-		TRITON_SUBSYSTEM
+
+		XAnimationPool* _pool = nullptr;
 
 	public:
-		HAnimation CreateAnimation(
+		explicit XAnimationSubsystem(cContext* context);
+		~XAnimationSubsystem() override;
+
+		std::optional<SAnimationData::THandle> Create(
 			const std::string& name,
 			types::f32 duration,
 			types::f32 ticksPerSecond,
 			HSkeleton skeleton,
-			const std::vector<SAnimationKey>& bones
+			const std::vector<SAnimationKey>& keys
 		);
 
-		void DestroyAnimation(const HAnimation& animation);
+		void Destroy(const SAnimationData::THandle& animation);
 
-		SFrame Evaluate(
+		std::optional<triton::SFrame> Evaluate(
 			const HSkeleton& skeleton,
-			const HAnimation& animation,
+			const SAnimationData::THandle& animation,
 			types::f32 time
 		);
 
