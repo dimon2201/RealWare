@@ -9,7 +9,7 @@ namespace triton
     class XBatchPool : public XObjectPoolBase<SBatchData>
     {
     public:
-        using XObjectPoolBase<STextureData>::XObjectPoolBase;
+        using XObjectPoolBase<SBatchData>::XObjectPoolBase;
         ~XBatchPool() override = default;
 
         SBatchData::TGPULayout ConvertToGpuLayout(const SBatchData& object) override
