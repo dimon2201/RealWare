@@ -145,7 +145,7 @@ namespace triton
             _shader = shader;
         }
 
-        inline void SetCamera(const HCamera& camera)
+        inline void SetCamera(const SCameraData::THandle& camera)
         {
             _camera = camera;
         }
