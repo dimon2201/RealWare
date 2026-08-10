@@ -18,26 +18,26 @@ namespace triton
         {
             SMaterialData::TGPULayout gpul;
 
-            STextureData& dif = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.diffuseTexture);
-            STextureData& nor = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.normalTexture);
-            STextureData& rgh = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.roughnessTexture);
-            STextureData& met = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.metallicTexture);
+            STextureData& dif = *_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.diffuseTexture);
+            STextureData& nor = *_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.normalTexture);
+            STextureData& rgh = *_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.roughnessTexture);
+            STextureData& met = *_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.metallicTexture);
 
             gpul.diffuseColor = object.diffuseColor;
-            gpul.diffuseTextureLayout.layer = dif.layer;
-            gpul.diffuseTextureLayout.normOffset = dif.normOffset;
-            gpul.diffuseTextureLayout.normSize = dif.normSize;
-            gpul.normalTextureLayout.layer = nor.layer;
-            gpul.normalTextureLayout.normOffset = nor.normOffset;
-            gpul.normalTextureLayout.normSize = nor.normSize;
-            gpul.roughnessTextureLayout.layer = rgh.layer;
-            gpul.roughnessTextureLayout.normOffset = rgh.normOffset;
-            gpul.roughnessTextureLayout.normSize = rgh.normSize;
-            gpul.metallicTextureLayout.layer = met.layer;
-            gpul.metallicTextureLayout.normOffset = met.normOffset;
-            gpul.metallicTextureLayout.normSize = met.normSize;
+            gpul.diffuseTextureLayout.layer = dif.zAtlasLayer;
+            gpul.diffuseTextureLayout.normOffset = dif.offsetNorm;
+            gpul.diffuseTextureLayout.normSize = dif.sizeNorm;
+            gpul.normalTextureLayout.layer = nor.zAtlasLayer;
+            gpul.normalTextureLayout.normOffset = nor.offsetNorm;
+            gpul.normalTextureLayout.normSize = nor.sizeNorm;
+            gpul.roughnessTextureLayout.layer = rgh.zAtlasLayer;
+            gpul.roughnessTextureLayout.normOffset = rgh.offsetNorm;
+            gpul.roughnessTextureLayout.normSize = rgh.sizeNorm;
+            gpul.metallicTextureLayout.layer = met.zAtlasLayer;
+            gpul.metallicTextureLayout.normOffset = met.offsetNorm;
+            gpul.metallicTextureLayout.normSize = met.sizeNorm;
 
-            return gml;
+            return gpul;
         }
 
         void Update() override
