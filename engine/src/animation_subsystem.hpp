@@ -28,7 +28,7 @@ namespace triton
 			const std::string& name,
 			types::f32 duration,
 			types::f32 ticksPerSecond,
-			HSkeleton skeleton,
+			const SSkeletonData::THandle& skeleton,
 			const std::vector<SAnimationKey>& keys
 		);
 
