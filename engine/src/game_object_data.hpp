@@ -18,12 +18,12 @@ namespace triton
 
         std::string name = {};
         ERenderInstanceMotionType motionType = ERenderInstanceMotionType::Static;
-        HStaticRenderInstance staticRenderInstance;
-        HDynamicRenderInstance dynamicRenderInstance;
-        HMaterial material;
+        SStaticRenderInstanceData::THandle staticRenderInstance;
+        SDynamicRenderInstanceData::THandle dynamicRenderInstance;
+        SMaterialData::THandle material;
         cVector3 worldPosition = cVector3(0.0f);
         cVector3 worldRotation = cVector3(0.0f);
         cVector3 scale = cVector3(1.0f);
-        HSkeleton skeleton = {};
+        SSkeletonData::THandle skeleton;
     };
 }
