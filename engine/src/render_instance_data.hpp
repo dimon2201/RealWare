@@ -4,6 +4,8 @@
 
 #include "math.hpp"
 #include "batch_data.hpp"
+#include "material_data.hpp"
+#include "game_object_data.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -61,11 +63,11 @@ namespace triton
         };
 
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
-        HGameObject gameObject;
+        SGameObjectData::THandle gameObject;
         SBatchData::THandle batch;
         SMaterialData::THandle material;
         SSkeletonData::THandle skeleton;
-        HStaticRenderInstance instance;
+        SStaticRenderInstanceData::THandle instance;
         cMatrix4 worldMatrix = cMatrix4();
     };
 
@@ -96,11 +98,11 @@ namespace triton
         };
 
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
-        HGameObject gameObject;
+        SGameObjectData::THandle gameObject;
         SBatchData::THandle batch;
-        HMaterial material;
-        HSkeleton skeleton;
-        HDynamicRenderInstance instance;
+        SMaterialData::THandle material;
+        SSkeletonData::THandle skeleton;
+        SDynamicRenderInstanceData::THandle instance;
         cMatrix4 worldMatrix = cMatrix4();
     };
 }
