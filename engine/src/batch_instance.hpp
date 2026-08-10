@@ -9,8 +9,8 @@ namespace triton
     struct SBatchInstance
     {
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
-        HBatch batch;
-        HStaticRenderInstance staticInstance;
-        HDynamicRenderInstance dynamicInstance;
+        SBatchData::THandle batch;
+        SStaticRenderInstanceData::THandle staticInstance;
+        SDynamicRenderInstanceData::THandle dynamicInstance;
     };
 }
