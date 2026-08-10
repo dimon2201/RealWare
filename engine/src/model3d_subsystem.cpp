@@ -148,7 +148,7 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 			metallicTexture
 		);
 
-		HMaterial material = _context->GetSubsystem<XMaterialSubsystem>()->CreateMaterial(
+		SMaterialData::THandle material = *_context->GetSubsystem<XMaterialSubsystem>()->Create(
 			cVector4(1.0f),
 			diffuseTexture,
 			normalTexture,
@@ -172,7 +172,7 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 
 	if (bones.size() > 0)
 	{
-		value.get().skeleton = _context->GetSubsystem<XSkeletonSubsystem>()->CreateSkeleton(
+		value.get().skeleton = *_context->GetSubsystem<XSkeletonSubsystem>()->Create(
 			bones,
 			cMatrix4(asset.rootBoneAccumulatedTransform)
 		);
@@ -209,7 +209,7 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 			}
 		}
 
-		SAnimation anim;
+		SAnimationData anim;
 		anim.name = asset.animationData[i].name;
 		anim.duration = asset.animationData[i].duration;
 		anim.ticksPerSecond = asset.animationData[i].ticksPerSecond;
