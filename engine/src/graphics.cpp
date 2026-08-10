@@ -218,11 +218,6 @@ triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
     return nullptr;
 }
 
-std::optional<triton::SGeometryView> triton::cGraphics::StoreGeometry(EGraphicsBufferFormat format, const u8* vertices, usize verticesByteSize, const u8* indices, usize indicesByteSize)
-{
-    return _geometryStorage->Store(format, vertices, verticesByteSize, indices, indicesByteSize);
-}
-
 std::optional<triton::HCamera> triton::cGraphics::CreateCamera()
 {
     return _cameras->Create(_context);
