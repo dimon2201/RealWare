@@ -53,5 +53,6 @@ namespace triton
         types::usize maxPhysicsSimulationContactConstraintCount = 1024;
         types::usize maxRenderBatchCount = 4 * 1024;
         types::usize maxRenderInstanceCount = 4 * 1024;
+        types::usize maxBoneCountPerVertex = 4;
     };
 }

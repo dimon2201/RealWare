@@ -5,6 +5,8 @@
 #include <vector>
 #include "vertex.hpp"
 #include "animation.hpp"
+#include "material_data.hpp"
+#include "skeleton_data.hpp"
 
 namespace triton
 {
@@ -14,12 +16,12 @@ namespace triton
 
         struct TGPULayout {};
 
-        const SVertex* vertexData = nullptr;
+        const SSkinnedVertexGPULayout* vertexData = nullptr;
         const types::u32* indexData = nullptr;
         types::usize vertexCount = 0;
         types::usize indexCount = 0;
-        std::vector<HMaterial> materials = {};
-        HSkeleton skeleton = {};
-        std::vector<SAnimationData> animations = {};
+        std::vector<SMaterialData::THandle> materials = {};
+        SSkeletonData::THandle skeleton = {};
+        std::vector<SAnimationData::THandle> animations = {};
 	};
 }
