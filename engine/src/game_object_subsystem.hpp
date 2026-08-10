@@ -35,40 +35,40 @@ namespace triton
         void Free() override;
         void Update() override;
 
-        std::optional<HStaticRenderInstance> SetRenderableStatic(
+        std::optional<SStaticRenderInstanceData::THandle> SetRenderableStatic(
             const SGameObjectData::THandle& gameObject,
-            EGraphicsBufferFormat format,
+            EVertexBufferFormat format,
             const types::u8* vertexBytes,
             types::usize vertexBytesCount,
             const types::u8* indexBytes,
             types::usize indexBytesCount,
-            const std::optional<HBatch>& existingBatch = std::nullopt,
-            const std::optional<HMaterial>& existingMaterial = std::nullopt
+            const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
+            const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
         );
         
-        std::optional<HStaticRenderInstance> SetRenderableStatic(
+        std::optional<SStaticRenderInstanceData::THandle> SetRenderableStatic(
             const SGameObjectData::THandle& gameObject,
-            const HModel3D& model,
-            const std::optional<HBatch>& existingBatch = std::nullopt,
-            const std::optional<HMaterial>& existingMaterial = std::nullopt
+            const SModel3DData::THandle& model,
+            const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
+            const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
         );
 
-        std::optional<HDynamicRenderInstance> SetRenderableDynamic(
+        std::optional<SDynamicRenderInstanceData::THandle> SetRenderableDynamic(
             const SGameObjectData::THandle& gameObject,
-            EGraphicsBufferFormat format,
+            EVertexBufferFormat format,
             const types::u8* vertexBytes,
             types::usize vertexBytesCount,
             const types::u8* indexBytes,
             types::usize indexBytesCount,
-            const std::optional<HBatch>& existingBatch = std::nullopt,
-            const std::optional<HMaterial>& existingMaterial = std::nullopt
+            const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
+            const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
         );
 
-        std::optional<HDynamicRenderInstance> SetRenderableDynamic(
+        std::optional<SDynamicRenderInstanceData::THandle> SetRenderableDynamic(
             const SGameObjectData::THandle& gameObject,
-            const HModel3D& model,
-            const std::optional<HBatch>& existingBatch = std::nullopt,
-            const std::optional<HMaterial>& existingMaterial = std::nullopt
+            const SModel3DData::THandle& model,
+            const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
+            const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
         );
     };
 }

@@ -7,6 +7,8 @@
 #include "skeleton_subsystem.hpp"
 #include "game_object_pool.hpp"
 #include "math.hpp"
+#include "model3d_pool.hpp"
+#include "geometry_storage.hpp"
 
 using namespace types;
 
@@ -53,15 +55,15 @@ void triton::XGameObjectSubsystem::Update()
 {
 }
 
-std::optional<triton::HStaticRenderInstance> triton::XGameObjectSubsystem::SetRenderableStatic(
+std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableStatic(
 	const SGameObjectData::THandle& gameObject,
-	EGraphicsBufferFormat format,
+	EVertexBufferFormat format,
 	const types::u8* vertexBytes,
 	types::usize vertexBytesCount,
 	const types::u8* indexBytes,
 	types::usize indexBytesCount,
-	const std::optional<HBatch>& existingBatch,
-	const std::optional<HMaterial>& existingMaterial
+	const std::optional<SBatchData::THandle>& existingBatch,
+	const std::optional<SMaterialData::THandle>& existingMaterial
 )
 {
 	XBatchSubsystem* batchSubsystem = _context->GetSubsystem<XBatchSubsystem>();
@@ -71,18 +73,10 @@ std::optional<triton::HStaticRenderInstance> triton::XGameObjectSubsystem::SetRe
 		return std::nullopt;
 	auto value = *valueResult;
 
-	if (batchSubsystem->CUploader<
-		SStaticRenderInstanceData,
-		HStaticRenderInstance,
-		XLinearArray<SStaticRenderInstanceData>,
-		SGPUStaticRenderInstanceLayout
-	>::Exists(value.get().staticRenderInstance))
-		return {};
-
-	HBatch batch;
+	SBatchData::THandle batch;
 	if (!existingBatch.has_value())
 	{
-		SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
+		SGeometryView geometry = *_context->GetSubsystem<XGeometryStorage>()->Create(
 			format,
 			vertexBytes,
 			vertexBytesCount,
@@ -96,28 +90,22 @@ std::optional<triton::HStaticRenderInstance> triton::XGameObjectSubsystem::SetRe
 		batch = *existingBatch;
 	}
 	
-	HStaticRenderInstance ri;
-
-	ri = batchSubsystem->AddStaticInstance(batch, gameObject);
+	SStaticRenderInstanceData::THandle rih = *batchSubsystem->AddStaticInstance(batch, gameObject);
 
 	if (existingMaterial.has_value())
 	{
-		batchSubsystem->CUploader<
-			SStaticRenderInstanceData,
-			HStaticRenderInstance,
-			XLinearArray<SStaticRenderInstanceData>,
-			SGPUStaticRenderInstanceLayout
-		>::Get(ri).material = *existingMaterial;
+		auto ri = *batchSubsystem->GetStaticRenderInstancePool()->Get(rih);
+		ri.get().material = *existingMaterial;
 	}
 
-	return ri;
+	return rih;
 }
 
-std::optional<triton::HStaticRenderInstance> triton::XGameObjectSubsystem::SetRenderableStatic(
+std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableStatic(
 	const SGameObjectData::THandle& gameObject,
-	const HModel3D& model,
-	const std::optional<HBatch>& existingBatch,
-	const std::optional<HMaterial>& existingMaterial
+	const SModel3DData::THandle& model,
+	const std::optional<SBatchData::THandle>& existingBatch,
+	const std::optional<SMaterialData::THandle>& existingMaterial
 )
 {
 	auto valueResult = _pool->Get(gameObject);
@@ -125,26 +113,18 @@ std::optional<triton::HStaticRenderInstance> triton::XGameObjectSubsystem::SetRe
 		return std::nullopt;
 	auto value = *valueResult;
 
-	if (_context->GetSubsystem<XBatchSubsystem>()->CUploader<
-		SStaticRenderInstanceData,
-		HStaticRenderInstance,
-		XLinearArray<SStaticRenderInstanceData>,
-		SGPUStaticRenderInstanceLayout
-	>::Exists(value.get().staticRenderInstance))
-		return {};
-
-	SModel3DData& m3dd = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
+	SModel3DData& m3dd = *_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Get(model);
 	
-	HBatch batch;
+	SBatchData::THandle batch;
 	if (!existingBatch.has_value())
 	{
 		// TODO: Use proper vertex buffer format here
 		// ||||||||||||||||||||||||||||||||||||||||||
 		// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-		SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
-			EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
+		SGeometryView geometry = *_context->GetSubsystem<XGeometryStorage>()->Create(
+			EVertexBufferFormat::Skinned_84,
 			(u8*)m3dd.vertexData,
-			m3dd.vertexCount * sizeof(SStaticVertex),
+			m3dd.vertexCount * sizeof(SStaticVertexGPULayout),
 			(u8*)m3dd.indexData,
 			m3dd.indexCount * sizeof(u32)
 		);
@@ -155,48 +135,31 @@ std::optional<triton::HStaticRenderInstance> triton::XGameObjectSubsystem::SetRe
 		batch = *existingBatch;
 	}
 
-	HStaticRenderInstance ri;
-	
-	ri = _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch, gameObject);
-
-	_context->GetSubsystem<XBatchSubsystem>()->CUploader<
-		SStaticRenderInstanceData,
-		HStaticRenderInstance,
-		XLinearArray<SStaticRenderInstanceData>,
-		SGPUStaticRenderInstanceLayout
-	>::Get(ri).skeleton = m3dd.skeleton;
+	SStaticRenderInstanceData::THandle rih = *_context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch, gameObject);
 
 	if (existingMaterial.has_value())
 	{
-		_context->GetSubsystem<XBatchSubsystem>()->CUploader<
-			SStaticRenderInstanceData,
-			HStaticRenderInstance,
-			XLinearArray<SStaticRenderInstanceData>,
-			SGPUStaticRenderInstanceLayout
-		>::Get(ri).material = *existingMaterial;
+		auto ri = *_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->Get(rih);
+		ri.get().material = *existingMaterial;
 	}
 	else
 	{
-		_context->GetSubsystem<XBatchSubsystem>()->CUploader<
-			SStaticRenderInstanceData,
-			HStaticRenderInstance,
-			XLinearArray<SStaticRenderInstanceData>,
-			SGPUStaticRenderInstanceLayout
-		>::Get(ri).material.Invalidate();
+		auto ri = *_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->Get(rih);
+		ri.get().material.Invalidate();
 	}
 
-	return ri;
+	return rih;
 }
 
-std::optional<triton::HDynamicRenderInstance> triton::XGameObjectSubsystem::SetRenderableDynamic(
+std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableDynamic(
 	const SGameObjectData::THandle& gameObject,
-	EGraphicsBufferFormat format,
+	EVertexBufferFormat format,
 	const types::u8* vertexBytes,
 	types::usize vertexBytesCount,
 	const types::u8* indexBytes,
 	types::usize indexBytesCount,
-	const std::optional<HBatch>& existingBatch,
-	const std::optional<HMaterial>& existingMaterial
+	const std::optional<SBatchData::THandle>& existingBatch,
+	const std::optional<SMaterialData::THandle>& existingMaterial
 )
 {
 	XBatchSubsystem* batchSubsystem = _context->GetSubsystem<XBatchSubsystem>();
@@ -206,18 +169,10 @@ std::optional<triton::HDynamicRenderInstance> triton::XGameObjectSubsystem::SetR
 		return std::nullopt;
 	auto value = *valueResult;
 
-	if (batchSubsystem->CUploader<
-		SDynamicRenderInstanceData,
-		HDynamicRenderInstance,
-		XLinearArray<SDynamicRenderInstanceData>,
-		SGPUDynamicRenderInstanceLayout
-	>::Exists(value.get().dynamicRenderInstance))
-		return {};
-
-	HBatch batch;
+	SBatchData::THandle batch;
 	if (!existingBatch.has_value())
 	{
-		SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
+		SGeometryView geometry = *_context->GetSubsystem<XGeometryStorage>()->Create(
 			format,
 			vertexBytes,
 			vertexBytesCount,
@@ -231,28 +186,22 @@ std::optional<triton::HDynamicRenderInstance> triton::XGameObjectSubsystem::SetR
 		batch = *existingBatch;
 	}
 
-	HDynamicRenderInstance ri;
-
-	ri = batchSubsystem->AddDynamicInstance(batch, gameObject);
+	SDynamicRenderInstanceData::THandle rih = *batchSubsystem->AddDynamicInstance(batch, gameObject);
 
 	if (existingMaterial.has_value())
 	{
-		batchSubsystem->CUploader<
-			SDynamicRenderInstanceData,
-			HDynamicRenderInstance,
-			XLinearArray<SDynamicRenderInstanceData>,
-			SGPUDynamicRenderInstanceLayout
-		>::Get(ri).material = *existingMaterial;
+		auto ri = *_context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->Get(rih);
+		ri.get().material = *existingMaterial;
 	}
 
-	return ri;
+	return rih;
 }
 
-std::optional<triton::HDynamicRenderInstance> triton::XGameObjectSubsystem::SetRenderableDynamic(
+std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableDynamic(
 	const SGameObjectData::THandle& gameObject,
-	const HModel3D& model,
-	const std::optional<HBatch>& existingBatch,
-	const std::optional<HMaterial>& existingMaterial
+	const SModel3DData::THandle& model,
+	const std::optional<SBatchData::THandle>& existingBatch,
+	const std::optional<SMaterialData::THandle>& existingMaterial
 )
 {
 	auto valueResult = _pool->Get(gameObject);
@@ -260,26 +209,18 @@ std::optional<triton::HDynamicRenderInstance> triton::XGameObjectSubsystem::SetR
 		return std::nullopt;
 	auto value = *valueResult;
 
-	if (_context->GetSubsystem<XBatchSubsystem>()->CUploader<
-		SDynamicRenderInstanceData,
-		HDynamicRenderInstance,
-		XLinearArray<SDynamicRenderInstanceData>,
-		SGPUDynamicRenderInstanceLayout
-	>::Exists(go.dynamicRenderInstance))
-		return {};
+	SModel3DData& m3dd = *_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Get(model);
 
-	SModel3DData& m3dd = _context->GetSubsystem<XModel3DSubsystem>()->Get(model);
-
-	HBatch batch;
+	SBatchData::THandle batch;
 	if (!existingBatch.has_value())
 	{
 		// TODO: Use proper vertex buffer format here
 		// ||||||||||||||||||||||||||||||||||||||||||
 		// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-		SGeometryView geometry = *_context->GetSubsystem<cGraphics>()->StoreGeometry(
-			EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
+		SGeometryView geometry = *_context->GetSubsystem<XGeometryStorage>()->Create(
+			EVertexBufferFormat::Skinned_84,
 			(u8*)m3dd.vertexData,
-			m3dd.vertexCount * sizeof(SStaticVertex),
+			m3dd.vertexCount * sizeof(SSkinnedVertexGPULayout),
 			(u8*)m3dd.indexData,
 			m3dd.indexCount * sizeof(u32)
 		);
@@ -290,35 +231,19 @@ std::optional<triton::HDynamicRenderInstance> triton::XGameObjectSubsystem::SetR
 		batch = *existingBatch;
 	}
 
-	HDynamicRenderInstance ri;
+	SDynamicRenderInstanceData::THandle rih = *_context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch, gameObject);
 
-	ri = _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch, gameObject);
-
-	_context->GetSubsystem<XBatchSubsystem>()->CUploader<
-		SDynamicRenderInstanceData,
-		HDynamicRenderInstance,
-		XLinearArray<SDynamicRenderInstanceData>,
-		SGPUDynamicRenderInstanceLayout
-	>::Get(ri).skeleton = m3dd.skeleton;
+	auto ri = *_context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->Get(rih);
+	ri.get().skeleton = m3dd.skeleton;
 
 	if (existingMaterial.has_value())
 	{
-		_context->GetSubsystem<XBatchSubsystem>()->CUploader<
-			SDynamicRenderInstanceData,
-			HDynamicRenderInstance,
-			XLinearArray<SDynamicRenderInstanceData>,
-			SGPUDynamicRenderInstanceLayout
-		>::Get(ri).material = *existingMaterial;
+		ri.get().material = *existingMaterial;
 	}
 	else
 	{
-		_context->GetSubsystem<XBatchSubsystem>()->CUploader<
-			SDynamicRenderInstanceData,
-			HDynamicRenderInstance,
-			XLinearArray<SDynamicRenderInstanceData>,
-			SGPUDynamicRenderInstanceLayout
-		>::Get(ri).material.Invalidate();
+		ri.get().material.Invalidate();
 	}
 
-	return ri;
+	return rih;
 }
