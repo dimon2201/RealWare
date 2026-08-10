@@ -80,7 +80,7 @@ void triton::XBatchSubsystem::Destroy(const SBatchData::THandle& batch)
 
 std::optional<triton::SStaticRenderInstanceData::THandle> triton::XBatchSubsystem::AddStaticInstance(
 	const SBatchData::THandle& batch,
-	const HGameObject& gameObject
+	const SGameObjectData::THandle& gameObject
 )
 {
 	auto riResult = _staticInstancePool->Create();
@@ -110,7 +110,7 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XBatchSubsyste
 
 std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XBatchSubsystem::AddDynamicInstance(
 	const SBatchData::THandle& batch,
-	const HGameObject& gameObject
+	const SGameObjectData::THandle& gameObject
 )
 {
 	auto riResult = _dynamicInstancePool->Create();
