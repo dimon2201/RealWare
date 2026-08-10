@@ -3,7 +3,6 @@
 #pragma once
 
 #include <optional>
-#include "handles.hpp"
 #include "skeleton_data.hpp"
 #include "skinning_subsystem.hpp"
 #include "types.hpp"

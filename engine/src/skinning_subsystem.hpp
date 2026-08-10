@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include <optional>
-#include "handles.hpp"
 #include "skinning_data.hpp"
 #include "animation.hpp"
 #include "types.hpp"

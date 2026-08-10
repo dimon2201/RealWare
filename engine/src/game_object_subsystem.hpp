@@ -6,7 +6,6 @@
 #include "object.hpp"
 #include "DELETE_THIS_FILE_ASAP.hpp"
 #include "game_object_data.hpp"
-#include "handles.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "render_instance_data.hpp"
 #include "types.hpp"

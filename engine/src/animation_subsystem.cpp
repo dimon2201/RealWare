@@ -4,7 +4,6 @@
 #include "skeleton_subsystem.hpp"
 #include "graphics_resource_backend.hpp"
 #include "bone.hpp"
-#include "handles.hpp"
 #include "context.hpp"
 #include "animation_pool.hpp"
 #include "skeleton_pool.hpp"

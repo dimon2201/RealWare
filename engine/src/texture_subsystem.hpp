@@ -8,7 +8,6 @@
 #include "object.hpp"
 #include "math.hpp"
 #include "linear_array.hpp"
-#include "handles.hpp"
 #include "graphics_resource_backend.hpp"
 #include "texture_data.hpp"
 #include "DELETE_THIS_FILE_ASAP.hpp"

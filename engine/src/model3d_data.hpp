@@ -5,7 +5,6 @@
 #include <vector>
 #include "vertex.hpp"
 #include "animation.hpp"
-#include "handles.hpp"
 
 namespace triton
 {

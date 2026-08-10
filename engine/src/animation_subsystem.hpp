@@ -4,7 +4,6 @@
 
 #include <string>
 #include <optional>
-#include "handles.hpp"
 #include "animation.hpp"
 #include "skeleton_data.hpp"
 #include "DELETE_THIS_FILE_ASAP.hpp"

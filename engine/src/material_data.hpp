@@ -3,7 +3,6 @@
 #pragma once
 
 #include "math.hpp"
-#include "handles.hpp"
 #include "texture_subsystem.hpp"
 #include "texture_data.hpp"
 

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "math.hpp"
-#include "handles.hpp"
 #include "batch_data.hpp"
 #include "types.hpp"
 

@@ -5,7 +5,6 @@
 #include "graphics_resource_backend.hpp"
 #include "animation.hpp"
 #include "bone.hpp"
-#include "handles.hpp"
 #include "context.hpp"
 #include "skinned_bones_pool.hpp"
 #include "skin_pool.hpp"

@@ -8,7 +8,6 @@
 #include "buffer_view.hpp"
 #include "handle_allocator.hpp"
 #include "batch_data.hpp"
-#include "handles.hpp"
 #include "material_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "batch_pool.hpp"

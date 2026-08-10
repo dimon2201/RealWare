@@ -3,7 +3,6 @@
 #pragma once
 
 #include "render_instance_data.hpp"
-#include "handles.hpp"
 
 namespace triton
 {

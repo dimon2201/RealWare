@@ -5,7 +5,6 @@
 #include <optional>
 #include <filesystem>
 #include "DELETE_THIS_FILE_ASAP.hpp"
-#include "handles.hpp"
 #include "model3d_data.hpp"
 
 namespace triton
