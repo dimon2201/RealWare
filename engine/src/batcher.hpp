@@ -55,12 +55,12 @@ namespace triton
 
         std::optional<SStaticRenderInstanceData::THandle> AddStaticInstance(
             const SBatchData::THandle& batch,
-            const HGameObject& gameObject
+            const SGameObjectData::THandle& gameObject
         );
 
         std::optional<SDynamicRenderInstanceData::THandle> AddDynamicInstance(
             const SBatchData::THandle& batch,
-            const HGameObject& gameObject
+            const SGameObjectData::THandle& gameObject
         );
 
         void RemoveStaticInstance(const SStaticRenderInstanceData::THandle& instance);
@@ -74,6 +74,16 @@ namespace triton
         inline const SBufferView<SBatchData>& GetBatches() const
         {
             return _batchPool->GetData();
+        }
+
+        inline XStaticRenderInstancePool* GetStaticRenderInstancePool() const
+        {
+            return _staticInstancePool;
+        }
+
+        inline XDynamicRenderInstancePool* GetDynamicRenderInstancePool() const
+        {
+            return _dynamicInstancePool;
         }
 
         inline cBuffer& GetStaticInstanceGPUBuffer() const
