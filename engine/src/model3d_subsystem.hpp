@@ -28,5 +28,10 @@ namespace triton
         void Init() override {}
         void Free() override {}
         void Update() override {}
+
+        inline XModel3DPool* GetPool() const
+        {
+            return _pool;
+        }
     };
 }
