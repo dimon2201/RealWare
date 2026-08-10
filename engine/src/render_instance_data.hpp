@@ -64,8 +64,8 @@ namespace triton
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
         HGameObject gameObject;
         SBatchData::THandle batch;
-        HMaterial material;
-        HSkeleton skeleton;
+        SMaterialData::THandle material;
+        SSkeletonData::THandle skeleton;
         HStaticRenderInstance instance;
         cMatrix4 worldMatrix = cMatrix4();
     };

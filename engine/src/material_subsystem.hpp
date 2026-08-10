@@ -41,5 +41,10 @@ namespace triton
         void Free() override {}
 
         void Update() override;
+
+        inline XMaterialPool* GetPool() const
+        {
+            return _pool;
+        }
     };
 }
