@@ -18,7 +18,7 @@ namespace triton
 		cMemoryAllocator* _allocator = nullptr;
 		::std::unordered_map<ClassType, std::shared_ptr<iBackend>> _backends;
 		::std::unordered_map<ClassType, iObject*> _subsystems;
-		std::unordered_map<ClassType, iObject*> _storages;
+		std::unordered_map<ClassType, iObject*> _pools;
 
 	public:
 		explicit cContext() = default;
@@ -41,12 +41,13 @@ namespace triton
 
 		void RegisterSubsystem(iObject* object);
 
+		void RegisterPool(iObject* pool);
+
 		template <typename T>
 		void ReleaseSubsystem();
 
-		void InitPools();
-
-		void FreePools();
+		template <typename T>
+		void ReleasePool();
 
 		inline cMemoryAllocator* GetMemoryAllocator() const { return _allocator; }
 
@@ -55,6 +56,9 @@ namespace triton
 
 		template <typename T>
 		inline T* GetSubsystem() const;
+
+		template <typename T>
+		inline T* GetPool() const;
 	};
 }
 
@@ -127,12 +131,13 @@ void triton::cContext::ReleaseSubsystem()
 		delete it->second;
 }
 
-void triton::cContext::InitPools()
+template <typename T>
+void triton::cContext::ReleasePool()
 {
-}
-
-void triton::cContext::FreePools()
-{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _pools.find(type);
+	if (it == _pools.end())
+		delete it->second;
 }
 
 template <typename T>
@@ -152,6 +157,17 @@ T* triton::cContext::GetSubsystem() const
 	const ClassType type = T::GetTypeStatic();
 	const auto it = _subsystems.find(type);
 	if (it != _subsystems.end())
+		return (T*)it->second;
+	else
+		return nullptr;
+}
+
+template <typename T>
+T* triton::cContext::GetPool() const
+{
+	const ClassType type = T::GetTypeStatic();
+	const auto it = _pools.find(type);
+	if (it != _pools.end())
 		return (T*)it->second;
 	else
 		return nullptr;

@@ -24,3 +24,11 @@ void triton::cContext::RegisterSubsystem(iObject* object)
 	if (it == _subsystems.end())
 		_subsystems.insert({ type, object });
 }
+
+void triton::cContext::RegisterPool(iObject* pool)
+{
+	ClassType type = pool->GetType();
+	const auto it = _pools.find(type);
+	if (it == _pools.end())
+		_pools.insert({ type, pool });
+}
