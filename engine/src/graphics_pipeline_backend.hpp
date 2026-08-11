@@ -35,7 +35,11 @@ namespace triton
         CGPUVertexArray _gpuVertexArray = CGPUVertexArray(nullptr, 0);
 
     public:
-        explicit XVertexArray(cContext* context, const std::vector<cBuffer*>& buffersToBind);
+        explicit XVertexArray(
+            cContext* context,
+            const std::vector<cBuffer*>& buffersToBind,
+            EVertexBufferFormat vertexFormat
+        );
         ~XVertexArray() override;
 
         inline const CGPUVertexArray& GetGPUVertexArray() const

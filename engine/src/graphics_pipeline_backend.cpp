@@ -42,7 +42,11 @@ triton::XShader::~XShader()
 	));
 }
 
-triton::XVertexArray::XVertexArray(cContext* context, const std::vector<cBuffer*>& buffersToBind) : iObject(context)
+triton::XVertexArray::XVertexArray(
+	cContext* context,
+	const std::vector<cBuffer*>& buffersToBind,
+	EVertexBufferFormat vertexFormat
+): iObject(context)
 {
 	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
 
@@ -62,9 +66,14 @@ triton::XVertexArray::XVertexArray(cContext* context, const std::vector<cBuffer*
 			(cpuword)buffer
 		));
 
-	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-		ERenderCommand::BIND_DEFAULT_INPUT_LAYOUT
-	));
+	if (vertexFormat == EVertexBufferFormat::Static_36)
+		_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+			ERenderCommand::BIND_STATIC_INPUT_LAYOUT
+		));
+	else if (vertexFormat == EVertexBufferFormat::Skinned_84)
+		_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+			ERenderCommand::BIND_SKINNED_INPUT_LAYOUT
+		));
 
 	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::UNBIND_VERTEX_ARRAY
