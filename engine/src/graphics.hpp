@@ -172,6 +172,7 @@ namespace triton
 
         XVertexArray* _inputLayoutStatic = nullptr;
         XVertexArray* _inputLayoutSkinned = nullptr;
+        XVertexArray* _inputLayoutProcessing = nullptr;
         XRenderPass* _opaqueStatic = nullptr;
         XRenderPass* _opaqueSkinned = nullptr;
         XRenderPass* _transparent = nullptr;

@@ -872,6 +872,7 @@ void triton::cGraphics::CreateInputLayouts()
     };
     _inputLayoutStatic = _context->Create<XVertexArray>(_context, staticInputs, EVertexBufferFormat::Static_52);
     _inputLayoutSkinned = _context->Create<XVertexArray>(_context, skinnedInputs, EVertexBufferFormat::Skinned_84);
+    _inputLayoutProcessing = _context->Create<XVertexArray>(_context, std::vector<cBuffer*>(), EVertexBufferFormat::Unknown);
 }
 
 void triton::cGraphics::CreateDefaultRenderTargets()
@@ -1105,6 +1106,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _compositeFinal = _context->Create<XRenderPass>(_context);
     _compositeFinal->SetDispatch(ERenderPassDispatch::PROCESSING);
     _compositeFinal->SetBatchFormat(EVertexBufferFormat::Unknown);
+    _compositeFinal->SetInputLayout(_inputLayoutProcessing);
     _compositeFinal->SetInputTextures({
         SRenderPassTexture("ColorTexture", _opaqueRenderTarget->GetColorAttachments()[0]),
     });
@@ -1117,6 +1119,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
 
 void triton::cGraphics::DestroyInputLayouts()
 {
+    if (_inputLayoutProcessing)
+        _context->Destroy<XVertexArray>(_inputLayoutProcessing);
     if (_inputLayoutSkinned)
         _context->Destroy<XVertexArray>(_inputLayoutSkinned);
     if (_inputLayoutStatic)
