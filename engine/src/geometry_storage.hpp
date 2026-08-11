@@ -32,11 +32,9 @@ namespace triton
         types::usize _skinnedIndexBufferPointer = 0;
 
     public:
-        explicit XGeometryStorage(cContext* context) : iObject(context) {}
-        virtual ~XGeometryStorage() override = default;
+        explicit XGeometryStorage(cContext* context);
+        virtual ~XGeometryStorage() override;
 
-        void Initialize();
-        void Free();
         std::optional<triton::SGeometryView> Create(
             EVertexBufferFormat format,
             const types::u8* vertices,

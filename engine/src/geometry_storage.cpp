@@ -13,7 +13,7 @@
 
 using namespace types;
 
-void triton::XGeometryStorage::Initialize()
+triton::XGeometryStorage::XGeometryStorage(cContext* context) : iObject(context)
 {
     cEngine* engine = _context->GetSubsystem<cEngine>();
     XRenderCommandRecorder* cmdRecorder = engine->GetRenderCommandRecorder();
@@ -63,7 +63,7 @@ void triton::XGeometryStorage::Initialize()
     _skinnedIndexBufferCPU = _context->Create<XDataBuffer>(_context, caps->skinnedIndexBufferSize);
 }
 
-void triton::XGeometryStorage::Free()
+triton::XGeometryStorage::~XGeometryStorage()
 {
     _context->Destroy<XDataBuffer>(_skinnedIndexBufferCPU);
     _context->Destroy<XDataBuffer>(_staticIndexBufferCPU);
@@ -108,7 +108,7 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
     usize indicesByteSize
 )
 {
-    if (format == EVertexBufferFormat::Static_36)
+    if (format == EVertexBufferFormat::Static_52)
     {
         usize vertexBufferByteSize = _staticVertexBufferPointer;
         usize indexBufferByteSize = _staticIndexBufferPointer;
