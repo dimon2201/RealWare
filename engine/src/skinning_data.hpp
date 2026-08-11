@@ -26,6 +26,7 @@ namespace triton
 
 		struct TGPULayout {};
 
+		types::usize globSkinnedBoneBufferOffset = 0;
 		std::vector<SSkinnedBoneData::THandle> skinnedBones;
 	};
 }

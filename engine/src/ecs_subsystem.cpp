@@ -1,5 +1,5 @@
 // ecs_subsystem.cpp
-
+/*
 #include "ecs_subsystem.hpp"
 #include "context.hpp"
 #include "engine.hpp"
@@ -50,3 +50,4 @@ void triton::ecs::XECSSubsystem::DestroyScene(const HScene& handle)
 {
 	return _handleAllocator->Destroy(handle);
 }
+*/

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "geometry_view.hpp"
-#include "render_instance_data.hpp"
+#include "render_instance_motion_type.hpp"
 #include "handle.hpp"
 #include "types.hpp"
 

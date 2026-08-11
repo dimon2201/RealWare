@@ -4,6 +4,7 @@
 
 #include "math.hpp"
 #include "object.hpp"
+#include "handle.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -34,5 +35,13 @@ namespace triton
         void Move(types::f32 value);
         void Strafe(types::f32 value);
         void Lift(types::f32 value);
+
+    public:
+        struct THandle : public SHandle {};
+
+        struct TGPULayout
+        {
+            cMatrix4 _viewProjectionMatrix = cMatrix4(1.0f);
+        };
     };
 }

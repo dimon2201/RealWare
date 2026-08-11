@@ -28,10 +28,10 @@ triton::XMaterialSubsystem::~XMaterialSubsystem()
 
 std::optional<triton::SMaterialData::THandle> triton::XMaterialSubsystem::Create(
     const cVector4& diffuseColor,
-    const HTexture& diffuseTexture,
-    const HTexture& normalTexture,
-    const HTexture& roughnessTexture,
-    const HTexture& metallicTexture
+    const STextureData::THandle& diffuseTexture,
+    const STextureData::THandle& normalTexture,
+    const STextureData::THandle& roughnessTexture,
+    const STextureData::THandle& metallicTexture
 )
 {
     auto handleResult = _pool->Create();

@@ -28,7 +28,6 @@ std::optional<triton::SAnimationData::THandle> triton::XAnimationSubsystem::Crea
     const std::string& name,
     types::f32 duration,
     types::f32 ticksPerSecond,
-    const SSkeletonData::THandle& skeleton,
     const std::vector<SAnimationKey>& keys
 )
 {

@@ -86,16 +86,6 @@ namespace triton
             return _dynamicInstancePool;
         }
 
-        inline cBuffer& GetStaticInstanceGPUBuffer() const
-        {
-            return *_staticInstancePool->GetGPUBuffer();
-        }
-
-        inline cBuffer& GetDynamicInstanceGPUBuffer() const
-        {
-            return *_dynamicInstancePool->GetGPUBuffer();
-        }
-
     private:
         void MarkDirtyStatic();
 

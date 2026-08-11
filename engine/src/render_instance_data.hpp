@@ -5,7 +5,8 @@
 #include "math.hpp"
 #include "batch_data.hpp"
 #include "material_data.hpp"
-#include "game_object_data.hpp"
+#include "skeleton_data.hpp"
+#include "render_instance_motion_type.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -14,12 +15,6 @@ namespace triton
     {
         Dynamic = 1,
         Skinned = 2
-    };
-
-    enum class ERenderInstanceMotionType
-    {
-        Static,
-        Dynamic
     };
 
     inline types::dword EvaluatePropertyBits(
@@ -63,7 +58,6 @@ namespace triton
         };
 
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
-        SGameObjectData::THandle gameObject;
         SBatchData::THandle batch;
         SMaterialData::THandle material;
         SSkeletonData::THandle skeleton;
@@ -98,7 +92,6 @@ namespace triton
         };
 
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
-        SGameObjectData::THandle gameObject;
         SBatchData::THandle batch;
         SMaterialData::THandle material;
         SSkeletonData::THandle skeleton;

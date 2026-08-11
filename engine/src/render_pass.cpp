@@ -9,6 +9,7 @@
 #include "buffer_view.hpp"
 #include "camera.hpp"
 #include "input.hpp"
+#include "camera_pool.hpp"
 
 using namespace triton::ecs::components;
 using namespace types;
@@ -82,7 +83,7 @@ void triton::XRenderPass::Draw()
     {
         case ERenderPassDispatch::GEOMETRY:
         {
-            XCamera& camera = gfx->GetCamera(_camera);
+            XCamera& camera = *_context->GetPool<XCameraPool>()->Get(_camera);
             CGPUShader shader = _shader->GetGPUShader();
 
             // TODO: remove this line

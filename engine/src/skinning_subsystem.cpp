@@ -77,6 +77,7 @@ std::optional<triton::SSkinData::THandle> triton::XSkinningSubsystem::Create(
 
     SSkinData::THandle skin = *_skinPool->Create();
     SSkinData& sd = *_skinPool->Get(skin);
+    sd.globSkinnedBoneBufferOffset = globSkinnedBoneBufferOffset;
     sd.skinnedBones = skinnedBones;
 
     return skin;

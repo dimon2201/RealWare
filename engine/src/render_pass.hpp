@@ -11,7 +11,7 @@
 #include "render_data.hpp"
 #include "instance_buffer.hpp"
 #include "graphics_buffer_formats.hpp"
-#include "camera_handle.hpp"
+#include "camera.hpp"
 
 namespace triton
 {
@@ -74,7 +74,7 @@ namespace triton
         XRenderTarget*                  _renderTarget = nullptr;
         XShader*                        _shader = nullptr;
         cBuffer*                        _textureBuffer = nullptr;
-        HCamera                   _camera = {};
+        XCamera::THandle                _camera;
 
     public:
         explicit XRenderPass(cContext* context);
@@ -145,7 +145,7 @@ namespace triton
             _shader = shader;
         }
 
-        inline void SetCamera(const SCameraData::THandle& camera)
+        inline void SetCamera(const XCamera::THandle& camera)
         {
             _camera = camera;
         }

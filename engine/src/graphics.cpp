@@ -29,6 +29,11 @@
 #include "skeleton_subsystem.hpp"
 #include "skinning_subsystem.hpp"
 #include "material_data.hpp"
+#include "material_pool.hpp"
+#include "static_render_instance_pool.hpp"
+#include "dynamic_render_instance_pool.hpp"
+#include "skeleton_pool.hpp"
+#include "skinned_bones_pool.hpp"
 
 using namespace types;
 
@@ -57,19 +62,15 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
 void triton::cGraphics::Init()
 {
     CreateGeometryStorage();
-    CreateMaterialBuffer();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
-    CreateCameraAllocator();
 }
 
 void triton::cGraphics::Free()
 {
     DestroyDefaultRenderPasses();
     DestroyDefaultRenderTargets();
-    DestroyMaterialBuffer();
     DestroyGeometryStorage();
-    DestroyCameraAllocator();
 }
 
 void Initialize()
@@ -179,24 +180,22 @@ void triton::cGraphics::ExecutePasses()
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 
     BindVertexIndexBuffers();
-    BindMaterialBuffer();
 
-    _context->GetSubsystem<XMaterialSubsystem>()->GetMaterialGPUBuffer().Bind();
-    _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceGPUBuffer().Bind();
-    _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceGPUBuffer().Bind();
-    _context->GetSubsystem<XSkeletonSubsystem>()->GetSkeletonGPUBuffer().Bind();
-    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinningGPUBuffer().Bind();
+    _context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer()->Bind();
+    _context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->GetGPUBuffer()->Bind();
+    _context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->GetGPUBuffer()->Bind();
+    _context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->GetGPUBuffer()->Bind();
+    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->GetGPUBuffer()->Bind();
 
     ExecuteDefaultPasses();
 
-    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinningGPUBuffer().Unbind();
-    _context->GetSubsystem<XSkeletonSubsystem>()->GetSkeletonGPUBuffer().Unbind();
-    _context->GetSubsystem<XMaterialSubsystem>()->GetMaterialGPUBuffer().Unbind();
-    _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceGPUBuffer().Unbind();
-    _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceGPUBuffer().Unbind();
+    _context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->GetGPUBuffer()->Unbind();
+    _context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->GetGPUBuffer()->Unbind();
+    _context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->GetGPUBuffer()->Unbind();
+    _context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->GetGPUBuffer()->Unbind();
+    _context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer()->Unbind();
 
     UnbindVertexIndexBuffers();
-    UnbindMaterialBuffer();
 }
 
 triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
@@ -216,21 +215,6 @@ triton::CVertexArray* triton::cGraphics::CreateDefaultVertexArray()
 
     return vertexArray;*/
     return nullptr;
-}
-
-std::optional<triton::HCamera> triton::cGraphics::CreateCamera()
-{
-    return _cameras->Create(_context);
-}
-
-triton::XCamera& triton::cGraphics::GetCamera(const HCamera& camera)
-{
-    return _cameras->Get(camera);
-}
-
-void triton::cGraphics::DestroyCamera(const HCamera& camera)
-{
-    _cameras->Destroy(camera);
 }
 
 triton::sPrimitive* triton::cGraphics::CreatePrimitive(eCategory primitive)
@@ -872,34 +856,10 @@ void triton::cGraphics::CompositeFinal()
     gfxPipelineBackend->UnbindShader();
 }
 
-triton::cBuffer* triton::cGraphics::GetVertexBuffer() const
-{
-    return _geometryStorage->GetVertexBuffer();
-}
-
-triton::cBuffer* triton::cGraphics::GetIndexBuffer() const
-{
-    return _geometryStorage->GetIndexBuffer();
-}
-
 void triton::cGraphics::CreateGeometryStorage()
 {
     _geometryStorage = _context->Create<XGeometryStorage>(_context);
     _geometryStorage->Initialize();
-}
-
-void triton::cGraphics::CreateMaterialBuffer()
-{
-    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
-    const sCapabilities* caps = app->GetCapabilities();
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::STORAGE,
-        (cpuword)nullptr,
-        caps->maxRenderMaterialCount * sizeof(SGPUMaterialLayout),
-        2
-    ));
-    _materialBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
 }
 
 void triton::cGraphics::CreateDefaultRenderTargets()
@@ -1006,8 +966,6 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     opaqueBlendState.srcFactors[0] = EBlendFactor::ONE;
     opaqueBlendState.dstFactors[0] = EBlendFactor::ZERO;
     const std::vector<cBuffer*> opaqueInputBuffers = {
-        _geometryStorage->GetVertexBuffer(),
-        _geometryStorage->GetIndexBuffer()
     };
     XVertexArray* opaqueVertexArray = _context->Create<XVertexArray>(_context, opaqueInputBuffers);
     _opaque = _context->Create<XRenderPass>(_context);
@@ -1041,8 +999,6 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     transparentBlendState.srcFactors[1] = EBlendFactor::ZERO;
     transparentBlendState.dstFactors[1] = EBlendFactor::INV_SRC_COLOR;
     const std::vector<cBuffer*> transparentInputBuffers = {
-        _geometryStorage->GetVertexBuffer(),
-        _geometryStorage->GetIndexBuffer()
     };
     XVertexArray* transparentVertexArray = _context->Create<XVertexArray>(_context, transparentInputBuffers);
     _transparent = _context->Create<XRenderPass>(_context);
@@ -1128,29 +1084,10 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _compositeFinal->SetRenderTarget(nullptr);
 }
 
-void triton::cGraphics::CreateCameraAllocator()
-{
-    _cameras = _context->Create<CHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>>(
-        _context,
-        4096,
-        4096,
-        65536 * 64,
-        1024
-    );
-}
-
 void triton::cGraphics::DestroyGeometryStorage()
 {
     if (_geometryStorage)
         _context->Destroy<XGeometryStorage>(_geometryStorage);
-}
-
-void triton::cGraphics::DestroyMaterialBuffer()
-{
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_materialBuffer
-    ));
 }
 
 void triton::cGraphics::DestroyDefaultRenderTargets()
@@ -1201,34 +1138,12 @@ void triton::cGraphics::DestroyDefaultRenderPasses()
         _context->Destroy<XRenderPass>(_opaque);
 }
 
-void triton::cGraphics::DestroyCameraAllocator()
-{
-    if (_cameras)
-    {
-        _context->Destroy<CHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>>(_cameras);
-    }
-}
-
 void triton::cGraphics::BindVertexIndexBuffers()
 {
-    _geometryStorage->GetVertexBuffer()->Bind();
-    _geometryStorage->GetIndexBuffer()->Bind();
-}
-
-void triton::cGraphics::BindMaterialBuffer()
-{
-    _materialBuffer->Bind();
 }
 
 void triton::cGraphics::UnbindVertexIndexBuffers()
 {
-    _geometryStorage->GetVertexBuffer()->Unbind();
-    _geometryStorage->GetIndexBuffer()->Unbind();
-}
-
-void triton::cGraphics::UnbindMaterialBuffer()
-{
-    _materialBuffer->Unbind();
 }
 
 void triton::cGraphics::ExecuteDefaultPasses()

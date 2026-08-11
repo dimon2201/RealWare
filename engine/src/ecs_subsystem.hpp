@@ -1,11 +1,10 @@
 // ecs_subsystem.hpp
 
-#pragma once
+/*#pragma once
 
 #include "object.hpp"
 #include "scene_handle.hpp"
 #include "scene.hpp"
-#include "handles.hpp"
 
 namespace triton
 {
@@ -34,4 +33,4 @@ namespace triton::ecs
 		cScene& GetScene(const HScene& handle);
 		void DestroyScene(const HScene& handle);
 	};
-}
+}*/

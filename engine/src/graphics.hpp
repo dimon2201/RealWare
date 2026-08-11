@@ -16,7 +16,6 @@
 #include "buffer_view.hpp"
 #include "batcher.hpp"
 #include "handle.hpp"
-#include "camera_handle.hpp"
 #include "shader_define.hpp"
 
 namespace triton
@@ -85,10 +84,6 @@ namespace triton
         types::usize _verticesByteSize = 0;
         types::usize _indicesByteSize = 0;
         eCategory _format = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-    };
-
-    struct sModel : sPrimitive
-    {
     };
 
     struct sLight
@@ -185,22 +180,15 @@ namespace triton
         XRenderPass* _compositeFinal = nullptr;
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
-        CHandleAllocator<SCameraSlot, XCamera, HCamera, XLinearArray<XCamera>>* _cameras = nullptr;
 
         void CreateGeometryStorage();
-        void CreateMaterialBuffer();
         void CreateDefaultRenderTargets();
         void CreateDefaultRenderPasses();
-        void CreateCameraAllocator();
         void DestroyGeometryStorage();
-        void DestroyMaterialBuffer();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
-        void DestroyCameraAllocator();
         void BindVertexIndexBuffers();
-        void BindMaterialBuffer();
         void UnbindVertexIndexBuffers();
-        void UnbindMaterialBuffer();
         void ExecuteDefaultPasses();
 
 	public:
@@ -221,9 +209,6 @@ namespace triton
         //cCacheObject<cMaterial> CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
         void ExecutePasses();
         CVertexArray* CreateDefaultVertexArray();
-        std::optional<HCamera> CreateCamera();
-        XCamera& GetCamera(const HCamera& camera);
-        void DestroyCamera(const HCamera& camera);
         sPrimitive* CreatePrimitive(eCategory primitive);
 
         // TODO: Remove material finding from cGraphics
@@ -235,7 +220,6 @@ namespace triton
         void DestroyGeometry(sVertexBufferGeometry* geometry);
         void DestroyRenderPass(XRenderPass* renderPass);
         void DestroyPrimitive(sPrimitive* primitiveObject);
-        void DestroyModel(sModel* model);
         
         void ClearRenderTarget(const XRenderPass* renderPass, types::boolean clearColor, types::usize bufferIndex, const glm::vec4& color, types::boolean clearDepth, types::f32 depth);
         void ClearRenderTargets(const glm::vec4& clearColor, types::f32 clearDepth);
@@ -256,9 +240,6 @@ namespace triton
         
         void CompositeTransparent();
         void CompositeFinal();
-
-        cBuffer* GetVertexBuffer() const;
-        cBuffer* GetIndexBuffer() const;
 
         inline cBuffer* GetMaterialBuffer() const
         {

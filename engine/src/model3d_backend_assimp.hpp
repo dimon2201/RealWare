@@ -12,6 +12,9 @@
 #include "model3d_backend.hpp"
 #include "graphics_resource_backend.hpp"
 #include "vertex.hpp"
+#include "material_data.hpp"
+#include "skeleton_data.hpp"
+#include "animation.hpp"
 
 namespace triton
 {

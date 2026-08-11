@@ -94,7 +94,6 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XBatchSubsyste
 	auto rd = *rdResult;
 
 	rd.get().batch = batch;
-	rd.get().gameObject = gameObject;
 
 	auto bdResult = _batchPool->Get(batch);
 	if (!bdResult.has_value())
@@ -124,7 +123,6 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XBatchSubsyst
 	auto rd = *rdResult;
 
 	rd.get().batch = batch;
-	rd.get().gameObject = gameObject;
 
 	auto bdResult = _batchPool->Get(batch);
 	if (!bdResult.has_value())

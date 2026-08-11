@@ -6,6 +6,8 @@
 #include "batch_instance.hpp"
 #include "handle.hpp"
 #include "material_data.hpp"
+#include "skeleton_data.hpp"
+#include "render_instance_data.hpp"
 #include "math.hpp"
 
 namespace triton

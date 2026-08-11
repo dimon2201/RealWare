@@ -8,6 +8,7 @@
 #include "game_object_data.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "render_instance_data.hpp"
+#include "model3d_data.hpp"
 #include "types.hpp"
 
 namespace triton

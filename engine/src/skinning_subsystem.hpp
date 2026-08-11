@@ -6,6 +6,7 @@
 #include <vector>
 #include <optional>
 #include "skinning_data.hpp"
+#include "skeleton_data.hpp"
 #include "animation.hpp"
 #include "types.hpp"
 
@@ -42,6 +43,11 @@ namespace triton
 		void Free() override {}
 
 		void Update() override;
+
+		inline XSkinnedBonesPool* GetSkinnedBonesPool() const
+		{
+			return _skinnedBonesPool;
+		}
 
 	private:
 		void CalculateBone(

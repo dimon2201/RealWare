@@ -73,7 +73,6 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
     std::unordered_map<std::string, types::usize> boneIndices = {};
     std::vector<SBone> bones = {};
     std::vector<std::vector<SBoneWeight>> vertexWeights;
-    std::vector<SAnimation> animations = {};
     SSkeletonData::THandle modelSkeleton = {};
     usize boneOffset = 0;
     std::vector<SAnimationData::THandle> modelAnimations = {};
@@ -650,7 +649,6 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
                 animation.name,
                 animation.duration,
                 animation.ticksPerSecond,
-                modelSkeleton,
                 animation.animKeys
             )
         );

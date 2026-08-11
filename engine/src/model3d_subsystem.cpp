@@ -72,7 +72,7 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 		return std::nullopt;
 	auto value = *valueResult;
 
-	value.get().vertexData = (const SVertex*)asset.vertexData;
+	value.get().vertexData = (const SSkinnedVertexGPULayout*)asset.vertexData;
 	value.get().vertexCount = asset.vertexCount;
 	value.get().indexData = asset.indexData;
 	value.get().indexCount = asset.indexCount;
@@ -209,13 +209,14 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 			}
 		}
 
-		SAnimationData anim;
-		anim.name = asset.animationData[i].name;
-		anim.duration = asset.animationData[i].duration;
-		anim.ticksPerSecond = asset.animationData[i].ticksPerSecond;
-		anim.animKeys = keys;
+		SAnimationData::THandle animHandle = *_context->GetSubsystem<XAnimationSubsystem>()->Create(
+			asset.animationData[i].name,
+			asset.animationData[i].duration,
+			asset.animationData[i].ticksPerSecond,
+			keys
+		);
 
-		value.get().animations.push_back(std::move(anim));
+		value.get().animations.push_back(animHandle);
 	}
 
 	return handle;

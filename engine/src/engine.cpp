@@ -39,6 +39,7 @@
 #include "batcher.hpp"
 #include "synchronization.hpp"
 #include "render_thread.hpp"
+#include "camera_pool.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -68,8 +69,6 @@ void triton::cEngine::Initialize()
 	InitializeRenderCommandRecorder();
 	InitializeSynchronization();
 
-	_context->InitPools();
-	
 	CObjectAllocator::Initialize(_context->GetMemoryAllocator());
 
 	// Register backends
@@ -81,6 +80,9 @@ void triton::cEngine::Initialize()
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 	_context->RegisterBackend<IModel3DBackend>(new XModel3DBackendAssimp(_context));
 	
+	// Register pools
+	_context->RegisterPool(new XCameraPool(_context, K_TRUE));
+
 	// Register subsystems (order matters)
 	_context->RegisterSubsystem(new cInput(_context));
 	_context->GetSubsystem<cInput>()->Initialize();
@@ -93,8 +95,6 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cFileSystem(_context));
 	//_context->RegisterSubsystem(new cTime(_context));
 	//_context->RegisterSubsystem(new cThreadSubsystem(_context));
-	//_context->RegisterSubsystem(new XECSSubsystem(_context));
-	//_context->GetSubsystem<XECSSubsystem>()->Initialize();
 	//_context->RegisterSubsystem(new cGraphics(_context));
 	//_context->GetSubsystem<cGraphics>()->Init();
 	//_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
@@ -138,11 +138,9 @@ void triton::cEngine::Initialize()
 void triton::cEngine::Shutdown()
 {
 	ReleaseRenderThread();
-	_context->FreePools();
 	ReleaseSynchronization();
 	ReleaseRenderCommandRecorder();
 	_context->GetSubsystem<cInput>()->Shutdown();
-	_context->GetSubsystem<XECSSubsystem>()->Shutdown();
 }
 
 void triton::cEngine::Run()
