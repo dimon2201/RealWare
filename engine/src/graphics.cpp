@@ -62,6 +62,7 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
 void triton::cGraphics::Init()
 {
     CreateGeometryStorage();
+    CreateInputLayouts();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
 }
@@ -70,6 +71,7 @@ void triton::cGraphics::Free()
 {
     DestroyDefaultRenderPasses();
     DestroyDefaultRenderTargets();
+    DestroyInputLayouts();
     DestroyGeometryStorage();
 }
 
@@ -401,7 +403,7 @@ void triton::cGraphics::ClearRenderTargets(const glm::vec4& clearColor, f32 clea
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
     iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
 
-    gfxPipelineBackend->BindRenderPass(_opaque);
+    gfxPipelineBackend->BindRenderPass(_opaqueStatic);
     gfxDrawcallBackend->ClearFramebufferColor(0, cVector4(clearColor));
     gfxDrawcallBackend->ClearFramebufferDepth(clearDepth);
 
@@ -417,24 +419,27 @@ void triton::cGraphics::ResizeRenderTargets(const cVector2& size)
 {
     iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 
-    gfxPipelineBackend->UnbindRenderPass(_opaque);
+    gfxPipelineBackend->UnbindRenderPass(_opaqueStatic);
+    gfxPipelineBackend->UnbindRenderPass(_opaqueSkinned);
     gfxPipelineBackend->UnbindRenderPass(_transparent);
 
-    _opaque->ResizeViewport(size);
-    _opaque->ResizeColorAttachments(size);
-    _opaque->ResizeDepthAttachment(size);
+    _opaqueStatic->ResizeViewport(size);
+    _opaqueSkinned->ResizeViewport(size);
+    _opaqueStatic->ResizeColorAttachments(size);
+    _opaqueStatic->ResizeDepthAttachment(size);
     _transparent->ResizeViewport(size);
     _transparent->ResizeColorAttachments(size);
-    cTexture* opaqueDepthAttachment = _opaque->GetRenderTarget()->GetDepthAttachment();
+    cTexture* opaqueDepthAttachment = _opaqueStatic->GetRenderTarget()->GetDepthAttachment();
     _transparent->GetRenderTarget()->SetDepthAttachment(opaqueDepthAttachment);
 
     _text->ResizeViewport(size);
 
-    XRenderTarget* newOpaqueRenderTarget = _opaque->GetRenderTarget();
+    XRenderTarget* newOpaqueRenderTarget = _opaqueStatic->GetRenderTarget();
     XRenderTarget* newTransparentRenderTarget = _transparent->GetRenderTarget();
     gfxPipelineBackend->UpdateRenderTargetBuffers(newOpaqueRenderTarget);
     gfxPipelineBackend->UpdateRenderTargetBuffers(newTransparentRenderTarget);
-    _opaque->SetRenderTarget(newOpaqueRenderTarget);
+    _opaqueStatic->SetRenderTarget(newOpaqueRenderTarget);
+    _opaqueSkinned->SetRenderTarget(newOpaqueRenderTarget);
     _transparent->SetRenderTarget(newTransparentRenderTarget);
 
     _compositeTransparent->ResizeViewport(size);
@@ -443,7 +448,7 @@ void triton::cGraphics::ResizeRenderTargets(const cVector2& size)
     _compositeTransparent->SetInputTexture(1, SRenderPassTexture("RevealageTexture", transparentColorAttachments[1]));
 
     _compositeFinal->ResizeViewport(size);
-    auto& opaqueColorAttachments = _opaque->GetRenderTarget()->GetColorAttachments();
+    auto& opaqueColorAttachments = _opaqueStatic->GetRenderTarget()->GetColorAttachments();
     _compositeFinal->SetInputTexture(0, SRenderPassTexture("ColorTexture", opaqueColorAttachments[0]));
 }
 
@@ -656,10 +661,10 @@ void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry
        _opaqueInstanceCount
     );*/
 
-    if (renderPass == nullptr)
-        gfxPipelineBackend->UnbindRenderPass(_opaque);
-    else
-        gfxPipelineBackend->UnbindRenderPass(renderPass);
+    //if (renderPass == nullptr)
+    //    gfxPipelineBackend->UnbindRenderPass(_opaque);
+    //else
+    //    gfxPipelineBackend->UnbindRenderPass(renderPass);
 }
 
 void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, XShader* singleShader)
@@ -684,7 +689,7 @@ void triton::cGraphics::DrawGeometryOpaque(const sVertexBufferGeometry* geometry
         _opaqueInstanceCount
     );*/
 
-    gfxPipelineBackend->UnbindRenderPass(_opaque);
+    //gfxPipelineBackend->UnbindRenderPass(_opaque);
 }
 
 void triton::cGraphics::DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const std::vector<cGameObject>& objects, const cGameObject* cameraObject, XRenderPass* renderPass)
@@ -862,6 +867,20 @@ void triton::cGraphics::CreateGeometryStorage()
     _geometryStorage->Initialize();
 }
 
+void triton::cGraphics::CreateInputLayouts()
+{
+    const std::vector<cBuffer*> staticInputs = {
+        _geometryStorage->GetStaticVertexBuffer(),
+        _geometryStorage->GetStaticIndexBuffer()
+    };
+    const std::vector<cBuffer*> skinnedInputs = {
+        _geometryStorage->GetSkinnedVertexBuffer(),
+        _geometryStorage->GetSkinnedIndexBuffer()
+    };
+    _inputLayoutStatic = _context->Create<XVertexArray>(_context, staticInputs, EVertexBufferFormat::Static_36);
+    _inputLayoutSkinned = _context->Create<XVertexArray>(_context, skinnedInputs, EVertexBufferFormat::Skinned_84);
+}
+
 void triton::cGraphics::CreateDefaultRenderTargets()
 {
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->at(0).GetSize();
@@ -938,7 +957,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     viewport.rect = cVector4(0.0f, 0.0f, windowSize.GetX(), windowSize.GetY());
 
     const std::string pbrShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/brdf.shader";
-    const std::string opaqueVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex.shader";
+    const std::string opaqueStaticVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex_static.shader";
+    const std::string opaqueSkinnedVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex_skinned.shader";
     const std::string opaqueFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_fragment.shader";
     const std::string transparentVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/transparent_vertex.shader";
     const std::string transparentFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/transparent_fragment.shader";
@@ -949,11 +969,11 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     const std::string compositeFinalVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_vertex.shader";
     const std::string compositeFinalFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_fragment.shader";
 
-    // Opaque render pass
+    // Opaque static render pass
     const std::vector<const char*> opaqueShaderFragmentIncludePaths = { pbrShaderPath.c_str()};
-    XShader* opaqueShader = _context->Create<XShader>(
+    XShader* opaqueStaticShader = _context->Create<XShader>(
         _context,
-        fs->TextFileToString(opaqueVertexShaderPath),
+        fs->TextFileToString(opaqueStaticVertexShaderPath),
         fs->TextFileToString(opaqueFragmentShaderPath),
         "",
         "",
@@ -965,24 +985,46 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     opaqueBlendState.factorCount = 1;
     opaqueBlendState.srcFactors[0] = EBlendFactor::ONE;
     opaqueBlendState.dstFactors[0] = EBlendFactor::ZERO;
-    const std::vector<cBuffer*> opaqueInputBuffers = {
-    };
-    XVertexArray* opaqueVertexArray = _context->Create<XVertexArray>(_context, opaqueInputBuffers);
-    _opaque = _context->Create<XRenderPass>(_context);
-    _opaque->SetDispatch(ERenderPassDispatch::GEOMETRY);
-    _opaque->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4);
-    _opaque->SetVertexArray(opaqueVertexArray);
-    _opaque->SetInputBuffers(opaqueInputBuffers);
-    _opaque->SetInputTextures({
+    _opaqueStatic = _context->Create<XRenderPass>(_context);
+    _opaqueStatic->SetDispatch(ERenderPassDispatch::GEOMETRY);
+    _opaqueStatic->SetBatchFormat(EVertexBufferFormat::Static_36);
+    _opaqueStatic->SetInputLayout(_inputLayoutStatic);
+    _opaqueStatic->SetInputTextures({
         SRenderPassTexture("TextureAtlasRGBA8SRGB", textureSubsystem->GetAtlasRGBA8SRGB()),
         SRenderPassTexture("TextureAtlasRGBA8", textureSubsystem->GetAtlasRGBA8()),
         SRenderPassTexture("TextureAtlasR8", textureSubsystem->GetAtlasR8())
     });
-    _opaque->SetShader(opaqueShader);
-    _opaque->SetViewport(viewport);
-    _opaque->SetDepthState(SDepthState(K_TRUE, K_TRUE));
-    _opaque->SetBlendState(opaqueBlendState);
-    _opaque->SetRenderTarget(_opaqueRenderTarget);
+    _opaqueStatic->SetShader(opaqueStaticShader);
+    _opaqueStatic->SetViewport(viewport);
+    _opaqueStatic->SetDepthState(SDepthState(K_TRUE, K_TRUE));
+    _opaqueStatic->SetBlendState(opaqueBlendState);
+    _opaqueStatic->SetRenderTarget(_opaqueRenderTarget);
+
+    // Opaque skinned render pass
+    XShader* opaqueSkinnedShader = _context->Create<XShader>(
+        _context,
+        fs->TextFileToString(opaqueSkinnedVertexShaderPath),
+        fs->TextFileToString(opaqueFragmentShaderPath),
+        "",
+        "",
+        std::vector<SShaderDefine>(),
+        std::vector<const char*>(),
+        opaqueShaderFragmentIncludePaths
+    );
+    _opaqueSkinned = _context->Create<XRenderPass>(_context);
+    _opaqueSkinned->SetDispatch(ERenderPassDispatch::GEOMETRY);
+    _opaqueSkinned->SetBatchFormat(EVertexBufferFormat::Skinned_84);
+    _opaqueSkinned->SetInputLayout(_inputLayoutSkinned);
+    _opaqueSkinned->SetInputTextures({
+        SRenderPassTexture("TextureAtlasRGBA8SRGB", textureSubsystem->GetAtlasRGBA8SRGB()),
+        SRenderPassTexture("TextureAtlasRGBA8", textureSubsystem->GetAtlasRGBA8()),
+        SRenderPassTexture("TextureAtlasR8", textureSubsystem->GetAtlasR8())
+        });
+    _opaqueSkinned->SetShader(opaqueSkinnedShader);
+    _opaqueSkinned->SetViewport(viewport);
+    _opaqueSkinned->SetDepthState(SDepthState(K_TRUE, K_TRUE));
+    _opaqueSkinned->SetBlendState(opaqueBlendState);
+    _opaqueSkinned->SetRenderTarget(_opaqueRenderTarget);
 
     // Transparent render pass
     XShader* transparentShader = _context->Create<XShader>(
@@ -1000,11 +1042,8 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     transparentBlendState.dstFactors[1] = EBlendFactor::INV_SRC_COLOR;
     const std::vector<cBuffer*> transparentInputBuffers = {
     };
-    XVertexArray* transparentVertexArray = _context->Create<XVertexArray>(_context, transparentInputBuffers);
     _transparent = _context->Create<XRenderPass>(_context);
     _transparent->SetDispatch(ERenderPassDispatch::GEOMETRY);
-    _transparent->SetInputVertexFormat(EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4);
-    _transparent->SetVertexArray(transparentVertexArray);
     _transparent->SetInputBuffers(transparentInputBuffers);
     _transparent->SetInputTextures({
         SRenderPassTexture("TextureAtlasRGBA8SRGB", textureSubsystem->GetAtlasRGBA8SRGB()),
@@ -1027,7 +1066,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     );
     _text = _context->Create<XRenderPass>(_context);
     _text->SetDispatch(ERenderPassDispatch::TEXT);
-    _text->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
+    _text->SetBatchFormat(EVertexBufferFormat::Unknown);
     _text->SetShader(textShader);
     _text->SetViewport(viewport);
     _text->SetDepthState(SDepthState(K_FALSE, K_FALSE));
@@ -1047,7 +1086,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeTransparentBlendState.dstFactors[0] = EBlendFactor::INV_SRC_ALPHA;
     _compositeTransparent = _context->Create<XRenderPass>(_context);
     _compositeTransparent->SetDispatch(ERenderPassDispatch::PROCESSING);
-    _compositeTransparent->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
+    _compositeTransparent->SetBatchFormat(EVertexBufferFormat::Unknown);
     _compositeTransparent->SetInputTextures({
         SRenderPassTexture("AccumulationTexture", _transparentRenderTarget->GetColorAttachments()[0]),
         SRenderPassTexture("RevealageTexture", _transparentRenderTarget->GetColorAttachments()[1])
@@ -1072,8 +1111,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     compositeFinalBlendState.dstFactors[0] = EBlendFactor::ZERO;
     _compositeFinal = _context->Create<XRenderPass>(_context);
     _compositeFinal->SetDispatch(ERenderPassDispatch::PROCESSING);
-    _compositeFinal->SetInputVertexFormat(EGraphicsBufferFormat::NONE);
-    _compositeFinal->SetVertexArray(opaqueVertexArray);
+    _compositeFinal->SetBatchFormat(EVertexBufferFormat::Unknown);
     _compositeFinal->SetInputTextures({
         SRenderPassTexture("ColorTexture", _opaqueRenderTarget->GetColorAttachments()[0]),
     });
@@ -1088,6 +1126,14 @@ void triton::cGraphics::DestroyGeometryStorage()
 {
     if (_geometryStorage)
         _context->Destroy<XGeometryStorage>(_geometryStorage);
+}
+
+void triton::cGraphics::DestroyInputLayouts()
+{
+    if (_inputLayoutSkinned)
+        _context->Destroy<XVertexArray>(_inputLayoutSkinned);
+    if (_inputLayoutStatic)
+        _context->Destroy<XVertexArray>(_inputLayoutStatic);
 }
 
 void triton::cGraphics::DestroyDefaultRenderTargets()
@@ -1134,8 +1180,10 @@ void triton::cGraphics::DestroyDefaultRenderPasses()
         _context->Destroy<XRenderPass>(_text);
     if (_transparent)
         _context->Destroy<XRenderPass>(_transparent);
-    if (_opaque)
-        _context->Destroy<XRenderPass>(_opaque);
+    if (_opaqueSkinned)
+        _context->Destroy<XRenderPass>(_opaqueSkinned);
+    if (_opaqueStatic)
+        _context->Destroy<XRenderPass>(_opaqueStatic);
 }
 
 void triton::cGraphics::BindVertexIndexBuffers()
@@ -1148,6 +1196,6 @@ void triton::cGraphics::UnbindVertexIndexBuffers()
 
 void triton::cGraphics::ExecuteDefaultPasses()
 {
-    _opaque->Execute();
+    _opaqueStatic->Execute();
     _compositeFinal->Execute();
 }

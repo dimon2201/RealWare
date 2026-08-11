@@ -171,9 +171,10 @@ namespace triton
         types::usize _materialCountCPU = 0;
 
         XGeometryStorage* _geometryStorage = nullptr;
-        XRenderPassExecutor* _renderPassExecutor = nullptr;
-        cBuffer* _materialBuffer = nullptr;
-        XRenderPass* _opaque = nullptr;
+        XVertexArray* _inputLayoutStatic = nullptr;
+        XVertexArray* _inputLayoutSkinned = nullptr;
+        XRenderPass* _opaqueStatic = nullptr;
+        XRenderPass* _opaqueSkinned = nullptr;
         XRenderPass* _transparent = nullptr;
         XRenderPass* _text = nullptr;
         XRenderPass* _compositeTransparent = nullptr;
@@ -182,9 +183,11 @@ namespace triton
         XRenderTarget* _transparentRenderTarget = nullptr;
 
         void CreateGeometryStorage();
+        void CreateInputLayouts();
         void CreateDefaultRenderTargets();
         void CreateDefaultRenderPasses();
         void DestroyGeometryStorage();
+        void DestroyInputLayouts();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();
         void BindVertexIndexBuffers();
@@ -241,14 +244,14 @@ namespace triton
         void CompositeTransparent();
         void CompositeFinal();
 
-        inline cBuffer* GetMaterialBuffer() const
+        inline XRenderPass* GetOpaqueStaticRenderPass() const
         {
-            return _materialBuffer;
+            return _opaqueStatic;
         }
 
-        inline XRenderPass* GetOpaqueRenderPass() const
+        inline XRenderPass* GetOpaqueSkinnedRenderPass() const
         {
-            return _opaque;
+            return _opaqueSkinned;
         }
 
         inline XRenderPass* GetTransparentRenderPass() const

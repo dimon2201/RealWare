@@ -83,7 +83,7 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSub
 			indexBytes,
 			indexBytesCount
 		);
-		batch = *batchSubsystem->Create(ERenderInstanceMotionType::Static, geometry);
+		batch = *batchSubsystem->Create(format, ERenderInstanceMotionType::Static, geometry);
 	}
 	else
 	{
@@ -128,7 +128,7 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSub
 			(u8*)m3dd.indexData,
 			m3dd.indexCount * sizeof(u32)
 		);
-		batch = *_context->GetSubsystem<XBatchSubsystem>()->Create(ERenderInstanceMotionType::Static, geometry);
+		batch = *_context->GetSubsystem<XBatchSubsystem>()->Create(EVertexBufferFormat::Skinned_84, ERenderInstanceMotionType::Static, geometry);
 	}
 	else
 	{
@@ -179,7 +179,7 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSu
 			indexBytes,
 			indexBytesCount
 		);
-		batch = *batchSubsystem->Create(ERenderInstanceMotionType::Dynamic, geometry);
+		batch = *batchSubsystem->Create(format, ERenderInstanceMotionType::Dynamic, geometry);
 	}
 	else
 	{
@@ -224,7 +224,7 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSu
 			(u8*)m3dd.indexData,
 			m3dd.indexCount * sizeof(u32)
 		);
-		batch = *_context->GetSubsystem<XBatchSubsystem>()->Create(ERenderInstanceMotionType::Dynamic, geometry);
+		batch = *_context->GetSubsystem<XBatchSubsystem>()->Create(EVertexBufferFormat::Skinned_84, ERenderInstanceMotionType::Dynamic, geometry);
 	}
 	else
 	{
