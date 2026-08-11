@@ -77,6 +77,11 @@ namespace triton
             return _batchPool->GetData();
         }
 
+        inline XBatchPool* GetBatchPool() const
+        {
+            return _batchPool;
+        }
+
         inline XStaticRenderInstancePool* GetStaticRenderInstancePool() const
         {
             return _staticInstancePool;
