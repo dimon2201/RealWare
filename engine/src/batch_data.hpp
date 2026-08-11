@@ -5,6 +5,7 @@
 #include "geometry_view.hpp"
 #include "render_instance_motion_type.hpp"
 #include "handle.hpp"
+#include "vertex_buffer_format.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -15,6 +16,7 @@ namespace triton
 
 		struct TGPULayout {};
 
+		EVertexBufferFormat vertexFormat = EVertexBufferFormat::Unknown;
 		ERenderInstanceMotionType motionType = ERenderInstanceMotionType::Static;
 		SGeometryView sharedGeometry = {};
 		types::usize bufferOffset = 0;
