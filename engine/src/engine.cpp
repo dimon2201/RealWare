@@ -40,6 +40,7 @@
 #include "synchronization.hpp"
 #include "render_thread.hpp"
 #include "camera_pool.hpp"
+#include "skinned_bones_pool.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -89,24 +90,21 @@ void triton::cEngine::Initialize()
 
 	InitializeRenderThread();
 
-	//_context->RegisterSubsystem(new cAudio(_context));
-	//_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(8193, 8193, 4)));
-	//_context->RegisterSubsystem(new XMaterialSubsystem(_context));
-	//_context->RegisterSubsystem(new cFileSystem(_context));
-	//_context->RegisterSubsystem(new cTime(_context));
-	//_context->RegisterSubsystem(new cThreadSubsystem(_context));
-	//_context->RegisterSubsystem(new cGraphics(_context));
-	//_context->GetSubsystem<cGraphics>()->Init();
-	//_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
-	//_context->GetSubsystem<XGameObjectSubsystem>()->Init();
-	//_context->RegisterSubsystem(new XModel3DSubsystem(_context));
-	//_context->RegisterSubsystem(new XAnimationSubsystem(_context));
-	//_context->GetSubsystem<XAnimationSubsystem>()->Init();
-	//_context->RegisterSubsystem(new XSkeletonSubsystem(_context));
-	//_context->GetSubsystem<XSkeletonSubsystem>()->Init();
-	//_context->RegisterSubsystem(new XSkinningSubsystem(_context));
-	//_context->GetSubsystem<XSkinningSubsystem>()->Init();
-	//_context->RegisterSubsystem(new XBatchSubsystem(_context));
+	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(8193, 8193, 4)));
+	_context->RegisterSubsystem(new XMaterialSubsystem(_context));
+	_context->RegisterSubsystem(new cFileSystem(_context));
+	_context->RegisterSubsystem(new cGraphics(_context));
+	_context->GetSubsystem<cGraphics>()->Init();
+	_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
+	_context->GetSubsystem<XGameObjectSubsystem>()->Init();
+	_context->RegisterSubsystem(new XModel3DSubsystem(_context));
+	_context->RegisterSubsystem(new XAnimationSubsystem(_context));
+	_context->GetSubsystem<XAnimationSubsystem>()->Init();
+	_context->RegisterSubsystem(new XSkeletonSubsystem(_context));
+	_context->GetSubsystem<XSkeletonSubsystem>()->Init();
+	_context->RegisterSubsystem(new XSkinningSubsystem(_context));
+	_context->GetSubsystem<XSkinningSubsystem>()->Init();
+	_context->RegisterSubsystem(new XBatchSubsystem(_context));
 	//_context->RegisterSubsystem(new cFont(_context));
 	//_context->RegisterSubsystem(new cPhysics(_context));
 	//_context->RegisterSubsystem(new cThread(_context));
@@ -114,6 +112,12 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cEventDispatcher(_context));
 	//_context->RegisterSubsystem(new cMath(_context));
 	//_context->RegisterSubsystem(new cECSSystem(_context));
+
+	_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->Allocate(64);
+	_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->Allocate(64);
+	_context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->Allocate(64);
+	_context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Allocate(64);
+	_context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->Allocate(64);
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);
