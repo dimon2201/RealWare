@@ -117,6 +117,7 @@ void triton::cEngine::Initialize()
 
 	_context->GetSubsystem<XGameObjectSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->Allocate(64);
+	_context->GetSubsystem<XBatchSubsystem>()->GetBatchPool()->Allocate(64);
 	_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->Allocate(64);
 	_context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->Allocate(64);
 	_context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Allocate(64);
