@@ -278,9 +278,14 @@ void triton::cRenderThread::ExecuteCommands(
 				memcpy(&_sync->GetResultBuffer().data[0], &resultGPUShader, sizeof(CGPUShader));
 				break;
 			}
-			case ERenderCommand::BIND_DEFAULT_INPUT_LAYOUT:
+			case ERenderCommand::BIND_STATIC_INPUT_LAYOUT:
 			{
-				pipelineBackend->BindDefaultInputLayout();
+				pipelineBackend->BindStaticInputLayout();
+				break;
+			}
+			case ERenderCommand::BIND_SKINNED_INPUT_LAYOUT:
+			{
+				pipelineBackend->BindSkinnedInputLayout();
 				break;
 			}
 		}
