@@ -161,7 +161,8 @@ namespace triton
         virtual CGPURenderPass CreateRenderPass() = 0;
         virtual void BindRenderPass(const XRenderPass* renderPass, CGPUShader* customShader = nullptr) = 0;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) = 0;
-        virtual void BindDefaultInputLayout() = 0;
+        virtual void BindStaticInputLayout() = 0;
+        virtual void BindSkinnedInputLayout() = 0;
         virtual void BindDepthMode(const SDepthState& blendMode) = 0;
         virtual void BindBlendMode(const SBlendState& blendMode) = 0;
         virtual void Viewport(const SViewport& viewport) = 0;

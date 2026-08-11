@@ -66,7 +66,8 @@ namespace triton
         virtual CGPURenderPass CreateRenderPass() override final;
         virtual void BindRenderPass(const XRenderPass* renderPass, CGPUShader* customShader = nullptr) override final;
         virtual void UnbindRenderPass(const XRenderPass* renderPass) override final;
-        virtual void BindDefaultInputLayout() override final;
+        virtual void BindStaticInputLayout() override final;
+        virtual void BindSkinnedInputLayout() override final;
         virtual void BindDepthMode(const SDepthState& blendMode) override final;
         virtual void BindBlendMode(const SBlendState& blendMode) override final;
         virtual void Viewport(const SViewport& viewport) override final;
