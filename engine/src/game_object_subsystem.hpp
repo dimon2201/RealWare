@@ -71,5 +71,10 @@ namespace triton
             const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
             const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
         );
+
+        inline XGameObjectPool* GetPool() const
+        {
+            return _pool;
+        }
     };
 }

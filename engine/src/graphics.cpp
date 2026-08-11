@@ -61,7 +61,6 @@ triton::sLightInstance::sLightInstance(const cGameObject* object)
 
 void triton::cGraphics::Init()
 {
-    CreateGeometryStorage();
     CreateInputLayouts();
     CreateDefaultRenderTargets();
     CreateDefaultRenderPasses();
@@ -72,7 +71,6 @@ void triton::cGraphics::Free()
     DestroyDefaultRenderPasses();
     DestroyDefaultRenderTargets();
     DestroyInputLayouts();
-    DestroyGeometryStorage();
 }
 
 void Initialize()
@@ -861,23 +859,18 @@ void triton::cGraphics::CompositeFinal()
     gfxPipelineBackend->UnbindShader();
 }
 
-void triton::cGraphics::CreateGeometryStorage()
-{
-    _geometryStorage = _context->Create<XGeometryStorage>(_context);
-    _geometryStorage->Initialize();
-}
-
 void triton::cGraphics::CreateInputLayouts()
 {
+    XGeometryStorage* gs = _context->GetSubsystem<XGeometryStorage>();
     const std::vector<cBuffer*> staticInputs = {
-        _geometryStorage->GetStaticVertexBuffer(),
-        _geometryStorage->GetStaticIndexBuffer()
+        gs->GetStaticVertexBuffer(),
+        gs->GetStaticIndexBuffer()
     };
     const std::vector<cBuffer*> skinnedInputs = {
-        _geometryStorage->GetSkinnedVertexBuffer(),
-        _geometryStorage->GetSkinnedIndexBuffer()
+        gs->GetSkinnedVertexBuffer(),
+        gs->GetSkinnedIndexBuffer()
     };
-    _inputLayoutStatic = _context->Create<XVertexArray>(_context, staticInputs, EVertexBufferFormat::Static_36);
+    _inputLayoutStatic = _context->Create<XVertexArray>(_context, staticInputs, EVertexBufferFormat::Static_52);
     _inputLayoutSkinned = _context->Create<XVertexArray>(_context, skinnedInputs, EVertexBufferFormat::Skinned_84);
 }
 
@@ -987,7 +980,7 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     opaqueBlendState.dstFactors[0] = EBlendFactor::ZERO;
     _opaqueStatic = _context->Create<XRenderPass>(_context);
     _opaqueStatic->SetDispatch(ERenderPassDispatch::GEOMETRY);
-    _opaqueStatic->SetBatchFormat(EVertexBufferFormat::Static_36);
+    _opaqueStatic->SetBatchFormat(EVertexBufferFormat::Static_52);
     _opaqueStatic->SetInputLayout(_inputLayoutStatic);
     _opaqueStatic->SetInputTextures({
         SRenderPassTexture("TextureAtlasRGBA8SRGB", textureSubsystem->GetAtlasRGBA8SRGB()),
@@ -1120,12 +1113,6 @@ void triton::cGraphics::CreateDefaultRenderPasses()
     _compositeFinal->SetDepthState(SDepthState(K_FALSE, K_FALSE));
     _compositeFinal->SetBlendState(compositeFinalBlendState);
     _compositeFinal->SetRenderTarget(nullptr);
-}
-
-void triton::cGraphics::DestroyGeometryStorage()
-{
-    if (_geometryStorage)
-        _context->Destroy<XGeometryStorage>(_geometryStorage);
 }
 
 void triton::cGraphics::DestroyInputLayouts()

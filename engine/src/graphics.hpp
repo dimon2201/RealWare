@@ -170,7 +170,6 @@ namespace triton
         std::unordered_map<cMaterial*, types::s32>* _materialsMap = {};
         types::usize _materialCountCPU = 0;
 
-        XGeometryStorage* _geometryStorage = nullptr;
         XVertexArray* _inputLayoutStatic = nullptr;
         XVertexArray* _inputLayoutSkinned = nullptr;
         XRenderPass* _opaqueStatic = nullptr;
@@ -182,11 +181,9 @@ namespace triton
         XRenderTarget* _opaqueRenderTarget = nullptr;
         XRenderTarget* _transparentRenderTarget = nullptr;
 
-        void CreateGeometryStorage();
         void CreateInputLayouts();
         void CreateDefaultRenderTargets();
         void CreateDefaultRenderPasses();
-        void DestroyGeometryStorage();
         void DestroyInputLayouts();
         void DestroyDefaultRenderTargets();
         void DestroyDefaultRenderPasses();

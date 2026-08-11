@@ -66,7 +66,7 @@ triton::XVertexArray::XVertexArray(
 			(cpuword)buffer
 		));
 
-	if (vertexFormat == EVertexBufferFormat::Static_36)
+	if (vertexFormat == EVertexBufferFormat::Static_52)
 		_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 			ERenderCommand::BIND_STATIC_INPUT_LAYOUT
 		));
