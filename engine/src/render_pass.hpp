@@ -12,6 +12,7 @@
 #include "instance_buffer.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "camera.hpp"
+#include "vertex_buffer_format.hpp"
 
 namespace triton
 {
@@ -62,33 +63,48 @@ namespace triton
     {
         TRITON_OBJECT(XRenderPass)
 
-        ERenderPassDispatch             _dispatch = ERenderPassDispatch::NONE;
-        EGraphicsBufferFormat           _inputVertexFormat = EGraphicsBufferFormat::NONE;
-        XVertexArray*                   _vertexArray = nullptr;
-        std::vector<cBuffer*>           _inputBuffers = {};
-        std::vector<SRenderPassTexture> _inputTextures = {};
-        EBuiltinRenderPassType          _shaderRenderPath = EBuiltinRenderPassType::NONE;
-        SDepthState                     _depthState = SDepthState(0, 0);
-        SBlendState                     _blendState = {};
-        SViewport                       _viewport = {};
-        XRenderTarget*                  _renderTarget = nullptr;
-        XShader*                        _shader = nullptr;
-        cBuffer*                        _textureBuffer = nullptr;
-        XCamera::THandle                _camera;
+        ERenderPassDispatch                 _dispatch = ERenderPassDispatch::NONE;
+        EVertexBufferFormat                 _batchFormat = EVertexBufferFormat::Unknown;
+        std::vector<SBatchData::THandle>    _batches = {};
+        XVertexArray*                       _inputLayout = nullptr;
+        std::vector<cBuffer*>               _inputBuffers = {};
+        std::vector<SRenderPassTexture>     _inputTextures = {};
+        EBuiltinRenderPassType              _shaderRenderPath = EBuiltinRenderPassType::NONE;
+        SDepthState                         _depthState = SDepthState(0, 0);
+        SBlendState                         _blendState = {};
+        SViewport                           _viewport = {};
+        XRenderTarget*                      _renderTarget = nullptr;
+        XShader*                            _shader = nullptr;
+        XCamera::THandle                    _camera;
 
     public:
-        explicit XRenderPass(cContext* context);
-        ~XRenderPass() override;
+        explicit XRenderPass(cContext* context) : iObject(context) {}
+        ~XRenderPass() override = default;
 
         void Bind();
+
         void Unbind();
-        void Draw();
+
+        void Render();
+
         void Execute();
+
         void ResizeViewport(const cVector2& size);
+
         void ResizeColorAttachments(const cVector2& size);
+
         void ResizeDepthAttachment(const cVector2& size);
+
         SShaderDefine SetInputTexture(types::usize slot, const SRenderPassTexture& texture);
+
         std::vector<SShaderDefine> SetInputTextures(const std::vector<SRenderPassTexture>& textures);
+
+        inline void AddBatch(const SBatchData::THandle& batch)
+        {
+            SBatchData& bd = _context->GetSubsystem<XBatchSubsystem>()->Get(batch);
+            if (bd.vertexFormat == _batchFormat)
+                _batches.push_back(batch);
+        }
 
         inline XRenderTarget* GetRenderTarget() const
         {
@@ -100,24 +116,24 @@ namespace triton
             return _shader;
         }
 
+        inline void SetBatchFormat(EVertexBufferFormat format)
+        {
+            _batchFormat = format;
+        }
+
         inline void SetDispatch(ERenderPassDispatch dispatch)
         {
             _dispatch = dispatch;
         }
 
+        inline void SetInputLayout(XVertexArray* inputLayout)
+        {
+            _inputLayout = inputLayout;
+        }
+
         inline void SetInputBuffers(const std::vector<cBuffer*>& buffers)
         {
             _inputBuffers = buffers;
-        }
-
-        inline void SetVertexArray(XVertexArray* vertexArray)
-        {
-            _vertexArray = vertexArray;
-        }
-
-        inline void SetInputVertexFormat(EGraphicsBufferFormat format)
-        {
-            _inputVertexFormat = format;
         }
 
         inline void SetDepthState(const SDepthState& state)

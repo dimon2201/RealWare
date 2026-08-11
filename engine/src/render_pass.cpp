@@ -14,28 +14,6 @@
 using namespace triton::ecs::components;
 using namespace types;
 
-triton::XRenderPass::XRenderPass(cContext* context) : iObject(context)
-{
-    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
-    const sCapabilities* caps = app->GetCapabilities();
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::STORAGE,
-        (cpuword)nullptr,
-        caps->maxRenderTextureAtlasTextureCount,
-        3
-    ));
-    _textureBuffer = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cBuffer*>();
-}
-
-triton::XRenderPass::~XRenderPass()
-{
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_textureBuffer
-    ));
-}
-
 void triton::XRenderPass::Bind()
 {
     CThreadGuard::AssertRender();
@@ -48,8 +26,8 @@ void triton::XRenderPass::Bind()
     gfxPipelineBackend->BindBlendMode(_blendState);
     for (auto& tex : _inputTextures)
         gfxPipelineBackend->BindTextureNamed(&shader, tex._texture, tex._name, -1);
-    if (_vertexArray)
-        gfxPipelineBackend->BindVertexArray(_vertexArray->GetGPUVertexArray());
+    if (_inputLayout)
+        gfxPipelineBackend->BindVertexArray(_inputLayout->GetGPUVertexArray());
     if (_renderTarget)
         gfxPipelineBackend->BindRenderTarget(_renderTarget);
 }
@@ -65,13 +43,13 @@ void triton::XRenderPass::Unbind()
     // TODO: uncomment this after debug
     //for (auto& tex : _inputTextures)
     //    gfxResourceBackend->UnbindTexture(tex._texture);
-    if (_vertexArray)
+    if (_inputLayout)
         gfxPipelineBackend->UnbindVertexArray();
     if (_renderTarget)
         gfxPipelineBackend->UnbindRenderTarget();
 }
 
-void triton::XRenderPass::Draw()
+void triton::XRenderPass::Render()
 {
     CThreadGuard::AssertRender();
 
@@ -104,11 +82,11 @@ void triton::XRenderPass::Draw()
             gfxPipelineBackend->SetShaderUniform(&shader, "UniformTime", (u32)time);
             gfxPipelineBackend->SetShaderUniform(&shader, "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
             
-            SBufferView<SBatchData> bvBatches = _context->GetSubsystem<XBatchSubsystem>()->GetBatches();
-            for (usize i = 0; i < bvBatches.elementCount; i++)
+            for (usize i = 0; i < _batches.size(); i++)
             {
                 // Static
-                const SBatchData& batch = bvBatches.elements[i];
+                SBatchData::THandle batchHandle = _batches.at(i);
+                const SBatchData& batch = _context->GetSubsystem<XBatchSubsystem>()->Get(batchHandle);
                 const SGeometryView geometry = batch.sharedGeometry;
 
                 gfxPipelineBackend->SetShaderUniform(&shader, "InstanceBatchType", (u32)batch.motionType);
@@ -145,7 +123,7 @@ void triton::XRenderPass::Execute()
     CThreadGuard::AssertRender();
 
     Bind();
-    Draw();
+    Render();
     Unbind();
 }
 
