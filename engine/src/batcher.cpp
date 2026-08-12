@@ -55,7 +55,6 @@ triton::XBatchSubsystem::~XBatchSubsystem()
 }
 
 std::optional<triton::SBatchData::THandle> triton::XBatchSubsystem::Create(
-	EVertexBufferFormat vertexFormat,
 	ERenderInstanceMotionType motionType,
 	const SGeometryView& geometry
 )
@@ -63,7 +62,6 @@ std::optional<triton::SBatchData::THandle> triton::XBatchSubsystem::Create(
 	SBatchData bd;
 	bd.bufferOffset = 0;
 	bd.instanceCount = 0;
-	bd.vertexFormat = vertexFormat;
 	bd.motionType = motionType;
 	bd.sharedGeometry = geometry;
 	

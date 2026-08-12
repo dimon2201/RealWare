@@ -45,7 +45,6 @@ namespace triton
         ~XBatchSubsystem() override;
 
         std::optional<SBatchData::THandle> Create(
-            EVertexBufferFormat vertexFormat,
             ERenderInstanceMotionType motionType,
             const SGeometryView& geometry
         );
