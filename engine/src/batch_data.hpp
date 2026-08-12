@@ -16,7 +16,6 @@ namespace triton
 
 		struct TGPULayout {};
 
-		EVertexBufferFormat vertexFormat = EVertexBufferFormat::Unknown;
 		ERenderInstanceMotionType motionType = ERenderInstanceMotionType::Static;
 		SGeometryView sharedGeometry = {};
 		types::usize bufferOffset = 0;

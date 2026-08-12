@@ -102,7 +102,7 @@ namespace triton
         inline void AddBatch(const SBatchData::THandle& batch)
         {
             SBatchData& bd = _context->GetSubsystem<XBatchSubsystem>()->Get(batch);
-            if (bd.vertexFormat == _batchFormat)
+            if (bd.sharedGeometry._format == _batchFormat)
                 _batches.push_back(batch);
         }
 
