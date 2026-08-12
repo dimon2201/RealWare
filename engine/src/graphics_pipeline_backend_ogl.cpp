@@ -325,10 +325,12 @@ void triton::cGraphicsPipelineBackendOGL::BindStaticInputLayout()
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 36, (void*)0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 36, (void*)12);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 36, (void*)20);
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 36, (void*)32);
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 52, (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 52, (void*)12);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 52, (void*)20);
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 52, (void*)32);
+    glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, 52, (void*)48);
 }
 
 void triton::cGraphicsPipelineBackendOGL::BindSkinnedInputLayout()
