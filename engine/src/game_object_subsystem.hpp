@@ -38,37 +38,13 @@ namespace triton
 
         std::optional<SStaticRenderInstanceData::THandle> SetRenderableStatic(
             const SGameObjectData::THandle& gameObject,
-            EVertexBufferFormat format,
-            const types::u8* vertexBytes,
-            types::usize vertexBytesCount,
-            const types::u8* indexBytes,
-            types::usize indexBytesCount,
-            const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
+            const SBatchData::THandle& batch,
             const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
         );
         
-        std::optional<SStaticRenderInstanceData::THandle> SetRenderableStatic(
-            const SGameObjectData::THandle& gameObject,
-            const SModel3DData::THandle& model,
-            const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
-            const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
-        );
-
         std::optional<SDynamicRenderInstanceData::THandle> SetRenderableDynamic(
             const SGameObjectData::THandle& gameObject,
-            EVertexBufferFormat format,
-            const types::u8* vertexBytes,
-            types::usize vertexBytesCount,
-            const types::u8* indexBytes,
-            types::usize indexBytesCount,
-            const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
-            const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
-        );
-
-        std::optional<SDynamicRenderInstanceData::THandle> SetRenderableDynamic(
-            const SGameObjectData::THandle& gameObject,
-            const SModel3DData::THandle& model,
-            const std::optional<SBatchData::THandle>& existingBatch = std::nullopt,
+            const SBatchData::THandle& batch,
             const std::optional<SMaterialData::THandle>& existingMaterial = std::nullopt
         );
 
