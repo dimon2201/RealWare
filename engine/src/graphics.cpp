@@ -1188,5 +1188,6 @@ void triton::cGraphics::UnbindVertexIndexBuffers()
 void triton::cGraphics::ExecuteDefaultPasses()
 {
     _opaqueStatic->Execute();
+    _opaqueSkinned->Execute();
     _compositeFinal->Execute();
 }

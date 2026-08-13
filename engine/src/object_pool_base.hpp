@@ -289,9 +289,8 @@ namespace triton
 
         typename TObject::THandle handle;
         handle._slotIndex = slotIndex;
+        handle._indexInArray = arrayIndex;
         handle._generation = _slots[slotIndex]._generation;
-
-        WriteToStaging(handle);
 
         return handle;
     }
@@ -358,8 +357,6 @@ namespace triton
         }
 
         _freeSlots.push(curSlotIndex);
-
-        WriteToStaging(handle);
 
         ++_slots[curSlotIndex]._generation;
         _slots[curSlotIndex]._alive = types::K_FALSE;

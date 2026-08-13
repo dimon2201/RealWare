@@ -42,6 +42,7 @@
 #include "camera_pool.hpp"
 #include "skinned_bones_pool.hpp"
 #include "game_object_pool.hpp"
+#include "model3d_pool.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -115,6 +116,8 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cMath(_context));
 	//_context->RegisterSubsystem(new cECSSystem(_context));
 
+	_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Allocate(64);
+	_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XGameObjectSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XBatchSubsystem>()->GetBatchPool()->Allocate(64);

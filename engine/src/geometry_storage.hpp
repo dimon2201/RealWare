@@ -50,7 +50,7 @@ namespace triton
 
         inline cBuffer* GetSkinnedVertexBuffer() const
         {
-            return _staticVertexBuffer;
+            return _skinnedVertexBuffer;
         }
 
         inline cBuffer* GetStaticIndexBuffer() const
