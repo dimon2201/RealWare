@@ -111,7 +111,7 @@ std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
     if (!valueResult.has_value())
         return std::nullopt;
 
-    STextureData value = *valueResult;
+    STextureData& value = *valueResult;
     value = *CreateTextureFromBytes(
         pixelDataFormat,
         byteData,

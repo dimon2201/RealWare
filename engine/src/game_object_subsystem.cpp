@@ -71,10 +71,7 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSub
 	SStaticRenderInstanceData::THandle rih = *batchSubsystem->AddStaticInstance(batch, gameObject);
 	
 	if (existingMaterial.has_value())
-	{
-		auto ri = *batchSubsystem->GetStaticRenderInstancePool()->Get(rih);
-		ri.get().material = *existingMaterial;
-	}
+		batchSubsystem->SetStaticInstance(rih, *existingMaterial);
 
 	return rih;
 }

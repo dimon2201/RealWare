@@ -136,6 +136,20 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XBatchSubsyst
 	return ri;
 }
 
+void triton::XBatchSubsystem::SetStaticInstance(
+	const SStaticRenderInstanceData::THandle& instance,
+	const SMaterialData::THandle& material
+)
+{
+	auto rdResult = _staticInstancePool->Get(instance);
+	if (!rdResult.has_value())
+		return;
+	auto rd = *rdResult;
+	rd.get().material = material;
+
+	MarkDirtyStatic();
+}
+
 void triton::XBatchSubsystem::RemoveStaticInstance(const SStaticRenderInstanceData::THandle& instance)
 {
 	auto sriResult = _staticInstancePool->Get(instance);

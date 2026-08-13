@@ -63,6 +63,11 @@ namespace triton
             const SGameObjectData::THandle& gameObject
         );
 
+        void SetStaticInstance(
+            const SStaticRenderInstanceData::THandle& instance,
+            const SMaterialData::THandle& material
+        );
+
         void RemoveStaticInstance(const SStaticRenderInstanceData::THandle& instance);
 
         void RemoveDynamicInstance(const SDynamicRenderInstanceData::THandle& instance);
