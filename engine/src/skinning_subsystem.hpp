@@ -44,6 +44,11 @@ namespace triton
 
 		void Update() override;
 
+		inline XSkinPool* GetSkinPool() const
+		{
+			return _skinPool;
+		}
+
 		inline XSkinnedBonesPool* GetSkinnedBonesPool() const
 		{
 			return _skinnedBonesPool;

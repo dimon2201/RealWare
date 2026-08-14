@@ -68,6 +68,11 @@ namespace triton
             const SMaterialData::THandle& material
         );
 
+        void SetStaticInstance(
+            const SStaticRenderInstanceData::THandle& instance,
+            const SSkeletonData::THandle& skeleton
+        );
+
         void RemoveStaticInstance(const SStaticRenderInstanceData::THandle& instance);
 
         void RemoveDynamicInstance(const SDynamicRenderInstanceData::THandle& instance);

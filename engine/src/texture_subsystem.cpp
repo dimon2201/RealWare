@@ -86,7 +86,7 @@ std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(c
     if (!valueResult.has_value())
         return std::nullopt;
     
-    STextureData value = *valueResult;
+    STextureData& value = *valueResult;
     value = tff.has_value() ? *tff : STextureData();
 
     return handle;

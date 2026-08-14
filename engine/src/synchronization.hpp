@@ -88,15 +88,8 @@ namespace triton
 			types::cpuword argJ_ = 0
 		) : _command(command_), _args(argA_, argB_, argC_, argD_, argE_, argF_, argG_, argH_, argI_, argJ_) {}
 
-		inline SRenderCommand& SetLabel(const std::string& label)
-		{
-			_label = label;
-			return *this;
-		}
-
 		ERenderCommand _command = ERenderCommand::NONE;
 		SRenderCommandArgs _args = {};
-		std::string _label;
 	};
 
 	struct SRenderCommandPack final

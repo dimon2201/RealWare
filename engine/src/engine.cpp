@@ -43,6 +43,8 @@
 #include "skinned_bones_pool.hpp"
 #include "game_object_pool.hpp"
 #include "model3d_pool.hpp"
+#include "skin_pool.hpp"
+#include "animation_pool.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -116,6 +118,7 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cMath(_context));
 	//_context->RegisterSubsystem(new cECSSystem(_context));
 
+	_context->GetSubsystem<XAnimationSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XGameObjectSubsystem>()->GetPool()->Allocate(64);
@@ -124,7 +127,8 @@ void triton::cEngine::Initialize()
 	_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->Allocate(64);
 	_context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->Allocate(64);
 	_context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Allocate(64);
-	_context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->Allocate(64);
+	_context->GetSubsystem<XSkinningSubsystem>()->GetSkinPool()->Allocate(64);
+	_context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->Allocate(65536);
 
 	// Create systems
 	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);

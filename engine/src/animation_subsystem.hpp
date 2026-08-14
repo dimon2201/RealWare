@@ -44,5 +44,10 @@ namespace triton
 		void Free() override {}
 
 		void Update() override {}
+
+		inline XAnimationPool* GetPool() const
+		{
+			return _pool;
+		}
 	};
 }

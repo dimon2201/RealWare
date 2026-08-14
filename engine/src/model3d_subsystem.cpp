@@ -46,8 +46,7 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 	auto valueResult = _pool->Get(handle);
 	if (!valueResult.has_value())
 		return std::nullopt;
-	auto value = *valueResult;
-
+	SModel3DData& value = *valueResult;
 	value = *result;
 
 	return handle;
