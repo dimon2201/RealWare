@@ -15,7 +15,6 @@ namespace triton
         SSkeletonData::TGPULayout ConvertToGpuLayout(const SSkeletonData& object) override
         {
             SSkeletonData::TGPULayout gpul;
-            gpul.globSkinnedBoneBufferOffset = object.globSkinnedBoneBufferOffset;
 
             return gpul;
         }

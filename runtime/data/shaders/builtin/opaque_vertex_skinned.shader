@@ -26,7 +26,7 @@ struct Instance
 {
 	float Use2D;
 	int MaterialIndex;
-	int SkeletonIndex;
+	int SkinnedBoneBufferOffset;
 	uint PropertyBits;
 	mat4 World;
 };
@@ -47,11 +47,6 @@ struct Material
 	vec4 DiffuseColor;
 };
 
-struct Skeleton
-{
-	uint globSkinnedBoneBufferOffset;
-};
-
 struct Skinning
 {
 	mat4 modelMatrix;
@@ -60,8 +55,7 @@ struct Skinning
 layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[1024]; };
 layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[1024]; };
 layout(std430, binding = 2) buffer MaterialBuffer { Material materials[]; };
-layout(std430, binding = 3) buffer SkeletonBuffer { Skeleton skeletons[]; };
-layout(std430, binding = 4) buffer SkinningBuffer { Skinning skinning[]; };
+layout(std430, binding = 3) buffer SkinningBuffer { Skinning skinning[]; };
 
 void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
 {
@@ -92,9 +86,9 @@ void main()
 	else
 		material = materials[InMaterialIndex];
 	
-	uint skBoneOffset = skeletons[instance.SkeletonIndex].globSkinnedBoneBufferOffset;
+	int skBoneOffset = instance.SkinnedBoneBufferOffset;
 	mat4 skinMatrix = mat4(1.0f);
-	if (instance.SkeletonIndex != -1)
+	if (skBoneOffset > -1)
 	{
 		skinMatrix = 
 			InBoneWeights.x * skinning[skBoneOffset + InBoneIndices.x].modelMatrix
@@ -120,8 +114,6 @@ void main()
 	vec4 posLocal = skinMatrix * vec4(InPositionLocal, 1.0);
 	FragPosWorldSpace = vec3(instance.World * posLocal);
 	DiffuseColor = material.DiffuseColor;
-
-	Out666 = skeletons[0].globSkinnedBoneBufferOffset;
 
 	mat3 normalMatrix = transpose(inverse(mat3(instance.World)));
 	vec3 N = normalize(normalMatrix * Normal);

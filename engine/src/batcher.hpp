@@ -70,7 +70,7 @@ namespace triton
 
         void SetStaticInstance(
             const SStaticRenderInstanceData::THandle& instance,
-            const SSkeletonData::THandle& skeleton
+            const SSkinData::THandle& skin
         );
 
         void RemoveStaticInstance(const SStaticRenderInstanceData::THandle& instance);

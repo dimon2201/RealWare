@@ -10,9 +10,7 @@ triton::XSkeletonSubsystem::XSkeletonSubsystem(cContext* context) : ISubsys(cont
     _pool = CObjectAllocator::Create<XSkeletonPool>(
         64,
         _context,
-        K_TRUE,
-        (s32)3,
-        cBuffer::eType::STORAGE
+        K_TRUE
     );
 }
 
@@ -58,16 +56,4 @@ void triton::XSkeletonSubsystem::Free()
 void triton::XSkeletonSubsystem::Update()
 {
     _pool->Update();
-}
-
-void triton::XSkeletonSubsystem::SetSkin(const SSkeletonData::THandle& skeleton, const SSkinData& skin)
-{
-    auto valueResult = _pool->Get(skeleton);
-    if (!valueResult.has_value())
-        return;
-    auto value = *valueResult;
-
-    value.get().globSkinnedBoneBufferOffset = skin.globSkinnedBoneBufferOffset;
-
-    _pool->WriteToStaging(skeleton);
 }

@@ -13,12 +13,8 @@ namespace triton
 	{
 		struct THandle : public SHandle {};
 
-		struct TGPULayout
-		{
-			types::u32 globSkinnedBoneBufferOffset;
-		};
+		struct TGPULayout {};
 
-		types::u32 globSkinnedBoneBufferOffset = 0;
 		cMatrix4 accumulatedRootTransform = cMatrix4();
 		std::vector<SBone> bones = {};
 	};

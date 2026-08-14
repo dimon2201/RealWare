@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "handle.hpp"
+#include "skeleton_data.hpp"
 #include "math.hpp"
 
 namespace triton
@@ -26,6 +27,7 @@ namespace triton
 
 		struct TGPULayout {};
 
+		SSkeletonData::THandle skeleton;
 		types::usize globSkinnedBoneBufferOffset = 0;
 		std::vector<SSkinnedBoneData::THandle> skinnedBones;
 	};

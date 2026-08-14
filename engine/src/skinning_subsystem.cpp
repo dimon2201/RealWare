@@ -18,7 +18,7 @@ triton::XSkinningSubsystem::XSkinningSubsystem(cContext* context) : ISubsys(cont
         64,
         _context,
         K_TRUE,
-        (s32)4,
+        (s32)3,
         cBuffer::eType::STORAGE
     );
     _skinPool = CObjectAllocator::Create<XSkinPool>(
@@ -34,49 +34,18 @@ triton::XSkinningSubsystem::~XSkinningSubsystem()
     CObjectAllocator::Destroy<XSkinnedBonesPool>(_skinnedBonesPool);
 }
 
-std::optional<triton::SSkinData::THandle> triton::XSkinningSubsystem::Create(
-    const SSkeletonData::THandle& skeleton,
-    const SFrame& frame
-)
+std::optional<triton::SSkinData::THandle> triton::XSkinningSubsystem::Create(const SSkeletonData::THandle& skeleton)
 {
-    auto skelDataResult = _context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Get(skeleton);
-    if (!skelDataResult.has_value())
-        return std::nullopt;
-    auto skelData = *skelDataResult;
-        
-    const usize boneCount = skelData.get().bones.size();
-
-    // Bone transform in Local space
-    std::vector<cMatrix4> totalTransform = {};
-    totalTransform.resize(boneCount);
-    for (usize boneIndex = 0; boneIndex < boneCount; ++boneIndex)
-    {
-        if (skelData.get().bones[boneIndex].localParentBoneIndex == -1)
-            CalculateBone(skelData.get().bones, boneIndex, frame, totalTransform);
-    }
-
-    // Record current skinned bone count
-    usize globSkinnedBoneBufferOffset = _skinnedBonesPool->GetSize();
-
-    // Calculate bone transform in Model space
-    std::vector<SSkinnedBoneData::THandle> skinnedBones;
-    skinnedBones.resize(boneCount);
-    for (usize boneIndex = 0; boneIndex < boneCount; ++boneIndex)
-    {
-        skinnedBones[boneIndex] = *_skinnedBonesPool->Create(); // Reserve space for skinned bones
-        SSkinnedBoneData& skbd = *_skinnedBonesPool->Get(skinnedBones[boneIndex]);
-        skbd.modelMatrix =
-            skelData.get().accumulatedRootTransform *
-            totalTransform[boneIndex] *
-            skelData.get().bones[boneIndex].modelMatrix;
-        _skinnedBonesPool->WriteToStaging(
-            globSkinnedBoneBufferOffset + boneIndex,
-            skbd
-        );
-    }
+    const SSkeletonData& skd = *_context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Get(skeleton);
+    
+    const usize globSkinnedBoneBufferOffset = _skinnedBonesPool->GetSize();
+    std::vector<SSkinnedBoneData::THandle> skinnedBones = {};
+    for (usize i = 0; i < skd.bones.size(); i++)
+        skinnedBones.push_back(*_skinnedBonesPool->Create());
 
     SSkinData::THandle skin = *_skinPool->Create();
     SSkinData& sd = *_skinPool->Get(skin);
+    sd.skeleton = skeleton;
     sd.globSkinnedBoneBufferOffset = globSkinnedBoneBufferOffset;
     sd.skinnedBones = skinnedBones;
 
@@ -89,6 +58,44 @@ void triton::XSkinningSubsystem::Destroy(const SSkinData::THandle& skin)
     for (auto& sbd : sd.skinnedBones)
         _skinnedBonesPool->Destroy(sbd);
     _skinPool->Destroy(skin);
+}
+
+void triton::XSkinningSubsystem::Skin(
+    const SSkinData::THandle& skin,
+    const SFrame& frame
+)
+{
+    auto skinDataResult = _skinPool->Get(skin);
+    if (!skinDataResult.has_value())
+        return;
+    const SSkinData& skinData = *skinDataResult;
+
+    const SSkeletonData& skeletonData = *_context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Get(skinData.skeleton);
+
+    const usize boneCount = skinData.skinnedBones.size();
+
+    // Bone transform in Local space
+    std::vector<cMatrix4> totalTransform = {};
+    totalTransform.resize(boneCount);
+    for (usize boneIndex = 0; boneIndex < boneCount; ++boneIndex)
+    {
+        if (skeletonData.bones[boneIndex].localParentBoneIndex == -1)
+            CalculateBone(skeletonData.bones, boneIndex, frame, totalTransform);
+    }
+
+    // Calculate bone transform in Model space
+    for (usize boneIndex = 0; boneIndex < boneCount; ++boneIndex)
+    {
+        SSkinnedBoneData& skbd = *_skinnedBonesPool->Get(skinData.skinnedBones[boneIndex]);
+        skbd.modelMatrix =
+            skeletonData.accumulatedRootTransform *
+            totalTransform[boneIndex] *
+            skeletonData.bones[boneIndex].modelMatrix;
+        _skinnedBonesPool->WriteToStaging(
+            skinData.globSkinnedBoneBufferOffset + boneIndex,
+            skbd
+        );
+    }
 }
 
 void triton::XSkinningSubsystem::Update()

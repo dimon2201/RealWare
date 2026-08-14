@@ -184,13 +184,11 @@ void triton::cGraphics::ExecutePasses()
     _context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer()->Bind();
     _context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->GetGPUBuffer()->Bind();
     _context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->GetGPUBuffer()->Bind();
-    _context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->GetGPUBuffer()->Bind();
     _context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->GetGPUBuffer()->Bind();
 
     ExecuteDefaultPasses();
 
     _context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->GetGPUBuffer()->Unbind();
-    _context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->GetGPUBuffer()->Unbind();
     _context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->GetGPUBuffer()->Unbind();
     _context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->GetGPUBuffer()->Unbind();
     _context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer()->Unbind();

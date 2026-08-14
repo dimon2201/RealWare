@@ -41,18 +41,18 @@ namespace triton
             TGPULayout(types::s32 materialIndex, const cTransform& transform);
             TGPULayout(
                 types::s32 materialIndex,
-                types::s32 skeletonIndex,
+                types::s32 skinnedBoneBufferOffset,
                 ERenderInstanceMotionType motionType,
                 types::boolean isSkinned
             ) :
                 _materialIndex(materialIndex),
-                _skeletonIndex(skeletonIndex),
+                _skinnedBoneBufferOffset(skinnedBoneBufferOffset),
                 _propertyBits(EvaluatePropertyBits(motionType, isSkinned)) {
             }
 
             types::f32 _use2D = 0.0f;
             types::s32 _materialIndex = -1;
-            types::s32 _skeletonIndex = -1;
+            types::s32 _skinnedBoneBufferOffset = -1;
             types::dword _propertyBits = 0;
             cMatrix4 _world = cMatrix4(1.0f);
         };
@@ -60,7 +60,7 @@ namespace triton
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
         SBatchData::THandle batch;
         SMaterialData::THandle material;
-        SSkeletonData::THandle skeleton;
+        types::s32 skinnedBoneBufferOffset = 0;
         SStaticRenderInstanceData::THandle instance;
         cMatrix4 worldMatrix = cMatrix4();
     };
@@ -75,18 +75,18 @@ namespace triton
             TGPULayout(types::s32 materialIndex, const cTransform& transform);
             TGPULayout(
                 types::s32 materialIndex,
-                types::s32 skeletonIndex,
+                types::s32 skinnedBoneBufferOffset,
                 ERenderInstanceMotionType motionType,
                 types::boolean isSkinned
             ) :
                 _materialIndex(materialIndex),
-                _skeletonIndex(skeletonIndex),
+                _skinnedBoneBufferOffset(skinnedBoneBufferOffset),
                 _propertyBits(EvaluatePropertyBits(motionType, isSkinned)) {
             }
 
             types::f32 _use2D = 0.0f;
             types::s32 _materialIndex = -1;
-            types::s32 _skeletonIndex = -1;
+            types::s32 _skinnedBoneBufferOffset = -1;
             types::dword _propertyBits = 0;
             cMatrix4 _world = cMatrix4(1.0f);
         };
@@ -94,7 +94,7 @@ namespace triton
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
         SBatchData::THandle batch;
         SMaterialData::THandle material;
-        SSkeletonData::THandle skeleton;
+        types::s32 skinnedBoneBufferOffset = 0;
         SDynamicRenderInstanceData::THandle instance;
         cMatrix4 worldMatrix = cMatrix4();
     };

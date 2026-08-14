@@ -31,12 +31,14 @@ namespace triton
 		explicit XSkinningSubsystem(cContext* context);
 		~XSkinningSubsystem() override;
 
-		std::optional<SSkinData::THandle> Create(
-			const SSkeletonData::THandle& skeleton,
-			const SFrame& frame
-		);
+		std::optional<SSkinData::THandle> Create(const SSkeletonData::THandle& skeleton);
 
 		void Destroy(const SSkinData::THandle& skin);
+
+		void Skin(
+			const SSkinData::THandle& skin,
+			const SFrame& frame
+		);
 
 		void Init() override {}
 

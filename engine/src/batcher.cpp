@@ -8,6 +8,7 @@
 #include "game_object_subsystem.hpp"
 #include "vertex.hpp"
 #include "synchronization.hpp"
+#include "skin_pool.hpp"
 
 using namespace types;
 
@@ -152,14 +153,19 @@ void triton::XBatchSubsystem::SetStaticInstance(
 
 void triton::XBatchSubsystem::SetStaticInstance(
 	const SStaticRenderInstanceData::THandle& instance,
-	const SSkeletonData::THandle& skeleton
+	const SSkinData::THandle& skin
 )
 {
 	auto rdResult = _staticInstancePool->Get(instance);
 	if (!rdResult.has_value())
 		return;
-	auto rd = *rdResult;
-	rd.get().skeleton = skeleton;
+	SStaticRenderInstanceData& rd = *rdResult;
+
+	auto skinDataResult = _context->GetSubsystem<XSkinningSubsystem>()->GetSkinPool()->Get(skin);
+	if (!skinDataResult.has_value())
+		return;
+	const SSkinData& skinData = *skinDataResult;
+	rd.skinnedBoneBufferOffset = skinData.globSkinnedBoneBufferOffset;
 
 	MarkDirtyStatic();
 }

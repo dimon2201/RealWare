@@ -31,8 +31,6 @@ namespace triton
 
 		void Destroy(const SSkeletonData::THandle& skeleton);
 
-		void SetSkin(const SSkeletonData::THandle& skeleton, const SSkinData& skin);
-
 		void Init() override;
 
 		void Free() override;
