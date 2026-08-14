@@ -124,7 +124,7 @@ void triton::cRenderThread::ExecuteCommands(
 	cGraphics* gfx
 )
 {
-	for (usize i = 0; i < renderCommandPack.cmds.size(); i++)
+	for (usize i = 0; i < renderCommandPack.count; i++)
 	{
 		const SRenderCommand& cmd = renderCommandPack.cmds[i];
 

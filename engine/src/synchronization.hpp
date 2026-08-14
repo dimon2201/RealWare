@@ -75,7 +75,7 @@ namespace triton
 	struct SRenderCommand
 	{
 		SRenderCommand(
-			ERenderCommand command_,
+			ERenderCommand command_ = ERenderCommand::NONE,
 			types::cpuword argA_ = 0,
 			types::cpuword argB_ = 0,
 			types::cpuword argC_ = 0,
@@ -94,7 +94,8 @@ namespace triton
 
 	struct SRenderCommandPack final
 	{
-		std::vector<SRenderCommand> cmds;
+		types::usize count = 0;
+		SRenderCommand cmds[1024];
 	};
 
 	class XRenderCommandRecorder : public iObject
@@ -109,12 +110,13 @@ namespace triton
 
 		inline void Clear()
 		{
-			_renderCommandPack.cmds.clear();
+			_renderCommandPack.count = 0;
 		}
 
 		inline void PushCommand(const SRenderCommand& cmd)
 		{
-			_renderCommandPack.cmds.push_back(cmd);
+			const types::usize idx = _renderCommandPack.count++;
+			_renderCommandPack.cmds[idx] = cmd;
 		}
 
 		inline const SRenderCommandPack& GetRenderCommandPack()
@@ -136,7 +138,7 @@ namespace triton
 		void Clear()
 		{
 			operation = EProducedFrameOp::None;
-			renderCommandPack.cmds.clear();
+			renderCommandPack.count = 0;
 		}
 
 		void Apply(
