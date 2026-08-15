@@ -47,7 +47,7 @@ std::optional<triton::SMaterialData::THandle> triton::XMaterialSubsystem::Create
     m.metallicTexture = metallicTexture;
 
     _pool->WriteToStaging(
-        *_pool->GetBufferIndex(handle),
+        _pool->GetPackedIndex(handle),
         m
     );
 

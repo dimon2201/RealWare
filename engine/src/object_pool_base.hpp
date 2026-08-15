@@ -73,8 +73,6 @@ namespace triton
 
         void WriteToStaging(types::usize bufferIndex, const TObject& object);
 
-        types::usize GetBufferIndex(const TObject::THandle& handle);
-
         types::usize GetPackedIndex(const TObject::THandle& handle);
 
         std::optional<typename TObject::THandle> GetHandle(const types::usize& bufferIndex);
@@ -123,6 +121,8 @@ namespace triton
         void DestroyObjectBuffer();
 
         void DestroyGpuBuffer();
+
+        types::usize GetBufferIndex(const TObject::THandle& handle);
     };
 
     template <typename TObject>
@@ -394,16 +394,6 @@ namespace triton
     }
 
     template <typename TObject>
-    types::usize XObjectPoolBase<TObject>::GetBufferIndex(const TObject::THandle& handle)
-    {
-        if (handle.IsInvalid() ||
-            _slots[handle._slotIndex]._alive == types::K_FALSE)
-            return 0;
-
-        return _slots[handle._slotIndex]._arrayIndex;
-    }
-
-    template <typename TObject>
     types::usize XObjectPoolBase<TObject>::GetPackedIndex(const TObject::THandle& handle)
     {
         if (handle.IsInvalid() ||
@@ -551,5 +541,15 @@ namespace triton
             (types::cpuword)_gpuBuffer
         ));
         _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
+    }
+
+    template <typename TObject>
+    types::usize XObjectPoolBase<TObject>::GetBufferIndex(const TObject::THandle& handle)
+    {
+        if (handle.IsInvalid() ||
+            _slots[handle._slotIndex]._alive == types::K_FALSE)
+            return 0;
+
+        return _slots[handle._slotIndex]._arrayIndex;
     }
 }

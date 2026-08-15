@@ -398,7 +398,7 @@ void triton::XModel3DBackendAssimp::SetAbsoluteMaterialIndices(
 {
     for (usize i = 0; i < vertexCount; i++)
         vertexData[i].materialIndex =
-            *_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetBufferIndex(
+            _context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetPackedIndex(
                 modelMaterials.at(vertexData[i].materialIndex)
            );
 }

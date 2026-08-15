@@ -259,8 +259,7 @@ void triton::XBatchSubsystem::RecalcBufferOffsetsAndResetCounters(u32* counterBu
 	usize cumInstanceCount[2] = {};
 	for (usize i = 0; i < bvBatch.elementCount; i++)
 	{
-		const usize batchIdx =
-			*_batchPool->GetBufferIndex(*_batchPool->GetHandle(i));
+		const usize batchIdx = _batchPool->GetPackedIndex(*_batchPool->GetHandle(i));
 		
 		SBatchData& bd = bvBatch.elements[batchIdx];
 		bd.bufferOffset = cumInstanceCount[(int)bd.motionType];
@@ -286,7 +285,7 @@ void triton::XBatchSubsystem::PackInstancesToStagingBuffers(
 		if (bd.motionType != motionType)
 			continue;
 
-		const usize batchIdx = *_batchPool->GetBufferIndex(rid.batch);
+		const usize batchIdx = _batchPool->GetPackedIndex(rid.batch);
 		const usize globElementIndex =
 			bd.bufferOffset +
 			counterBuffer[batchIdx];
@@ -309,7 +308,7 @@ void triton::XBatchSubsystem::PackInstancesToStagingBuffers(
 		if (bd.motionType != motionType)
 			continue;
 
-		const usize batchIdx = *_batchPool->GetBufferIndex(rid.batch);
+		const usize batchIdx = _batchPool->GetPackedIndex(rid.batch);
 		const usize globElementIndex =
 			bd.bufferOffset +
 			counterBuffer[batchIdx];
