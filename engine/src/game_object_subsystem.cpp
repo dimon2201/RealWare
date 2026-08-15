@@ -68,10 +68,10 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSub
 		return std::nullopt;
 	auto value = *valueResult;
 
-	SStaticRenderInstanceData::THandle rih = *batchSubsystem->AddStaticInstance(batch, gameObject);
+	SStaticRenderInstanceData::THandle rih = *batchSubsystem->AddStaticInstance(batch);
 	
 	if (existingMaterial.has_value())
-		batchSubsystem->SetStaticInstance(rih, *existingMaterial);
+		batchSubsystem->SetStaticInstanceMaterial(rih, *existingMaterial);
 
 	return rih;
 }
@@ -89,7 +89,7 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSu
 		return std::nullopt;
 	auto value = *valueResult;
 
-	SDynamicRenderInstanceData::THandle rih = *batchSubsystem->AddDynamicInstance(batch, gameObject);
+	SDynamicRenderInstanceData::THandle rih = *batchSubsystem->AddDynamicInstance(batch);
 	
 	if (existingMaterial.has_value())
 	{
