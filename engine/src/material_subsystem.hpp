@@ -3,7 +3,6 @@
 #pragma once
 
 #include "object.hpp"
-#include "game_object_data.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "render_instance_data.hpp"
 #include "material_data.hpp"
