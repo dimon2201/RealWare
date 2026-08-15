@@ -75,7 +75,7 @@ namespace triton
 
         types::usize GetBufferIndex(const TObject::THandle& handle);
 
-        types::usize GetPackedBufferIndex(const TObject::THandle& handle);
+        types::usize GetPackedIndex(const TObject::THandle& handle);
 
         std::optional<typename TObject::THandle> GetHandle(const types::usize& bufferIndex);
 
@@ -404,7 +404,7 @@ namespace triton
     }
 
     template <typename TObject>
-    types::usize XObjectPoolBase<TObject>::GetPackedBufferIndex(const TObject::THandle& handle)
+    types::usize XObjectPoolBase<TObject>::GetPackedIndex(const TObject::THandle& handle)
     {
         if (handle.IsInvalid() ||
             _slots[handle._slotIndex]._alive == types::K_FALSE)
