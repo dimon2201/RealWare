@@ -71,17 +71,11 @@ namespace triton
 
         std::optional<SBufferView<TObject>> Get(const SObjectFrame<TObject>& frame);
 
-        void WriteToStaging(const TObject::THandle& handle);
-
         void WriteToStaging(types::usize bufferIndex, const TObject& object);
 
-        void WriteToStaging(
-            const SObjectFrame<TObject>& frame,
-            const TObject::TGPULayout* data,
-            types::usize dataByteSize
-        );
-
         types::usize GetBufferIndex(const TObject::THandle& handle);
+
+        types::usize GetPackedBufferIndex(const TObject::THandle& handle);
 
         std::optional<typename TObject::THandle> GetHandle(const types::usize& bufferIndex);
 
@@ -120,8 +114,6 @@ namespace triton
         );
 
         void ReallocateObjectBuffer(types::usize prevMaxCount, types::usize curMaxCount);
-
-        void CreateSlot(types::usize slotIndex, types::usize arrayIndex, types::usize generation);
 
         void SetSlot(types::usize objectIndex, types::usize generation);
         
@@ -409,6 +401,24 @@ namespace triton
             return 0;
 
         return _slots[handle._slotIndex]._arrayIndex;
+    }
+
+    template <typename TObject>
+    types::usize XObjectPoolBase<TObject>::GetPackedBufferIndex(const TObject::THandle& handle)
+    {
+        if (handle.IsInvalid() ||
+            _slots[handle._slotIndex]._alive == types::K_FALSE)
+            return 0;
+
+        const types::usize realIndex = _slots[handle._slotIndex]._arrayIndex;
+        types::usize packedIndex = 0;
+        for (types::usize i = 0; i < realIndex; i++)
+        {
+            if (_slots[i]._alive == types::K_TRUE)
+                packedIndex++;
+        }
+
+        return packedIndex;
     }
 
     template <typename TObject>
