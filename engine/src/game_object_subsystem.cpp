@@ -26,21 +26,18 @@ triton::XGameObjectSubsystem::~XGameObjectSubsystem()
 	CObjectAllocator::Destroy<XGameObjectPool>(_pool);
 }
 
-std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Create(const std::string& name)
+std::optional<triton::XGameObject::THandle> triton::XGameObjectSubsystem::Create(const std::string& name)
 {
 	auto handleResult = _pool->Create();
 	if (!handleResult.has_value())
 		return std::nullopt;
-	auto handle = *handleResult;
 
-	auto valueResult = _pool->Get(handle);
-	if (!valueResult.has_value())
-		return std::nullopt;
-	auto value = *valueResult;
+	return *handleResult;
+}
 
-	value.get().name = name;
-
-	return handle;
+void triton::XGameObjectSubsystem::Destroy(const XGameObject::THandle& gameObject)
+{
+	_pool->Destroy(gameObject);
 }
 
 void triton::XGameObjectSubsystem::Init()
@@ -53,49 +50,4 @@ void triton::XGameObjectSubsystem::Free()
 
 void triton::XGameObjectSubsystem::Update()
 {
-}
-
-std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableStatic(
-	const SGameObjectData::THandle& gameObject,
-	const SBatchData::THandle& batch,
-	const std::optional<SMaterialData::THandle>& existingMaterial
-)
-{
-	XBatchSubsystem* batchSubsystem = _context->GetSubsystem<XBatchSubsystem>();
-
-	auto valueResult = _pool->Get(gameObject);
-	if (!valueResult.has_value())
-		return std::nullopt;
-	auto value = *valueResult;
-
-	SStaticRenderInstanceData::THandle rih = *batchSubsystem->AddStaticInstance(batch);
-	
-	if (existingMaterial.has_value())
-		batchSubsystem->SetStaticInstanceMaterial(rih, *existingMaterial);
-
-	return rih;
-}
-
-std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableDynamic(
-	const SGameObjectData::THandle& gameObject,
-	const SBatchData::THandle& batch,
-	const std::optional<SMaterialData::THandle>& existingMaterial
-)
-{
-	XBatchSubsystem* batchSubsystem = _context->GetSubsystem<XBatchSubsystem>();
-
-	auto valueResult = _pool->Get(gameObject);
-	if (!valueResult.has_value())
-		return std::nullopt;
-	auto value = *valueResult;
-
-	SDynamicRenderInstanceData::THandle rih = *batchSubsystem->AddDynamicInstance(batch);
-	
-	if (existingMaterial.has_value())
-	{
-		auto ri = *_context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->Get(rih);
-		ri.get().material = *existingMaterial;
-	}
-
-	return rih;
 }
