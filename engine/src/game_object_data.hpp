@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include "batch_instance.hpp"
 #include "handle.hpp"
 #include "material_data.hpp"
 #include "skeleton_data.hpp"
