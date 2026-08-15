@@ -31,12 +31,20 @@ namespace triton
         explicit XGameObjectSubsystem(cContext* context);
         ~XGameObjectSubsystem() override;
 
-        std::optional<XGameObject::THandle> Create(const std::string& name);
+        std::optional<XGameObject::THandle> Create(
+            const std::string& name,
+            const SBatchData::THandle& batchHandle
+        );
 
         void Destroy(const XGameObject::THandle& gameObject);
 
         void Init() override;
         void Free() override;
         void Update() override;
+
+        XGameObjectPool* GetPool() const
+        {
+            return _pool;
+        }
     };
 }

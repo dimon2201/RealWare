@@ -26,13 +26,17 @@ triton::XGameObjectSubsystem::~XGameObjectSubsystem()
 	CObjectAllocator::Destroy<XGameObjectPool>(_pool);
 }
 
-std::optional<triton::XGameObject::THandle> triton::XGameObjectSubsystem::Create(const std::string& name)
+std::optional<triton::XGameObject::THandle> triton::XGameObjectSubsystem::Create(
+	const std::string& name,
+	const SBatchData::THandle& batchHandle
+)
 {
-	auto handleResult = _pool->Create();
+	auto handleResult = _pool->Create(_context, batchHandle);
 	if (!handleResult.has_value())
 		return std::nullopt;
+	auto handle = *handleResult;
 
-	return *handleResult;
+	return handle;
 }
 
 void triton::XGameObjectSubsystem::Destroy(const XGameObject::THandle& gameObject)
