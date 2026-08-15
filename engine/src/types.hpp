@@ -40,6 +40,8 @@ namespace types
     constexpr boolean K_TRUE = 1;
     constexpr boolean K_FALSE = 0;
     constexpr usize K_USIZE_MAX = SIZE_MAX;
+    constexpr boolean True = 1;
+    constexpr boolean False = 0;
 }
 
 #endif

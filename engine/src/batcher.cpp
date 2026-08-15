@@ -103,7 +103,7 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XBatchSubsyste
 	}
 
 	const SStaticRenderInstanceData::THandle& beginHandle = data.staticsFrame.begin;
-	const SStaticRenderInstanceData::THandle curHandle = *_staticInstancePool->GetHandle(instanceIndex, beginHandle);
+	const SStaticRenderInstanceData::THandle curHandle = *_staticInstancePool->GetHandle(beginHandle, instanceIndex);
 	SStaticRenderInstanceData& srid = *_staticInstancePool->Get(curHandle);
 	srid.batchInstanceIndex = instanceIndex;
 
@@ -134,7 +134,7 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XBatchSubsyst
 	}
 
 	const SDynamicRenderInstanceData::THandle& beginHandle = data.dynamicsFrame.begin;
-	const SDynamicRenderInstanceData::THandle curHandle = *_dynamicInstancePool->GetHandle(instanceIndex, beginHandle);
+	const SDynamicRenderInstanceData::THandle curHandle = *_dynamicInstancePool->GetHandle(beginHandle, instanceIndex);
 	SDynamicRenderInstanceData& drid = *_dynamicInstancePool->Get(curHandle);
 	drid.batchInstanceIndex = instanceIndex;
 
@@ -243,15 +243,14 @@ void triton::XBatchSubsystem::PackStaticInstancesToStagingBuffer()
 	SBufferView<SBatchData> batches = _batchPool->GetData();
 	for (usize i = 0; i < batches.elementCount; i++)
 	{
-		const SObjectFrame<SStaticRenderInstanceData> frame = batches.elements[i].staticsFrame;
+		const SObjectFrame<SStaticRenderInstanceData::THandle> frame = batches.elements[i].staticsFrame;
 		
 		const usize beginObjectIndex = _staticInstancePool->GetPackedIndex(frame.begin);
-		const usize endObjectIndex = _staticInstancePool->GetPackedIndex(frame.end);
-		const usize objectCount = (endObjectIndex - beginObjectIndex) + 1;
+		const usize objectCount = frame.count;
 
 		for (usize j = 0; j < objectCount; j++)
 		{
-			const SStaticRenderInstanceData::THandle handle = *_staticInstancePool->GetHandle(j, frame.begin);
+			const SStaticRenderInstanceData::THandle handle = *_staticInstancePool->GetHandle(frame.begin, j);
 			SStaticRenderInstanceData& data = *_staticInstancePool->Get(handle);
 			_staticInstancePool->WriteToStaging(
 				beginObjectIndex + j,
@@ -268,15 +267,14 @@ void triton::XBatchSubsystem::PackDynamicInstancesToStagingBuffer()
 	SBufferView<SBatchData> batches = _batchPool->GetData();
 	for (usize i = 0; i < batches.elementCount; i++)
 	{
-		const SObjectFrame<SDynamicRenderInstanceData> frame = batches.elements[i].dynamicsFrame;
+		const SObjectFrame<SDynamicRenderInstanceData::THandle> frame = batches.elements[i].dynamicsFrame;
 
 		const usize beginObjectIndex = _dynamicInstancePool->GetPackedIndex(frame.begin);
-		const usize endObjectIndex = _dynamicInstancePool->GetPackedIndex(frame.end);
-		const usize objectCount = (endObjectIndex - beginObjectIndex) + 1;
+		const usize objectCount = frame.count;
 
 		for (usize j = 0; j < objectCount; j++)
 		{
-			const SDynamicRenderInstanceData::THandle handle = *_dynamicInstancePool->GetHandle(j, frame.begin);
+			const SDynamicRenderInstanceData::THandle handle = *_dynamicInstancePool->GetHandle(frame.begin, j);
 			const SDynamicRenderInstanceData& data = *_dynamicInstancePool->Get(handle);
 			_dynamicInstancePool->WriteToStaging(
 				beginObjectIndex + j,

@@ -20,11 +20,11 @@ namespace triton
 {
     class cContext;
 
-    template <typename TObject>
+    template <typename THandle>
     struct SObjectFrame
     {
-        typename TObject::THandle begin;
-        typename TObject::THandle end;
+        types::usize count = 0;
+        typename THandle begin;
     };
 
     template <typename TObject>
@@ -33,17 +33,17 @@ namespace triton
         TRITON_OBJECT(XObjectPoolBase)
 
     protected:
-        types::boolean _bKeepStagingBuffer = types::K_FALSE;
-        SSlot* _slots = nullptr;
-        TObject* _objects = nullptr;
-        std::queue<types::usize> _freeSlots = {};
-        types::usize _allocatedObjectCount = 0;
-        types::usize _objectCount = 0;
-        cBuffer* _gpuBuffer = nullptr;
-        types::s32 _gpuBufferSlot = -1;
-        cBuffer::eType _gpuBufferType = cBuffer::eType::NONE;
-        TObject::TGPULayout* _stagingBuffer = nullptr;
-        types::boolean _bDirtyBit = types::K_FALSE;
+        SSlot*                      _slots = nullptr;
+        TObject*                    _objects = nullptr;
+        TObject::TGPULayout*        _staging = nullptr;
+        types::boolean				_bKeepStagingBuffer = types::True;
+        types::usize				_reservedCount = 0;
+        types::usize				_lastObjectCursor = 0;
+        std::queue<types::usize>	_freeSlots = {};
+        types::boolean				_bDirtyBit = types::False;
+        cBuffer*                    _gpuBuffer = nullptr;
+        types::s32                  _gpuBufferSlot = -1;
+        cBuffer::eType              _gpuBufferType = cBuffer::eType::NONE;
 
     public:
         explicit XObjectPoolBase(
@@ -61,34 +61,28 @@ namespace triton
         std::optional<typename TObject::THandle> Create(Args&&... args);
 
         template <typename... Args>
-        std::optional<SObjectFrame<TObject>> Create(types::usize count, Args&&... args);
+        std::optional<SObjectFrame<typename TObject::THandle>> Create(types::usize count, Args&&... args);
 
         void Destroy(const TObject::THandle& handle);
 
-        void Destroy(const SObjectFrame<TObject>& frame);
+        void Destroy(const SObjectFrame<typename TObject::THandle>& frame);
 
         std::optional<std::reference_wrapper<TObject>> Get(const TObject::THandle& handle);
-
-        std::optional<SBufferView<TObject>> Get(const SObjectFrame<TObject>& frame);
 
         void WriteToStaging(types::usize bufferIndex, const TObject& object);
 
         types::usize GetPackedIndex(const TObject::THandle& handle);
 
-        std::optional<typename TObject::THandle> GetHandle(const types::usize& bufferIndex);
-
-        std::optional<typename TObject::THandle> GetHandle(const types::usize bufferOffset, const TObject::THandle& baseHandle);
+        std::optional<typename TObject::THandle> GetHandle(
+            const TObject::THandle& baseHandle,
+            const types::usize offset
+        );
 
         void Upload();
 
-        inline types::usize GetSize() const
-        {
-            return _objectCount;
-        }
-
         inline SBufferView<TObject> GetData() const
         {
-            return SBufferView<TObject>(&_objects[0], sizeof(TObject) * _objectCount);
+            return SBufferView<TObject>(&_objects[0], sizeof(TObject) * _lastObjectCursor);
         }
 
         inline cBuffer* GetGPUBuffer() const
@@ -115,16 +109,14 @@ namespace triton
 
         void ReallocateObjectBuffer(types::usize prevMaxCount, types::usize curMaxCount);
 
-        void SetSlot(types::usize objectIndex, types::usize generation);
+        void OccupySlot(types::usize objectIndex, types::usize generation);
         
         template <typename... Args>
-        void CreateObjectAt(types::usize objectIndex, Args&&... args);
+        void ConstructObject(types::usize objectIndex, Args&&... args);
 
         void DestroyObjectBuffer();
 
         void DestroyGpuBuffer();
-
-        types::usize GetBufferIndex(const TObject::THandle& handle);
     };
 
     template <typename TObject>
@@ -144,8 +136,8 @@ namespace triton
     {
         if (_gpuBuffer)
             DestroyGpuBuffer();
-        if (_stagingBuffer)
-            CObjectAllocator::Deallocate(_stagingBuffer);
+        if (_staging)
+            CObjectAllocator::Deallocate(_staging);
         if (_objects)
             DestroyObjectBuffer();
         if (_slots)
@@ -155,11 +147,11 @@ namespace triton
     template <typename TObject>
     void XObjectPoolBase<TObject>::Allocate(types::usize maxCount)
     {
-        _objectCount = 0;
+        _lastObjectCursor = 0;
         _bDirtyBit = types::K_TRUE;
 
-        const types::usize prevMaxCount = _allocatedObjectCount;
-        _allocatedObjectCount = maxCount;
+        const types::usize prevMaxCount = _reservedCount;
+        _reservedCount = maxCount;
 
         if (_slots)
             ReallocatePodBuffer<SSlot>(_slots, prevMaxCount, maxCount);
@@ -173,14 +165,14 @@ namespace triton
         
         if (_bKeepStagingBuffer == types::K_TRUE)
         {
-            if (_stagingBuffer)
-                ReallocatePodBuffer<TObject::TGPULayout>(_stagingBuffer, prevMaxCount, maxCount);
+            if (_staging)
+                ReallocatePodBuffer<TObject::TGPULayout>(_staging, prevMaxCount, maxCount);
             else
-                AllocatePodBuffer(_stagingBuffer, maxCount * sizeof(TObject::TGPULayout));
+                AllocatePodBuffer(_staging, maxCount * sizeof(TObject::TGPULayout));
         }
         else
         {
-            _stagingBuffer = nullptr;
+            _staging = nullptr;
         }
 
         auto AllocateGpuBuffer = [](
@@ -230,90 +222,78 @@ namespace triton
     template <typename... Args>
     std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::Create(Args&&... args)
     {
-        if (CheckBufferOverflow(1) == types::K_TRUE)
-            return std::nullopt;
-
-        const types::usize lastObjectIndex = _objectCount++;
-
-        types::usize slotIndex;
-        types::usize arrayIndex;
-        types::usize generation;
+        types::usize lastObjectIndex = 0;
         if (_freeSlots.empty())
         {
-            slotIndex = lastObjectIndex;
-            generation = 0;
-
-            SetSlot(lastObjectIndex, generation);
+            lastObjectIndex = _lastObjectCursor++;
         }
         else
         {
-            const types::usize freeIndex = _freeSlots.front();
+            lastObjectIndex = _freeSlots.front();
             _freeSlots.pop();
-
-            slotIndex = freeIndex;
-            generation = _slots[freeIndex]._generation + 1;
-            
-            SetSlot(freeIndex, generation);
         }
 
-        arrayIndex = slotIndex;
+        OccupySlot(lastObjectIndex, _slots[lastObjectIndex].generation + 1);
 
-        CreateObjectAt(arrayIndex, std::forward<Args>(args)...);
+        new (&_objects[lastObjectIndex]) TObject(std::forward<Args>(args)...);
 
         typename TObject::THandle handle;
-        handle._slotIndex = slotIndex;
-        handle._indexInArray = arrayIndex;
-        handle._generation = generation;
+        handle.index = lastObjectIndex;
+        handle.generation = _slots[lastObjectIndex].generation;
 
         return handle;
     }
 
     template <typename TObject>
     template <typename... Args>
-    std::optional<SObjectFrame<TObject>> XObjectPoolBase<TObject>::Create(
+    std::optional<SObjectFrame<typename TObject::THandle>> XObjectPoolBase<TObject>::Create(
         types::usize count,
         Args&&... args
     )
     {
-        for (types::usize i = 0; i < _allocatedObjectCount; i++)
+        for (types::usize i = 0; i < _reservedCount; i++)
         {
-            if (i + count <= _allocatedObjectCount)
+            if (i + count > _reservedCount)
+                return std::nullopt;
+
+            types::boolean bFree = types::True;
+            for (types::usize j = 0; j < count; j++)
             {
-                types::boolean bFree = types::K_TRUE;
+                if (_slots[i + j].alive == types::True)
+                {
+                    bFree = types::False;
+                    break;
+                }
+            }
+
+            if (bFree == types::True)
+            {
+                while (!_freeSlots.empty())
+                    _freeSlots.pop();
+
                 for (types::usize j = 0; j < count; j++)
                 {
-                    if (_slots[i + j]._alive == types::K_TRUE)
-                    {
-                        bFree = types::K_FALSE;
-                        i += j;
-                        break;
-                    }
+                    OccupySlot(i, _slots[i].generation + 1);
+
+                    new (&_objects[i + j]) TObject();
                 }
 
-                if (bFree == types::K_TRUE)
-                {
-                    for (types::usize j = 0; j < count; j++)
-                        SetSlot(i + j, _slots[i + j]._generation + 1);
+                for (types::usize j = 0; j < _lastObjectCursor; j++)
+                    if (_slots[j].alive == types::False)
+                        _freeSlots.push(j);
 
-                    if (i + count > _objectCount)
-                        _objectCount = i + count;
+                if (i + count > _lastObjectCursor)
+                    _lastObjectCursor = i + count;
 
-                    typename TObject::THandle begin;
-                    begin._slotIndex = i;
-                    begin._indexInArray = i;
-                    begin._generation = _slots[i]._generation;
+                typename TObject::THandle begin;
+                begin.index = i;
+                begin.generation = _slots[i].generation;
 
-                    typename TObject::THandle end;
-                    end._slotIndex = i + (count - 1);
-                    end._indexInArray = i + (count - 1);
-                    end._generation = _slots[i + (count - 1)]._generation;
+                SObjectFrame<typename TObject::THandle> frame;
+                frame.count = count;
+                frame.begin = begin;
 
-                    SObjectFrame<TObject> frame;
-                    frame.begin = begin;
-                    frame.end = end;
-
-                    return frame;
-                }
+                return frame;
             }
         }
 
@@ -323,133 +303,73 @@ namespace triton
     template <typename TObject>
     void XObjectPoolBase<TObject>::Destroy(const TObject::THandle& handle)
     {
-        if (handle.IsInvalid() ||
-            handle._generation != _slots[handle._slotIndex]._generation ||
-            _slots[handle._slotIndex]._alive == types::K_FALSE)
+        if (handle.generation != _slots[handle.index].generation ||
+            _slots[handle.index].alive == types::False)
             return;
 
-        const types::usize objectIndex = GetBufferIndex(handle);
-        _slots[objectIndex]._alive = types::K_FALSE;
-        _freeSlots.push(objectIndex);
+        _objects[handle.index].~TObject();
+        _slots[handle.index].alive = types::False;
+        _freeSlots.push(handle.index);
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::Destroy(const SObjectFrame<TObject>& frame)
+    void XObjectPoolBase<TObject>::Destroy(const SObjectFrame<typename TObject::THandle>& frame)
     {
-        if (frame.begin.IsInvalid() ||
-            frame.end.IsInvalid() ||
-            frame.begin._generation != _slots[frame.begin._slotIndex]._generation ||
-            frame.end._generation != _slots[frame.end._slotIndex]._generation ||
-            _slots[frame.begin._slotIndex]._alive == types::K_FALSE ||
-            _slots[frame.end._slotIndex]._alive == types::K_FALSE)
-            return;
-
-        const types::usize beginObjectIndex = GetBufferIndex(frame.begin);
-        const types::usize endObjectIndex = GetBufferIndex(frame.end);
-        for (types::usize i = beginObjectIndex; i <= endObjectIndex; i++)
+        for (types::usize i = 0; i < frame.count; i++)
         {
-            _slots[i]._alive = types::K_FALSE;
-            _freeSlots.push(i);
+            _objects[frame.begin.index + i].~TObject();
+            _slots[frame.begin.index + i].alive = types::False;
+            _freeSlots.push(frame.begin.index + i);
         }
     }
 
     template <typename TObject>
     std::optional<std::reference_wrapper<TObject>> XObjectPoolBase<TObject>::Get(const TObject::THandle& handle)
     {
-        if (handle.IsInvalid() ||
-            _slots[handle._slotIndex]._alive == types::K_FALSE ||
-            handle._generation != _slots[handle._slotIndex]._generation)
-        {
-            return std::nullopt;
-        }
-        else
-        {
-            return _objects[GetBufferIndex(handle)];
-        }
-    }
-
-    template <typename TObject>
-    std::optional<SBufferView<TObject>> XObjectPoolBase<TObject>::Get(const SObjectFrame<TObject>& frame)
-    {
-        if (frame.begin.IsInvalid() ||
-            frame.end.IsInvalid() ||
-            frame.begin._generation != _slots[frame.begin._slotIndex]._generation ||
-            frame.end._generation != _slots[frame.end._slotIndex]._generation ||
-            _slots[frame.begin._slotIndex]._alive == types::K_FALSE ||
-            _slots[frame.end._slotIndex]._alive == types::K_FALSE)
+        if (handle.generation != _slots[handle.index].generation ||
+            _slots[handle.index].alive == types::False)
             return std::nullopt;
 
-        const types::usize beginObjectIndex = GetBufferIndex(frame.begin);
-        const types::usize endObjectIndex = GetBufferIndex(frame.end);
-        const types::usize count = (endObjectIndex - beginObjectIndex) + 1;
-
-        SBufferView<TObject> bv(&_objects[beginObjectIndex], count * sizeof(TObject));
-
-        return bv;
+        return _objects[handle.index];
     }
 
     template <typename TObject>
     void XObjectPoolBase<TObject>::WriteToStaging(types::usize bufferIndex, const TObject& object)
     {
-        if (bufferIndex >= _allocatedObjectCount)
-            return;
-
-        _stagingBuffer[bufferIndex] = ConvertToGpuLayout(object);
-
+        _staging[bufferIndex] = ConvertToGpuLayout(object);
         _bDirtyBit = types::K_TRUE;
     }
 
     template <typename TObject>
     types::usize XObjectPoolBase<TObject>::GetPackedIndex(const TObject::THandle& handle)
     {
-        if (handle.IsInvalid() ||
-            _slots[handle._slotIndex]._alive == types::K_FALSE)
+        if (handle.generation != _slots[handle.index].generation ||
+            _slots[handle.index].alive == types::False)
             return 0;
 
-        const types::usize realIndex = _slots[handle._slotIndex]._arrayIndex;
         types::usize packedIndex = 0;
-        for (types::usize i = 0; i < realIndex; i++)
-        {
-            if (_slots[i]._alive == types::K_TRUE)
-                packedIndex++;
-        }
+        for (types::usize i = 0; i < handle.index; i++)
+            if (_slots[i].alive == types::True)
+                ++packedIndex;
 
         return packedIndex;
     }
 
     template <typename TObject>
-    std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::GetHandle(const types::usize& bufferIndex)
-    {
-        if (bufferIndex >= _allocatedObjectCount)
-            return std::nullopt;
-
-        typename TObject::THandle handle;
-        handle.Invalidate();
-        handle._slotIndex = bufferIndex;
-        handle._indexInArray = bufferIndex;
-        handle._generation = _slots[handle._slotIndex]._generation;
-
-        return handle;
-    }
-
-    template <typename TObject>
     std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::GetHandle(
-        const types::usize bufferOffset,
-        const TObject::THandle& baseHandle
+        const TObject::THandle& baseHandle,
+        const types::usize offset
     )
     {
-        const types::usize baseIndex = GetBufferIndex(baseHandle);
-        const types::usize curIndex = baseIndex + bufferOffset;
-        if (curIndex >= _objectCount)
+        if (baseHandle.generation != _slots[baseHandle.index].generation ||
+            _slots[baseHandle.index].alive == types::False)
             return std::nullopt;
 
-        typename TObject::THandle handle;
-        handle.Invalidate();
-        handle._slotIndex = curIndex;
-        handle._indexInArray = curIndex;
-        handle._generation = _slots[handle._slotIndex]._generation;
+        typename TObject::THandle offsetHandle;
+        offsetHandle.index = baseHandle.index + offset;
+        offsetHandle.generation = _slots[offsetHandle.index].generation;
 
-        return handle;
+        return offsetHandle;
     }
 
     template <typename TObject>
@@ -460,30 +380,21 @@ namespace triton
 
         if (_bDirtyBit == types::K_TRUE)
         {
+            types::usize packedSize = 0;
+            for (types::usize i = 0; i < _lastObjectCursor; i++)
+                if (_slots[i].alive == types::True)
+                    ++packedSize;
+
             _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
                 ERenderCommand::WRITE_BUFFER,
                 (types::cpuword)_gpuBuffer,
                 0,
-                _objectCount * sizeof(TObject::TGPULayout),
-                (types::cpuword)&_stagingBuffer[0]
+                packedSize * sizeof(TObject::TGPULayout),
+                (types::cpuword)&_staging[0]
             ));
             _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
 
             _bDirtyBit = types::K_FALSE;
-        }
-    }
-
-    template <typename TObject>
-    types::boolean XObjectPoolBase<TObject>::CheckBufferOverflow(types::usize count)
-    {
-        if (_objectCount + count > _allocatedObjectCount)
-        {
-            Print("Error: object pool buffer overflow, count = " + std::to_string(_objectCount + count));
-            return types::K_TRUE;
-        }
-        else
-        {
-            return types::K_FALSE;
         }
     }
 
@@ -519,9 +430,9 @@ namespace triton
         const types::usize copyElementSize = std::min(prevMaxCount, curMaxCount);
         for (types::usize slotIndex = 0; slotIndex < copyElementSize; slotIndex++)
         {
-            if (_slots[slotIndex]._alive == types::K_FALSE)
+            if (_slots[slotIndex].alive == types::K_FALSE)
                 continue;
-            const types::usize objectIndex = _slots[slotIndex]._arrayIndex;
+            const types::usize objectIndex = slotIndex;
             if (objectIndex < copyElementSize)
                 CObjectAllocator::Create(&temp[0], objectIndex, std::move(_objects[objectIndex]));
             _objects[objectIndex].~TObject();
@@ -531,16 +442,15 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::SetSlot(types::usize objectIndex, types::usize generation)
+    void XObjectPoolBase<TObject>::OccupySlot(types::usize objectIndex, types::usize generation)
     {
-        _slots[objectIndex]._arrayIndex = objectIndex;
-        _slots[objectIndex]._generation = generation;
-        _slots[objectIndex]._alive = types::K_TRUE;
+        _slots[objectIndex].generation = generation;
+        _slots[objectIndex].alive = types::K_TRUE;
     }
 
     template <typename TObject>
     template <typename... Args>
-    void XObjectPoolBase<TObject>::CreateObjectAt(types::usize objectIndex, Args&&... args)
+    void XObjectPoolBase<TObject>::ConstructObject(types::usize objectIndex, Args&&... args)
     {
         CObjectAllocator::Create<TObject>(&_objects[0], objectIndex, std::forward<Args>(args)...);
     }
@@ -548,12 +458,12 @@ namespace triton
     template <typename TObject>
     void XObjectPoolBase<TObject>::DestroyObjectBuffer()
     {
-        for (types::usize i = 0; i < _objectCount; i++)
-            if (_slots[i]._alive == types::K_TRUE)
+        for (types::usize i = 0; i < _lastObjectCursor; i++)
+            if (_slots[i].alive == types::K_TRUE)
                 _objects[i].~TObject();
         CObjectAllocator::Deallocate(_objects);
 
-        _objectCount = 0;
+        _lastObjectCursor = 0;
     }
 
     template <typename TObject>
@@ -567,15 +477,5 @@ namespace triton
             (types::cpuword)_gpuBuffer
         ));
         _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
-    }
-
-    template <typename TObject>
-    types::usize XObjectPoolBase<TObject>::GetBufferIndex(const TObject::THandle& handle)
-    {
-        if (handle.IsInvalid() ||
-            _slots[handle._slotIndex]._alive == types::K_FALSE)
-            return 0;
-
-        return _slots[handle._slotIndex]._arrayIndex;
     }
 }

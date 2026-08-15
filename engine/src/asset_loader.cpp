@@ -145,10 +145,6 @@ std::optional<triton::SModel3DData::THandle> triton::XAssetLoader::LoadModel(con
 				cMatrix4(asset.rootBoneAccumulatedTransform)
 			);
 		}
-		else
-		{
-			data.skeleton.Invalidate();
-		}
 
 		for (usize i = 0; i < asset.animationData.size(); i++)
 		{

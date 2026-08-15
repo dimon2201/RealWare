@@ -25,8 +25,8 @@ namespace triton
 		types::usize lastCreatedInstanceCursor = 0;
 		types::usize instanceCount = 0;
 		types::usize maxReservedInstanceCount = 0;
-		SObjectFrame<SStaticRenderInstanceData> staticsFrame;
-		SObjectFrame<SDynamicRenderInstanceData> dynamicsFrame;
+		SObjectFrame<SStaticRenderInstanceData::THandle> staticsFrame;
+		SObjectFrame<SDynamicRenderInstanceData::THandle> dynamicsFrame;
 		std::queue<types::s32> freeFrameIndices;
 	};
 }

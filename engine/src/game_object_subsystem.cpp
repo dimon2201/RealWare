@@ -92,9 +92,6 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSub
 {
 	SGameObjectData& data = *_pool->Get(gameObject);
 
-	if (data.staticRenderInstance.IsInvalid() == K_FALSE)
-		return std::nullopt;
-
 	auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch);
 	if (!handleResult.has_value())
 		return std::nullopt;
@@ -111,9 +108,6 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSu
 {
 	SGameObjectData& data = *_pool->Get(gameObject);
 
-	if (data.dynamicRenderInstance.IsInvalid() == K_FALSE)
-		return std::nullopt;
-
 	auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch);
 	if (!handleResult.has_value())
 		return std::nullopt;
@@ -127,22 +121,14 @@ void triton::XGameObjectSubsystem::RemoveRenderableStatic(const SGameObjectData:
 {
 	SGameObjectData& data = *_pool->Get(gameObject);
 
-	if (data.staticRenderInstance.IsInvalid() == K_FALSE)
-	{
-		_context->GetSubsystem<XBatchSubsystem>()->RemoveStaticInstance(data.batch, data.staticRenderInstance);
-		data.staticRenderInstance.Invalidate();
-	}
+	_context->GetSubsystem<XBatchSubsystem>()->RemoveStaticInstance(data.batch, data.staticRenderInstance);
 }
 
 void triton::XGameObjectSubsystem::RemoveRenderableDynamic(const SGameObjectData::THandle& gameObject)
 {
 	SGameObjectData& data = *_pool->Get(gameObject);
 
-	if (data.dynamicRenderInstance.IsInvalid() == K_FALSE)
-	{
-		_context->GetSubsystem<XBatchSubsystem>()->RemoveDynamicInstance(data.batch, data.dynamicRenderInstance);
-		data.dynamicRenderInstance.Invalidate();
-	}
+	_context->GetSubsystem<XBatchSubsystem>()->RemoveDynamicInstance(data.batch, data.dynamicRenderInstance);
 }
 
 void triton::XGameObjectSubsystem::PlayAnimation(const SGameObjectData::THandle& gameObject, types::usize index)

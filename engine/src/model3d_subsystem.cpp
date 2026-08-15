@@ -176,10 +176,6 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 			cMatrix4(asset.rootBoneAccumulatedTransform)
 		);
 	}
-	else
-	{
-		value.get().skeleton.Invalidate();
-	}
 	
 	for (usize i = 0; i < asset.animationData.size(); i++)
 	{

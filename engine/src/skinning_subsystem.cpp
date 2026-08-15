@@ -38,10 +38,11 @@ std::optional<triton::SSkinData::THandle> triton::XSkinningSubsystem::Create(con
 {
     const SSkeletonData& skd = *_context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Get(skeleton);
     
-    const usize globSkinnedBoneBufferOffset = _skinnedBonesPool->GetSize();
     std::vector<SSkinnedBoneData::THandle> skinnedBones = {};
     for (usize i = 0; i < skd.bones.size(); i++)
         skinnedBones.push_back(*_skinnedBonesPool->Create());
+
+    const usize globSkinnedBoneBufferOffset = _skinnedBonesPool->GetPackedIndex(skinnedBones[0]);
 
     SSkinData::THandle skin = *_skinPool->Create();
     SSkinData& sd = *_skinPool->Get(skin);
