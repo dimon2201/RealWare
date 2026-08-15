@@ -6,15 +6,15 @@
 
 namespace triton
 {
-    class XGameObjectPool : public XObjectPoolBase<SGameObjectData>
+    class XGameObjectPool : public XObjectPoolBase<XGameObject>
     {
     public:
-        using XObjectPoolBase<SGameObjectData>::XObjectPoolBase;
+        using XObjectPoolBase<XGameObject>::XObjectPoolBase;
         ~XGameObjectPool() override = default;
 
-        SGameObjectData::TGPULayout ConvertToGpuLayout(const SGameObjectData& object) override
+        XGameObject::TGPULayout ConvertToGpuLayout(const XGameObject& object) override
         {
-            SGameObjectData::TGPULayout gpul;
+            XGameObject::TGPULayout gpul;
 
             return gpul;
         }
