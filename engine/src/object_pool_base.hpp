@@ -77,6 +77,8 @@ namespace triton
 
         std::optional<typename TObject::THandle> GetHandle(const types::usize& bufferIndex);
 
+        std::optional<typename TObject::THandle> GetHandle(const types::usize bufferOffset, const TObject::THandle& baseHandle);
+
         void Upload();
 
         inline types::usize GetSize() const
@@ -283,12 +285,19 @@ namespace triton
                     if (_slots[i + j]._alive == types::K_TRUE)
                     {
                         bFree = types::K_FALSE;
+                        i += j;
                         break;
                     }
                 }
 
                 if (bFree == types::K_TRUE)
                 {
+                    for (types::usize j = 0; j < count; j++)
+                        SetSlot(i + j, _slots[i + j]._generation + 1);
+
+                    if (i + count > _objectCount)
+                        _objectCount = i + count;
+
                     typename TObject::THandle begin;
                     begin._slotIndex = i;
                     begin._indexInArray = i;
@@ -374,10 +383,7 @@ namespace triton
         const types::usize endObjectIndex = GetBufferIndex(frame.end);
         const types::usize count = (endObjectIndex - beginObjectIndex) + 1;
 
-        SBufferView<TObject> bv;
-        bv.elements = &_objects[beginObjectIndex];
-        bv.byteSize = count * sizeof(TObject);
-        bv.elementCount = count;
+        SBufferView<TObject> bv(&_objects[beginObjectIndex], count * sizeof(TObject));
 
         return bv;
     }
@@ -421,6 +427,26 @@ namespace triton
         handle.Invalidate();
         handle._slotIndex = bufferIndex;
         handle._indexInArray = bufferIndex;
+        handle._generation = _slots[handle._slotIndex]._generation;
+
+        return handle;
+    }
+
+    template <typename TObject>
+    std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::GetHandle(
+        const types::usize bufferOffset,
+        const TObject::THandle& baseHandle
+    )
+    {
+        const types::usize baseIndex = GetBufferIndex(baseHandle);
+        const types::usize curIndex = baseIndex + bufferOffset;
+        if (curIndex >= _objectCount)
+            return std::nullopt;
+
+        typename TObject::THandle handle;
+        handle.Invalidate();
+        handle._slotIndex = curIndex;
+        handle._indexInArray = curIndex;
         handle._generation = _slots[handle._slotIndex]._generation;
 
         return handle;
