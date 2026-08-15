@@ -75,6 +75,11 @@ namespace triton
             const SSkinData::THandle& skin
         );
 
+        void SetDynamicInstanceWorldMatrix(
+            const SDynamicRenderInstanceData::THandle& instance,
+            const cMatrix4& matrix
+        );
+
         void RemoveStaticInstance(
             const SBatchData::THandle& batch,
             const SStaticRenderInstanceData::THandle& instance

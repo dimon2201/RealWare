@@ -178,6 +178,17 @@ void triton::XBatchSubsystem::SetStaticInstanceSkin(
 	MarkDirtyStatic();
 }
 
+void triton::XBatchSubsystem::SetDynamicInstanceWorldMatrix(
+	const SDynamicRenderInstanceData::THandle& instance,
+	const cMatrix4& matrix
+)
+{
+	SDynamicRenderInstanceData& drid = *_dynamicInstancePool->Get(instance);
+	drid.worldMatrix = matrix;
+
+	MarkDirtyDynamic();
+}
+
 void triton::XBatchSubsystem::RemoveStaticInstance(
 	const SBatchData::THandle& batch,
 	const SStaticRenderInstanceData::THandle& instance
