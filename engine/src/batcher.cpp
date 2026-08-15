@@ -33,23 +33,10 @@ triton::XBatchSubsystem::XBatchSubsystem(cContext* context) : ISubsys(context)
 		(s32)1,
 		cBuffer::eType::STORAGE
 	);
-
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-	_tempStaticCounterBuffer = (u32*)_context->GetMemoryAllocator()->Allocate(
-		caps->maxRenderBatchCount * sizeof(u32),
-		64
-	);
-	_tempDynamicCounterBuffer = (u32*)_context->GetMemoryAllocator()->Allocate(
-		caps->maxRenderBatchCount * sizeof(u32),
-		64
-	);
 }
 
 triton::XBatchSubsystem::~XBatchSubsystem()
 {
-	_context->GetMemoryAllocator()->Deallocate(_tempDynamicCounterBuffer);
-	_context->GetMemoryAllocator()->Deallocate(_tempStaticCounterBuffer);
-
 	CObjectAllocator::Destroy<XDynamicRenderInstancePool>(_dynamicInstancePool);
 	CObjectAllocator::Destroy<XStaticRenderInstancePool>(_staticInstancePool);
 	CObjectAllocator::Destroy<XBatchPool>(_batchPool);
@@ -57,15 +44,24 @@ triton::XBatchSubsystem::~XBatchSubsystem()
 
 std::optional<triton::SBatchData::THandle> triton::XBatchSubsystem::Create(
 	ERenderInstanceMotionType motionType,
-	const SGeometryView& geometry
+	const SGeometryView& geometry,
+	types::usize maxReservedInstanceCount
 )
 {
 	SBatchData bd;
 	bd.bufferOffset = 0;
+	bd.lastCreatedInstanceCursor = 0;
 	bd.instanceCount = 0;
 	bd.motionType = motionType;
 	bd.sharedGeometry = geometry;
 	
+	if (motionType == ERenderInstanceMotionType::Static)
+		bd.staticsFrame = *_staticInstancePool->Create(maxReservedInstanceCount);
+	else if (motionType == ERenderInstanceMotionType::Dynamic)
+		bd.dynamicsFrame = *_dynamicInstancePool->Create(maxReservedInstanceCount);
+	
+	bd.maxReservedInstanceCount = maxReservedInstanceCount;
+
 	return _batchPool->Create(std::move(bd));
 }
 
@@ -76,158 +72,146 @@ triton::SBatchData& triton::XBatchSubsystem::Get(const SBatchData::THandle& batc
 
 void triton::XBatchSubsystem::Destroy(const SBatchData::THandle& batch)
 {
+	SBatchData& data = *_batchPool->Get(batch);
+	if (data.motionType == ERenderInstanceMotionType::Static)
+		_staticInstancePool->Destroy(data.staticsFrame);
+	else if (data.motionType == ERenderInstanceMotionType::Dynamic)
+		_dynamicInstancePool->Destroy(data.dynamicsFrame);
+
 	_batchPool->Destroy(batch);
 }
 
 std::optional<triton::SStaticRenderInstanceData::THandle> triton::XBatchSubsystem::AddStaticInstance(
-	const SBatchData::THandle& batch,
-	const SGameObjectData::THandle& gameObject
+	const SBatchData::THandle& batch
 )
 {
-	auto riResult = _staticInstancePool->Create();
-	if (!riResult.has_value())
-		return std::nullopt;
-	auto ri = *riResult;
+	SBatchData& data = *_batchPool->Get(batch);
 
-	auto rdResult = _staticInstancePool->Get(ri);
-	if (!rdResult.has_value())
-		return std::nullopt;
-	auto rd = *rdResult;
+	data.instanceCount += 1;
 
-	rd.get().batch = batch;
+	s32 instanceIndex = -1;
+	if (data.freeFrameIndices.empty())
+	{
+		instanceIndex = data.lastCreatedInstanceCursor++;
+		if (data.lastCreatedInstanceCursor > data.maxReservedInstanceCount)
+			return std::nullopt;
+	}
+	else
+	{
+		instanceIndex = data.freeFrameIndices.front();
+		data.freeFrameIndices.pop();
+	}
 
-	auto bdResult = _batchPool->Get(batch);
-	if (!bdResult.has_value())
-		return std::nullopt;
-	auto bd = *bdResult;
-
-	bd.get().instanceCount += 1;
+	const SStaticRenderInstanceData::THandle& beginHandle = data.staticsFrame.begin;
+	const SStaticRenderInstanceData::THandle curHandle = *_staticInstancePool->GetHandle(instanceIndex, beginHandle);
+	SStaticRenderInstanceData& srid = *_staticInstancePool->Get(curHandle);
+	srid.batchInstanceIndex = instanceIndex;
 
 	MarkDirtyStatic();
 
-	return ri;
+	return curHandle;
 }
 
 std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XBatchSubsystem::AddDynamicInstance(
-	const SBatchData::THandle& batch,
-	const SGameObjectData::THandle& gameObject
+	const SBatchData::THandle& batch
 )
 {
-	auto riResult = _dynamicInstancePool->Create();
-	if (!riResult.has_value())
-		return std::nullopt;
-	auto ri = *riResult;
+	SBatchData& data = *_batchPool->Get(batch);
 
-	auto rdResult = _dynamicInstancePool->Get(ri);
-	if (!rdResult.has_value())
-		return std::nullopt;
-	auto rd = *rdResult;
+	data.instanceCount += 1;
 
-	rd.get().batch = batch;
+	s32 instanceIndex = -1;
+	if (data.freeFrameIndices.empty())
+	{
+		instanceIndex = data.lastCreatedInstanceCursor++;
+		if (data.lastCreatedInstanceCursor > data.maxReservedInstanceCount)
+			return std::nullopt;
+	}
+	else
+	{
+		instanceIndex = data.freeFrameIndices.front();
+		data.freeFrameIndices.pop();
+	}
 
-	auto bdResult = _batchPool->Get(batch);
-	if (!bdResult.has_value())
-		return std::nullopt;
-	auto bd = *bdResult;
-
-	bd.get().instanceCount += 1;
+	const SDynamicRenderInstanceData::THandle& beginHandle = data.dynamicsFrame.begin;
+	const SDynamicRenderInstanceData::THandle curHandle = *_dynamicInstancePool->GetHandle(instanceIndex, beginHandle);
+	SDynamicRenderInstanceData& drid = *_dynamicInstancePool->Get(curHandle);
+	drid.batchInstanceIndex = instanceIndex;
 
 	MarkDirtyDynamic();
 
-	return ri;
+	return curHandle;
 }
 
-void triton::XBatchSubsystem::SetStaticInstance(
+void triton::XBatchSubsystem::SetStaticInstanceWorldMatrix(
+	const SStaticRenderInstanceData::THandle& instance,
+	const cMatrix4& matrix
+)
+{
+	SStaticRenderInstanceData& srid = *_staticInstancePool->Get(instance);
+	srid.worldMatrix = matrix;
+
+	MarkDirtyStatic();
+}
+
+void triton::XBatchSubsystem::SetStaticInstanceMaterial(
 	const SStaticRenderInstanceData::THandle& instance,
 	const SMaterialData::THandle& material
 )
 {
-	auto rdResult = _staticInstancePool->Get(instance);
-	if (!rdResult.has_value())
-		return;
-	auto rd = *rdResult;
-	rd.get().material = material;
+	SStaticRenderInstanceData& srid = *_staticInstancePool->Get(instance);
+	srid.material = material;
 
 	MarkDirtyStatic();
 }
 
-void triton::XBatchSubsystem::SetStaticInstance(
+void triton::XBatchSubsystem::SetStaticInstanceSkin(
 	const SStaticRenderInstanceData::THandle& instance,
 	const SSkinData::THandle& skin
 )
 {
-	auto rdResult = _staticInstancePool->Get(instance);
-	if (!rdResult.has_value())
-		return;
-	SStaticRenderInstanceData& rd = *rdResult;
+	const SSkinData& skinData = *_context->GetSubsystem<XSkinningSubsystem>()->GetSkinPool()->Get(skin);
 
-	auto skinDataResult = _context->GetSubsystem<XSkinningSubsystem>()->GetSkinPool()->Get(skin);
-	if (!skinDataResult.has_value())
-		return;
-	const SSkinData& skinData = *skinDataResult;
-	rd.skinnedBoneBufferOffset = skinData.globSkinnedBoneBufferOffset;
+	SStaticRenderInstanceData& srid = *_staticInstancePool->Get(instance);
+	srid.skinnedBoneBufferOffset = skinData.globSkinnedBoneBufferOffset;
 
 	MarkDirtyStatic();
 }
 
-void triton::XBatchSubsystem::RemoveStaticInstance(const SStaticRenderInstanceData::THandle& instance)
+void triton::XBatchSubsystem::RemoveStaticInstance(
+	const SBatchData::THandle& batch,
+	const SStaticRenderInstanceData::THandle& instance
+)
 {
-	auto sriResult = _staticInstancePool->Get(instance);
-	if (!sriResult.has_value())
-		return;
-	auto sri = *sriResult;
+	SStaticRenderInstanceData& srid = *_staticInstancePool->Get(instance);
 
-	auto bdResult = _batchPool->Get(sri.get().batch);
-	if (!bdResult.has_value())
-		return;
-	auto bd = *bdResult;
-	bd.get().instanceCount -= 1;
-
-	_staticInstancePool->Destroy(instance);
+	SBatchData& bd = *_batchPool->Get(batch);
+	bd.instanceCount -= 1;
+	bd.freeFrameIndices.push(srid.batchInstanceIndex);
 
 	MarkDirtyStatic();
 }
 
-void triton::XBatchSubsystem::RemoveDynamicInstance(const SDynamicRenderInstanceData::THandle& instance)
+void triton::XBatchSubsystem::RemoveDynamicInstance(
+	const SBatchData::THandle& batch, 
+	const SDynamicRenderInstanceData::THandle& instance
+)
 {
-	auto driResult = _dynamicInstancePool->Get(instance);
-	if (!driResult.has_value())
-		return;
-	auto dri = *driResult;
+	SDynamicRenderInstanceData& drid = *_dynamicInstancePool->Get(instance);
 
-	auto bdResult = _batchPool->Get(dri.get().batch);
-	if (!bdResult.has_value())
-		return;
-	auto bd = *bdResult;
-	bd.get().instanceCount -= 1;
-
-	_dynamicInstancePool->Destroy(instance);
+	SBatchData& bd = *_batchPool->Get(batch);
+	bd.instanceCount -= 1;
+	bd.freeFrameIndices.push(drid.batchInstanceIndex);
 
 	MarkDirtyDynamic();
 }
 
 void triton::XBatchSubsystem::Update()
 {
-	if (StaticBufferNeedsPacking())
-	{
-		RecalcBufferOffsetsAndResetCounters(_tempStaticCounterBuffer);
-		PackInstancesToStagingBuffers(
-			ERenderInstanceMotionType::Static,
-			_tempStaticCounterBuffer
-		);
-
-		_bStaticBufferNeedsPacking = K_FALSE;
-	}
-	if (DynamicBufferNeedsPacking())
-	{
-		RecalcBufferOffsetsAndResetCounters(_tempDynamicCounterBuffer);
-		PackInstancesToStagingBuffers(
-			ERenderInstanceMotionType::Dynamic,
-			_tempDynamicCounterBuffer
-		);
-
-		_bDynamicBufferNeedsPacking = K_FALSE;
-	}
+	if (_bStaticDirtyBit == K_TRUE)
+		PackStaticInstancesToStagingBuffer();
+	if (_bDynamicDirtyBit == K_TRUE)
+		PackDynamicInstancesToStagingBuffer();
 
 	_staticInstancePool->Update();
 	_dynamicInstancePool->Update();
@@ -235,88 +219,60 @@ void triton::XBatchSubsystem::Update()
 
 void triton::XBatchSubsystem::MarkDirtyStatic()
 {
-	_bStaticBufferNeedsPacking = K_TRUE;
+	_bStaticDirtyBit = K_TRUE;
 }
 
 void triton::XBatchSubsystem::MarkDirtyDynamic()
 {
-	_bDynamicBufferNeedsPacking = K_TRUE;
+	_bDynamicDirtyBit = K_TRUE;
 }
 
-types::boolean triton::XBatchSubsystem::StaticBufferNeedsPacking()
+void triton::XBatchSubsystem::PackStaticInstancesToStagingBuffer()
 {
-	return _bStaticBufferNeedsPacking == K_TRUE;
-}
-
-types::boolean triton::XBatchSubsystem::DynamicBufferNeedsPacking()
-{
-	return _bDynamicBufferNeedsPacking == K_TRUE;
-}
-
-void triton::XBatchSubsystem::RecalcBufferOffsetsAndResetCounters(u32* counterBuffer)
-{
-	const SBufferView<SBatchData> bvBatch = _batchPool->GetData();
-	usize cumInstanceCount[2] = {};
-	for (usize i = 0; i < bvBatch.elementCount; i++)
+	SBufferView<SBatchData> batches = _batchPool->GetData();
+	for (usize i = 0; i < batches.elementCount; i++)
 	{
-		const usize batchIdx = _batchPool->GetPackedIndex(*_batchPool->GetHandle(i));
+		const SObjectFrame<SStaticRenderInstanceData> frame = batches.elements[i].staticsFrame;
 		
-		SBatchData& bd = bvBatch.elements[batchIdx];
-		bd.bufferOffset = cumInstanceCount[(int)bd.motionType];
-		cumInstanceCount[(int)bd.motionType] += bd.instanceCount;
+		const usize beginObjectIndex = _staticInstancePool->GetPackedIndex(frame.begin);
+		const usize endObjectIndex = _staticInstancePool->GetPackedIndex(frame.end);
+		const usize objectCount = (endObjectIndex - beginObjectIndex) + 1;
 
-		counterBuffer[batchIdx] = 0;
+		for (usize j = 0; j < objectCount; j++)
+		{
+			const SStaticRenderInstanceData::THandle handle = *_staticInstancePool->GetHandle(j, frame.begin);
+			SStaticRenderInstanceData& data = *_staticInstancePool->Get(handle);
+			_staticInstancePool->WriteToStaging(
+				beginObjectIndex + j,
+				data
+			);
+		}
+
+		batches.elements[i].bufferOffset = beginObjectIndex;
 	}
 }
 
-void triton::XBatchSubsystem::PackInstancesToStagingBuffers(
-	ERenderInstanceMotionType motionType,
-	types::u32* counterBuffer
-)
+void triton::XBatchSubsystem::PackDynamicInstancesToStagingBuffer()
 {
-	// Static
-	const SBufferView<SStaticRenderInstanceData> bvStaticInstances =
-		_staticInstancePool->GetData();
-	for (usize instanceIdx = 0; instanceIdx < bvStaticInstances.elementCount; instanceIdx++)
+	SBufferView<SBatchData> batches = _batchPool->GetData();
+	for (usize i = 0; i < batches.elementCount; i++)
 	{
-		SStaticRenderInstanceData& rid = bvStaticInstances.elements[instanceIdx];
-		SBatchData& bd = *_batchPool->Get(rid.batch);
+		const SObjectFrame<SDynamicRenderInstanceData> frame = batches.elements[i].dynamicsFrame;
 
-		if (bd.motionType != motionType)
-			continue;
+		const usize beginObjectIndex = _dynamicInstancePool->GetPackedIndex(frame.begin);
+		const usize endObjectIndex = _dynamicInstancePool->GetPackedIndex(frame.end);
+		const usize objectCount = (endObjectIndex - beginObjectIndex) + 1;
 
-		const usize batchIdx = _batchPool->GetPackedIndex(rid.batch);
-		const usize globElementIndex =
-			bd.bufferOffset +
-			counterBuffer[batchIdx];
-		counterBuffer[batchIdx] += 1;
+		for (usize j = 0; j < objectCount; j++)
+		{
+			const SDynamicRenderInstanceData::THandle handle = *_dynamicInstancePool->GetHandle(j, frame.begin);
+			const SDynamicRenderInstanceData& data = *_dynamicInstancePool->Get(handle);
+			_dynamicInstancePool->WriteToStaging(
+				beginObjectIndex + j,
+				data
+			);
+		}
 
-		_staticInstancePool->WriteToStaging(
-			globElementIndex,
-			rid
-		);
-	}
-
-	// Dynamic
-	const SBufferView<SDynamicRenderInstanceData> bvDynamicInstances =
-		_dynamicInstancePool->GetData();
-	for (usize instanceIdx = 0; instanceIdx < bvDynamicInstances.elementCount; instanceIdx++)
-	{
-		SDynamicRenderInstanceData& rid = bvDynamicInstances.elements[instanceIdx];
-		SBatchData& bd = *_batchPool->Get(rid.batch);
-
-		if (bd.motionType != motionType)
-			continue;
-
-		const usize batchIdx = _batchPool->GetPackedIndex(rid.batch);
-		const usize globElementIndex =
-			bd.bufferOffset +
-			counterBuffer[batchIdx];
-		counterBuffer[batchIdx] += 1;
-
-		_dynamicInstancePool->WriteToStaging(
-			globElementIndex,
-			rid
-		);
+		batches.elements[i].bufferOffset = beginObjectIndex;
 	}
 }

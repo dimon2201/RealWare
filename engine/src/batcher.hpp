@@ -35,10 +35,8 @@ namespace triton
         XBatchPool* _batchPool = nullptr;
         XStaticRenderInstancePool* _staticInstancePool = nullptr;
         XDynamicRenderInstancePool* _dynamicInstancePool = nullptr;
-        types::u32* _tempStaticCounterBuffer = nullptr;
-        types::u32* _tempDynamicCounterBuffer = nullptr;
-        types::boolean _bStaticBufferNeedsPacking = types::K_FALSE;
-        types::boolean _bDynamicBufferNeedsPacking = types::K_FALSE;
+        types::boolean _bStaticDirtyBit = types::K_FALSE;
+        types::boolean _bDynamicDirtyBit = types::K_FALSE;
 
     public:
         explicit XBatchSubsystem(cContext* context);
@@ -46,7 +44,8 @@ namespace triton
 
         std::optional<SBatchData::THandle> Create(
             ERenderInstanceMotionType motionType,
-            const SGeometryView& geometry
+            const SGeometryView& geometry,
+            types::usize maxReservedInstanceCount
         );
 
         SBatchData& Get(const SBatchData::THandle& batch);
@@ -54,28 +53,37 @@ namespace triton
         void Destroy(const SBatchData::THandle& batch);
 
         std::optional<SStaticRenderInstanceData::THandle> AddStaticInstance(
-            const SBatchData::THandle& batch,
-            const SGameObjectData::THandle& gameObject
+            const SBatchData::THandle& batch
         );
 
         std::optional<SDynamicRenderInstanceData::THandle> AddDynamicInstance(
-            const SBatchData::THandle& batch,
-            const SGameObjectData::THandle& gameObject
+            const SBatchData::THandle& batch
         );
 
-        void SetStaticInstance(
+        void SetStaticInstanceWorldMatrix(
+            const SStaticRenderInstanceData::THandle& instance,
+            const cMatrix4& matrix
+        );
+
+        void SetStaticInstanceMaterial(
             const SStaticRenderInstanceData::THandle& instance,
             const SMaterialData::THandle& material
         );
 
-        void SetStaticInstance(
+        void SetStaticInstanceSkin(
             const SStaticRenderInstanceData::THandle& instance,
             const SSkinData::THandle& skin
         );
 
-        void RemoveStaticInstance(const SStaticRenderInstanceData::THandle& instance);
+        void RemoveStaticInstance(
+            const SBatchData::THandle& batch,
+            const SStaticRenderInstanceData::THandle& instance
+        );
 
-        void RemoveDynamicInstance(const SDynamicRenderInstanceData::THandle& instance);
+        void RemoveDynamicInstance(
+            const SBatchData::THandle& batch,
+            const SDynamicRenderInstanceData::THandle& instance
+        );
 
         void Init() override {}
         void Free() override {}
@@ -106,15 +114,8 @@ namespace triton
 
         void MarkDirtyDynamic();
 
-        types::boolean StaticBufferNeedsPacking();
+        void PackStaticInstancesToStagingBuffer();
 
-        types::boolean DynamicBufferNeedsPacking();
-
-        void RecalcBufferOffsetsAndResetCounters(types::u32* counterBuffer);
-
-        void PackInstancesToStagingBuffers(
-            ERenderInstanceMotionType motionType,
-            types::u32* counterBuffer
-        );
+        void PackDynamicInstancesToStagingBuffer();
     };
 }
