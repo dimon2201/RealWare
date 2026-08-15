@@ -3,7 +3,6 @@
 #pragma once
 
 #include "math.hpp"
-#include "batch_data.hpp"
 #include "material_data.hpp"
 #include "skeleton_data.hpp"
 #include "render_instance_motion_type.hpp"
@@ -58,7 +57,7 @@ namespace triton
         };
 
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
-        SBatchData::THandle batch;
+        types::s32 batchInstanceIndex = -1;
         SMaterialData::THandle material;
         types::s32 skinnedBoneBufferOffset = 0;
         SStaticRenderInstanceData::THandle instance;
@@ -92,7 +91,7 @@ namespace triton
         };
 
         ERenderInstanceMotionType usage = ERenderInstanceMotionType::Static;
-        SBatchData::THandle batch;
+        types::s32 batchInstanceIndex = -1;
         SMaterialData::THandle material;
         types::s32 skinnedBoneBufferOffset = 0;
         SDynamicRenderInstanceData::THandle instance;
