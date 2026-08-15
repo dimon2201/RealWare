@@ -542,7 +542,7 @@ namespace triton
     template <typename... Args>
     void XObjectPoolBase<TObject>::CreateObjectAt(types::usize objectIndex, Args&&... args)
     {
-        CObjectAllocator::Create(&_objects[0], objectIndex, std::forward<Args>(args)...);
+        CObjectAllocator::Create<TObject>(&_objects[0], objectIndex, std::forward<Args>(args)...);
     }
 
     template <typename TObject>
