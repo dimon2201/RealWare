@@ -103,13 +103,16 @@ triton::XGeometryStorage::~XGeometryStorage()
 std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
     EVertexBufferFormat format,
     const u8* vertices,
-    usize verticesByteSize,
+    usize inputVertexCount,
     const u8* indices,
-    usize indicesByteSize
+    usize inputIndexCount
 )
 {
     if (format == EVertexBufferFormat::Static_52)
     {
+        const usize verticesByteSize = sizeof(SStaticVertexGPULayout) * inputVertexCount;
+        const usize indicesByteSize = sizeof(u32) * inputIndexCount;
+
         usize vertexBufferByteSize = _staticVertexBufferPointer;
         usize indexBufferByteSize = _staticIndexBufferPointer;
         _staticVertexBufferPointer += verticesByteSize;
@@ -155,6 +158,9 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
     }
     else if (format == EVertexBufferFormat::Skinned_84)
     {
+        const usize verticesByteSize = sizeof(SSkinnedVertexGPULayout) * inputVertexCount;
+        const usize indicesByteSize = sizeof(u32) * inputIndexCount;
+
         usize vertexBufferByteSize = _skinnedVertexBufferPointer;
         usize indexBufferByteSize = _skinnedIndexBufferPointer;
         _skinnedVertexBufferPointer += verticesByteSize;

@@ -10,6 +10,9 @@
 #include "skeleton_data.hpp"
 #include "render_instance_data.hpp"
 #include "batch_data.hpp"
+#include "animation.hpp"
+#include "skinning_data.hpp"
+#include "model3d_data.hpp"
 #include "math.hpp"
 
 namespace triton
@@ -24,6 +27,8 @@ namespace triton
         SStaticRenderInstanceData::THandle _staticRenderInstance;
         SDynamicRenderInstanceData::THandle _dynamicRenderInstance;
         SSkeletonData::THandle _skeleton;
+        SSkinData::THandle _skin;
+        std::vector<SAnimationData::THandle> _animations = {};
 
     public:
         struct THandle : public SHandle {};
@@ -31,6 +36,7 @@ namespace triton
         struct TGPULayout {};
 
         explicit XGameObject(cContext* context, const SBatchData::THandle& batchHandle);
+        explicit XGameObject(cContext* context, const SModel3DData& model, const SBatchData::THandle& batchHandle);
         ~XGameObject() override;
 
         std::optional<SStaticRenderInstanceData::THandle> SetRenderableStatic(const SBatchData::THandle& batch);
@@ -40,5 +46,7 @@ namespace triton
         void RemoveRenderableStatic();
 
         void RemoveRenderableDynamic();
+
+        void PlayAnimation(types::usize index);
     };
 }

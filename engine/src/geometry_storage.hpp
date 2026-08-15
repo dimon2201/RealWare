@@ -38,9 +38,9 @@ namespace triton
         std::optional<triton::SGeometryView> Create(
             EVertexBufferFormat format,
             const types::u8* vertices,
-            types::usize verticesByteSize,
+            types::usize inputVertexCount,
             const types::u8* indices,
-            types::usize indicesByteSize
+            types::usize inputIndexCount
         );
 
         inline cBuffer* GetStaticVertexBuffer() const

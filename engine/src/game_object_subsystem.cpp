@@ -39,6 +39,20 @@ std::optional<triton::XGameObject::THandle> triton::XGameObjectSubsystem::Create
 	return handle;
 }
 
+std::optional<triton::XGameObject::THandle> triton::XGameObjectSubsystem::Create(
+	const std::string& name,
+	const SModel3DData& model,
+	const SBatchData::THandle& batchHandle
+)
+{
+	auto handleResult = _pool->Create(_context, model, batchHandle);
+	if (!handleResult.has_value())
+		return std::nullopt;
+	auto handle = *handleResult;
+
+	return handle;
+}
+
 void triton::XGameObjectSubsystem::Destroy(const XGameObject::THandle& gameObject)
 {
 	_pool->Destroy(gameObject);

@@ -36,6 +36,12 @@ namespace triton
             const SBatchData::THandle& batchHandle
         );
 
+        std::optional<XGameObject::THandle> Create(
+            const std::string& name,
+            const SModel3DData& model,
+            const SBatchData::THandle& batchHandle
+        );
+
         void Destroy(const XGameObject::THandle& gameObject);
 
         void Init() override;
