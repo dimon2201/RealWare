@@ -5,7 +5,7 @@
 #include <optional>
 #include "object.hpp"
 #include "DELETE_THIS_FILE_ASAP.hpp"
-#include "game_object.hpp"
+#include "game_object_data.hpp"
 #include "graphics_buffer_formats.hpp"
 #include "render_instance_data.hpp"
 #include "model3d_data.hpp"
@@ -31,18 +31,34 @@ namespace triton
         explicit XGameObjectSubsystem(cContext* context);
         ~XGameObjectSubsystem() override;
 
-        std::optional<XGameObject::THandle> Create(
+        std::optional<SGameObjectData::THandle> Create(
             const std::string& name,
             const SBatchData::THandle& batchHandle
         );
 
-        std::optional<XGameObject::THandle> Create(
+        std::optional<SGameObjectData::THandle> Create(
             const std::string& name,
             const SModel3DData& model,
             const SBatchData::THandle& batchHandle
         );
 
-        void Destroy(const XGameObject::THandle& gameObject);
+        void Destroy(const SGameObjectData::THandle& gameObject);
+
+        std::optional<SStaticRenderInstanceData::THandle> SetRenderableStatic(
+            const SGameObjectData::THandle& gameObject,
+            const SBatchData::THandle& batch
+        );
+
+        std::optional<SDynamicRenderInstanceData::THandle> SetRenderableDynamic(
+            const SGameObjectData::THandle& gameObject,
+            const SBatchData::THandle& batch
+        );
+
+        void RemoveRenderableStatic(const SGameObjectData::THandle& gameObject);
+
+        void RemoveRenderableDynamic(const SGameObjectData::THandle& gameObject);
+
+        void PlayAnimation(const SGameObjectData::THandle& gameObject, types::usize index);
 
         void Init() override;
         void Free() override;
