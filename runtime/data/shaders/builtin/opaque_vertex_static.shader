@@ -78,10 +78,7 @@ void main()
 	else if (InstanceBatchType == 1)
 		instance = dynamicInstances[gl_InstanceID + InstanceOffset];
 	Material material;
-	if (InMaterialIndex == -1)
-		material = materials[instance.MaterialIndex];
-	else
-		material = materials[InMaterialIndex];
+	material = materials[instance.MaterialIndex];
 	
 	DiffuseTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Diffuse.AtlasLayer);
 	DiffuseTexcoordAtlas.xy *= vec2(material.Diffuse.AtlasNormSize);
