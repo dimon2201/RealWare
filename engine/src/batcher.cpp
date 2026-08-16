@@ -251,11 +251,15 @@ void triton::XBatchSubsystem::PackStaticInstancesToStagingBuffer()
 		for (usize j = 0; j < objectCount; j++)
 		{
 			const SStaticRenderInstanceData::THandle handle = *_staticInstancePool->GetHandle(frame.begin, j);
-			SStaticRenderInstanceData& data = *_staticInstancePool->Get(handle);
-			_staticInstancePool->WriteToStaging(
-				beginObjectIndex + j,
-				data
-			);
+			auto dataRes = _staticInstancePool->Get(handle);
+			if (dataRes.has_value())
+			{
+				SStaticRenderInstanceData& data = *dataRes;
+				_staticInstancePool->WriteToStaging(
+					beginObjectIndex + j,
+					data
+				);
+			}
 		}
 
 		batches.elements[i].bufferOffset = beginObjectIndex;
@@ -276,10 +280,15 @@ void triton::XBatchSubsystem::PackDynamicInstancesToStagingBuffer()
 		{
 			const SDynamicRenderInstanceData::THandle handle = *_dynamicInstancePool->GetHandle(frame.begin, j);
 			const SDynamicRenderInstanceData& data = *_dynamicInstancePool->Get(handle);
-			_dynamicInstancePool->WriteToStaging(
-				beginObjectIndex + j,
-				data
-			);
+			auto dataRes = _dynamicInstancePool->Get(handle);
+			if (dataRes.has_value())
+			{
+				SDynamicRenderInstanceData& data = *dataRes;
+				_dynamicInstancePool->WriteToStaging(
+					beginObjectIndex + j,
+					data
+				);
+			}
 		}
 
 		batches.elements[i].bufferOffset = beginObjectIndex;
