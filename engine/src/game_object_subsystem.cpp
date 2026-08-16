@@ -27,10 +27,7 @@ triton::XGameObjectSubsystem::~XGameObjectSubsystem()
 	CObjectAllocator::Destroy<XGameObjectPool>(_pool);
 }
 
-std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Create(
-	const std::string& name,
-	const SBatchData::THandle& batchHandle
-)
+std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Create(const std::string& name)
 {
 	auto handleResult = _pool->Create();
 	if (!handleResult.has_value())
@@ -41,11 +38,10 @@ std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Cr
 
 std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Create(
 	const std::string& name,
-	const SModel3DData& model,
-	const SBatchData::THandle& batchHandle
+	const SModel3DData& model
 )
 {
-	auto handle = *Create(name, batchHandle);
+	auto handle = *Create(name);
 
 	SGameObjectData& gameObject = *_pool->Get(handle);
 
