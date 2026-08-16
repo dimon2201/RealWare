@@ -10,7 +10,6 @@ in vec3 FragPosWorldSpace;
 flat in vec4 DiffuseColor;
 flat in mat3 TBNMatrix;
 in mat3 TangentToWorld;
-flat in uint Out666;
 
 struct TextureAtlasTexture
 {
@@ -62,5 +61,5 @@ void main()
 		lightDir
 	);
 
-	FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f); //vec4(pow(textureColor.xyz, vec3(1.0 / 2.2)), 1.0f);
+	FragColor = vec4(pow(DiffuseColor.xyz, vec3(1.0 / 2.2)), 1.0f);
 }
