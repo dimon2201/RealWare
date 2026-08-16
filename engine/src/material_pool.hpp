@@ -18,10 +18,20 @@ namespace triton
         {
             SMaterialData::TGPULayout gpul;
 
-            STextureData& dif = *_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.diffuseTexture);
-            STextureData& nor = *_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.normalTexture);
-            STextureData& rgh = *_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.roughnessTexture);
-            STextureData& met = *_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.metallicTexture);
+            auto difRes = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.diffuseTexture);
+            auto norRes = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.normalTexture);
+            auto rghRes = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.roughnessTexture);
+            auto metRes = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.metallicTexture);
+
+            STextureData empty;
+            STextureData& dif = empty;
+            STextureData& nor = empty;
+            STextureData& rgh = empty;
+            STextureData& met = empty;
+            if (difRes.has_value()) dif = *difRes;
+            if (norRes.has_value()) nor = *norRes;
+            if (rghRes.has_value()) rgh = *rghRes;
+            if (metRes.has_value()) met = *metRes;
 
             gpul.diffuseColor = object.diffuseColor;
             gpul.diffuseTextureLayout.layer = dif.zAtlasLayer;
