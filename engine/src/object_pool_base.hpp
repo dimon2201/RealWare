@@ -60,8 +60,7 @@ namespace triton
         template <typename... Args>
         std::optional<typename TObject::THandle> Create(Args&&... args);
 
-        template <typename... Args>
-        std::optional<SObjectFrame<typename TObject::THandle>> Create(types::usize count, Args&&... args);
+        std::optional<SObjectFrame<typename TObject::THandle>> Create(types::usize count);
 
         void Destroy(const TObject::THandle& handle);
 
@@ -245,11 +244,7 @@ namespace triton
     }
 
     template <typename TObject>
-    template <typename... Args>
-    std::optional<SObjectFrame<typename TObject::THandle>> XObjectPoolBase<TObject>::Create(
-        types::usize count,
-        Args&&... args
-    )
+    std::optional<SObjectFrame<typename TObject::THandle>> XObjectPoolBase<TObject>::Create(types::usize count)
     {
         for (types::usize i = 0; i < _reservedCount; i++)
         {
@@ -273,7 +268,7 @@ namespace triton
 
                 for (types::usize j = 0; j < count; j++)
                 {
-                    OccupySlot(i, _slots[i].generation + 1);
+                    OccupySlot(i + j, _slots[i + j].generation + 1);
 
                     new (&_objects[i + j]) TObject();
                 }
