@@ -35,7 +35,8 @@ namespace triton
 
         std::optional<SGameObjectData::THandle> Create(
             const std::string& name,
-            const SModel3DData& model
+            const SModel3DData& model,
+            const SBatchData::THandle& batchHandle
         );
 
         void Destroy(const SGameObjectData::THandle& gameObject);
@@ -43,13 +44,13 @@ namespace triton
         std::optional<SStaticRenderInstanceData::THandle> SetRenderableStatic(
             const SGameObjectData::THandle& gameObject,
             types::boolean bIsRenderable,
-            const SBatchData::THandle& batch = SBatchData::THandle()
+            const SBatchData::THandle& batchHandle = SBatchData::THandle()
         );
 
         std::optional<SDynamicRenderInstanceData::THandle> SetRenderableDynamic(
             const SGameObjectData::THandle& gameObject,
             types::boolean bIsRenderable,
-            const SBatchData::THandle& batch = SBatchData::THandle()
+            const SBatchData::THandle& batchHandle = SBatchData::THandle()
         );
 
         void PlayAnimation(const SGameObjectData::THandle& gameObject, types::usize index);

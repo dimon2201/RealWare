@@ -38,7 +38,8 @@ std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Cr
 
 std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Create(
 	const std::string& name,
-	const SModel3DData& model
+	const SModel3DData& model,
+	const SBatchData::THandle& batchHandle
 )
 {
 	auto handle = *Create(name);
@@ -49,6 +50,7 @@ std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Cr
 	gameObject.skin = *_context->GetSubsystem<XSkinningSubsystem>()->Create(gameObject.skeleton);
 	if (gameObject.motionType == ERenderInstanceMotionType::Static)
 	{
+		SetRenderableStatic(handle, True, batchHandle);
 		_context->GetSubsystem<XBatchSubsystem>()->SetStaticInstanceSkin(gameObject.staticRenderInstance, gameObject.skin);
 	}
 	else if (gameObject.motionType == ERenderInstanceMotionType::Dynamic)
@@ -67,19 +69,21 @@ void triton::XGameObjectSubsystem::Destroy(const SGameObjectData::THandle& gameO
 std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableStatic(
 	const SGameObjectData::THandle& gameObject,
 	boolean bIsRenderable,
-	const SBatchData::THandle& batch
+	const SBatchData::THandle& batchHandle
 )
 {
 	SGameObjectData& data = *_pool->Get(gameObject);
 
 	if (bIsRenderable == True)
 	{
+		data.batch = batchHandle;
+
 		if (_context->GetSubsystem<XBatchSubsystem>()->
 			GetStaticRenderInstancePool()->
 			Get(data.staticRenderInstance).has_value())
 			return std::nullopt;
 
-		auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch);
+		auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batchHandle);
 		if (!handleResult.has_value())
 			return std::nullopt;
 
@@ -101,19 +105,21 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSub
 std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableDynamic(
 	const SGameObjectData::THandle& gameObject,
 	boolean bIsRenderable,
-	const SBatchData::THandle& batch
+	const SBatchData::THandle& batchHandle
 )
 {
 	SGameObjectData& data = *_pool->Get(gameObject);
 
 	if (bIsRenderable == True)
 	{
+		data.batch = batchHandle;
+
 		if (_context->GetSubsystem<XBatchSubsystem>()->
 			GetDynamicRenderInstancePool()->
 			Get(data.dynamicRenderInstance).has_value())
 			return std::nullopt;
 
-		auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch);
+		auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batchHandle);
 		if (!handleResult.has_value())
 			return std::nullopt;
 
