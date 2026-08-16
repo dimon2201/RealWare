@@ -35,25 +35,8 @@ std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Cr
 	auto handleResult = _pool->Create();
 	if (!handleResult.has_value())
 		return std::nullopt;
-	auto handle = *handleResult;
 
-	SGameObjectData& gameObject = *_pool->Get(handle);
-
-	SBatchData& batch = *_context->GetSubsystem<XBatchSubsystem>()->GetBatchPool()->Get(batchHandle);
-	if (batch.motionType == ERenderInstanceMotionType::Static)
-	{
-		gameObject.motionType = ERenderInstanceMotionType::Static;
-		SetRenderableStatic(handle, batchHandle);
-		_context->GetSubsystem<XBatchSubsystem>()->SetStaticInstanceWorldMatrix(gameObject.staticRenderInstance, cMatrix4(1.0f));
-	}
-	else if (batch.motionType == ERenderInstanceMotionType::Dynamic)
-	{
-		gameObject.motionType = ERenderInstanceMotionType::Dynamic;
-		SetRenderableDynamic(handle, batchHandle);
-		_context->GetSubsystem<XBatchSubsystem>()->SetDynamicInstanceWorldMatrix(gameObject.dynamicRenderInstance, cMatrix4(1.0f));
-	}
-
-	return handle;
+	return *handleResult;
 }
 
 std::optional<triton::SGameObjectData::THandle> triton::XGameObjectSubsystem::Create(
@@ -87,48 +70,72 @@ void triton::XGameObjectSubsystem::Destroy(const SGameObjectData::THandle& gameO
 
 std::optional<triton::SStaticRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableStatic(
 	const SGameObjectData::THandle& gameObject,
+	boolean bIsRenderable,
 	const SBatchData::THandle& batch
 )
 {
 	SGameObjectData& data = *_pool->Get(gameObject);
 
-	auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch);
-	if (!handleResult.has_value())
-		return std::nullopt;
+	if (bIsRenderable == True)
+	{
+		if (_context->GetSubsystem<XBatchSubsystem>()->
+			GetStaticRenderInstancePool()->
+			Get(data.staticRenderInstance).has_value())
+			return std::nullopt;
 
-	data.staticRenderInstance = *handleResult;
+		auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddStaticInstance(batch);
+		if (!handleResult.has_value())
+			return std::nullopt;
 
-	return *handleResult;
+		data.staticRenderInstance = *handleResult;
+
+		return *handleResult;
+	}
+	else if (bIsRenderable == False)
+	{
+		if (!_context->GetSubsystem<XBatchSubsystem>()->
+			GetStaticRenderInstancePool()->
+			Get(data.staticRenderInstance).has_value())
+			return std::nullopt;
+
+		_context->GetSubsystem<XBatchSubsystem>()->RemoveStaticInstance(data.batch, data.staticRenderInstance);
+	}
 }
 
 std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSubsystem::SetRenderableDynamic(
 	const SGameObjectData::THandle& gameObject,
+	boolean bIsRenderable,
 	const SBatchData::THandle& batch
 )
 {
 	SGameObjectData& data = *_pool->Get(gameObject);
 
-	auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch);
-	if (!handleResult.has_value())
+	if (bIsRenderable == True)
+	{
+		if (_context->GetSubsystem<XBatchSubsystem>()->
+			GetDynamicRenderInstancePool()->
+			Get(data.dynamicRenderInstance).has_value())
+			return std::nullopt;
+
+		auto handleResult = _context->GetSubsystem<XBatchSubsystem>()->AddDynamicInstance(batch);
+		if (!handleResult.has_value())
+			return std::nullopt;
+
+		data.dynamicRenderInstance = *handleResult;
+
+		return *handleResult;
+	}
+	else if (bIsRenderable == False)
+	{
+		if (!_context->GetSubsystem<XBatchSubsystem>()->
+			GetDynamicRenderInstancePool()->
+			Get(data.dynamicRenderInstance).has_value())
+			return std::nullopt;
+
+		_context->GetSubsystem<XBatchSubsystem>()->RemoveDynamicInstance(data.batch, data.dynamicRenderInstance);
+
 		return std::nullopt;
-
-	data.dynamicRenderInstance = *handleResult;
-
-	return *handleResult;
-}
-
-void triton::XGameObjectSubsystem::RemoveRenderableStatic(const SGameObjectData::THandle& gameObject)
-{
-	SGameObjectData& data = *_pool->Get(gameObject);
-
-	_context->GetSubsystem<XBatchSubsystem>()->RemoveStaticInstance(data.batch, data.staticRenderInstance);
-}
-
-void triton::XGameObjectSubsystem::RemoveRenderableDynamic(const SGameObjectData::THandle& gameObject)
-{
-	SGameObjectData& data = *_pool->Get(gameObject);
-
-	_context->GetSubsystem<XBatchSubsystem>()->RemoveDynamicInstance(data.batch, data.dynamicRenderInstance);
+	}
 }
 
 void triton::XGameObjectSubsystem::PlayAnimation(const SGameObjectData::THandle& gameObject, types::usize index)

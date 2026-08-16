@@ -46,17 +46,15 @@ namespace triton
 
         std::optional<SStaticRenderInstanceData::THandle> SetRenderableStatic(
             const SGameObjectData::THandle& gameObject,
-            const SBatchData::THandle& batch
+            types::boolean bIsRenderable,
+            const SBatchData::THandle& batch = SBatchData::THandle()
         );
 
         std::optional<SDynamicRenderInstanceData::THandle> SetRenderableDynamic(
             const SGameObjectData::THandle& gameObject,
-            const SBatchData::THandle& batch
+            types::boolean bIsRenderable,
+            const SBatchData::THandle& batch = SBatchData::THandle()
         );
-
-        void RemoveRenderableStatic(const SGameObjectData::THandle& gameObject);
-
-        void RemoveRenderableDynamic(const SGameObjectData::THandle& gameObject);
 
         void PlayAnimation(const SGameObjectData::THandle& gameObject, types::usize index);
 
