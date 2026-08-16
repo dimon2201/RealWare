@@ -140,6 +140,28 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XGameObjectSu
 	}
 }
 
+void triton::XGameObjectSubsystem::SetMaterial(
+	const SGameObjectData::THandle& gameObject,
+	const SMaterialData::THandle& material
+)
+{
+	SGameObjectData& data = *_pool->Get(gameObject);
+	if (data.motionType == ERenderInstanceMotionType::Static)
+	{
+		SStaticRenderInstanceData& srid = *_context->GetSubsystem<XBatchSubsystem>()->
+			GetStaticRenderInstancePool()->
+			Get(data.staticRenderInstance);
+		srid.material = material;
+	}
+	else if (data.motionType == ERenderInstanceMotionType::Dynamic)
+	{
+		SDynamicRenderInstanceData& drid = *_context->GetSubsystem<XBatchSubsystem>()->
+			GetDynamicRenderInstancePool()->
+			Get(data.dynamicRenderInstance);
+		drid.material = material;
+	}
+}
+
 void triton::XGameObjectSubsystem::PlayAnimation(const SGameObjectData::THandle& gameObject, types::usize index)
 {
 	SGameObjectData& data = *_pool->Get(gameObject);

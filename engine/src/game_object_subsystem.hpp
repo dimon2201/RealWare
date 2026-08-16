@@ -53,6 +53,8 @@ namespace triton
             const SBatchData::THandle& batchHandle = SBatchData::THandle()
         );
 
+        void SetMaterial(const SGameObjectData::THandle& gameObject, const SMaterialData::THandle& material);
+
         void PlayAnimation(const SGameObjectData::THandle& gameObject, types::usize index);
 
         void Init() override;
