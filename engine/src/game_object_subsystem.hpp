@@ -55,6 +55,8 @@ namespace triton
 
         void SetMaterial(const SGameObjectData::THandle& gameObject, const SMaterialData::THandle& material);
 
+        void SetWorldMatrix(const SGameObjectData::THandle& gameObject, const cMatrix4& matrix);
+
         void PlayAnimation(const SGameObjectData::THandle& gameObject, types::usize index);
 
         void Init() override;

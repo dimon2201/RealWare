@@ -148,17 +148,38 @@ void triton::XGameObjectSubsystem::SetMaterial(
 	SGameObjectData& data = *_pool->Get(gameObject);
 	if (data.motionType == ERenderInstanceMotionType::Static)
 	{
-		SStaticRenderInstanceData& srid = *_context->GetSubsystem<XBatchSubsystem>()->
-			GetStaticRenderInstancePool()->
-			Get(data.staticRenderInstance);
+		auto pool = _context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool();
+
+		SStaticRenderInstanceData& srid = *pool->Get(data.staticRenderInstance);
 		srid.material = material;
+
+		pool->WriteToStaging(
+			pool->GetPackedIndex(data.staticRenderInstance),
+			srid
+		);
 	}
 	else if (data.motionType == ERenderInstanceMotionType::Dynamic)
 	{
-		SDynamicRenderInstanceData& drid = *_context->GetSubsystem<XBatchSubsystem>()->
-			GetDynamicRenderInstancePool()->
-			Get(data.dynamicRenderInstance);
-		drid.material = material;
+	}
+}
+
+void triton::XGameObjectSubsystem::SetWorldMatrix(const SGameObjectData::THandle& gameObject, const cMatrix4& matrix)
+{
+	SGameObjectData& data = *_pool->Get(gameObject);
+	if (data.motionType == ERenderInstanceMotionType::Static)
+	{
+		auto pool = _context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool();
+
+		SStaticRenderInstanceData& srid = *pool->Get(data.staticRenderInstance);
+		srid.worldMatrix = matrix;
+
+		pool->WriteToStaging(
+			pool->GetPackedIndex(data.staticRenderInstance),
+			srid
+		);
+	}
+	else if (data.motionType == ERenderInstanceMotionType::Dynamic)
+	{
 	}
 }
 
