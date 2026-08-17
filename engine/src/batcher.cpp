@@ -98,8 +98,8 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XBatchSubsyste
 	}
 	else
 	{
-		instanceIndex = data.freeFrameIndices.front();
-		data.freeFrameIndices.pop();
+		instanceIndex = data.freeFrameIndices.back();
+		data.freeFrameIndices.pop_back();
 	}
 
 	const SStaticRenderInstanceData::THandle& beginHandle = data.staticsFrame.begin;
@@ -129,8 +129,8 @@ std::optional<triton::SDynamicRenderInstanceData::THandle> triton::XBatchSubsyst
 	}
 	else
 	{
-		instanceIndex = data.freeFrameIndices.front();
-		data.freeFrameIndices.pop();
+		instanceIndex = data.freeFrameIndices.back();
+		data.freeFrameIndices.pop_back();
 	}
 
 	const SDynamicRenderInstanceData::THandle& beginHandle = data.dynamicsFrame.begin;
@@ -198,7 +198,7 @@ void triton::XBatchSubsystem::RemoveStaticInstance(
 
 	SBatchData& bd = *_batchPool->Get(batch);
 	bd.instanceCount -= 1;
-	bd.freeFrameIndices.push(srid.batchInstanceIndex);
+	bd.freeFrameIndices.push_back(srid.batchInstanceIndex);
 
 	MarkDirtyStatic();
 }
@@ -212,7 +212,7 @@ void triton::XBatchSubsystem::RemoveDynamicInstance(
 
 	SBatchData& bd = *_batchPool->Get(batch);
 	bd.instanceCount -= 1;
-	bd.freeFrameIndices.push(drid.batchInstanceIndex);
+	bd.freeFrameIndices.push_back(drid.batchInstanceIndex);
 
 	MarkDirtyDynamic();
 }

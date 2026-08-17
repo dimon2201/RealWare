@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <queue>
+#include <vector>
 #include "geometry_view.hpp"
 #include "render_instance_motion_type.hpp"
 #include "handle.hpp"
@@ -27,6 +27,6 @@ namespace triton
 		types::usize maxReservedInstanceCount = 0;
 		SObjectFrame<SStaticRenderInstanceData::THandle> staticsFrame;
 		SObjectFrame<SDynamicRenderInstanceData::THandle> dynamicsFrame;
-		std::queue<types::s32> freeFrameIndices;
+		std::vector<types::s32> freeFrameIndices;
 	};
 }
