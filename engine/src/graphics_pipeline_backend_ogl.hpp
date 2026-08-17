@@ -3,7 +3,6 @@
 #pragma once
 
 #include "graphics_pipeline_backend.hpp"
-#include "render_pass.hpp"
 #include "gpu_resource.hpp"
 #include "types.hpp"
 
@@ -71,15 +70,15 @@ namespace triton
         virtual void BindDepthMode(const SDepthState& blendMode) override final;
         virtual void BindBlendMode(const SBlendState& blendMode) override final;
         virtual void Viewport(const SViewport& viewport) override final;
-        virtual XRenderTarget* CreateRenderTarget(
+        virtual XRenderTargetBackend* CreateRenderTarget(
             const std::vector<cTexture*>& colorAttachments,
             cTexture* depthAttachment
         ) override final;
-        virtual void ResizeRenderTargetColors(XRenderTarget* renderTarget, const glm::vec2& size) override final;
-        virtual void ResizeRenderTargetDepth(XRenderTarget* renderTarget, const glm::vec2& size) override final;
-        virtual void UpdateRenderTargetBuffers(XRenderTarget*& renderTarget) override final;
-        virtual void BindRenderTarget(const XRenderTarget* renderTarget) override final;
+        virtual void ResizeRenderTargetColors(XRenderTargetBackend* renderTarget, const glm::vec2& size) override final;
+        virtual void ResizeRenderTargetDepth(XRenderTargetBackend* renderTarget, const glm::vec2& size) override final;
+        virtual void UpdateRenderTargetBuffers(XRenderTargetBackend*& renderTarget) override final;
+        virtual void BindRenderTarget(const XRenderTargetBackend* renderTarget) override final;
         virtual void UnbindRenderTarget() override final;
-        virtual void DestroyRenderTarget(XRenderTarget* renderTarget) override final;
+        virtual void DestroyRenderTarget(XRenderTargetBackend* renderTarget) override final;
     };
 }

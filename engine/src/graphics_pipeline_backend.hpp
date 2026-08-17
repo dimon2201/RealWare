@@ -6,8 +6,9 @@
 #include "backend.hpp"
 #include "math.hpp"
 #include "category.hpp"
-#include "render_pass.hpp"
 #include "shader_define.hpp"
+#include "rasterizer_state.hpp"
+#include "vertex_buffer_format.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -74,21 +75,21 @@ namespace triton
         }
     };
 
-    class XRenderTarget : public cGPUResource
+    class XRenderTargetBackend : public cGPUResource
     {
-        TRITON_OBJECT(XRenderTarget)
+        TRITON_OBJECT(XRenderTargetBackend)
 
         mutable std::vector<cTexture*> _colorAttachments = {};
         cTexture* _depthAttachment = nullptr;
 
     public:
-        explicit XRenderTarget(
+        explicit XRenderTargetBackend(
             cContext* context,
             types::qword instance,
             const std::vector<cTexture*>& colorAttachments,
             cTexture* depthAttachment
         );
-        ~XRenderTarget() override = default;
+        ~XRenderTargetBackend() override = default;
 
         inline std::vector<cTexture*>& GetColorAttachments() const { return _colorAttachments; }
         inline cTexture* GetDepthAttachment() const { return _depthAttachment; }
@@ -170,15 +171,15 @@ namespace triton
         virtual void BindDepthMode(const SDepthState& blendMode) = 0;
         virtual void BindBlendMode(const SBlendState& blendMode) = 0;
         virtual void Viewport(const SViewport& viewport) = 0;
-        virtual XRenderTarget* CreateRenderTarget(
+        virtual XRenderTargetBackend* CreateRenderTarget(
             const std::vector<cTexture*>& colorAttachments,
             cTexture* depthAttachment
         ) = 0;
-        virtual void ResizeRenderTargetColors(XRenderTarget* renderTarget, const glm::vec2& size) = 0;
-        virtual void ResizeRenderTargetDepth(XRenderTarget* renderTarget, const glm::vec2& size) = 0;
-        virtual void UpdateRenderTargetBuffers(XRenderTarget*& renderTarget) = 0;
-        virtual void BindRenderTarget(const XRenderTarget* renderTarget) = 0;
+        virtual void ResizeRenderTargetColors(XRenderTargetBackend* renderTarget, const glm::vec2& size) = 0;
+        virtual void ResizeRenderTargetDepth(XRenderTargetBackend* renderTarget, const glm::vec2& size) = 0;
+        virtual void UpdateRenderTargetBuffers(XRenderTargetBackend*& renderTarget) = 0;
+        virtual void BindRenderTarget(const XRenderTargetBackend* renderTarget) = 0;
         virtual void UnbindRenderTarget() = 0;
-        virtual void DestroyRenderTarget(XRenderTarget* renderTarget) = 0;
+        virtual void DestroyRenderTarget(XRenderTargetBackend* renderTarget) = 0;
     };
 }

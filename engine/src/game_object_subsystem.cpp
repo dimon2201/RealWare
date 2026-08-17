@@ -10,6 +10,7 @@
 #include "model3d_pool.hpp"
 #include "geometry_storage.hpp"
 #include "animation_subsystem.hpp"
+#include "batcher.hpp"
 
 using namespace types;
 

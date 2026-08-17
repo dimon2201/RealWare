@@ -16,7 +16,7 @@ namespace triton
 	class iGraphicsDrawcallBackend;
 	class iGraphicsResourceBackend;
 	class iGraphicsPipelineBackend;
-	class cGraphics;
+	class XGraphics;
 	class XSynchronization;
 	struct SRenderCommandPack;
 
@@ -41,7 +41,7 @@ namespace triton
 			iGraphicsDrawcallBackend* drawcallBackend,
 			iGraphicsResourceBackend* resourceBackend,
 			iGraphicsPipelineBackend* pipelineBackend,
-			cGraphics* gfx
+			XGraphics* gfx
 		);
 
 		void Present(const cInputWindow* window, iGraphicsContextBackend* contextBackend);

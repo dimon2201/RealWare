@@ -2,84 +2,65 @@
 
 #pragma once
 
-#include <vector>
 #include "object.hpp"
-#include "category.hpp"
+#include "handle.hpp"
 #include "rasterizer_state.hpp"
-#include "render_instance_data.hpp"
-#include "math.hpp"
-#include "render_data.hpp"
-#include "instance_buffer.hpp"
-#include "graphics_buffer_formats.hpp"
+#include "batch_data.hpp"
+#include "render_target.hpp"
 #include "camera.hpp"
-#include "vertex_buffer_format.hpp"
+#include "input_layout.hpp"
+#include "math.hpp"
 
 namespace triton
 {
-    namespace ecs::components
+    enum class ERenderPassDispatch
     {
-        class SRenderInstanceComponent;
-    }
-
-    class cBuffer;
-    class cTexture;
-    class cTextureAtlasTexture;
-    class XRenderTarget;
-    class XRenderPassGPU;
-    class XShader;
-    class XVertexArray;
-    class SShaderDefine;
-    class XRenderBatch;
+        None,
+        Geometry,
+        Text,
+        Processing
+    };
 
     enum class EBuiltinRenderPassType
     {
-        NONE,
-        OPAQUE_PATH,
-        TRANSPARENT_PATH,
-        TEXT_PATH,
-        TRANSPARENT_COMPOSITE_PATH,
-        QUAD_PATH
+        None,
+        OpaqueStatic,
+        OpaqueSkinned,
+        TransparentStatic,
+        Text,
+        CompositeTransparent,
+        CompositeFinal
     };
 
-    enum class ERenderPassDispatch
+    struct SRenderPassTexture
     {
-        NONE,
-        GEOMETRY,
-        TEXT,
-        COMPUTE,
-        PROCESSING
+        SRenderPassTexture(const std::string& name, cTexture* texture) : name(name), texture(texture) {}
+
+        std::string name = "";
+        cTexture* texture = nullptr;
     };
 
-    class SRenderPassTexture final
-    {
-    public:
-        SRenderPassTexture(const std::string& name, cTexture* texture) : _name(name), _texture(texture) {}
-
-        cTexture* _texture = nullptr;
-        std::string _name = "";
-    };
-
-    class XRenderPass : public iObject
-    {
+	struct XRenderPass : public iObject
+	{
         TRITON_OBJECT(XRenderPass)
 
-        ERenderPassDispatch                 _dispatch = ERenderPassDispatch::NONE;
+        ERenderPassDispatch                 _dispatch = ERenderPassDispatch::None;
         EVertexBufferFormat                 _batchFormat = EVertexBufferFormat::Unknown;
         std::vector<SBatchData::THandle>    _batches = {};
-        XVertexArray*                       _inputLayout = nullptr;
+        XInputLayout::THandle               _inputLayout;
         std::vector<cBuffer*>               _inputBuffers = {};
         std::vector<SRenderPassTexture>     _inputTextures = {};
-        EBuiltinRenderPassType              _shaderRenderPath = EBuiltinRenderPassType::NONE;
+        EBuiltinRenderPassType              _shaderRenderPath = EBuiltinRenderPassType::None;
         SDepthState                         _depthState = SDepthState(0, 0);
         SBlendState                         _blendState = {};
         SViewport                           _viewport = {};
-        XRenderTarget*                      _renderTarget = nullptr;
+        XRenderTarget::THandle              _renderTarget;
         XShader*                            _shader = nullptr;
         XCamera::THandle                    _camera;
 
     public:
-        explicit XRenderPass(cContext* context) : iObject(context) {}
-        ~XRenderPass() override = default;
+        explicit XRenderPass(cContext* context);
+        ~XRenderPass() = default;
 
         void Bind();
 
@@ -95,75 +76,34 @@ namespace triton
 
         void ResizeDepthAttachment(const cVector2& size);
 
-        SShaderDefine SetInputTexture(types::usize slot, const SRenderPassTexture& texture);
+        XShader* GetShader() { return _shader; }
 
-        std::vector<SShaderDefine> SetInputTextures(const std::vector<SRenderPassTexture>& textures);
+        void SetDispatch(ERenderPassDispatch dispatch) { _dispatch = dispatch; }
 
-        inline void AddBatch(const SBatchData::THandle& batch)
-        {
-            SBatchData& bd = _context->GetSubsystem<XBatchSubsystem>()->Get(batch);
-            if (bd.sharedGeometry._format == _batchFormat)
-                _batches.push_back(batch);
-        }
+        void SetBatchFormat(EVertexBufferFormat batchFormat) { _batchFormat = batchFormat; }
 
-        inline XRenderTarget* GetRenderTarget() const
-        {
-            return _renderTarget;
-        }
+        void SetBatches(const std::vector<SBatchData::THandle>& batches) { _batches = batches; }
 
-        inline XShader* GetShader() const
-        {
-            return _shader;
-        }
+        void SetInputLayout(const XInputLayout::THandle& inputLayout) { _inputLayout = inputLayout; }
 
-        inline void SetBatchFormat(EVertexBufferFormat format)
-        {
-            _batchFormat = format;
-        }
+        void SetInputBuffers(const std::vector<cBuffer*>& inputBuffers) { _inputBuffers = inputBuffers; }
 
-        inline void SetDispatch(ERenderPassDispatch dispatch)
-        {
-            _dispatch = dispatch;
-        }
+        void SetInputTextures(const std::vector<SRenderPassTexture>& inputTextures) { _inputTextures = inputTextures; }
 
-        inline void SetInputLayout(XVertexArray* inputLayout)
-        {
-            _inputLayout = inputLayout;
-        }
+        void SetDepthState(const SDepthState& depthState) { _depthState = depthState; }
 
-        inline void SetInputBuffers(const std::vector<cBuffer*>& buffers)
-        {
-            _inputBuffers = buffers;
-        }
+        void SetBlendState(const SBlendState& blendState) { _blendState = blendState; }
 
-        inline void SetDepthState(const SDepthState& state)
-        {
-            _depthState = state;
-        }
+        void SetViewport(const SViewport& viewport) { _viewport = viewport; }
 
-        inline void SetBlendState(const SBlendState& state)
-        {
-            _blendState = state;
-        }
+        void SetRenderTarget(const XRenderTarget::THandle& renderTarget) { _renderTarget = renderTarget; }
 
-        inline void SetViewport(const SViewport& viewport)
-        {
-            _viewport = viewport;
-        }
+        void SetShader(XShader* shader) { _shader = shader; }
 
-        inline void SetRenderTarget(XRenderTarget* renderTarget)
-        {
-            _renderTarget = renderTarget;
-        }
+        void SetCamera(const XCamera::THandle& camera) { _camera = camera; }
 
-        inline void SetShader(XShader* shader)
-        {
-            _shader = shader;
-        }
+        struct THandle : public SHandle {};
 
-        inline void SetCamera(const XCamera::THandle& camera)
-        {
-            _camera = camera;
-        }
-    };
+        struct TGPULayout {};
+	};
 }

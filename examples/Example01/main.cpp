@@ -15,7 +15,14 @@
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "animation.hpp"
-#include "skeleton.hpp"
+#include "object_pool_base.hpp"
+#include "camera_pool.hpp"
+#include "geometry_storage.hpp"
+#include "model3d_pool.hpp"
+#include "skin_pool.hpp"
+#include "game_object_pool.hpp"
+#include "batcher.hpp"
+#include "render_pass_pool.hpp"
 
 using namespace triton;
 using namespace triton::ecs;
@@ -24,11 +31,11 @@ using namespace types;
 
 class cMyApplication final : public IApplication
 {
-    HModel3D m3d, m3d_2;
+    SModel3DData::THandle m3d, m3d_2;
     XDynamicArray<int>* da;
-    CHandleAllocator<SSlot, HSkinnedBone, XDynamicArray<SSkinnedBoneData>, SSkinnedBoneData>* ha;
-    SGameObjectData* god;
-    HRenderInstance ri;
+    SStaticRenderInstanceData::THandle ri;
+    SSkinData::THandle m3dSkin;
+    SGameObjectData::THandle goh;
 
 public:
     cMyApplication(cContext* context, const sCapabilities* caps) : IApplication(context, caps)
@@ -41,67 +48,122 @@ public:
 
     virtual void Setup() override final
     {
-        HMaterial m1 = _context->GetSubsystem<XMaterialSubsystem>()->CreateMaterial(
-            cVector4(1.0f), {}, {}, {}, {}
-        );
-
-        HCamera cameraHandle = *_context->GetSubsystem<cGraphics>()->CreateCamera();
-        XCamera& camera = _context->GetSubsystem<cGraphics>()->GetCamera(cameraHandle);
-        camera._worldPosition = cVector3(0.0f, 1.0f, 1.0f);
-        _context->GetSubsystem<cGraphics>()->GetOpaqueRenderPass()->SetCamera(cameraHandle);
-        
-        /*m3d = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModel(
-            "C:/My/My_Projects_Theoretical/Game_TheCursedKeep/",
-            "Arm1_Rigged_New_Anim.fbx"
-        );
-        m3d_2 = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModel(
-            "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/nathan",
-            "nathan_triton.fbx"
-        );
         XGameObjectSubsystem* gos = _context->GetSubsystem<XGameObjectSubsystem>();
-        HGameObject go = gos->CreateGameObject("MyTriangle");
-        gos->AddRenderable(
-            go,
-            SRenderInstance::EUsage::STATIC,
-            m3d_2
-        );
-        gos->SetWorldPosition(go, cVector3(0.0f));
-        gos->SetWorldRotation(go, cVector3(0.0f, 0.0f, 0.0f));*/
+        XTextureSubsystem* ts = _context->GetSubsystem<XTextureSubsystem>();
+        XGeometryStorage* gs = _context->GetSubsystem<XGeometryStorage>();
+        XBatchSubsystem* bs = _context->GetSubsystem<XBatchSubsystem>();
+        XSkinningSubsystem* sks = _context->GetSubsystem<XSkinningSubsystem>();
+        XMaterialSubsystem* ms = _context->GetSubsystem<XMaterialSubsystem>();
+        XGraphics* gfx = _context->GetSubsystem<XGraphics>();
 
-        SVertex triVerts[3];
+        _context->GetPool<XCameraPool>()->Allocate(1);
+        auto camh = *_context->GetPool<XCameraPool>()->Create(_context);
+        XCamera& camo = *_context->GetPool<XCameraPool>()->Get(camh);
+        camo._worldPosition = cVector3(0.0f, 1.0f, 1.0f);
+        
+        XRenderPass& opaqueStaticRP = 
+            *_context->GetPool<XRenderPassPool>()->Get(
+                _context->GetSubsystem<XGraphics>()->GetOpaqueStaticRenderPass()
+            );
+        
+        opaqueStaticRP.SetCamera(camh);
+        
+        /*m3d = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModelFromAsset(
+            "C:/My/My_Projects_Programming/TritonEngine/tools/tasset/bin/Chort2.tasset"
+        );
+        HGameObject myObject1 = gos->CreateGameObject("MyObject1");
+        gos->SetRenderableStatic(
+            myObject1,
+            m3d
+        );*/
+
+        SStaticVertexGPULayout triVerts[3];
         triVerts[0].position = cVector3(-1.0f, -1.0f, 0.0f);
         triVerts[1].position = cVector3(0.0f, 1.0f, 0.0f);
         triVerts[2].position = cVector3(1.0f, -1.0f, 0.0f);
+        triVerts[0].texcoord = cVector2(0.0f, 0.0f);
+        triVerts[1].texcoord = cVector2(0.0f, 1.0f);
+        triVerts[2].texcoord = cVector2(1.0f, 0.0f);
         u32 triInds[3] = { 0, 1, 2 };
 
-        SVertex quadVerts[4];
-        quadVerts[0].position = cVector3(-1.0f, -1.0f, 0.0f);
-        quadVerts[1].position = cVector3(-1.0f, 1.0f, 0.0f);
-        quadVerts[2].position = cVector3(1.0f, 1.0f, 0.0f);
-        quadVerts[3].position = cVector3(1.0f, -1.0f, 0.0f);
-        u32 quadInds[6] = { 0, 1, 2, 0, 2, 3 };
+        //SVertex quadVerts[4];
+        //quadVerts[0].position = cVector3(-1.0f, -1.0f, 0.0f);
+        //quadVerts[1].position = cVector3(-1.0f, 1.0f, 0.0f);
+        //quadVerts[2].position = cVector3(1.0f, 1.0f, 0.0f);
+        //quadVerts[3].position = cVector3(1.0f, -1.0f, 0.0f);
+        //u32 quadInds[6] = { 0, 1, 2, 0, 2, 3 };
 
-        XGameObjectSubsystem* gos = _context->GetSubsystem<XGameObjectSubsystem>();
-        CStaticInstanceStorage& sis = _context->GetSubsystem<XBatchSubsystem>()->GetStaticInstanceStorage();
-        CDynamicInstanceStorage& dis = _context->GetSubsystem<XBatchSubsystem>()->GetDynamicInstanceStorage();
+        /*
+            auto model = models->Load(
+                "models/nathan/nathan_triton.fbx"
+            );
 
-        HGameObject triObj1 = gos->CreateGameObject("MyTriangle1");
-        SGameObjectData& triGod1 = gos->Get(triObj1);
-        HRenderInstance triRi1 = gos->SetRenderable(
-            triObj1,
-            ERenderInstanceMotionType::Static,
-            EGraphicsBufferFormat::POSITION_TEXCOORD_NORMAL_TANGENT_VEC3_VEC2_VEC3_VEC4,
+            auto nathan = scene->CreateModel(model);
+
+            nathan.SetName("MyChort1");
+            nathan.SetTransform(...);
+
+            nathan.PlayAnimation("Idle");
+        */
+
+        /*
+            auto model = assetLoader->Load("models/nathan/nathan_triton.fbx");
+
+            auto nathan = gameObjectSubsystem->Create(model);
+            nathan->SetName("Nathan1");
+
+            ...
+            nathan->PlayAnimation("Idle");
+        */
+
+        //m3d = *_context->GetSubsystem<XModel3DSubsystem>()->CreateFromRaw(
+        //    "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/nathan/nathan_triton.fbx"
+        //);
+        //auto m3dd = *_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Get(m3d);
+        SGeometryView triGeom = *gs->Create(
+            EVertexBufferFormat::Static_52,
             (u8*)&triVerts[0],
-            sizeof(SVertex) * 3,
+            3,
             (u8*)&triInds[0],
-            sizeof(u32) * 3
+            3
         );
-        triGod1.worldPosition = cVector3(-1.0f, 0.0f, 0.0f);
-        triGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
-        //triGod1.scale = cVector3(0.25f * 0.5f);
-        sis.UpdateTransform(triRi1, _context->GetSubsystem<XGameObjectSubsystem>());
+        SBatchData::THandle batch1 = *bs->Create(
+            ERenderInstanceMotionType::Static,
+            triGeom,
+            2
+        );
+        SBatchData::THandle batch2 = *bs->Create(
+            ERenderInstanceMotionType::Static,
+            triGeom,
+            3
+        );
+        auto material1 = *ms->Create(cVector4(1.0f, 0.0f, 0.0f, 1.0f), {}, {}, {}, {});
+        auto material2 = *ms->Create(cVector4(0.0f, 1.0f, 0.0f, 1.0f), {}, {}, {}, {});
+        auto material3 = *ms->Create(cVector4(0.0f, 0.0f, 1.0f, 1.0f), {}, {}, {}, {});
+        
+        opaqueStaticRP.SetBatches({ batch1, batch2 });
 
-        HGameObject quadObj1 = gos->CreateGameObject("MyQuad1");
+        auto gameObject1 = *gos->Create("MyObject1");
+        gos->SetRenderableStatic(gameObject1, True, batch1);
+        gos->SetMaterial(gameObject1, material1);
+        gos->SetWorldMatrix(gameObject1, cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f))));
+
+        auto gameObject2 = *gos->Create("MyObject2");
+        gos->SetRenderableStatic(gameObject2, True, batch2);
+        gos->SetMaterial(gameObject2, material2);
+        gos->SetWorldMatrix(gameObject2, cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f))));
+
+        auto gameObject3 = *gos->Create("MyObject3");
+        gos->SetRenderableStatic(gameObject3, True, batch2);
+        gos->SetMaterial(gameObject3, material3);
+        gos->SetWorldMatrix(gameObject3, cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 4.0f, 0.0f))));
+
+        //triGod1.worldPosition = cVector3(-1.0f, 0.0f, 0.0f);
+        //triGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
+        //triGod1.scale = cVector3(0.25f * 0.5f);
+        //sis.UpdateTransform(triRi1, _context->GetSubsystem<XGameObjectSubsystem>());
+
+        /*HGameObject quadObj1 = gos->CreateGameObject("MyQuad1");
         SGameObjectData& quadGod1 = gos->Get(quadObj1);
         god = &quadGod1;
         HRenderInstance quadRi1 = gos->SetRenderable(
@@ -119,6 +181,17 @@ public:
         //quadGod1.scale = cVector3(0.5f * 0.5f);
         dis.UpdateTransform(quadRi1, _context->GetSubsystem<XGameObjectSubsystem>());
 
+        HTexture t1 = ts->CreateTexture(
+            "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/brick.png",
+            cTexture::eFormat::RGBA8_SRGB_MIPS
+        );
+        HMaterial m1 = _context->GetSubsystem<XMaterialSubsystem>()->CreateMaterial(
+            cVector4(1.0f),
+            t1,
+            {},
+            {},
+            {}
+        );
         HGameObject triObj2 = gos->CreateGameObject("MyTriangle2");
         SGameObjectData& triGod2 = gos->Get(triObj2);
         SRenderInstanceData& triRid1 =
@@ -131,12 +204,13 @@ public:
             sizeof(SVertex) * 3,
             (u8*)&triInds[0],
             sizeof(u32) * 3,
-            triRid1.batch
+            triRid1.batch,
+            m1
         );
         triGod2.worldPosition = cVector3(3.0f, 0.0f, 0.0f);
         triGod2.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
         //triGod2.scale = cVector3(0.75f * 0.5f);
-        sis.UpdateTransform(triRi2, _context->GetSubsystem<XGameObjectSubsystem>());
+        sis.UpdateTransform(triRi2, _context->GetSubsystem<XGameObjectSubsystem>());*/
 
         /*XTextureSubsystem* ts = _context->GetSubsystem<XTextureSubsystem>();
         HTexture t1 = ts->CreateTexture("C:/My/My_Projects_Programming/TritonEngine/runtime/data/textures/dirt.png");
@@ -175,20 +249,20 @@ public:
         ha->Destroy(h0);*/
 
         /*static f32 time = 0.0f;
-        SModel3DData& modelData = _context->GetSubsystem<XModel3DSubsystem>()->Get(m3d_2);
-        HSkeleton& skeleton = modelData.skeleton;
-        SFrame frame = _context->GetSubsystem<XAnimationSubsystem>()->Evaluate(
+        SModel3DData& modelData = *_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Get(m3d);
+        SSkeletonData::THandle& skeleton = modelData.skeleton;
+        SFrame frame = *_context->GetSubsystem<XAnimationSubsystem>()->Evaluate(
             skeleton,
             modelData.animations[0],
             time
         );
-        SSkinData skin = _context->GetSubsystem<XSkinningSubsystem>()->CreateSkin(
-            skeleton,
+        _context->GetSubsystem<XSkinningSubsystem>()->Skin(
+            m3dSkin,
             frame
         );
-        _context->GetSubsystem<XSkeletonSubsystem>()->SetSkin(skeleton, skin);
-        _context->GetSubsystem<XSkinningSubsystem>()->DestroySkin(skin);
         time += 0.1f;*/
+
+        //_context->GetSubsystem<XGameObjectSubsystem>()->PlayAnimation(goh, 0);
     }
 
     virtual void Stop() override final
@@ -208,6 +282,8 @@ int main()
     caps.windows[0].windowHeight = 600;
     caps.windows[0].fullscreen = K_FALSE;
     caps.hashTableChunkByteSize = 1024;
+    caps.staticVertexBufferSize = 70 * 1024 * 1024;
+    caps.skinnedVertexBufferSize = 70 * 1024 * 1024;
 
     cMyApplication* myApp = new cMyApplication(context, &caps);
     std::cout << "Application initialized." << std::endl;

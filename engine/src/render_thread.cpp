@@ -8,6 +8,7 @@
 #include "graphics.hpp"
 #include "graphics_context_backend.hpp"
 #include "graphics_resource_backend.hpp"
+#include "graphics_drawcall_backend.hpp"
 #include "thread_guard.hpp"
 #include "dynamic_array.hpp"
 
@@ -76,7 +77,7 @@ void triton::cRenderThread::ThreadFunction()
 			else if (frame.operation == EProducedFrameOp::ExecuteFull)
 			{
 				// Full job
-				cGraphics* gfx = _context->GetSubsystem<cGraphics>();
+				XGraphics* gfx = _context->GetSubsystem<XGraphics>();
 				ExecuteCommands(
 					frame.renderCommandPack,
 					gfxDrawcallBackend,
@@ -92,7 +93,7 @@ void triton::cRenderThread::ThreadFunction()
 			else if (frame.operation == EProducedFrameOp::ExecuteCommandsOnly)
 			{
 				// Execute render commands only
-				cGraphics* gfx = _context->GetSubsystem<cGraphics>();
+				XGraphics* gfx = _context->GetSubsystem<XGraphics>();
 				ExecuteCommands(
 					frame.renderCommandPack,
 					gfxDrawcallBackend,
@@ -121,7 +122,7 @@ void triton::cRenderThread::ExecuteCommands(
 	iGraphicsDrawcallBackend* drawcallBackend,
 	iGraphicsResourceBackend* resourceBackend,
 	iGraphicsPipelineBackend* pipelineBackend,
-	cGraphics* gfx
+	XGraphics* gfx
 )
 {
 	for (usize i = 0; i < renderCommandPack.count; i++)
@@ -254,11 +255,11 @@ void triton::cRenderThread::ExecuteCommands(
 				std::vector<cTexture*> attachmentsVec;
 				for (usize i = 0; i < attachmentCount; i++)
 					attachmentsVec.push_back(attachments[i]);
-				XRenderTarget* resultRT = pipelineBackend->CreateRenderTarget(
+				XRenderTargetBackend* resultRT = pipelineBackend->CreateRenderTarget(
 					attachmentsVec,
 					(cTexture*)cmd._args._argC
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultRT, sizeof(XRenderTarget*));
+				memcpy(&_sync->GetResultBuffer().data[0], &resultRT, sizeof(XRenderTargetBackend*));
 				break;
 			}
 			case ERenderCommand::CREATE_SHADER:

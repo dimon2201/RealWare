@@ -48,8 +48,6 @@ triton::XVertexArray::XVertexArray(
 	EVertexBufferFormat vertexFormat
 ): iObject(context)
 {
-	cGraphics* gfx = _context->GetSubsystem<cGraphics>();
-
 	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::CREATE_VERTEX_ARRAY
 	));
@@ -88,7 +86,7 @@ triton::XVertexArray::~XVertexArray()
 	));
 }
 
-triton::XRenderTarget::XRenderTarget(
+triton::XRenderTargetBackend::XRenderTargetBackend(
 	cContext* context,
 	qword instance,
 	const std::vector<cTexture*>& colorAttachments,

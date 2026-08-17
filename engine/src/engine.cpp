@@ -45,6 +45,9 @@
 #include "model3d_pool.hpp"
 #include "skin_pool.hpp"
 #include "animation_pool.hpp"
+#include "input_layout_pool.hpp"
+#include "render_target_pool.hpp"
+#include "render_pass_pool.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -87,6 +90,13 @@ void triton::cEngine::Initialize()
 	
 	// Register pools
 	_context->RegisterPool(new XCameraPool(_context, K_TRUE));
+	_context->RegisterPool(new XInputLayoutPool(_context, K_TRUE));
+	_context->RegisterPool(new XRenderTargetPool(_context, K_TRUE));
+	_context->RegisterPool(new XRenderPassPool(_context, K_TRUE));
+
+	_context->GetPool<XInputLayoutPool>()->Allocate(64);
+	_context->GetPool<XRenderTargetPool>()->Allocate(64);
+	_context->GetPool<XRenderPassPool>()->Allocate(64);
 
 	// Register subsystems (order matters)
 	_context->RegisterSubsystem(new cInput(_context));
@@ -98,8 +108,7 @@ void triton::cEngine::Initialize()
 	_context->RegisterSubsystem(new XMaterialSubsystem(_context));
 	_context->RegisterSubsystem(new XGeometryStorage(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
-	_context->RegisterSubsystem(new cGraphics(_context));
-	_context->GetSubsystem<cGraphics>()->Init();
+	_context->RegisterSubsystem(new XGraphics(_context));
 	_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
 	_context->GetSubsystem<XGameObjectSubsystem>()->Init();
 	_context->RegisterSubsystem(new XModel3DSubsystem(_context));
