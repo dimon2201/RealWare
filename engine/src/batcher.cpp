@@ -243,27 +243,43 @@ void triton::XBatchSubsystem::PackStaticInstancesToStagingBuffer()
 	SBufferView<SBatchData> batches = _batchPool->GetData();
 	for (usize i = 0; i < batches.elementCount; i++)
 	{
-		const SObjectFrame<SStaticRenderInstanceData::THandle> frame = batches.elements[i].staticsFrame;
+		SBatchData& batch = batches.elements[i];
+		const SObjectFrame<SStaticRenderInstanceData::THandle> frame = batch.staticsFrame;
 		
 		const usize beginObjectIndex = _staticInstancePool->GetPackedIndex(frame.begin);
 		const usize objectCount = frame.count;
+		usize aliveObjectCount = 0;
 
 		for (usize j = 0; j < objectCount; j++)
 		{
-			const SStaticRenderInstanceData::THandle handle = *_staticInstancePool->GetHandle(frame.begin, j);
-			auto dataRes = _staticInstancePool->Get(handle);
-			if (dataRes.has_value())
+			boolean bIsDeleted = False;
+			for (usize k = 0; k < batch.freeFrameIndices.size(); k++)
 			{
-				SStaticRenderInstanceData& data = *dataRes;
+				if (j == batch.freeFrameIndices[k])
+				{
+					bIsDeleted = True;
+					break;
+				}
+			}
+
+			if (bIsDeleted == False)
+			{
+				const SStaticRenderInstanceData::THandle handle = *_staticInstancePool->GetHandle(frame.begin, j);
+				SStaticRenderInstanceData& data = *_staticInstancePool->Get(handle);
+
 				_staticInstancePool->WriteToStaging(
-					beginObjectIndex + j,
+					beginObjectIndex + aliveObjectCount,
 					data
 				);
+
+				++aliveObjectCount;
 			}
 		}
 
 		batches.elements[i].bufferOffset = beginObjectIndex;
 	}
+
+	_bStaticDirtyBit = False;
 }
 
 void triton::XBatchSubsystem::PackDynamicInstancesToStagingBuffer()
@@ -271,26 +287,41 @@ void triton::XBatchSubsystem::PackDynamicInstancesToStagingBuffer()
 	SBufferView<SBatchData> batches = _batchPool->GetData();
 	for (usize i = 0; i < batches.elementCount; i++)
 	{
-		const SObjectFrame<SDynamicRenderInstanceData::THandle> frame = batches.elements[i].dynamicsFrame;
+		SBatchData& batch = batches.elements[i];
+		const SObjectFrame<SDynamicRenderInstanceData::THandle> frame = batch.dynamicsFrame;
 
 		const usize beginObjectIndex = _dynamicInstancePool->GetPackedIndex(frame.begin);
 		const usize objectCount = frame.count;
+		usize aliveObjectCount = 0;
 
 		for (usize j = 0; j < objectCount; j++)
 		{
-			const SDynamicRenderInstanceData::THandle handle = *_dynamicInstancePool->GetHandle(frame.begin, j);
-			const SDynamicRenderInstanceData& data = *_dynamicInstancePool->Get(handle);
-			auto dataRes = _dynamicInstancePool->Get(handle);
-			if (dataRes.has_value())
+			boolean bIsDeleted = False;
+			for (usize k = 0; k < batch.freeFrameIndices.size(); k++)
 			{
-				SDynamicRenderInstanceData& data = *dataRes;
+				if (j == batch.freeFrameIndices[k])
+				{
+					bIsDeleted = True;
+					break;
+				}
+			}
+
+			if (bIsDeleted == False)
+			{
+				const SDynamicRenderInstanceData::THandle handle = *_dynamicInstancePool->GetHandle(frame.begin, j);
+				SDynamicRenderInstanceData& data = *_dynamicInstancePool->Get(handle);
+
 				_dynamicInstancePool->WriteToStaging(
-					beginObjectIndex + j,
+					beginObjectIndex + aliveObjectCount,
 					data
 				);
+
+				++aliveObjectCount;
 			}
 		}
 
 		batches.elements[i].bufferOffset = beginObjectIndex;
 	}
+
+	_bStaticDirtyBit = False;
 }
