@@ -94,8 +94,6 @@ namespace triton
         virtual void Update() = 0;
 
     private:
-        types::boolean CheckBufferOverflow(types::usize count);
-
         template <typename TBufferObject>
         void AllocatePodBuffer(TBufferObject*& buffer, types::usize byteSize);
 
