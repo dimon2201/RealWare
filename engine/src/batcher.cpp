@@ -87,6 +87,9 @@ std::optional<triton::SStaticRenderInstanceData::THandle> triton::XBatchSubsyste
 {
 	SBatchData& data = *_batchPool->Get(batch);
 
+	if (data.instanceCount >= data.maxReservedInstanceCount)
+		return std::nullopt;
+
 	data.instanceCount += 1;
 
 	s32 instanceIndex = -1;
