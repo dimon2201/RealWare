@@ -261,7 +261,7 @@ void triton::XGraphics::CreateRenderPasses()
     );
 
     _opaqueSkinned = *rpPool->Create(_context);
-    XRenderPass& opaqueSkinnedData = *rpPool->Get(_opaqueStatic);
+    XRenderPass& opaqueSkinnedData = *rpPool->Get(_opaqueSkinned);
     opaqueSkinnedData.SetDispatch(ERenderPassDispatch::Geometry);
     opaqueSkinnedData.SetBatchFormat(EVertexBufferFormat::Skinned_84);
     opaqueSkinnedData.SetInputLayout(_inputLayoutSkinned);
@@ -292,7 +292,7 @@ void triton::XGraphics::CreateRenderPasses()
     transparentBlendState.dstFactors[1] = EBlendFactor::INV_SRC_COLOR;
 
     _transparent = *rpPool->Create(_context);
-    XRenderPass& transparentData = *rpPool->Get(_opaqueStatic);
+    XRenderPass& transparentData = *rpPool->Get(_transparent);
     transparentData.SetDispatch(ERenderPassDispatch::Geometry);
     transparentData.SetBatchFormat(EVertexBufferFormat::Static_52);
     transparentData.SetInputLayout(_inputLayoutStatic);
@@ -317,7 +317,7 @@ void triton::XGraphics::CreateRenderPasses()
     );
 
     _text = *rpPool->Create(_context);
-    XRenderPass& textData = *rpPool->Get(_opaqueStatic);
+    XRenderPass& textData = *rpPool->Get(_text);
     textData.SetDispatch(ERenderPassDispatch::Text);
     textData.SetBatchFormat(EVertexBufferFormat::Unknown);
     textData.SetShader(textShader);
@@ -342,7 +342,7 @@ void triton::XGraphics::CreateRenderPasses()
     XRenderTarget& transparentRTData = *_context->GetPool<XRenderTargetPool>()->Get(_transparentRenderTarget);
 
     _compositeTransparent = *rpPool->Create(_context);
-    XRenderPass& compositeTransparentData = *rpPool->Get(_opaqueStatic);
+    XRenderPass& compositeTransparentData = *rpPool->Get(_compositeTransparent);
     compositeTransparentData.SetDispatch(ERenderPassDispatch::Processing);
     compositeTransparentData.SetBatchFormat(EVertexBufferFormat::Unknown);
     compositeTransparentData.SetInputLayout(_inputLayoutProcessing);
@@ -373,7 +373,7 @@ void triton::XGraphics::CreateRenderPasses()
     XRenderTarget& opaqueRTData = *_context->GetPool<XRenderTargetPool>()->Get(_opaqueRenderTarget);
 
     _compositeFinal = *rpPool->Create(_context);
-    XRenderPass& compositeFinalData = *rpPool->Get(_opaqueStatic);
+    XRenderPass& compositeFinalData = *rpPool->Get(_compositeFinal);
     compositeFinalData.SetDispatch(ERenderPassDispatch::Processing);
     compositeFinalData.SetBatchFormat(EVertexBufferFormat::Unknown);
     compositeFinalData.SetInputLayout(_inputLayoutProcessing);
@@ -470,7 +470,7 @@ void triton::XGraphics::ExecuteBuiltinPasses()
 
     opaqueStatic.Execute();
     //_opaqueSkinned->Execute();
-    opaqueStatic.Execute();
+    compositeFinal.Execute();
 }
 
 // TODO: Implement new text drawing approach
