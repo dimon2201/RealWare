@@ -6,18 +6,16 @@ option(TRITON_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 if(TRITON_ENABLE_ASAN)
     if(MSVC)
         add_compile_options(/fsanitize=address)
-        add_link_options(/fsanitize=address)
-    else()
-        add_compile_options(-fsanitize=address)
-        add_link_options(-fsanitize=address)
     endif()
 endif()
 
 option(TRITON_STATIC_RUNTIME "Enable static runtime library linking" ON)
 if(TRITON_STATIC_RUNTIME)
     if(MSVC)
-        add_compile_options(/MTd)
-    else()
+        add_compile_options(
+            "$<$<CONFIG:Debug>:/MTd>"
+            "$<$<NOT:$<CONFIG:Debug>>:/MT>"
+        )
     endif()
 endif()
 
@@ -33,6 +31,12 @@ set(TRACY_ENABLE ON CACHE BOOL "" FORCE)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 add_subdirectory(thirdparty/assimp)
+
+if(MSVC AND TARGET assimp)
+    set_property(TARGET assimp PROPERTY COMPILE_WARNING_AS_ERROR OFF)
+    target_compile_options(assimp PRIVATE /WX-)
+endif()
+
 add_subdirectory(thirdparty/freetype)
 add_subdirectory(thirdparty/openal-soft)
 add_subdirectory(thirdparty/sdl)
