@@ -10,7 +10,6 @@
 #include <vector>
 #include <unordered_map>
 #include "model3d_backend.hpp"
-#include "graphics_resource_backend.hpp"
 #include "vertex.hpp"
 #include "material_data.hpp"
 #include "skeleton_data.hpp"
@@ -177,7 +176,7 @@ namespace triton
         );
         
         std::optional<STextureData::THandle> CreateTexture(
-            cTexture::eFormat dataFormat,
+            ETextureFormat dataFormat,
             const std::string& modelFolderPath,
             XTextureSubsystem* textureSubsystem,
             const std::string& textureFilePath,
@@ -186,14 +185,14 @@ namespace triton
         );
         
         std::optional<STextureData::THandle> CreateTextureFromModelData(
-            cTexture::eFormat dataFormat,
+            ETextureFormat dataFormat,
             XTextureSubsystem* textureSubsystem,
             const std::string& textureFilePath,
             const aiTexture* texture
         );
         
         std::optional<STextureData::THandle> CreateTextureFromFile(
-            cTexture::eFormat dataFormat,
+            ETextureFormat dataFormat,
             const std::string& modelFolderPath,
             XTextureSubsystem* textureSubsystem,
             const std::string& textureFilePath

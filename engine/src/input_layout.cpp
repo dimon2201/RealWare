@@ -9,24 +9,24 @@ using namespace types;
 
 triton::XInputLayout::XInputLayout(
 	cContext* context,
-	const std::vector<cBuffer*>& buffersToBind,
+	const std::vector<CGPUBuffer>& buffersToBind,
 	EVertexBufferFormat vertexFormat
 ) : iObject(context)
 {
 	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-		ERenderCommand::CREATE_VERTEX_ARRAY
+		ERenderCommand::CREATE_INPUT_LAYOUT
 	));
-	_gpuVertexArray = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUVertexArray>();
+	_gpuVertexArray = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUInputLayout>();
 
 	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-		ERenderCommand::BIND_VERTEX_ARRAY,
+		ERenderCommand::BIND_INPUT_LAYOUT,
 		(cpuword)&_gpuVertexArray
 	));
 
-	for (auto buffer : buffersToBind)
+	for (auto& buffer : buffersToBind)
 		_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 			ERenderCommand::BIND_BUFFER,
-			(cpuword)buffer
+			(cpuword)&buffer
 		));
 
 	if (vertexFormat == EVertexBufferFormat::Static_52)
@@ -39,14 +39,14 @@ triton::XInputLayout::XInputLayout(
 		));
 
 	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-		ERenderCommand::UNBIND_VERTEX_ARRAY
+		ERenderCommand::UNBIND_INPUT_LAYOUT
 	));
 }
 
 triton::XInputLayout::~XInputLayout()
 {
 	_context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-		ERenderCommand::DESTROY_VERTEX_ARRAY,
+		ERenderCommand::DESTROY_INPUT_LAYOUT,
 		(cpuword)&_gpuVertexArray
 	));
 }

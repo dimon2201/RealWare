@@ -2,8 +2,7 @@
 
 #include "render_pass.hpp"
 #include "context.hpp"
-#include "graphics_pipeline_backend.hpp"
-#include "graphics_drawcall_backend.hpp"
+#include "graphics_backend.hpp"
 #include "input_layout_pool.hpp"
 #include "render_target_pool.hpp"
 #include "camera_pool.hpp"
@@ -18,59 +17,57 @@ void triton::XRenderPass::Bind()
 {
     CThreadGuard::AssertRender();
 
-    CGPUShader gpuShader = _shader->GetGPUShader();
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    gfxPipelineBackend->BindShader(&gpuShader);
-    gfxPipelineBackend->Viewport(_viewport);
-    gfxPipelineBackend->BindDepthMode(_depthState);
-    gfxPipelineBackend->BindBlendMode(_blendState);
+    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    gfxBackend->BindShader(_shader);
+    gfxBackend->SetViewport(_viewport);
+    gfxBackend->BindDepthState(_depthState);
+    gfxBackend->BindBlendState(_blendState);
+
+    gfxBackend->BindBuffer(_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->GetGPUBuffer());
+    gfxBackend->BindBuffer(_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer());
 
     for (auto& tex : _inputTextures)
-        gfxPipelineBackend->BindTextureNamed(&gpuShader, tex.texture, tex.name, -1);
+        gfxBackend->BindTextureNamed(_shader, tex.texture, tex.name, -1);
     
     auto iaResult = _context->GetPool<XInputLayoutPool>()->Get(_inputLayout);
     if (iaResult)
-        gfxPipelineBackend->BindVertexArray((*iaResult).get()._gpuVertexArray);
+        gfxBackend->BindInputLayout((*iaResult).get()._gpuVertexArray);
 
     auto rtResult = _context->GetPool<XRenderTargetPool>()->Get(_renderTarget);
     if (rtResult)
-        gfxPipelineBackend->BindRenderTarget((*rtResult).get()._renderTarget);
+        gfxBackend->BindRenderTarget((*rtResult).get()._renderTarget);
 }
 
 void triton::XRenderPass::Unbind()
 {
     CThreadGuard::AssertRender();
 
-    CGPUShader gpuShader = _shader->GetGPUShader();
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-    gfxPipelineBackend->UnbindShader();
+    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    gfxBackend->UnbindShader();
     // TODO: uncomment this after debug
     //for (auto& tex : _inputTextures)
     //    gfxResourceBackend->UnbindTexture(tex._texture);
     
     auto iaResult = _context->GetPool<XInputLayoutPool>()->Get(_inputLayout);
     if (iaResult)
-        gfxPipelineBackend->UnbindVertexArray();
+        gfxBackend->UnbindInputLayout();
 
     auto rtResult = _context->GetPool<XRenderTargetPool>()->Get(_renderTarget);
     if (rtResult)
-        gfxPipelineBackend->UnbindRenderTarget();
+        gfxBackend->UnbindRenderTarget();
 }
 
 void triton::XRenderPass::Render()
 {
     CThreadGuard::AssertRender();
 
-    iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
+    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
 
     switch (_dispatch)
     {
         case ERenderPassDispatch::Geometry:
         {
             XCamera& camera = *_context->GetPool<XCameraPool>()->Get(_camera);
-            CGPUShader gpuShader = _shader->GetGPUShader();
 
             // TODO: remove this line
             cInputWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->at(0);
@@ -84,11 +81,11 @@ void triton::XRenderPass::Render()
             static u32 time = 0;
             time += 1;
 
-            gfxDrawcallBackend->ClearColor(cVector4(0.45f, 0.0f, 0.8f, 1.0f));
-            gfxDrawcallBackend->ClearDepth(1.0f);
+            gfxBackend->ClearColor(cVector4(0.45f, 0.0f, 0.8f, 1.0f));
+            gfxBackend->ClearDepth(1.0f);
 
-            gfxPipelineBackend->SetShaderUniform(&gpuShader, "UniformTime", (u32)time);
-            gfxPipelineBackend->SetShaderUniform(&gpuShader, "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
+            gfxBackend->SetShaderUniform(_shader, "UniformTime", (u32)time);
+            gfxBackend->SetShaderUniform(_shader, "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
             
             for (usize i = 0; i < _batches.size(); i++)
             {
@@ -97,9 +94,9 @@ void triton::XRenderPass::Render()
                 const SBatchData& batch = _context->GetSubsystem<XBatchSubsystem>()->Get(batchHandle);
                 const SGeometryView geometry = batch.sharedGeometry;
 
-                gfxPipelineBackend->SetShaderUniform(&gpuShader, "InstanceBatchType", (u32)batch.motionType);
-                gfxPipelineBackend->SetShaderUniform(&gpuShader, "InstanceOffset", (u32)batch.bufferOffset);
-                gfxDrawcallBackend->Draw(
+                gfxBackend->SetShaderUniform(_shader, "InstanceBatchType", (u32)batch.motionType);
+                gfxBackend->SetShaderUniform(_shader, "InstanceOffset", (u32)batch.bufferOffset);
+                gfxBackend->Draw(
                     geometry._indexCount,
                     geometry._vertexElementOffset,
                     geometry._indexElementOffset,
@@ -120,7 +117,7 @@ void triton::XRenderPass::Render()
         }
         case ERenderPassDispatch::Processing:
         {
-            gfxDrawcallBackend->DrawQuad();
+            gfxBackend->DrawQuad();
             break;
         }
     }
@@ -147,7 +144,7 @@ void triton::XRenderPass::ResizeColorAttachments(const cVector2& size)
 
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::RESIZE_RENDER_TARGET_COLORS,
-        (cpuword)rt._renderTarget,
+        (cpuword)&rt._renderTarget,
         size.GetX(),
         size.GetY()
     ));
@@ -159,7 +156,7 @@ void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
 
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::RESIZE_RENDER_TARGET_DEPTH,
-        (cpuword)rt._renderTarget,
+        (cpuword)&rt._renderTarget,
         size.GetX(),
         size.GetY()
     ));

@@ -4,21 +4,20 @@
 
 #include "object.hpp"
 #include "handle.hpp"
+#include "graphics_backend.hpp"
 
 namespace triton
 {
 	class cContext;
-	class cTexture;
-	class XRenderTargetBackend;
 
 	class XRenderTarget : public iObject
 	{
 		TRITON_OBJECT(XRenderTarget)
 
-		XRenderTargetBackend* _renderTarget = nullptr;
+		CGPURenderTarget _renderTarget;
 
 	public:
-		explicit XRenderTarget(cContext* context, XRenderTargetBackend* renderTarget);
+		explicit XRenderTarget(cContext* context, const CGPURenderTarget& renderTarget);
 		~XRenderTarget() = default;
 
 		struct THandle : public SHandle {};

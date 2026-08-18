@@ -10,10 +10,11 @@
 #include "object.hpp"
 #include "handle.hpp"
 #include "object_allocator.hpp"
-#include "graphics_resource_backend.hpp"
 #include "material_data.hpp"
 #include "synchronization.hpp"
 #include "buffer_view.hpp"
+#include "gpu_buffer_types.hpp"
+#include "graphics_backend.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -41,16 +42,16 @@ namespace triton
         types::usize				_lastObjectCursor = 0;
         std::queue<types::usize>	_freeSlots = {};
         types::boolean				_bDirtyBit = types::False;
-        cBuffer*                    _gpuBuffer = nullptr;
+        CGPUBuffer                  _gpuBuffer;
         types::s32                  _gpuBufferSlot = -1;
-        cBuffer::eType              _gpuBufferType = cBuffer::eType::NONE;
+        EGPUBufferType              _gpuBufferType = EGPUBufferType::Unknown;
 
     public:
         explicit XObjectPoolBase(
             cContext* context,
             types::boolean bKeepCpuCopy,
             types::s32 gpuBufferSlot = -1,
-            cBuffer::eType gpuBufferType = cBuffer::eType::NONE
+            EGPUBufferType gpuBufferType = EGPUBufferType::Unknown
         );
 
         ~XObjectPoolBase() override;
@@ -84,7 +85,7 @@ namespace triton
             return SBufferView<TObject>(&_objects[0], sizeof(TObject) * _lastObjectCursor);
         }
 
-        inline cBuffer* GetGPUBuffer() const
+        inline CGPUBuffer GetGPUBuffer() const
         {
             return _gpuBuffer;
         }
@@ -121,7 +122,7 @@ namespace triton
         cContext* context,
         types::boolean bKeepStagingBuffer,
         types::s32 gpuBufferSlot,
-        cBuffer::eType gpuBufferType
+        EGPUBufferType gpuBufferType
     ) :
         iObject(context),
         _bKeepStagingBuffer(bKeepStagingBuffer),
@@ -131,8 +132,7 @@ namespace triton
     template <typename TObject>
     XObjectPoolBase<TObject>::~XObjectPoolBase()
     {
-        if (_gpuBuffer)
-            DestroyGpuBuffer();
+        DestroyGpuBuffer();
         if (_staging)
             CObjectAllocator::Deallocate(_staging);
         if (_objects)
@@ -173,9 +173,9 @@ namespace triton
         }
 
         auto AllocateGpuBuffer = [](
-            cBuffer*& buffer,
+            CGPUBuffer& buffer,
             cContext* context,
-            cBuffer::eType type,
+            EGPUBufferType type,
             types::usize byteSize,
             types::s32 slot
         ) {
@@ -188,10 +188,10 @@ namespace triton
             ));
             buffer = context->GetSubsystem<cEngine>()->
                 GetSynchronization()->
-                WaitForRenderCommandResult<cBuffer*>();
+                WaitForRenderCommandResult<CGPUBuffer>();
         };
 
-        if (_gpuBuffer && _gpuBufferSlot > -1 && _gpuBufferType != cBuffer::eType::NONE)
+        if (_gpuBuffer.GetBufferType() != EGPUBufferType::Unknown && _gpuBufferSlot > -1)
         {
             DestroyGpuBuffer();
             AllocateGpuBuffer(
@@ -203,7 +203,7 @@ namespace triton
             );
             Upload();
         }
-        else if (!_gpuBuffer && _gpuBufferSlot > -1 && _gpuBufferType != cBuffer::eType::NONE)
+        else if (_gpuBufferSlot > -1)
         {
             AllocateGpuBuffer(
                 _gpuBuffer,
@@ -368,7 +368,7 @@ namespace triton
     template <typename TObject>
     void XObjectPoolBase<TObject>::Upload()
     {
-        if (!_gpuBuffer || _gpuBufferSlot == -1 || _gpuBufferType == cBuffer::eType::NONE)
+        if (_gpuBufferSlot == -1 || _gpuBufferType == EGPUBufferType::Unknown)
             return;
 
         if (_bDirtyBit == types::K_TRUE)
@@ -380,7 +380,7 @@ namespace triton
 
             _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
                 ERenderCommand::WRITE_BUFFER,
-                (types::cpuword)_gpuBuffer,
+                (types::cpuword)&_gpuBuffer,
                 0,
                 packedSize * sizeof(TObject::TGPULayout),
                 (types::cpuword)&_staging[0]
@@ -462,12 +462,12 @@ namespace triton
     template <typename TObject>
     void XObjectPoolBase<TObject>::DestroyGpuBuffer()
     {
-        if (!_gpuBuffer || _gpuBufferSlot < 0 || _gpuBufferType == cBuffer::eType::NONE)
+        if (_gpuBufferSlot < 0 || _gpuBufferType == EGPUBufferType::Unknown)
             return;
 
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::DESTROY_BUFFER,
-            (types::cpuword)_gpuBuffer
+            (types::cpuword)&_gpuBuffer
         ));
         _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
     }

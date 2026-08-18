@@ -8,8 +8,8 @@
 #include "object.hpp"
 #include "math.hpp"
 #include "linear_array.hpp"
-#include "graphics_resource_backend.hpp"
 #include "texture_data.hpp"
+#include "graphics_backend.hpp"
 #include "DELETE_THIS_FILE_ASAP.hpp"
 #include "types.hpp"
 
@@ -18,7 +18,6 @@ namespace triton
     class cContext;
     class iGraphicsBackend;
     class cApplication;
-    class cTexture;
     class XTexturePool;
 
     struct sTextureAtlasTextureGPU
@@ -27,7 +26,7 @@ namespace triton
         types::f32 _textureLayerInfo = 0.0f;
     };
 
-    enum class ETextureFormat
+    enum class ETextureFileFormat
     {
         NONE,
         Raw,
@@ -40,39 +39,39 @@ namespace triton
         TRITON_OBJECT(XTextureSubsystem)
 
         XTexturePool* _pool = nullptr;
-        cTexture* _atlasRGBA8SRGB = nullptr;
-        cTexture* _atlasRGBA8 = nullptr;
-        cTexture* _atlasR8 = nullptr;
+        CGPUTexture _atlasRGBA8SRGB;
+        CGPUTexture _atlasRGBA8;
+        CGPUTexture _atlasR8;
 
     public:
         explicit XTextureSubsystem(cContext* context, const cVector3& size);
         ~XTextureSubsystem() override;
 
-        std::optional<STextureData::THandle> Create(const std::string& filePath, cTexture::eFormat dataFormat);
+        std::optional<STextureData::THandle> Create(const std::string& filePath, ETextureFormat dataFormat);
         std::optional<STextureData::THandle> Create(
             const types::u8* byteData,
             types::usize byteDataByteSize,
             types::usize width,
             types::usize height,
             types::usize channelCount,
-            ETextureFormat byteDataFormat,
-            cTexture::eFormat pixelDataFormat
+            ETextureFileFormat byteDataFormat,
+            ETextureFormat pixelDataFormat
         );
         void Init() override {}
         void Free() override {}
         void Update() override {}
 
-        inline cTexture* GetAtlasRGBA8SRGB() const
+        inline CGPUTexture GetAtlasRGBA8SRGB() const
         {
             return _atlasRGBA8SRGB;
         }
 
-        inline cTexture* GetAtlasRGBA8() const
+        inline CGPUTexture GetAtlasRGBA8() const
         {
             return _atlasRGBA8;
         }
 
-        inline cTexture* GetAtlasR8() const
+        inline CGPUTexture GetAtlasR8() const
         {
             return _atlasR8;
         }
@@ -83,16 +82,16 @@ namespace triton
         }
 
     private:
-        std::optional<STextureData> CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data);
-        std::optional<STextureData> CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath);
+        std::optional<STextureData> CreateTexture(ETextureFormat format, const cVector2& size, const types::u8* data);
+        std::optional<STextureData> CreateTextureFromFile(ETextureFormat dataFormat, const std::string& filePath);
         std::optional<STextureData> CreateTextureFromBytes(
-            cTexture::eFormat expectedDataFormat,
+            ETextureFormat expectedDataFormat,
             const types::u8* byteData,
             types::usize byteDataByteSize,
             types::usize width,
             types::usize height,
             types::usize channelCount,
-            ETextureFormat fileFormat
+            ETextureFileFormat fileFormat
         );
         types::boolean IsOverlapping(const STextureData& candidateTexture, const STextureData& atlasTexture);
         types::u8* RecreatePixelBuffer(types::usize srcChannelCount, types::usize dstChannelCount, const cVector2& size, const types::u8* data);

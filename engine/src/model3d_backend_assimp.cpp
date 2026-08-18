@@ -346,7 +346,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
     for (auto& material : materials)
     {
         auto diffOpt = CreateTexture(
-            cTexture::eFormat::RGBA8_SRGB_MIPS,
+            ETextureFormat::RGBA8_SRGB_Mips,
             modelFolderPath,
             textureSubsystem,
             material.diffuseTextureFilePath,
@@ -354,7 +354,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
             scene->GetEmbeddedTexture(material.diffuseTextureFilePath.c_str())
         );
         auto normOpt = CreateTexture(
-            cTexture::eFormat::RGBA8,
+            ETextureFormat::RGBA8,
             modelFolderPath,
             textureSubsystem,
             material.normalTextureFilePath,
@@ -362,7 +362,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
             scene->GetEmbeddedTexture(material.normalTextureFilePath.c_str())
         );
         auto rghnOpt = CreateTexture(
-            cTexture::eFormat::R8,
+            ETextureFormat::R8,
             modelFolderPath,
             textureSubsystem,
             material.roughnessTextureFilePath,
@@ -370,7 +370,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
             scene->GetEmbeddedTexture(material.roughnessTextureFilePath.c_str())
         );
         auto metlOpt = CreateTexture(
-            cTexture::eFormat::R8,
+            ETextureFormat::R8,
             modelFolderPath,
             textureSubsystem,
             material.metallicTextureFilePath,
@@ -656,7 +656,7 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
 }
 
 std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::CreateTexture(
-    cTexture::eFormat dataFormat,
+    ETextureFormat dataFormat,
     const std::string& modelFolderPath,
     XTextureSubsystem* textureSubsystem,
     const std::string& textureFilePath,
@@ -671,7 +671,7 @@ std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::Crea
 }
 
 std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::CreateTextureFromModelData(
-    cTexture::eFormat dataFormat,
+    ETextureFormat dataFormat,
     XTextureSubsystem* textureSubsystem,
     const std::string& textureFilePath,
     const aiTexture* texture
@@ -695,7 +695,7 @@ std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::Crea
                 0,
                 0,
                 0,
-                ETextureFormat::PNG,
+                ETextureFileFormat::PNG,
                 dataFormat
             );
         }
@@ -707,7 +707,7 @@ std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::Crea
                 0,
                 0,
                 0,
-                ETextureFormat::DDS,
+                ETextureFileFormat::DDS,
                 dataFormat
             );
         }
@@ -731,7 +731,7 @@ std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::Crea
 }
 
 std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::CreateTextureFromFile(
-    cTexture::eFormat dataFormat,
+    ETextureFormat dataFormat,
     const std::string& modelFolderPath,
     XTextureSubsystem* textureSubsystem,
     const std::string& textureFilePath

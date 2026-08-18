@@ -3,7 +3,6 @@
 #include "camera.hpp"
 #include "context.hpp"
 #include "time.hpp"
-#include "graphics_pipeline_backend.hpp"
 #include "render_pass.hpp"
 #include "thread_guard.hpp"
 #include "input.hpp"
@@ -15,10 +14,10 @@ void triton::XCamera::Bind(XRenderPass* pass)
 {
     CThreadGuard::AssertRender();
 
-    CGPUShader shader = pass->GetShader()->GetGPUShader();
+    CGPUShader shader = pass->GetShader();
 
-    iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
-    gfxPipelineBackend->SetShaderUniform(&shader, "ViewProjection", _viewProjectionMatrix.Get());
+    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    gfxBackend->SetShaderUniform(shader, "ViewProjection", _viewProjectionMatrix.Get());
 }
 
 void triton::XCamera::Update(const cVector2& screenCursorPosition, usize screenWidth, usize screenHeight, f32 fov, f32 zNear, f32 zFar, f32 mouseSensitivity)

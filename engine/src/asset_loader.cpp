@@ -53,7 +53,7 @@ std::optional<triton::SModel3DData::THandle> triton::XAssetLoader::LoadModel(con
 				const std::filesystem::path& assetFolderPath,
 				const std::filesystem::path& assetTexturePath,
 				const asset::STextureData& assetTextureData,
-				cTexture::eFormat textureFormat,
+				ETextureFormat textureFormat,
 				XTextureSubsystem* textureSubsystem,
 				STextureData::THandle& outHandle
 			) {
@@ -72,7 +72,7 @@ std::optional<triton::SModel3DData::THandle> triton::XAssetLoader::LoadModel(con
 						assetTextureData.width,
 						assetTextureData.height,
 						assetTextureData.channelCount,
-						ETextureFormat::Raw,
+						ETextureFileFormat::Raw,
 						textureFormat
 					);
 			};
@@ -87,7 +87,7 @@ std::optional<triton::SModel3DData::THandle> triton::XAssetLoader::LoadModel(con
 				assetFolderPath,
 				std::filesystem::path(assetMaterialData.diffuseTexturePath),
 				assetMaterialData.diffuseTexture,
-				cTexture::eFormat::RGBA8_SRGB_MIPS,
+				ETextureFormat::RGBA8_SRGB_Mips,
 				textureSubsystem,
 				diffuseTexture
 			);
@@ -95,7 +95,7 @@ std::optional<triton::SModel3DData::THandle> triton::XAssetLoader::LoadModel(con
 				assetFolderPath,
 				std::filesystem::path(assetMaterialData.normalTexturePath),
 				assetMaterialData.normalTexture,
-				cTexture::eFormat::RGBA8,
+				ETextureFormat::RGBA8,
 				textureSubsystem,
 				normalTexture
 			);
@@ -103,7 +103,7 @@ std::optional<triton::SModel3DData::THandle> triton::XAssetLoader::LoadModel(con
 				assetFolderPath,
 				std::filesystem::path(assetMaterialData.roughnessTexturePath),
 				assetMaterialData.roughnessTexture,
-				cTexture::eFormat::R8,
+				ETextureFormat::R8,
 				textureSubsystem,
 				roughnessTexture
 			);
@@ -111,7 +111,7 @@ std::optional<triton::SModel3DData::THandle> triton::XAssetLoader::LoadModel(con
 				assetFolderPath,
 				std::filesystem::path(assetMaterialData.metallicTexturePath),
 				assetMaterialData.metallicTexture,
-				cTexture::eFormat::R8,
+				ETextureFormat::R8,
 				textureSubsystem,
 				metallicTexture
 			);

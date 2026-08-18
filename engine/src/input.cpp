@@ -3,7 +3,6 @@
 #include "input.hpp"
 #include "context.hpp"
 #include "input_backend.hpp"
-#include "graphics_context_backend.hpp"
 #include "thread_guard.hpp"
 #include "dynamic_array.hpp"
 

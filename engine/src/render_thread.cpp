@@ -6,9 +6,7 @@
 #include "engine.hpp"
 #include "input.hpp"
 #include "graphics.hpp"
-#include "graphics_context_backend.hpp"
-#include "graphics_resource_backend.hpp"
-#include "graphics_drawcall_backend.hpp"
+#include "graphics_backend.hpp"
 #include "thread_guard.hpp"
 #include "dynamic_array.hpp"
 
@@ -32,14 +30,15 @@ void triton::cRenderThread::ThreadFunction()
 
 	tracy::SetThreadName("Render Thread");
 
+	IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+
 	// Create graphics contexts for windows
 	cInput* inputSubsystem = _context->GetSubsystem<cInput>();
 	std::vector<cInputWindow>* windows = inputSubsystem->GetWindows();
-	iGraphicsContextBackend* gfxContextBackend = _context->GetBackend<iGraphicsContextBackend>();
 	for (usize i = 0; i < windows->size(); i++)
 	{
-		gfxContextBackend->CreateGraphicsContext(windows->at(i).GetBackendWindow());
-		gfxContextBackend->MakeWindowGraphicsContextCurrent(windows->at(i).GetBackendWindow());
+		gfxBackend->CreateGraphicsContext(windows->at(i).GetBackendWindow());
+		gfxBackend->MakeWindowGraphicsContextCurrent(windows->at(i).GetBackendWindow());
 	}
 
 	_sync->InitRenderThread();
@@ -48,10 +47,6 @@ void triton::cRenderThread::ThreadFunction()
 		std::lock_guard<std::mutex> lg(mtx);
 		std::cout << "Render thread ready and starts\n\n";
 	}
-
-	iGraphicsDrawcallBackend* gfxDrawcallBackend = _context->GetBackend<iGraphicsDrawcallBackend>();
-	iGraphicsResourceBackend* gfxResourceBackend = _context->GetBackend<iGraphicsResourceBackend>();
-	iGraphicsPipelineBackend* gfxPipelineBackend = _context->GetBackend<iGraphicsPipelineBackend>();
 
 	while (K_TRUE)
 	{
@@ -80,15 +75,13 @@ void triton::cRenderThread::ThreadFunction()
 				XGraphics* gfx = _context->GetSubsystem<XGraphics>();
 				ExecuteCommands(
 					frame.renderCommandPack,
-					gfxDrawcallBackend,
-					gfxResourceBackend,
-					gfxPipelineBackend,
+					gfxBackend,
 					gfx
 				);
 
 				gfx->ExecutePasses();
 
-				Present(frame.window, gfxContextBackend);
+				Present(frame.window, gfxBackend);
 			}
 			else if (frame.operation == EProducedFrameOp::ExecuteCommandsOnly)
 			{
@@ -96,9 +89,7 @@ void triton::cRenderThread::ThreadFunction()
 				XGraphics* gfx = _context->GetSubsystem<XGraphics>();
 				ExecuteCommands(
 					frame.renderCommandPack,
-					gfxDrawcallBackend,
-					gfxResourceBackend,
-					gfxPipelineBackend,
+					gfxBackend,
 					gfx
 				);
 			}
@@ -119,9 +110,7 @@ void triton::cRenderThread::ThreadFunction()
 
 void triton::cRenderThread::ExecuteCommands(
 	const SRenderCommandPack& renderCommandPack,
-	iGraphicsDrawcallBackend* drawcallBackend,
-	iGraphicsResourceBackend* resourceBackend,
-	iGraphicsPipelineBackend* pipelineBackend,
+	IGraphicsBackend* gfxBackend,
 	XGraphics* gfx
 )
 {
@@ -141,20 +130,20 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::CLEAR:
 			{
-				drawcallBackend->ClearColor(cVector4(
+				gfxBackend->ClearColor(cVector4(
 					cmd._args._argA,
 					cmd._args._argB,
 					cmd._args._argC,
 					cmd._args._argD
 				));
-				drawcallBackend->ClearDepth(
+				gfxBackend->ClearDepth(
 					cmd._args._argE
 				);
 				break;
 			}
 			case ERenderCommand::DRAW:
 			{
-				drawcallBackend->Draw(
+				gfxBackend->Draw(
 					cmd._args._argA,
 					cmd._args._argB,
 					cmd._args._argC,
@@ -164,8 +153,8 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::WRITE_BUFFER:
 			{
-				resourceBackend->WriteBuffer(
-					(cBuffer*)cmd._args._argA,
+				gfxBackend->WriteBuffer(
+					*((CGPUBuffer*)cmd._args._argA),
 					cmd._args._argB,
 					cmd._args._argC,
 					(const u8*)cmd._args._argD
@@ -174,67 +163,67 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::CREATE_BUFFER:
 			{
-				cBuffer* resultBuffer = resourceBackend->CreateBuffer(
-					(cBuffer::eType)cmd._args._argA,
+				CGPUBuffer resultBuffer = gfxBackend->CreateBuffer(
+					(EGPUBufferType)cmd._args._argA,
 					(u8*)cmd._args._argB,
 					cmd._args._argC,
 					cmd._args._argD
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultBuffer, sizeof(cBuffer*));
+				memcpy(&_sync->GetResultBuffer().data[0], &resultBuffer, sizeof(CGPUBuffer));
 				break;
 			}
 			case ERenderCommand::BIND_BUFFER:
 			{
-				cBuffer* buffer = (cBuffer*)cmd._args._argA;
-				resourceBackend->BindBuffer(buffer);
+				CGPUBuffer* buffer = (CGPUBuffer*)cmd._args._argA;
+				gfxBackend->BindBuffer(*buffer);
 				break;
 			}
 			case ERenderCommand::DESTROY_BUFFER:
 			{
-				resourceBackend->DestroyBuffer(
-					(cBuffer*)cmd._args._argA
+				gfxBackend->DestroyBuffer(
+					*((CGPUBuffer*)cmd._args._argA)
 				);
 				break;
 			}
-			case ERenderCommand::CREATE_VERTEX_ARRAY:
+			case ERenderCommand::CREATE_INPUT_LAYOUT:
 			{
-				CGPUVertexArray resultVertexArray = pipelineBackend->CreateVertexArray();
-				memcpy(&_sync->GetResultBuffer().data[0], &resultVertexArray, sizeof(CGPUVertexArray));
+				CGPUInputLayout resultIA = gfxBackend->CreateInputLayout();
+				memcpy(&_sync->GetResultBuffer().data[0], &resultIA, sizeof(CGPUInputLayout));
 				break;
 			}
-			case ERenderCommand::BIND_VERTEX_ARRAY:
+			case ERenderCommand::BIND_INPUT_LAYOUT:
 			{
-				CGPUVertexArray* vertexArray = (CGPUVertexArray*)cmd._args._argA;
-				pipelineBackend->BindVertexArray(*vertexArray);
+				CGPUInputLayout* ia = (CGPUInputLayout*)cmd._args._argA;
+				gfxBackend->BindInputLayout(*ia);
 				break;
 			}
-			case ERenderCommand::UNBIND_VERTEX_ARRAY:
+			case ERenderCommand::UNBIND_INPUT_LAYOUT:
 			{
-				pipelineBackend->UnbindVertexArray();
+				gfxBackend->UnbindInputLayout();
 				break;
 			}
-			case ERenderCommand::DESTROY_VERTEX_ARRAY:
+			case ERenderCommand::DESTROY_INPUT_LAYOUT:
 			{
-				CGPUVertexArray* vertexArray = (CGPUVertexArray*)cmd._args._argA;
-				pipelineBackend->DestroyVertexArray(*vertexArray);
+				CGPUInputLayout* ia = (CGPUInputLayout*)cmd._args._argA;
+				gfxBackend->DestroyInputLayout(*ia);
 				break;
 			}
 			case ERenderCommand::CREATE_TEXTURE:
 			{
-				cTexture* resultTexture = resourceBackend->CreateTexture(
+				CGPUTexture resultTexture = gfxBackend->CreateTexture(
 					cVector3(cmd._args._argA, cmd._args._argB, cmd._args._argC),
-					(cTexture::eDimension)cmd._args._argD,
-					(cTexture::eFormat)cmd._args._argE,
+					(ETextureDimension)cmd._args._argD,
+					(ETextureFormat)cmd._args._argE,
 					(u8*)cmd._args._argF,
 					cmd._args._argG
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultTexture, sizeof(cTexture*));
+				memcpy(&_sync->GetResultBuffer().data[0], &resultTexture, sizeof(CGPUTexture));
 				break;
 			}
 			case ERenderCommand::WRITE_TEXTURE:
 			{
-				resourceBackend->WriteTexture(
-					(cTexture*)cmd._args._argA,
+				gfxBackend->WriteTexture(
+					*((CGPUTexture*)cmd._args._argA),
 					cVector3(cmd._args._argB, cmd._args._argC, cmd._args._argD),
 					cVector2(cmd._args._argE, cmd._args._argF),
 					(u8*)cmd._args._argG
@@ -243,28 +232,28 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::GENERATE_TEXTURE_MIPS:
 			{
-				resourceBackend->GenerateTextureMips(
-					(cTexture*)cmd._args._argA
+				gfxBackend->GenerateTextureMips(
+					*((CGPUTexture*)cmd._args._argA)
 				);
 				break;
 			}
 			case ERenderCommand::CREATE_RENDER_TARGET:
 			{
 				usize attachmentCount = cmd._args._argA;
-				cTexture** attachments = (cTexture**)cmd._args._argB;
-				std::vector<cTexture*> attachmentsVec;
+				CGPUTexture* attachments = (CGPUTexture*)cmd._args._argB;
+				std::vector<CGPUTexture> attachmentsVec;
 				for (usize i = 0; i < attachmentCount; i++)
 					attachmentsVec.push_back(attachments[i]);
-				XRenderTargetBackend* resultRT = pipelineBackend->CreateRenderTarget(
+				CGPURenderTarget resultRT = gfxBackend->CreateRenderTarget(
 					attachmentsVec,
-					(cTexture*)cmd._args._argC
+					*((CGPUTexture*)cmd._args._argC)
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultRT, sizeof(XRenderTargetBackend*));
+				memcpy(&_sync->GetResultBuffer().data[0], &resultRT, sizeof(CGPURenderTarget));
 				break;
 			}
 			case ERenderCommand::CREATE_SHADER:
 			{
-				CGPUShader resultGPUShader = pipelineBackend->CreateShader(
+				CGPUShader resultGPUShader = gfxBackend->CreateShader(
 					(const char*)cmd._args._argA,
 					(const char*)cmd._args._argB,
 					(const char*)cmd._args._argC,
@@ -281,19 +270,19 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::BIND_STATIC_INPUT_LAYOUT:
 			{
-				pipelineBackend->BindStaticInputLayout();
+				gfxBackend->BindStaticInputLayout();
 				break;
 			}
 			case ERenderCommand::BIND_SKINNED_INPUT_LAYOUT:
 			{
-				pipelineBackend->BindSkinnedInputLayout();
+				gfxBackend->BindSkinnedInputLayout();
 				break;
 			}
 		}
 	}
 }
 
-void triton::cRenderThread::Present(const cInputWindow* window, iGraphicsContextBackend* contextBackend)
+void triton::cRenderThread::Present(const cInputWindow* window, IGraphicsBackend* gfxBackend)
 {
-	contextBackend->SwapWindowBuffers(window->GetBackendWindow());
+	gfxBackend->SwapWindowBuffers(window->GetBackendWindow());
 }

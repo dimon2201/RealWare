@@ -4,5 +4,5 @@
 
 triton::XRenderTarget::XRenderTarget(
 	cContext* context,
-	XRenderTargetBackend* renderTarget
+	const CGPURenderTarget& renderTarget
 ) : iObject(context), _renderTarget(renderTarget) {}

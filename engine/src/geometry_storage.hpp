@@ -6,22 +6,22 @@
 #include "object.hpp"
 #include "geometry_view.hpp"
 #include "vertex_buffer_format.hpp"
+#include "graphics_backend.hpp"
 #include "types.hpp"
 
 namespace triton
 {
     class cEngine;
-    class cBuffer;
     class XDataBuffer;
 
     class XGeometryStorage : public iObject
     {
         TRITON_OBJECT(XGeometryStorage)
 
-        cBuffer* _staticVertexBuffer = nullptr;
-        cBuffer* _skinnedVertexBuffer = nullptr;
-        cBuffer* _staticIndexBuffer = nullptr;
-        cBuffer* _skinnedIndexBuffer = nullptr;
+        CGPUBuffer _staticVertexBuffer;
+        CGPUBuffer _skinnedVertexBuffer;
+        CGPUBuffer _staticIndexBuffer;
+        CGPUBuffer _skinnedIndexBuffer;
         XDataBuffer* _staticVertexBufferCPU = nullptr;
         XDataBuffer* _skinnedVertexBufferCPU = nullptr;
         XDataBuffer* _staticIndexBufferCPU = nullptr;
@@ -43,22 +43,22 @@ namespace triton
             types::usize inputIndexCount
         );
 
-        inline cBuffer* GetStaticVertexBuffer() const
+        inline CGPUBuffer GetStaticVertexBuffer() const
         {
             return _staticVertexBuffer;
         }
 
-        inline cBuffer* GetSkinnedVertexBuffer() const
+        inline CGPUBuffer GetSkinnedVertexBuffer() const
         {
             return _skinnedVertexBuffer;
         }
 
-        inline cBuffer* GetStaticIndexBuffer() const
+        inline CGPUBuffer GetStaticIndexBuffer() const
         {
             return _staticIndexBuffer;
         }
 
-        inline cBuffer* GetSkinnedIndexBuffer() const
+        inline CGPUBuffer GetSkinnedIndexBuffer() const
         {
             return _skinnedIndexBuffer;
         }

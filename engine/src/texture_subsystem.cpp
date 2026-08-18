@@ -26,54 +26,57 @@ triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& 
         size.GetX(),
         size.GetY(),
         size.GetZ(),
-        (cpuword)cTexture::eDimension::TEXTURE_2D_ARRAY,
-        (cpuword)cTexture::eFormat::RGBA8_SRGB_MIPS,
+        (cpuword)ETextureDimension::Texture2DArray,
+        (cpuword)ETextureFormat::RGBA8_SRGB_Mips,
         (cpuword)nullptr,
         0
     ));
-    _atlasRGBA8SRGB = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _atlasRGBA8SRGB = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
         size.GetY(),
         size.GetZ(),
-        (cpuword)cTexture::eDimension::TEXTURE_2D_ARRAY,
-        (cpuword)cTexture::eFormat::RGBA8,
+        (cpuword)ETextureDimension::Texture2DArray,
+        (cpuword)ETextureFormat::RGBA8,
         (cpuword)nullptr,
         1
     ));
-    _atlasRGBA8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _atlasRGBA8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
         size.GetY(),
         size.GetZ(),
-        (cpuword)cTexture::eDimension::TEXTURE_2D_ARRAY,
-        (cpuword)cTexture::eFormat::R8,
+        (cpuword)ETextureDimension::Texture2DArray,
+        (cpuword)ETextureFormat::R8,
         (cpuword)nullptr,
         2
     ));
-    _atlasR8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _atlasR8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
 }
 
 triton::XTextureSubsystem::~XTextureSubsystem()
 {
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)_atlasR8
+        (cpuword)&_atlasR8
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)_atlasRGBA8
+        (cpuword)&_atlasRGBA8
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)_atlasRGBA8SRGB
+        (cpuword)&_atlasRGBA8SRGB
     ));
     CObjectAllocator::Destroy<XTexturePool>(_pool);
 }
 
-std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(const std::string& filePath, cTexture::eFormat dataFormat)
+std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
+    const std::string& filePath,
+    ETextureFormat dataFormat
+)
 {
     auto tff = CreateTextureFromFile(dataFormat, filePath);;
 
@@ -98,8 +101,8 @@ std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
     usize width,
     usize height,
     usize channelCount,
-    ETextureFormat byteDataFormat,
-    cTexture::eFormat pixelDataFormat
+    ETextureFileFormat byteDataFormat,
+    ETextureFormat pixelDataFormat
 )
 {
     auto handleResult = _pool->Create();
@@ -125,25 +128,29 @@ std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
     return handle;
 }
 
-std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(cTexture::eFormat format, const cVector2& size, const types::u8* data)
+std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(
+    ETextureFormat format,
+    const cVector2& size,
+    const types::u8* data
+)
 {
     if (data == nullptr ||
-        (format != cTexture::eFormat::RGBA8_SRGB_MIPS &&
-        format != cTexture::eFormat::RGBA8 &&
-        format != cTexture::eFormat::R8))
+        (format != ETextureFormat::RGBA8_SRGB_Mips &&
+        format != ETextureFormat::RGBA8 &&
+        format != ETextureFormat::R8))
     {
         Print("Error: can't create texture with unsupported format");
 
         return std::nullopt;
     }
 
-    cTexture* atlas = nullptr;
-    if (format == cTexture::eFormat::RGBA8_SRGB_MIPS)
-        atlas = _atlasRGBA8SRGB;
-    else if (format == cTexture::eFormat::RGBA8)
-        atlas = _atlasRGBA8;
-    else if (format == cTexture::eFormat::R8)
-        atlas = _atlasR8;
+    CGPUTexture* atlas = nullptr;
+    if (format == ETextureFormat::RGBA8_SRGB_Mips)
+        atlas = &_atlasRGBA8SRGB;
+    else if (format == ETextureFormat::RGBA8)
+        atlas = &_atlasRGBA8;
+    else if (format == ETextureFormat::R8)
+        atlas = &_atlasR8;
 
     const usize width = size.GetX();
     const usize height = size.GetY();
@@ -188,7 +195,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(cTe
                         pixelSize.GetY(),
                         (cpuword)data
                     ));
-                    if (format == cTexture::eFormat::RGBA8_SRGB_MIPS)
+                    if (format == ETextureFormat::RGBA8_SRGB_Mips)
                         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
                             ERenderCommand::GENERATE_TEXTURE_MIPS,
                             (cpuword)atlas
@@ -211,7 +218,10 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(cTe
     return std::nullopt;
 }
 
-std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFromFile(cTexture::eFormat dataFormat, const std::string& filePath)
+std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFromFile(
+    ETextureFormat dataFormat,
+    const std::string& filePath
+)
 {
     cDataFile* df = _context->GetSubsystem<cFileSystem>()->CreateDataFile(filePath, K_FALSE);
     if (!df->Exists())
@@ -220,7 +230,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
     if (db->GetByteSize() == 0)
         return std::nullopt;
     
-    ETextureFormat tf = ETextureFormat::NONE;
+    ETextureFileFormat tf = ETextureFileFormat::NONE;
     const usize kPNGMagicByteCount = 8;
     const usize kDDSMagicByteCount = 4;
     const usize kMagicByteCountMax = std::max({ kPNGMagicByteCount, kDDSMagicByteCount });
@@ -229,28 +239,29 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
     u8 compareBuffer[kMagicByteCountMax] = {};
     memcpy(&compareBuffer[0], &db->GetData()[0], kMagicByteCountMax);
     if (memcmp(&compareBuffer[0], &pngMagic[0], kPNGMagicByteCount) == 0)
-        tf = ETextureFormat::PNG;
+        tf = ETextureFileFormat::PNG;
     else if (memcmp(&compareBuffer[0], &ddsMagic[0], kDDSMagicByteCount) == 0)
-        tf = ETextureFormat::DDS;
+        tf = ETextureFileFormat::DDS;
 
     usize width = 0;
     usize height = 0;
     usize channels = 0;
     u8* data = nullptr;
 
-    if (tf == ETextureFormat::NONE)
+    if (tf == ETextureFileFormat::NONE)
     {
         Print("Error: unknown texture format, file path: '" + filePath + "'\n");
 
         return std::nullopt;
     }
-    else if (tf == ETextureFormat::PNG)
+    else if (tf == ETextureFileFormat::PNG)
     {
         int stbWidth = 0, stbHeight = 0, stbChannels = 0;
         
         data = stbi_load(filePath.c_str(), &stbWidth, &stbHeight, &stbChannels, 0);
-        if (stbChannels == 3 && (dataFormat == cTexture::eFormat::RGBA8 ||
-            dataFormat == cTexture::eFormat::RGBA8_SRGB_MIPS))
+        if (stbChannels == 3 &&
+            (dataFormat == ETextureFormat::RGBA8 ||
+            dataFormat == ETextureFormat::RGBA8_SRGB_Mips))
         {
             Print("Info: recreate image buffer from 3 channels to 4 channels");
 
@@ -261,7 +272,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
 
             return tex;
         }
-        else if (stbChannels == 3 && dataFormat == cTexture::eFormat::R8)
+        else if (stbChannels == 3 && dataFormat == ETextureFormat::R8)
         {
             Print("Info: recreate image buffer from 3 channel to 1 channel");
 
@@ -272,12 +283,12 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
 
             return tex;
         }
-        if (stbChannels == 1 && dataFormat != cTexture::eFormat::R8)
+        if (stbChannels == 1 && dataFormat != ETextureFormat::R8)
         {
             Print("Error: requested PNG texture has R8 format");
             return std::nullopt;
         }
-        else if (stbChannels == 4 && dataFormat != cTexture::eFormat::RGBA8_SRGB_MIPS)
+        else if (stbChannels == 4 && dataFormat != ETextureFormat::RGBA8_SRGB_Mips)
         {
             Print("Error: requested PNG texture has RGBA8 format");
             return std::nullopt;
@@ -293,7 +304,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
 
         return result;
     }
-    else if (tf == ETextureFormat::DDS)
+    else if (tf == ETextureFileFormat::DDS)
     {
         tinyddsloader::DDSFile dds;
 
@@ -318,19 +329,19 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
             return std::nullopt;
         }
         if (fmt == tinyddsloader::DDSFile::DXGIFormat::R8_UNorm &&
-            dataFormat != cTexture::eFormat::R8)
+            dataFormat != ETextureFormat::R8)
         {
             Print("Error: requested DDS texture has R8 format");
             return std::nullopt;
         }
         if (fmt == tinyddsloader::DDSFile::DXGIFormat::B8G8R8A8_UNorm_SRGB &&
-            dataFormat != cTexture::eFormat::RGBA8)
+            dataFormat != ETextureFormat::RGBA8)
         {
             Print("Error: requested DDS texture has RGBA8_SRGB format");
             return std::nullopt;
         }
         if (fmt == tinyddsloader::DDSFile::DXGIFormat::B8G8R8A8_UNorm &&
-            dataFormat != cTexture::eFormat::RGBA8)
+            dataFormat != ETextureFormat::RGBA8)
         {
             Print("Error: requested DDS texture has RGBA8 format");
             return std::nullopt;
@@ -346,25 +357,25 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
 }
 
 std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFromBytes(
-    cTexture::eFormat expectedPixelDataFormat,
+    ETextureFormat expectedPixelDataFormat,
     const u8* byteData,
     usize byteDataByteSize,
     usize width,
     usize height,
     usize channelCount,
-    ETextureFormat byteDataFormat
+    ETextureFileFormat byteDataFormat
 )
 {
     u8* rawPixels;
     usize rawChannelCount = channelCount;
-    cTexture::eFormat rawDataFormat = cTexture::eFormat::NONE;
+    ETextureFormat rawDataFormat = ETextureFormat::Unknown;
     boolean bIsPixelBufferRecreated = K_FALSE;
 
-    if (byteDataFormat == ETextureFormat::Raw)
+    if (byteDataFormat == ETextureFileFormat::Raw)
     {
         rawPixels = (u8*)byteData;
 
-        if (expectedPixelDataFormat == cTexture::eFormat::RGBA8_SRGB_MIPS &&
+        if (expectedPixelDataFormat == ETextureFormat::RGBA8_SRGB_Mips &&
             channelCount != 4)
         {
             Print("Info: recreate image buffer from 3 channels to 4 channels");
@@ -373,9 +384,9 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
             free((void*)byteData);
             rawPixels = rgbaPixels;
             rawChannelCount = 4;
-            rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
+            rawDataFormat = ETextureFormat::RGBA8_SRGB_Mips;
         }
-        else if (expectedPixelDataFormat == cTexture::eFormat::RGBA8 &&
+        else if (expectedPixelDataFormat == ETextureFormat::RGBA8 &&
             channelCount != 4)
         {
             Print("Info: recreate image buffer from 3 channels to 4 channels");
@@ -384,17 +395,17 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
             free((void*)byteData);
             rawPixels = rgbaPixels;
             rawChannelCount = 4;
-            rawDataFormat = cTexture::eFormat::RGBA8;
+            rawDataFormat = ETextureFormat::RGBA8;
         }
-        else if (expectedPixelDataFormat == cTexture::eFormat::R8 &&
+        else if (expectedPixelDataFormat == ETextureFormat::R8 &&
             channelCount == 1)
         {
             rawPixels = (u8*)byteData;
             rawChannelCount = 1;
-            rawDataFormat = cTexture::eFormat::R8;
+            rawDataFormat = ETextureFormat::R8;
         }
     }
-    else if (byteDataFormat == ETextureFormat::PNG)
+    else if (byteDataFormat == ETextureFileFormat::PNG)
     {
         int stbWidth = 0, stbHeight = 0, stbChannels = 0;
         rawPixels = stbi_load_from_memory(
@@ -408,12 +419,12 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
         if (stbChannels == 1)
         {
             rawChannelCount = stbChannels;
-            rawDataFormat = cTexture::eFormat::R8;
+            rawDataFormat = ETextureFormat::R8;
         }
         else if (stbChannels == 4)
         {
             rawChannelCount = stbChannels;
-            rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
+            rawDataFormat = ETextureFormat::RGBA8_SRGB_Mips;
         }
         else if (stbChannels == 3)
         {
@@ -423,11 +434,11 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
             stbi_image_free((void*)rawPixels);
             rawPixels = rgbaPixels;
             rawChannelCount = 4;
-            rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
+            rawDataFormat = ETextureFormat::RGBA8_SRGB_Mips;
             bIsPixelBufferRecreated = K_TRUE;
         }
     }
-    else if (byteDataFormat == ETextureFormat::DDS)
+    else if (byteDataFormat == ETextureFileFormat::DDS)
     {
         tinyddsloader::DDSFile dds;
         dds.Load(byteData, width * height * channelCount);
@@ -435,12 +446,12 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
         if (ddsFormat == tinyddsloader::DDSFile::DXGIFormat::R8_UNorm)
         {
             rawChannelCount = 1;
-            rawDataFormat = cTexture::eFormat::R8;
+            rawDataFormat = ETextureFormat::R8;
         }
         else if (ddsFormat == tinyddsloader::DDSFile::DXGIFormat::R8G8B8A8_UNorm_SRGB)
         {
             rawChannelCount = 4;
-            rawDataFormat = cTexture::eFormat::RGBA8_SRGB_MIPS;
+            rawDataFormat = ETextureFormat::RGBA8_SRGB_Mips;
         }
     }
 
@@ -452,7 +463,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
 
     auto tex = CreateTexture(expectedPixelDataFormat, cVector2(width, height), (const u8*)rawPixels);
 
-    if (byteDataFormat == ETextureFormat::PNG && bIsPixelBufferRecreated == K_FALSE)
+    if (byteDataFormat == ETextureFileFormat::PNG && bIsPixelBufferRecreated == K_FALSE)
         stbi_image_free((void*)rawPixels);
 
     return tex;

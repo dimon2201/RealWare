@@ -5,7 +5,6 @@
 #include <iostream>
 #include "application.hpp"
 #include "context.hpp"
-#include "graphics_context_backend.hpp"
 #include "thread_subsystem.hpp"
 #include "data_buffer.hpp"
 

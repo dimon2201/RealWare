@@ -9,7 +9,7 @@
 #include "input.hpp"
 #include "engine.hpp"
 #include "log.hpp"
-#include "graphics_resource_backend.hpp"
+#include "graphics_backend.hpp"
 #include "dynamic_array.hpp"
 
 using namespace types;
@@ -64,7 +64,7 @@ triton::cFontFace::~cFontFace()
 
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)_atlas
+        (cpuword)&_atlas
     ));
 
     FT_Done_Face(_font);
@@ -175,12 +175,12 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         atlasWidth,
         atlasHeight,
         0,
-        (cpuword)cTexture::eDimension::TEXTURE_2D,
-        (cpuword)cTexture::eFormat::R8,
+        (cpuword)ETextureDimension::Texture2D,
+        (cpuword)ETextureFormat::R8,
         (cpuword)atlasPixels,
         0
     ));
-    _atlas = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<cTexture*>();
+    _atlas = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
 
     memoryAllocator->Deallocate(atlasPixels);
 }

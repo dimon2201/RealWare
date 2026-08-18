@@ -24,14 +24,14 @@ triton::XBatchSubsystem::XBatchSubsystem(cContext* context) : ISubsys(context)
 		_context,
 		K_TRUE,
 		(s32)0,
-		cBuffer::eType::STORAGE
+		EGPUBufferType::Storage
 	);
 	_dynamicInstancePool = CObjectAllocator::Create<XDynamicRenderInstancePool>(
 		64,
 		_context,
 		K_TRUE,
 		(s32)1,
-		cBuffer::eType::STORAGE
+		EGPUBufferType::Storage
 	);
 }
 

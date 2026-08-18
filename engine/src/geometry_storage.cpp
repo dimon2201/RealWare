@@ -6,10 +6,10 @@
 #include "graphics_buffer_formats.hpp"
 #include "data_buffer.hpp"
 #include "engine.hpp"
-#include "graphics_resource_backend.hpp"
 #include "vertex.hpp"
 #include "synchronization.hpp"
 #include "thread_guard.hpp"
+#include "gpu_buffer_types.hpp"
 
 using namespace types;
 
@@ -23,39 +23,39 @@ triton::XGeometryStorage::XGeometryStorage(cContext* context) : iObject(context)
 
     cmdRecorder->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::VERTEX,
+        (cpuword)EGPUBufferType::Vertex,
         (cpuword)nullptr,
         caps->staticVertexBufferSize,
         0
     ));
-    _staticVertexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+    _staticVertexBuffer = sync->WaitForRenderCommandResult<CGPUBuffer>();
 
     cmdRecorder->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::VERTEX,
+        (cpuword)EGPUBufferType::Vertex,
         (cpuword)nullptr,
         caps->skinnedVertexBufferSize,
         0
     ));
-    _skinnedVertexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+    _skinnedVertexBuffer = sync->WaitForRenderCommandResult<CGPUBuffer>();
 
     cmdRecorder->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::INDEX,
+        (cpuword)EGPUBufferType::Index,
         (cpuword)nullptr,
         caps->staticIndexBufferSize,
         0
     ));
-    _staticIndexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+    _staticIndexBuffer = sync->WaitForRenderCommandResult<CGPUBuffer>();
 
     cmdRecorder->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
-        (cpuword)cBuffer::eType::INDEX,
+        (cpuword)EGPUBufferType::Index,
         (cpuword)nullptr,
         caps->skinnedIndexBufferSize,
         0
     ));
-    _skinnedIndexBuffer = sync->WaitForRenderCommandResult<cBuffer*>();
+    _skinnedIndexBuffer = sync->WaitForRenderCommandResult<CGPUBuffer>();
 
     _staticVertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->staticVertexBufferSize);
     _skinnedVertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->skinnedVertexBufferSize);
@@ -72,28 +72,28 @@ triton::XGeometryStorage::~XGeometryStorage()
 
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_skinnedIndexBuffer,
+        (cpuword)&_skinnedIndexBuffer,
         0,
         0,
         0
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_staticIndexBuffer,
+        (cpuword)&_staticIndexBuffer,
         0,
         0,
         0
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_skinnedVertexBuffer,
+        (cpuword)&_skinnedVertexBuffer,
         0,
         0,
         0
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
-        (cpuword)_staticVertexBuffer,
+        (cpuword)&_staticVertexBuffer,
         0,
         0,
         0
@@ -132,14 +132,14 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
 
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::WRITE_BUFFER,
-            (cpuword)_staticVertexBuffer,
+            (cpuword)&_staticVertexBuffer,
             vertexBufferByteSize,
             verticesByteSize,
             (cpuword)vertexData
         ));
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::WRITE_BUFFER,
-            (cpuword)_staticIndexBuffer,
+            (cpuword)&_staticIndexBuffer,
             indexBufferByteSize,
             indicesByteSize,
             (cpuword)indexData
@@ -180,14 +180,14 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
 
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::WRITE_BUFFER,
-            (cpuword)_skinnedVertexBuffer,
+            (cpuword)&_skinnedVertexBuffer,
             vertexBufferByteSize,
             verticesByteSize,
             (cpuword)vertexData
         ));
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::WRITE_BUFFER,
-            (cpuword)_skinnedIndexBuffer,
+            (cpuword)&_skinnedIndexBuffer,
             indexBufferByteSize,
             indicesByteSize,
             (cpuword)indexData

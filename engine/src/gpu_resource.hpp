@@ -18,6 +18,7 @@ namespace triton
         types::qword _viewInstance = 0;
 
     public:
+        explicit cGPUResource() = default;
         explicit cGPUResource(cContext* context, types::qword instance, types::qword viewInstance);
         virtual ~cGPUResource() override = default;
 

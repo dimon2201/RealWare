@@ -5,23 +5,22 @@
 #include "object.hpp"
 #include "handle.hpp"
 #include "vertex_buffer_format.hpp"
-#include "graphics_pipeline_backend.hpp"
+#include "graphics_backend.hpp"
 
 namespace triton
 {
 	class cContext;
-	class cBuffer;
 
 	class XInputLayout : public iObject
 	{
 		TRITON_OBJECT(XInputLayout)
 
-		CGPUVertexArray _gpuVertexArray = CGPUVertexArray(nullptr, 0);
+		CGPUInputLayout _gpuVertexArray = CGPUInputLayout(nullptr, 0, 0);
 
 	public:
 		explicit XInputLayout(
 			cContext* context,
-			const std::vector<cBuffer*>& buffersToBind,
+			const std::vector<CGPUBuffer>& buffersToBind,
 			EVertexBufferFormat vertexFormat
 		);
 		~XInputLayout() override;

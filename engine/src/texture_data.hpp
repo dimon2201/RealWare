@@ -4,19 +4,18 @@
 
 #include "math.hpp"
 #include "handle.hpp"
+#include "gpu_texture.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-	class cTexture;
-
 	struct STextureData
 	{
 		struct THandle : public SHandle {};
 
 		struct TGPULayout {};
 
-		cTexture* gpuTexture = nullptr;
+		CGPUTexture gpuTexture;
 		cVector2 offsetNorm = cVector2(0.0f);
 		cVector2 sizeNorm = cVector2(0.0f);
 		cVector2 offsetPixel = cVector2(0.0f);

@@ -2,7 +2,6 @@
 
 #include "skinning_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
-#include "graphics_resource_backend.hpp"
 #include "animation.hpp"
 #include "bone.hpp"
 #include "context.hpp"
@@ -19,7 +18,7 @@ triton::XSkinningSubsystem::XSkinningSubsystem(cContext* context) : ISubsys(cont
         _context,
         K_TRUE,
         (s32)3,
-        cBuffer::eType::STORAGE
+        EGPUBufferType::Storage
     );
     _skinPool = CObjectAllocator::Create<XSkinPool>(
         64,

@@ -14,7 +14,6 @@
 
 namespace triton
 {
-	class cBuffer;
 	struct SBone;
 	struct SFrame;
 	class XSkinnedBonesPool;

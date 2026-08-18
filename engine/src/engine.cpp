@@ -17,16 +17,12 @@
 #include "math.hpp"
 #include "ecs.hpp"
 #include "input_backend_sdl.hpp"
-#include "graphics_resource_backend_ogl.hpp"
-#include "graphics_pipeline_backend_ogl.hpp"
-#include "graphics_context_backend_ogl.hpp"
-#include "graphics_drawcall_backend_ogl.hpp"
+#include "graphics_backend_ogl.hpp"
 #include "audio_backend_oal.hpp"
 #include "render_thread.hpp"
 #include "thread_guard.hpp"
 #include "geometry_storage.hpp"
 #include "ecs_subsystem.hpp"
-#include "instance_buffer.hpp"
 #include "handle_allocator.hpp"
 #include "game_object_subsystem.hpp"
 #include "material_subsystem.hpp"
@@ -81,10 +77,7 @@ void triton::cEngine::Initialize()
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputBackendSDL(_context));
-	_context->RegisterBackend<iGraphicsResourceBackend>(new cGraphicsResourceBackendOGL(_context));
-	_context->RegisterBackend<iGraphicsPipelineBackend>(new cGraphicsPipelineBackendOGL(_context));
-	_context->RegisterBackend<iGraphicsContextBackend>(new cGraphicsContextBackendOGL(_context));
-	_context->RegisterBackend<iGraphicsDrawcallBackend>(new cGraphicsDrawcallBackendOGL(_context));
+	_context->RegisterBackend<IGraphicsBackend>(new XGraphicsBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 	_context->RegisterBackend<IModel3DBackend>(new XModel3DBackendAssimp(_context));
 	

@@ -7,13 +7,13 @@
 #include FT_FREETYPE_H
 #include "math.hpp"
 #include "object.hpp"
+#include "gpu_texture.hpp"
 #include "types.hpp"
 
 namespace triton
 {
     class iGraphicsBackend;
     class cApplication;
-    class cTexture;
     class cContext;
 
     struct sGlyph
@@ -41,7 +41,7 @@ namespace triton
         types::usize _offsetSpace = 0;
         types::usize _offsetTab = 0;
         mutable std::unordered_map<types::u8, sGlyph> _alphabet = {};
-        cTexture* _atlas = nullptr;
+        CGPUTexture _atlas;
 
     public:
         explicit cFontFace(cContext* context);
@@ -56,7 +56,7 @@ namespace triton
         inline types::usize GetOffsetSpace() const { return _offsetSpace; }
         inline types::usize GetOffsetTab() const { return _offsetTab; }
         inline std::unordered_map<types::u8, sGlyph>& GetAlphabet() const { return _alphabet; }
-        inline cTexture* GetAtlas() const { return _atlas; }
+        inline CGPUTexture GetAtlas() const { return _atlas; }
         inline void SetGlyphSize(types::usize size) { _glyphSize = size; }
         inline void SetOffsetNewline(types::usize offset) { _offsetNewline = offset; }
         inline void SetOffsetSpace(types::usize offset) { _offsetSpace = offset; }

@@ -34,10 +34,10 @@ namespace triton
 
     struct SRenderPassTexture
     {
-        SRenderPassTexture(const std::string& name, cTexture* texture) : name(name), texture(texture) {}
+        SRenderPassTexture(const std::string& name, const CGPUTexture& texture) : name(name), texture(texture) {}
 
         std::string name = "";
-        cTexture* texture = nullptr;
+        CGPUTexture texture;
     };
 
 	struct XRenderPass : public iObject
@@ -48,14 +48,14 @@ namespace triton
         EVertexBufferFormat                 _batchFormat = EVertexBufferFormat::Unknown;
         std::vector<SBatchData::THandle>    _batches = {};
         XInputLayout::THandle               _inputLayout;
-        std::vector<cBuffer*>               _inputBuffers = {};
+        std::vector<CGPUBuffer>             _inputBuffers = {};
         std::vector<SRenderPassTexture>     _inputTextures = {};
         EBuiltinRenderPassType              _shaderRenderPath = EBuiltinRenderPassType::None;
         SDepthState                         _depthState = SDepthState(0, 0);
         SBlendState                         _blendState = {};
         SViewport                           _viewport = {};
         XRenderTarget::THandle              _renderTarget;
-        XShader*                            _shader = nullptr;
+        CGPUShader                          _shader;
         XCamera::THandle                    _camera;
 
     public:
@@ -76,7 +76,7 @@ namespace triton
 
         void ResizeDepthAttachment(const cVector2& size);
 
-        XShader* GetShader() { return _shader; }
+        CGPUShader GetShader() { return _shader; }
 
         void SetDispatch(ERenderPassDispatch dispatch) { _dispatch = dispatch; }
 
@@ -86,7 +86,7 @@ namespace triton
 
         void SetInputLayout(const XInputLayout::THandle& inputLayout) { _inputLayout = inputLayout; }
 
-        void SetInputBuffers(const std::vector<cBuffer*>& inputBuffers) { _inputBuffers = inputBuffers; }
+        void SetInputBuffers(const std::vector<CGPUBuffer>& inputBuffers) { _inputBuffers = inputBuffers; }
 
         void SetInputTextures(const std::vector<SRenderPassTexture>& inputTextures) { _inputTextures = inputTextures; }
 
@@ -98,7 +98,7 @@ namespace triton
 
         void SetRenderTarget(const XRenderTarget::THandle& renderTarget) { _renderTarget = renderTarget; }
 
-        void SetShader(XShader* shader) { _shader = shader; }
+        void SetShader(const CGPUShader& shader) { _shader = shader; }
 
         void SetCamera(const XCamera::THandle& camera) { _camera = camera; }
 

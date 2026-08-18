@@ -12,10 +12,7 @@
 
 namespace triton
 {
-	class iGraphicsContextBackend;
-	class iGraphicsDrawcallBackend;
-	class iGraphicsResourceBackend;
-	class iGraphicsPipelineBackend;
+	class IGraphicsBackend;
 	class XGraphics;
 	class XSynchronization;
 	struct SRenderCommandPack;
@@ -38,12 +35,10 @@ namespace triton
 	private:
 		void ExecuteCommands(
 			const SRenderCommandPack& renderCommandPack,
-			iGraphicsDrawcallBackend* drawcallBackend,
-			iGraphicsResourceBackend* resourceBackend,
-			iGraphicsPipelineBackend* pipelineBackend,
+			IGraphicsBackend* gfxBackend,
 			XGraphics* gfx
 		);
 
-		void Present(const cInputWindow* window, iGraphicsContextBackend* contextBackend);
+		void Present(const cInputWindow* window, IGraphicsBackend* gfxBackend);
 	};
 }

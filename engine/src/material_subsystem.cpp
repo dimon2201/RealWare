@@ -17,7 +17,7 @@ triton::XMaterialSubsystem::XMaterialSubsystem(cContext* context) : ISubsys(cont
         _context,
         K_TRUE,
         (s32)2,
-        cBuffer::eType::STORAGE
+        EGPUBufferType::Storage
     );
 }
 

@@ -2,7 +2,6 @@
 
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
-#include "graphics_resource_backend.hpp"
 #include "bone.hpp"
 #include "context.hpp"
 #include "animation_pool.hpp"

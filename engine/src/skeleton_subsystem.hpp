@@ -11,7 +11,6 @@
 
 namespace triton
 {
-	class cBuffer;
 	class XSkeletonPool;
 
 	class XSkeletonSubsystem : public ISubsys
