@@ -8,6 +8,8 @@ namespace triton
 {
     class XGameObjectPool : public XObjectPoolBase<SGameObjectData>
     {
+        TRITON_OBJECT(XGameObjectPool)
+
     public:
         using XObjectPoolBase<SGameObjectData>::XObjectPoolBase;
         ~XGameObjectPool() override = default;

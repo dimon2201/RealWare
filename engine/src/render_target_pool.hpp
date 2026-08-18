@@ -8,6 +8,8 @@ namespace triton
 {
     class XRenderTargetPool : public XObjectPoolBase<XRenderTarget>
     {
+        TRITON_OBJECT(XRenderTargetPool)
+
     public:
         using XObjectPoolBase<XRenderTarget>::XObjectPoolBase;
         ~XRenderTargetPool() override = default;

@@ -8,6 +8,8 @@ namespace triton
 {
     class XBatchPool : public XObjectPoolBase<SBatchData>
     {
+        TRITON_OBJECT(XBatchPool)
+
     public:
         using XObjectPoolBase<SBatchData>::XObjectPoolBase;
         ~XBatchPool() override = default;

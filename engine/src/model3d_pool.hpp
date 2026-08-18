@@ -8,6 +8,8 @@ namespace triton
 {
     class XModel3DPool : public XObjectPoolBase<SModel3DData>
     {
+        TRITON_OBJECT(XModel3DPool)
+
     public:
         using XObjectPoolBase<SModel3DData>::XObjectPoolBase;
         ~XModel3DPool() override = default;

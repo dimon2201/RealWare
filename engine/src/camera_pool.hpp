@@ -9,6 +9,8 @@ namespace triton
 {
     class XCameraPool : public XObjectPoolBase<XCamera>
     {
+        TRITON_OBJECT(XCameraPool)
+
     public:
         using XObjectPoolBase<XCamera>::XObjectPoolBase;
         ~XCameraPool() override = default;

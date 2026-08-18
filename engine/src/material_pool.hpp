@@ -10,6 +10,8 @@ namespace triton
 {
     class XMaterialPool : public XObjectPoolBase<SMaterialData>
     {
+        TRITON_OBJECT(XMaterialPool)
+
     public:
         using XObjectPoolBase<SMaterialData>::XObjectPoolBase;
         ~XMaterialPool() override = default;

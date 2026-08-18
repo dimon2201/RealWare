@@ -8,6 +8,8 @@ namespace triton
 {
     class XSkinPool : public XObjectPoolBase<SSkinData>
     {
+        TRITON_OBJECT(XSkinPool)
+
     public:
         using XObjectPoolBase<SSkinData>::XObjectPoolBase;
         ~XSkinPool() override = default;

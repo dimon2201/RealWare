@@ -8,6 +8,8 @@ namespace triton
 {
     class XRenderPassPool : public XObjectPoolBase<XRenderPass>
     {
+        TRITON_OBJECT(XRenderPassPool)
+
     public:
         using XObjectPoolBase<XRenderPass>::XObjectPoolBase;
         ~XRenderPassPool() override = default;

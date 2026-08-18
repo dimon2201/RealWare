@@ -8,6 +8,8 @@ namespace triton
 {
     class XSkinnedBonesPool : public XObjectPoolBase<SSkinnedBoneData>
     {
+        TRITON_OBJECT(XSkinnedBonesPool)
+
     public:
         using XObjectPoolBase<SSkinnedBoneData>::XObjectPoolBase;
         ~XSkinnedBonesPool() override = default;

@@ -8,6 +8,8 @@ namespace triton
 {
     class XInputLayoutPool : public XObjectPoolBase<XInputLayout>
     {
+        TRITON_OBJECT(XInputLayoutPool)
+
     public:
         using XObjectPoolBase<XInputLayout>::XObjectPoolBase;
         ~XInputLayoutPool() override = default;

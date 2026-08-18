@@ -10,6 +10,8 @@ namespace triton
 {
     class XStaticRenderInstancePool : public XObjectPoolBase<SStaticRenderInstanceData>
     {
+        TRITON_OBJECT(XStaticRenderInstancePool)
+
     public:
         using XObjectPoolBase<SStaticRenderInstanceData>::XObjectPoolBase;
         ~XStaticRenderInstancePool() override = default;

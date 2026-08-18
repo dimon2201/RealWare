@@ -8,6 +8,8 @@ namespace triton
 {
     class XDynamicRenderInstancePool : public XObjectPoolBase<SDynamicRenderInstanceData>
     {
+        TRITON_OBJECT(XDynamicRenderInstancePool)
+
     public:
         using XObjectPoolBase<SDynamicRenderInstanceData>::XObjectPoolBase;
         ~XDynamicRenderInstancePool() override = default;

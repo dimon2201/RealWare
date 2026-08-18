@@ -8,6 +8,8 @@ namespace triton
 {
     class XTexturePool : public XObjectPoolBase<STextureData>
     {
+        TRITON_OBJECT(XTexturePool)
+
     public:
         using XObjectPoolBase<STextureData>::XObjectPoolBase;
         ~XTexturePool() override = default;

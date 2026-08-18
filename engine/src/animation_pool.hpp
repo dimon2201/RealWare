@@ -8,6 +8,8 @@ namespace triton
 {
     class XAnimationPool : public XObjectPoolBase<SAnimationData>
     {
+        TRITON_OBJECT(XAnimationPool)
+
     public:
         using XObjectPoolBase<SAnimationData>::XObjectPoolBase;
         ~XAnimationPool() override = default;
