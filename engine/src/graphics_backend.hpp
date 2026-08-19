@@ -11,26 +11,13 @@
 #include "gpu_shader.hpp"
 #include "gpu_buffer.hpp"
 #include "gpu_input_layout_resource.hpp"
+#include "gpu_render_pass_resource.hpp"
 #include "rasterizer_state.hpp"
 #include "gpu_buffer_types.hpp"
 
 namespace triton
 {
     class cContext;
-
-    class CGPURenderPass : public cGPUResource
-    {
-        TRITON_OBJECT(CGPURenderPass)
-
-    public:
-        explicit CGPURenderPass() = default;
-        explicit CGPURenderPass(
-            cContext* context,
-            types::qword instance,
-            types::qword viewInstance
-        ) : cGPUResource(context, instance, viewInstance) {}
-        ~CGPURenderPass() override = default;
-    };
 
     class CGPURenderTarget : public cGPUResource
     {
@@ -180,11 +167,11 @@ namespace triton
 
         virtual void DestroyInputLayout(const CGPUInputLayoutResource& vertexArray) = 0;
 
-        virtual CGPURenderPass CreateRenderPass() = 0;
+        virtual CGPURenderPassResource CreateRenderPass() = 0;
 
-        virtual void BindRenderPass(const CGPURenderPass& renderPass) = 0;
+        virtual void BindRenderPass(const CGPURenderPassResource& renderPass) = 0;
 
-        virtual void UnbindRenderPass(const CGPURenderPass& renderPass) = 0;
+        virtual void UnbindRenderPass(const CGPURenderPassResource& renderPass) = 0;
 
         virtual void BindDepthState(const SDepthState& blendMode) = 0;
 

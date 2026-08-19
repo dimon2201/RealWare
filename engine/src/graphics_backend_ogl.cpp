@@ -389,16 +389,16 @@ void triton::XGraphicsBackendOGL::DestroyInputLayout(const CGPUInputLayoutResour
     glDeleteVertexArrays(1, (GLuint*)&instance);
 }
 
-triton::CGPURenderPass triton::XGraphicsBackendOGL::CreateRenderPass()
+triton::CGPURenderPassResource triton::XGraphicsBackendOGL::CreateRenderPass()
 {
-    return CGPURenderPass(_context, 0, 0);
+    return CGPURenderPassResource(_context, 0, 0);
 }
 
-void triton::XGraphicsBackendOGL::BindRenderPass(const CGPURenderPass& renderPass)
+void triton::XGraphicsBackendOGL::BindRenderPass(const CGPURenderPassResource& renderPass)
 {
 }
 
-void triton::XGraphicsBackendOGL::UnbindRenderPass(const CGPURenderPass& renderPass)
+void triton::XGraphicsBackendOGL::UnbindRenderPass(const CGPURenderPassResource& renderPass)
 {
 }
 

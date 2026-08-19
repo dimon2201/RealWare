@@ -103,11 +103,11 @@ namespace triton
 
         virtual void DestroyInputLayout(const CGPUInputLayoutResource& vertexArray) override final;
 
-        virtual CGPURenderPass CreateRenderPass() override final;
+        virtual CGPURenderPassResource CreateRenderPass() override final;
 
-        virtual void BindRenderPass(const CGPURenderPass& renderPass) override final;
+        virtual void BindRenderPass(const CGPURenderPassResource& renderPass) override final;
 
-        virtual void UnbindRenderPass(const CGPURenderPass& renderPass) override final;
+        virtual void UnbindRenderPass(const CGPURenderPassResource& renderPass) override final;
 
         virtual void BindDepthState(const SDepthState& blendMode) override final;
 
