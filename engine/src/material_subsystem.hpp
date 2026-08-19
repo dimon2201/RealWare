@@ -6,7 +6,7 @@
 #include "graphics_buffer_formats.hpp"
 #include "render_instance_data.hpp"
 #include "material_data.hpp"
-#include "texture_data.hpp"
+#include "atlas_texture.hpp"
 #include "types.hpp"
 
 #include "DELETE_THIS_FILE_ASAP.hpp"
@@ -27,10 +27,10 @@ namespace triton
 
         std::optional<SMaterialData::THandle> Create(
             const cVector4& diffuseColor,
-            const STextureData::THandle& diffuseTexture,
-            const STextureData::THandle& normalTexture,
-            const STextureData::THandle& roughnessTexture,
-            const STextureData::THandle& metallicTexture
+            const XAtlasTexture::THandle& diffuseTexture,
+            const XAtlasTexture::THandle& normalTexture,
+            const XAtlasTexture::THandle& roughnessTexture,
+            const XAtlasTexture::THandle& metallicTexture
         );
 
         void Destroy(const SMaterialData::THandle& material);

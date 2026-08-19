@@ -8,7 +8,6 @@
 #include "font_manager.hpp"
 #include "filesystem_manager.hpp"
 #include "physics_manager.hpp"
-#include "texture_subsystem.hpp"
 #include "memory_pool.hpp"
 #include "event_manager.hpp"
 #include "thread_subsystem.hpp"

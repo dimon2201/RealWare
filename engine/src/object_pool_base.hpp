@@ -10,22 +10,21 @@
 #include "object.hpp"
 #include "handle.hpp"
 #include "object_allocator.hpp"
-#include "material_data.hpp"
 #include "synchronization.hpp"
 #include "buffer_view.hpp"
 #include "gpu_buffer_types.hpp"
 #include "graphics_backend.hpp"
+#include "context.hpp"
+#include "engine.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-    class cContext;
-
     template <typename THandle>
     struct SObjectFrame
     {
         types::usize count = 0;
-        typename THandle begin;
+        THandle begin;
     };
 
     template <typename TObject>
@@ -34,17 +33,17 @@ namespace triton
         TRITON_OBJECT(XObjectPoolBase)
 
     protected:
-        SSlot*                      _slots = nullptr;
-        TObject*                    _objects = nullptr;
-        TObject::TGPULayout*        _staging = nullptr;
-        types::boolean				_bKeepStagingBuffer = types::True;
-        types::usize				_reservedCount = 0;
-        types::usize				_lastObjectCursor = 0;
-        std::queue<types::usize>	_freeSlots = {};
-        types::boolean				_bDirtyBit = types::False;
-        CGPUBuffer                  _gpuBuffer;
-        types::s32                  _gpuBufferSlot = -1;
-        EGPUBufferType              _gpuBufferType = EGPUBufferType::Unknown;
+        SSlot*                          _slots = nullptr;
+        TObject*                        _objects = nullptr;
+        typename TObject::TGPULayout*   _staging = nullptr;
+        types::boolean				    _bKeepStagingBuffer = types::True;
+        types::usize				    _reservedCount = 0;
+        types::usize				    _lastObjectCursor = 0;
+        std::queue<types::usize>	    _freeSlots = {};
+        types::boolean				    _bDirtyBit = types::False;
+        CGPUBuffer                      _gpuBuffer;
+        types::s32                      _gpuBufferSlot = -1;
+        EGPUBufferType                  _gpuBufferType = EGPUBufferType::Unknown;
 
     public:
         explicit XObjectPoolBase(
@@ -63,18 +62,18 @@ namespace triton
 
         std::optional<SObjectFrame<typename TObject::THandle>> Create(types::usize count);
 
-        void Destroy(const TObject::THandle& handle);
+        void Destroy(const typename TObject::THandle& handle);
 
         void Destroy(const SObjectFrame<typename TObject::THandle>& frame);
 
-        std::optional<std::reference_wrapper<TObject>> Get(const TObject::THandle& handle);
+        std::optional<std::reference_wrapper<TObject>> Get(const typename TObject::THandle& handle);
 
         void WriteToStaging(types::usize bufferIndex, const TObject& object);
 
-        types::usize GetPackedIndex(const TObject::THandle& handle);
+        types::usize GetPackedIndex(const typename TObject::THandle& handle);
 
         std::optional<typename TObject::THandle> GetHandle(
-            const TObject::THandle& baseHandle,
+            const typename TObject::THandle& baseHandle,
             const types::usize offset
         );
 
@@ -90,7 +89,7 @@ namespace triton
             return _gpuBuffer;
         }
 
-        virtual TObject::TGPULayout ConvertToGpuLayout(const TObject& object) = 0;
+        virtual typename TObject::TGPULayout ConvertToGpuLayout(const TObject& object) = 0;
 
         virtual void Update() = 0;
 
@@ -163,9 +162,9 @@ namespace triton
         if (_bKeepStagingBuffer == types::K_TRUE)
         {
             if (_staging)
-                ReallocatePodBuffer<TObject::TGPULayout>(_staging, prevMaxCount, maxCount);
+                ReallocatePodBuffer<typename TObject::TGPULayout>(_staging, prevMaxCount, maxCount);
             else
-                AllocatePodBuffer(_staging, maxCount * sizeof(TObject::TGPULayout));
+                AllocatePodBuffer(_staging, maxCount * sizeof(typename TObject::TGPULayout));
         }
         else
         {
@@ -198,7 +197,7 @@ namespace triton
                 _gpuBuffer,
                 _context,
                 _gpuBufferType,
-                maxCount * sizeof(TObject::TGPULayout),
+                maxCount * sizeof(typename TObject::TGPULayout),
                 _gpuBufferSlot
             );
             Upload();
@@ -209,7 +208,7 @@ namespace triton
                 _gpuBuffer,
                 _context,
                 _gpuBufferType,
-                maxCount * sizeof(TObject::TGPULayout),
+                maxCount * sizeof(typename TObject::TGPULayout),
                 _gpuBufferSlot
             );
         }
@@ -294,7 +293,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::Destroy(const TObject::THandle& handle)
+    void XObjectPoolBase<TObject>::Destroy(const typename TObject::THandle& handle)
     {
         if (handle.generation != _slots[handle.index].generation ||
             _slots[handle.index].alive == types::False)
@@ -317,7 +316,7 @@ namespace triton
     }
 
     template <typename TObject>
-    std::optional<std::reference_wrapper<TObject>> XObjectPoolBase<TObject>::Get(const TObject::THandle& handle)
+    std::optional<std::reference_wrapper<TObject>> XObjectPoolBase<TObject>::Get(const typename TObject::THandle& handle)
     {
         if (handle.generation != _slots[handle.index].generation ||
             _slots[handle.index].alive == types::False)
@@ -334,7 +333,7 @@ namespace triton
     }
 
     template <typename TObject>
-    types::usize XObjectPoolBase<TObject>::GetPackedIndex(const TObject::THandle& handle)
+    types::usize XObjectPoolBase<TObject>::GetPackedIndex(const typename TObject::THandle& handle)
     {
         if (handle.generation != _slots[handle.index].generation ||
             _slots[handle.index].alive == types::False)
@@ -350,7 +349,7 @@ namespace triton
 
     template <typename TObject>
     std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::GetHandle(
-        const TObject::THandle& baseHandle,
+        const typename TObject::THandle& baseHandle,
         const types::usize offset
     )
     {
@@ -382,7 +381,7 @@ namespace triton
                 ERenderCommand::WRITE_BUFFER,
                 (types::cpuword)&_gpuBuffer,
                 0,
-                packedSize * sizeof(TObject::TGPULayout),
+                packedSize * sizeof(typename TObject::TGPULayout),
                 (types::cpuword)&_staging[0]
             ));
             _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();

@@ -3,8 +3,7 @@
 #pragma once
 
 #include "math.hpp"
-#include "texture_subsystem.hpp"
-#include "texture_data.hpp"
+#include "atlas_texture.hpp"
 
 namespace triton
 {
@@ -29,10 +28,10 @@ namespace triton
             cVector4 diffuseColor = cVector4(0.0f);
         };
 
-        STextureData::THandle diffuseTexture;
-        STextureData::THandle normalTexture;
-        STextureData::THandle roughnessTexture;
-        STextureData::THandle metallicTexture;
+        XAtlasTexture::THandle diffuseTexture;
+        XAtlasTexture::THandle normalTexture;
+        XAtlasTexture::THandle roughnessTexture;
+        XAtlasTexture::THandle metallicTexture;
         cVector4 diffuseColor = cVector4(0.0f);
     };
 }

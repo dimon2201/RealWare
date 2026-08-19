@@ -11,6 +11,8 @@
 #include "bone.hpp"
 #include "animation.hpp"
 #include "material_pool.hpp"
+#include "texture_atlas.hpp"
+#include "atlas_texture_pool.hpp"
 
 using namespace types;
 
@@ -94,7 +96,7 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
         ParseMaterialData(scene, materials);
         CreateMaterials(
             modelFolderPath,
-            _context->GetSubsystem<XTextureSubsystem>(),
+            _context->GetSubsystem<XTextureAtlas>(),
             _context->GetSubsystem<XMaterialSubsystem>(),
             materials,
             modelMaterials,
@@ -336,7 +338,7 @@ void triton::XModel3DBackendAssimp::ParseMaterialData(const aiScene* scene, std:
 
 void triton::XModel3DBackendAssimp::CreateMaterials(
     const std::string& modelFolderPath,
-    XTextureSubsystem* textureSubsystem,
+    XTextureAtlas* textureAtlas,
     XMaterialSubsystem* materialSubsystem,
     const std::vector<SModel3DMaterialData>& materials,
     std::vector<SMaterialData::THandle>& modelMaterials,
@@ -348,7 +350,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
         auto diffOpt = CreateTexture(
             ETextureFormat::RGBA8_SRGB_Mips,
             modelFolderPath,
-            textureSubsystem,
+            textureAtlas,
             material.diffuseTextureFilePath,
             material.bIsDiffuseEmbedded,
             scene->GetEmbeddedTexture(material.diffuseTextureFilePath.c_str())
@@ -356,7 +358,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
         auto normOpt = CreateTexture(
             ETextureFormat::RGBA8,
             modelFolderPath,
-            textureSubsystem,
+            textureAtlas,
             material.normalTextureFilePath,
             material.bIsNormalEmbedded,
             scene->GetEmbeddedTexture(material.normalTextureFilePath.c_str())
@@ -364,7 +366,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
         auto rghnOpt = CreateTexture(
             ETextureFormat::R8,
             modelFolderPath,
-            textureSubsystem,
+            textureAtlas,
             material.roughnessTextureFilePath,
             material.bIsRoughnessEmbedded,
             scene->GetEmbeddedTexture(material.roughnessTextureFilePath.c_str())
@@ -372,7 +374,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
         auto metlOpt = CreateTexture(
             ETextureFormat::R8,
             modelFolderPath,
-            textureSubsystem,
+            textureAtlas,
             material.metallicTextureFilePath,
             material.bIsMetallicEmbedded,
             scene->GetEmbeddedTexture(material.metallicTextureFilePath.c_str())
@@ -381,10 +383,10 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
         modelMaterials.push_back(
             *materialSubsystem->Create(
                 cVector4(1.0f),
-                diffOpt.has_value() ? *diffOpt : STextureData::THandle(),
-                normOpt.has_value() ? *normOpt : STextureData::THandle(),
-                rghnOpt.has_value() ? *rghnOpt : STextureData::THandle(),
-                metlOpt.has_value() ? *metlOpt : STextureData::THandle()
+                diffOpt.has_value() ? *diffOpt : XAtlasTexture::THandle(),
+                normOpt.has_value() ? *normOpt : XAtlasTexture::THandle(),
+                rghnOpt.has_value() ? *rghnOpt : XAtlasTexture::THandle(),
+                metlOpt.has_value() ? *metlOpt : XAtlasTexture::THandle()
             )
         );
     }
@@ -655,24 +657,24 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
     }
 }
 
-std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::CreateTexture(
+std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::CreateTexture(
     ETextureFormat dataFormat,
     const std::string& modelFolderPath,
-    XTextureSubsystem* textureSubsystem,
+    XTextureAtlas* textureAtlas,
     const std::string& textureFilePath,
     boolean bIsEmbedded,
     const aiTexture* texture
 )
 {
     if (bIsEmbedded == K_TRUE)
-        return CreateTextureFromModelData(dataFormat, textureSubsystem, textureFilePath, texture);
+        return CreateTextureFromModelData(dataFormat, textureAtlas, textureFilePath, texture);
     else
-        return CreateTextureFromFile(dataFormat, modelFolderPath, textureSubsystem, textureFilePath);
+        return CreateTextureFromFile(dataFormat, modelFolderPath, textureAtlas, textureFilePath);
 }
 
-std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::CreateTextureFromModelData(
+std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::CreateTextureFromModelData(
     ETextureFormat dataFormat,
-    XTextureSubsystem* textureSubsystem,
+    XTextureAtlas* textureAtlas,
     const std::string& textureFilePath,
     const aiTexture* texture
 )
@@ -689,7 +691,8 @@ std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::Crea
         const char* fmtHint = &texture->achFormatHint[0];
         if (fmtHint[0] == 'p' && fmtHint[1] == 'n' && fmtHint[2] == 'g')
         {
-            return textureSubsystem->Create(
+            return _context->GetPool<XAtlasTexturePool>()->Create(
+                _context,
                 fileData,
                 fileByteSize,
                 0,
@@ -701,7 +704,8 @@ std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::Crea
         }
         else if (fmtHint[0] == 'd' && fmtHint[1] == 'd' && fmtHint[2] == 's')
         {
-            return textureSubsystem->Create(
+            return _context->GetPool<XAtlasTexturePool>()->Create(
+                _context,
                 fileData,
                 fileByteSize,
                 0,
@@ -730,10 +734,10 @@ std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::Crea
     }
 }
 
-std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::CreateTextureFromFile(
+std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::CreateTextureFromFile(
     ETextureFormat dataFormat,
     const std::string& modelFolderPath,
-    XTextureSubsystem* textureSubsystem,
+    XTextureAtlas* textureAtlas,
     const std::string& textureFilePath
 )
 {
@@ -757,7 +761,7 @@ std::optional<triton::STextureData::THandle> triton::XModel3DBackendAssimp::Crea
         newTextureFilePath = path.generic_string();
     }
     
-    return textureSubsystem->Create(newTextureFilePath, dataFormat);
+    return _context->GetPool<XAtlasTexturePool>()->Create(_context, newTextureFilePath, dataFormat);
 }
 
 triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(

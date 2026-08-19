@@ -6,7 +6,7 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "input.hpp"
-#include "texture_subsystem.hpp"
+#include "texture_atlas.hpp"
 #include "filesystem_manager.hpp"
 #include "font_manager.hpp"
 #include "physics_manager.hpp"
@@ -44,6 +44,7 @@
 #include "input_layout_pool.hpp"
 #include "render_target_pool.hpp"
 #include "render_pass_pool.hpp"
+#include "atlas_texture_pool.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -86,10 +87,12 @@ void triton::cEngine::Initialize()
 	_context->RegisterPool(new XInputLayoutPool(_context, K_TRUE));
 	_context->RegisterPool(new XRenderTargetPool(_context, K_TRUE));
 	_context->RegisterPool(new XRenderPassPool(_context, K_TRUE));
+	_context->RegisterPool(new XAtlasTexturePool(_context, K_TRUE));
 
 	_context->GetPool<XInputLayoutPool>()->Allocate(64);
 	_context->GetPool<XRenderTargetPool>()->Allocate(64);
 	_context->GetPool<XRenderPassPool>()->Allocate(64);
+	_context->GetPool<XAtlasTexturePool>()->Allocate(64);
 
 	// Register subsystems (order matters)
 	_context->RegisterSubsystem(new cInput(_context));
@@ -97,7 +100,7 @@ void triton::cEngine::Initialize()
 
 	InitializeRenderThread();
 
-	_context->RegisterSubsystem(new XTextureSubsystem(_context, cVector3(8193, 8193, 4)));
+	_context->RegisterSubsystem(new XTextureAtlas(_context, cVector3(8193, 8193, 4)));
 	_context->RegisterSubsystem(new XMaterialSubsystem(_context));
 	_context->RegisterSubsystem(new XGeometryStorage(_context));
 	_context->RegisterSubsystem(new cFileSystem(_context));
@@ -121,7 +124,6 @@ void triton::cEngine::Initialize()
 	//_context->RegisterSubsystem(new cECSSystem(_context));
 
 	_context->GetSubsystem<XAnimationSubsystem>()->GetPool()->Allocate(64);
-	_context->GetSubsystem<XTextureSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XGameObjectSubsystem>()->GetPool()->Allocate(64);
 	_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->Allocate(64);
@@ -249,7 +251,7 @@ void triton::cEngine::MainThreadFunction()
 			_app->Update();
 			_context->GetSubsystem<XGameObjectSubsystem>()->Update();
 			_context->GetSubsystem<XMaterialSubsystem>()->Update();
-			_context->GetSubsystem<XTextureSubsystem>()->Update();
+			_context->GetSubsystem<XTextureAtlas>()->Update();
 			_context->GetSubsystem<XAnimationSubsystem>()->Update();
 			_context->GetSubsystem<XSkeletonSubsystem>()->Update();
 			_context->GetSubsystem<XSkinningSubsystem>()->Update();

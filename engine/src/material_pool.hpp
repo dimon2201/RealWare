@@ -4,7 +4,7 @@
 
 #include "material_data.hpp"
 #include "object_pool_base.hpp"
-#include "texture_pool.hpp"
+#include "atlas_texture_pool.hpp"
 
 namespace triton
 {
@@ -20,34 +20,40 @@ namespace triton
         {
             SMaterialData::TGPULayout gpul;
 
-            auto difRes = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.diffuseTexture);
-            auto norRes = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.normalTexture);
-            auto rghRes = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.roughnessTexture);
-            auto metRes = _context->GetSubsystem<XTextureSubsystem>()->GetPool()->Get(object.metallicTexture);
-
-            STextureData empty;
-            STextureData& dif = empty;
-            STextureData& nor = empty;
-            STextureData& rgh = empty;
-            STextureData& met = empty;
-            if (difRes.has_value()) dif = *difRes;
-            if (norRes.has_value()) nor = *norRes;
-            if (rghRes.has_value()) rgh = *rghRes;
-            if (metRes.has_value()) met = *metRes;
+            auto difRes = _context->GetPool<XAtlasTexturePool>()->Get(object.diffuseTexture);
+            auto norRes = _context->GetPool<XAtlasTexturePool>()->Get(object.normalTexture);
+            auto rghRes = _context->GetPool<XAtlasTexturePool>()->Get(object.roughnessTexture);
+            auto metRes = _context->GetPool<XAtlasTexturePool>()->Get(object.metallicTexture);
 
             gpul.diffuseColor = object.diffuseColor;
-            gpul.diffuseTextureLayout.layer = dif.zAtlasLayer;
-            gpul.diffuseTextureLayout.normOffset = dif.offsetNorm;
-            gpul.diffuseTextureLayout.normSize = dif.sizeNorm;
-            gpul.normalTextureLayout.layer = nor.zAtlasLayer;
-            gpul.normalTextureLayout.normOffset = nor.offsetNorm;
-            gpul.normalTextureLayout.normSize = nor.sizeNorm;
-            gpul.roughnessTextureLayout.layer = rgh.zAtlasLayer;
-            gpul.roughnessTextureLayout.normOffset = rgh.offsetNorm;
-            gpul.roughnessTextureLayout.normSize = rgh.sizeNorm;
-            gpul.metallicTextureLayout.layer = met.zAtlasLayer;
-            gpul.metallicTextureLayout.normOffset = met.offsetNorm;
-            gpul.metallicTextureLayout.normSize = met.sizeNorm;
+            if (difRes.has_value())
+            {
+                XAtlasTexture& dif = *difRes;
+                gpul.diffuseTextureLayout.layer = dif.GetAtlasZLayer();
+                gpul.diffuseTextureLayout.normOffset = dif.GetOffsetNorm();
+                gpul.diffuseTextureLayout.normSize = dif.GetSizeNorm();
+            }
+            if (norRes.has_value())
+            {
+                XAtlasTexture& nor = *norRes;
+                gpul.normalTextureLayout.layer = nor.GetAtlasZLayer();
+                gpul.normalTextureLayout.normOffset = nor.GetOffsetNorm();
+                gpul.normalTextureLayout.normSize = nor.GetSizeNorm();
+            }
+            if (rghRes.has_value())
+            {
+                XAtlasTexture& rgh = *rghRes;
+                gpul.roughnessTextureLayout.layer = rgh.GetAtlasZLayer();
+                gpul.roughnessTextureLayout.normOffset = rgh.GetOffsetNorm();
+                gpul.roughnessTextureLayout.normSize = rgh.GetSizeNorm();
+            }
+            if (metRes.has_value())
+            {
+                XAtlasTexture& met = *metRes;
+                gpul.metallicTextureLayout.layer = met.GetAtlasZLayer();
+                gpul.metallicTextureLayout.normOffset = met.GetOffsetNorm();
+                gpul.metallicTextureLayout.normSize = met.GetSizeNorm();
+            }
 
             return gpul;
         }

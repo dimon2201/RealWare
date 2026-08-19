@@ -1,6 +1,6 @@
-// texture_subsystem.cpp
+// texture_atlas.cpp
 
-#include "texture_subsystem.hpp"
+#include "texture_atlas.hpp"
 #include <stb_image.h>
 #include <tinyddsloader.h>
 #include "application.hpp"
@@ -10,17 +10,11 @@
 #include "log.hpp"
 #include "handle_allocator.hpp"
 #include "filesystem_manager.hpp"
-#include "texture_pool.hpp"
 
 using namespace types;
 
-triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& size) : ISubsys(context)
+triton::XTextureAtlas::XTextureAtlas(cContext* context, const cVector3& size) : ISubsys(context)
 {
-    _pool = CObjectAllocator::Create<XTexturePool>(
-        64,
-        _context,
-        K_TRUE
-    );
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
@@ -56,7 +50,7 @@ triton::XTextureSubsystem::XTextureSubsystem(cContext* context, const cVector3& 
     _atlasR8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
 }
 
-triton::XTextureSubsystem::~XTextureSubsystem()
+triton::XTextureAtlas::~XTextureAtlas()
 {
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
@@ -70,32 +64,17 @@ triton::XTextureSubsystem::~XTextureSubsystem()
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&_atlasRGBA8SRGB
     ));
-    CObjectAllocator::Destroy<XTexturePool>(_pool);
 }
 
-std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
-    const std::string& filePath,
+std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::Create(
+    const std::filesystem::path& filePath,
     ETextureFormat dataFormat
 )
 {
-    auto tff = CreateTextureFromFile(dataFormat, filePath);;
-
-    auto handleResult = _pool->Create();
-    if (!handleResult.has_value())
-        return std::nullopt;
-
-    STextureData::THandle handle = *handleResult;
-    auto valueResult = _pool->Get(handle);
-    if (!valueResult.has_value())
-        return std::nullopt;
-    
-    STextureData& value = *valueResult;
-    value = tff.has_value() ? *tff : STextureData();
-
-    return handle;
+    return CreateTextureOnAtlasFromFile(dataFormat, filePath.generic_string());
 }
 
-std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
+std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::Create(
     const u8* byteData,
     usize byteDataByteSize,
     usize width,
@@ -105,17 +84,7 @@ std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
     ETextureFormat pixelDataFormat
 )
 {
-    auto handleResult = _pool->Create();
-    if (!handleResult.has_value())
-        return std::nullopt;
-
-    STextureData::THandle handle = *handleResult;
-    auto valueResult = _pool->Get(handle);
-    if (!valueResult.has_value())
-        return std::nullopt;
-
-    STextureData& value = *valueResult;
-    value = *CreateTextureFromBytes(
+    return CreateTextureOnAtlasFromBytes(
         pixelDataFormat,
         byteData,
         byteDataByteSize,
@@ -124,11 +93,9 @@ std::optional<triton::STextureData::THandle> triton::XTextureSubsystem::Create(
         channelCount,
         byteDataFormat
     );
-
-    return handle;
 }
 
-std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(
+std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureOnAtlas(
     ETextureFormat format,
     const cVector2& size,
     const types::u8* data
@@ -136,8 +103,8 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(
 {
     if (data == nullptr ||
         (format != ETextureFormat::RGBA8_SRGB_Mips &&
-        format != ETextureFormat::RGBA8 &&
-        format != ETextureFormat::R8))
+            format != ETextureFormat::RGBA8 &&
+            format != ETextureFormat::R8))
     {
         Print("Error: can't create texture with unsupported format");
 
@@ -145,19 +112,27 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(
     }
 
     CGPUTexture* atlas = nullptr;
+    std::vector<STextureAtlasRegion>* textures = nullptr;
     if (format == ETextureFormat::RGBA8_SRGB_Mips)
+    {
         atlas = &_atlasRGBA8SRGB;
+        textures = &_texturesRGBA8SRGB;
+    }
     else if (format == ETextureFormat::RGBA8)
+    {
         atlas = &_atlasRGBA8;
+        textures = &_texturesRGBA8;
+    }
     else if (format == ETextureFormat::R8)
+    {
         atlas = &_atlasR8;
+        textures = &_texturesR8;
+    }
 
+    STextureAtlasRegion candidateTexture;
     const usize width = size.GetX();
     const usize height = size.GetY();
-    const SBufferView<STextureData> textureBuffer = _pool->GetData();
-    const STextureData* textures = textureBuffer.elements;
-    const usize textureCount = textureBuffer.elementCount;
-    STextureData candidateTexture;
+    const usize textureCount = textures->size();
     for (usize layer = 0; layer < atlas->GetDepth(); layer++)
     {
         for (usize y = 0; y < atlas->GetHeight(); y++)
@@ -173,7 +148,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(
                     candidateTexture.zAtlasLayer = layer;
                     candidateTexture.offsetNorm = normOffset;
                     candidateTexture.sizeNorm = normSize;
-                    if (IsOverlapping(candidateTexture, textures[i]))
+                    if (IsOverlapping(candidateTexture, textures->at(i)))
                     {
                         isOverlapping = K_TRUE;
                         break;
@@ -202,12 +177,14 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(
                         ));
                     _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>(); // TODO: do proper synchronization here
 
-                    STextureData readyTexture;
+                    STextureAtlasRegion readyTexture;
                     readyTexture.zAtlasLayer = layer;
                     readyTexture.offsetNorm = normOffset;
                     readyTexture.sizeNorm = normSize;
                     readyTexture.offsetPixel = pixelOffset;
                     readyTexture.sizePixel = pixelSize;
+
+                    textures->push_back(readyTexture);
 
                     return readyTexture;
                 }
@@ -218,7 +195,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTexture(
     return std::nullopt;
 }
 
-std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFromFile(
+std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureOnAtlasFromFile(
     ETextureFormat dataFormat,
     const std::string& filePath
 )
@@ -230,7 +207,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
     if (db->GetByteSize() == 0)
         return std::nullopt;
     
-    ETextureFileFormat tf = ETextureFileFormat::NONE;
+    ETextureFileFormat tf = ETextureFileFormat::Unknown;
     const usize kPNGMagicByteCount = 8;
     const usize kDDSMagicByteCount = 4;
     const usize kMagicByteCountMax = std::max({ kPNGMagicByteCount, kDDSMagicByteCount });
@@ -248,7 +225,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
     usize channels = 0;
     u8* data = nullptr;
 
-    if (tf == ETextureFileFormat::NONE)
+    if (tf == ETextureFileFormat::Unknown)
     {
         Print("Error: unknown texture format, file path: '" + filePath + "'\n");
 
@@ -267,7 +244,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
 
             u8* rgbaPixels = RecreatePixelBuffer(3, 4, cVector2(stbWidth, stbHeight), data);
             stbi_image_free(data);
-            auto tex = CreateTexture(dataFormat, cVector2(stbWidth, stbHeight), (const u8*)rgbaPixels);
+            auto tex = CreateTextureOnAtlas(dataFormat, cVector2(stbWidth, stbHeight), (const u8*)rgbaPixels);
             DestroyPixelBuffer(rgbaPixels);
 
             return tex;
@@ -278,7 +255,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
 
             u8* rPixels = RecreatePixelBuffer(3, 1, cVector2(stbWidth, stbHeight), data);
             stbi_image_free(data);
-            auto tex = CreateTexture(dataFormat, cVector2(stbWidth, stbHeight), (const u8*)rPixels);
+            auto tex = CreateTextureOnAtlas(dataFormat, cVector2(stbWidth, stbHeight), (const u8*)rPixels);
             DestroyPixelBuffer(rPixels);
 
             return tex;
@@ -298,7 +275,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
         height = stbHeight;
         channels = stbChannels;
 
-        auto result = CreateTexture(dataFormat, cVector2(width, height), data);
+        auto result = CreateTextureOnAtlas(dataFormat, cVector2(width, height), data);
 
         stbi_image_free(data);
 
@@ -352,11 +329,11 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
         channels = ddsChannels;
         data = (u8*)dds.GetImageData()->m_mem;
 
-        return CreateTexture(dataFormat, cVector2(width, height), data);
+        return CreateTextureOnAtlas(dataFormat, cVector2(width, height), data);
     }
 }
 
-std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFromBytes(
+std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureOnAtlasFromBytes(
     ETextureFormat expectedPixelDataFormat,
     const u8* byteData,
     usize byteDataByteSize,
@@ -461,7 +438,7 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
         return std::nullopt;
     }
 
-    auto tex = CreateTexture(expectedPixelDataFormat, cVector2(width, height), (const u8*)rawPixels);
+    auto tex = CreateTextureOnAtlas(expectedPixelDataFormat, cVector2(width, height), (const u8*)rawPixels);
 
     if (byteDataFormat == ETextureFileFormat::PNG && bIsPixelBufferRecreated == K_FALSE)
         stbi_image_free((void*)rawPixels);
@@ -469,9 +446,9 @@ std::optional<triton::STextureData> triton::XTextureSubsystem::CreateTextureFrom
     return tex;
 }
 
-types::boolean triton::XTextureSubsystem::IsOverlapping(
-    const STextureData& candidateTexture,
-    const STextureData& atlasTexture
+types::boolean triton::XTextureAtlas::IsOverlapping(
+    const STextureAtlasRegion& candidateTexture,
+    const STextureAtlasRegion& atlasTexture
 )
 {
     if (candidateTexture.offsetNorm.GetX() + candidateTexture.sizeNorm.GetX() > 1.0f ||
@@ -490,7 +467,7 @@ types::boolean triton::XTextureSubsystem::IsOverlapping(
         atlasTexture.offsetNorm.GetY();
 }
 
-types::u8* triton::XTextureSubsystem::RecreatePixelBuffer(usize srcChannelCount, usize dstChannelCount, const cVector2& size, const u8* data)
+types::u8* triton::XTextureAtlas::RecreatePixelBuffer(usize srcChannelCount, usize dstChannelCount, const cVector2& size, const u8* data)
 {
     const usize copyChannels = std::min(srcChannelCount, dstChannelCount);
     const usize dstPixelCount = size.GetX() * size.GetY();
@@ -506,7 +483,7 @@ types::u8* triton::XTextureSubsystem::RecreatePixelBuffer(usize srcChannelCount,
     return buffer;
 }
 
-void triton::XTextureSubsystem::DestroyPixelBuffer(const u8* rgbaByteData)
+void triton::XTextureAtlas::DestroyPixelBuffer(const u8* rgbaByteData)
 {
     _context->GetMemoryAllocator()->Deallocate((void*)rgbaByteData);
 }

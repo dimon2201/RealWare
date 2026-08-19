@@ -13,6 +13,7 @@
 #include "batcher.hpp"
 #include "skinning_subsystem.hpp"
 #include "skinned_bones_pool.hpp"
+#include "texture_atlas.hpp"
 
 using namespace types;
 
@@ -191,7 +192,7 @@ void triton::XGraphics::CreateRenderTargets()
 void triton::XGraphics::CreateRenderPasses()
 {
     cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->at(0).GetSize();
-    XTextureSubsystem* textureSubsystem = _context->GetSubsystem<XTextureSubsystem>();
+    XTextureAtlas* textureAtlas = _context->GetSubsystem<XTextureAtlas>();
     cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
 
     SViewport viewport;
@@ -246,9 +247,9 @@ void triton::XGraphics::CreateRenderPasses()
     opaqueStaticData.SetBatchFormat(EVertexBufferFormat::Static_52);
     opaqueStaticData.SetInputLayout(_inputLayoutStatic);
     opaqueStaticData.SetInputTextures({
-        SRenderPassTexture("TextureAtlasRGBA8SRGB", textureSubsystem->GetAtlasRGBA8SRGB()),
-        SRenderPassTexture("TextureAtlasRGBA8", textureSubsystem->GetAtlasRGBA8()),
-        SRenderPassTexture("TextureAtlasR8", textureSubsystem->GetAtlasR8())
+        SRenderPassTexture("TextureAtlasRGBA8SRGB", textureAtlas->GetAtlasRGBA8SRGB()),
+        SRenderPassTexture("TextureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
+        SRenderPassTexture("TextureAtlasR8", textureAtlas->GetAtlasR8())
     });
     opaqueStaticData.SetShader(opaqueStaticShader);
     opaqueStaticData.SetViewport(viewport);
@@ -283,9 +284,9 @@ void triton::XGraphics::CreateRenderPasses()
     opaqueSkinnedData.SetBatchFormat(EVertexBufferFormat::Skinned_84);
     opaqueSkinnedData.SetInputLayout(_inputLayoutSkinned);
     opaqueSkinnedData.SetInputTextures({
-        SRenderPassTexture("TextureAtlasRGBA8SRGB", textureSubsystem->GetAtlasRGBA8SRGB()),
-        SRenderPassTexture("TextureAtlasRGBA8", textureSubsystem->GetAtlasRGBA8()),
-        SRenderPassTexture("TextureAtlasR8", textureSubsystem->GetAtlasR8())
+        SRenderPassTexture("TextureAtlasRGBA8SRGB", textureAtlas->GetAtlasRGBA8SRGB()),
+        SRenderPassTexture("TextureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
+        SRenderPassTexture("TextureAtlasR8", textureAtlas->GetAtlasR8())
     });
     opaqueSkinnedData.SetShader(opaqueSkinnedShader);
     opaqueSkinnedData.SetViewport(viewport);
@@ -327,9 +328,9 @@ void triton::XGraphics::CreateRenderPasses()
     transparentData.SetBatchFormat(EVertexBufferFormat::Static_52);
     transparentData.SetInputLayout(_inputLayoutStatic);
     transparentData.SetInputTextures({
-        SRenderPassTexture("TextureAtlasRGBA8SRGB", textureSubsystem->GetAtlasRGBA8SRGB()),
-        SRenderPassTexture("TextureAtlasRGBA8", textureSubsystem->GetAtlasRGBA8()),
-        SRenderPassTexture("TextureAtlasR8", textureSubsystem->GetAtlasR8())
+        SRenderPassTexture("TextureAtlasRGBA8SRGB", textureAtlas->GetAtlasRGBA8SRGB()),
+        SRenderPassTexture("TextureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
+        SRenderPassTexture("TextureAtlasR8", textureAtlas->GetAtlasR8())
     });
     transparentData.SetShader(transparentShader);
     transparentData.SetViewport(viewport);

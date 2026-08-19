@@ -18,10 +18,10 @@
 namespace triton
 {
     class cVector3;
-    class XTextureSubsystem;
     class XMaterialSubsystem;
     class XSkeletonSubsystem;
     class XAnimationSubsystem;
+    class XTextureAtlas;
     struct SBone;
     struct SAnimation;
     struct SSkeletonData;
@@ -119,7 +119,7 @@ namespace triton
         
         void CreateMaterials(
             const std::string& modelFolderPath,
-            XTextureSubsystem* textureSubsystem,
+            XTextureAtlas* textureAtlas,
             XMaterialSubsystem* materialSubsystem,
             const std::vector<SModel3DMaterialData>& materials,
             std::vector<SMaterialData::THandle>& modelMaterials,
@@ -175,26 +175,26 @@ namespace triton
             std::vector<SAnimationData::THandle>& modelAnimations
         );
         
-        std::optional<STextureData::THandle> CreateTexture(
+        std::optional<XAtlasTexture::THandle> CreateTexture(
             ETextureFormat dataFormat,
             const std::string& modelFolderPath,
-            XTextureSubsystem* textureSubsystem,
+            XTextureAtlas* textureAtlas,
             const std::string& textureFilePath,
             types::boolean bIsEmbedded,
             const aiTexture* texture
         );
         
-        std::optional<STextureData::THandle> CreateTextureFromModelData(
+        std::optional<XAtlasTexture::THandle> CreateTextureFromModelData(
             ETextureFormat dataFormat,
-            XTextureSubsystem* textureSubsystem,
+            XTextureAtlas* textureAtlas,
             const std::string& textureFilePath,
             const aiTexture* texture
         );
         
-        std::optional<STextureData::THandle> CreateTextureFromFile(
+        std::optional<XAtlasTexture::THandle> CreateTextureFromFile(
             ETextureFormat dataFormat,
             const std::string& modelFolderPath,
-            XTextureSubsystem* textureSubsystem,
+            XTextureAtlas* textureAtlas,
             const std::string& textureFilePath
         );
         

@@ -8,7 +8,6 @@
 #include "vertex.hpp"
 #include "camera.hpp"
 #include "game_object_subsystem.hpp"
-#include "texture_subsystem.hpp"
 #include "material_subsystem.hpp"
 #include "math.hpp"
 #include "model3d_subsystem.hpp"
@@ -49,7 +48,6 @@ public:
     virtual void Setup() override final
     {
         XGameObjectSubsystem* gos = _context->GetSubsystem<XGameObjectSubsystem>();
-        XTextureSubsystem* ts = _context->GetSubsystem<XTextureSubsystem>();
         XGeometryStorage* gs = _context->GetSubsystem<XGeometryStorage>();
         XBatchSubsystem* bs = _context->GetSubsystem<XBatchSubsystem>();
         XSkinningSubsystem* sks = _context->GetSubsystem<XSkinningSubsystem>();

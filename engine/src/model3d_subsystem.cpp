@@ -7,6 +7,8 @@
 #include "animation_subsystem.hpp"
 #include "skeleton_subsystem.hpp"
 #include "model3d_pool.hpp"
+#include "context.hpp"
+#include "atlas_texture_pool.hpp"
 
 using namespace types;
 
@@ -80,24 +82,25 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 	{
 		asset::SModel3DMaterialData& assetMaterialData = asset.materialData[i];
 
-		auto ProcessTexture = [](
+		auto ProcessTexture = [this](
 			const std::filesystem::path& assetFolderPath,
 			const std::filesystem::path& assetTexturePath,
 			const asset::STextureData& assetTextureData,
 			ETextureFormat textureFormat,
-			XTextureSubsystem* textureSubsystem,
-			STextureData::THandle& outHandle
+			XAtlasTexture::THandle& outHandle
 		) {
 			std::filesystem::path texturePath = assetTexturePath;
 			if (!assetTexturePath.is_absolute())
 				texturePath = assetFolderPath / assetTexturePath;
 			if (std::filesystem::exists(texturePath))
-				outHandle = *textureSubsystem->Create(
+				outHandle = *_context->GetPool<XAtlasTexturePool>()->Create(
+					_context,
 					texturePath.generic_string(),
 					textureFormat
 				);
 			else
-				outHandle = *textureSubsystem->Create(
+				outHandle = *_context->GetPool<XAtlasTexturePool>()->Create(
+					_context,
 					assetTextureData.pixelByteData,
 					assetTextureData.width * assetTextureData.height * assetTextureData.channelCount,
 					assetTextureData.width,
@@ -108,18 +111,16 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 				);
 		};
 
-		STextureData::THandle diffuseTexture;
-		STextureData::THandle normalTexture;
-		STextureData::THandle roughnessTexture;
-		STextureData::THandle metallicTexture;
-		XTextureSubsystem* textureSubsystem = _context->GetSubsystem<XTextureSubsystem>();
+		XAtlasTexture::THandle diffuseTexture;
+		XAtlasTexture::THandle normalTexture;
+		XAtlasTexture::THandle roughnessTexture;
+		XAtlasTexture::THandle metallicTexture;
 
 		ProcessTexture(
 			assetFolderPath,
 			std::filesystem::path(assetMaterialData.diffuseTexturePath),
 			assetMaterialData.diffuseTexture,
 			ETextureFormat::RGBA8_SRGB_Mips,
-			textureSubsystem,
 			diffuseTexture
 		);
 		ProcessTexture(
@@ -127,7 +128,6 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 			std::filesystem::path(assetMaterialData.normalTexturePath),
 			assetMaterialData.normalTexture,
 			ETextureFormat::RGBA8,
-			textureSubsystem,
 			normalTexture
 		);
 		ProcessTexture(
@@ -135,7 +135,6 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 			std::filesystem::path(assetMaterialData.roughnessTexturePath),
 			assetMaterialData.roughnessTexture,
 			ETextureFormat::R8,
-			textureSubsystem,
 			roughnessTexture
 		);
 		ProcessTexture(
@@ -143,7 +142,6 @@ std::optional<triton::SModel3DData::THandle> triton::XModel3DSubsystem::CreateFr
 			std::filesystem::path(assetMaterialData.metallicTexturePath),
 			assetMaterialData.metallicTexture,
 			ETextureFormat::R8,
-			textureSubsystem,
 			metallicTexture
 		);
 

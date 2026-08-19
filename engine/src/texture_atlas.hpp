@@ -1,15 +1,17 @@
-// texture_subsystem.hpp
+// texture_atlas.hpp
 
 #pragma once
 
 #include <string>
 #include <vector>
 #include <optional>
+#include <filesystem>
 #include "object.hpp"
 #include "math.hpp"
 #include "linear_array.hpp"
-#include "texture_data.hpp"
+#include "atlas_texture.hpp"
 #include "graphics_backend.hpp"
+#include "texture_file_formats.hpp"
 #include "DELETE_THIS_FILE_ASAP.hpp"
 #include "types.hpp"
 
@@ -20,35 +22,27 @@ namespace triton
     class cApplication;
     class XTexturePool;
 
-    struct sTextureAtlasTextureGPU
+    class XTextureAtlas : public ISubsys
     {
-        glm::vec4 _textureInfo = glm::vec4(0.0f);
-        types::f32 _textureLayerInfo = 0.0f;
-    };
+        TRITON_OBJECT(XTextureAtlas)
 
-    enum class ETextureFileFormat
-    {
-        NONE,
-        Raw,
-        PNG,
-        DDS
-    };
-
-    class XTextureSubsystem : public ISubsys
-    {
-        TRITON_OBJECT(XTextureSubsystem)
-
-        XTexturePool* _pool = nullptr;
         CGPUTexture _atlasRGBA8SRGB;
         CGPUTexture _atlasRGBA8;
         CGPUTexture _atlasR8;
+        std::vector<STextureAtlasRegion> _texturesRGBA8SRGB;
+        std::vector<STextureAtlasRegion> _texturesRGBA8;
+        std::vector<STextureAtlasRegion> _texturesR8;
 
     public:
-        explicit XTextureSubsystem(cContext* context, const cVector3& size);
-        ~XTextureSubsystem() override;
+        explicit XTextureAtlas(cContext* context, const cVector3& size);
+        ~XTextureAtlas() override;
 
-        std::optional<STextureData::THandle> Create(const std::string& filePath, ETextureFormat dataFormat);
-        std::optional<STextureData::THandle> Create(
+        std::optional<STextureAtlasRegion> Create(
+            const std::filesystem::path& filePath,
+            ETextureFormat dataFormat
+        );
+        
+        std::optional<STextureAtlasRegion> Create(
             const types::u8* byteData,
             types::usize byteDataByteSize,
             types::usize width,
@@ -57,6 +51,7 @@ namespace triton
             ETextureFileFormat byteDataFormat,
             ETextureFormat pixelDataFormat
         );
+
         void Init() override {}
         void Free() override {}
         void Update() override {}
@@ -76,15 +71,19 @@ namespace triton
             return _atlasR8;
         }
 
-        inline XTexturePool* GetPool() const
-        {
-            return _pool;
-        }
-
     private:
-        std::optional<STextureData> CreateTexture(ETextureFormat format, const cVector2& size, const types::u8* data);
-        std::optional<STextureData> CreateTextureFromFile(ETextureFormat dataFormat, const std::string& filePath);
-        std::optional<STextureData> CreateTextureFromBytes(
+        std::optional<STextureAtlasRegion> CreateTextureOnAtlas(
+            ETextureFormat format,
+            const cVector2& size,
+            const types::u8* data
+        );
+        
+        std::optional<STextureAtlasRegion> CreateTextureOnAtlasFromFile(
+            ETextureFormat dataFormat,
+            const std::string& filePath
+        );
+        
+        std::optional<STextureAtlasRegion> CreateTextureOnAtlasFromBytes(
             ETextureFormat expectedDataFormat,
             const types::u8* byteData,
             types::usize byteDataByteSize,
@@ -93,8 +92,19 @@ namespace triton
             types::usize channelCount,
             ETextureFileFormat fileFormat
         );
-        types::boolean IsOverlapping(const STextureData& candidateTexture, const STextureData& atlasTexture);
-        types::u8* RecreatePixelBuffer(types::usize srcChannelCount, types::usize dstChannelCount, const cVector2& size, const types::u8* data);
+        
+        types::boolean IsOverlapping(
+            const STextureAtlasRegion& candidateTexture,
+            const STextureAtlasRegion& atlasTexture
+        );
+        
+        types::u8* RecreatePixelBuffer(
+            types::usize srcChannelCount,
+            types::usize dstChannelCount,
+            const cVector2& size,
+            const types::u8* data
+        );
+        
         void DestroyPixelBuffer(const types::u8* rgbaByteData);
     };
 }

@@ -5,7 +5,6 @@
 #include "context.hpp"
 #include "engine.hpp"
 #include "capabilities.hpp"
-#include "texture_subsystem.hpp"
 #include "material_pool.hpp"
 
 using namespace types;
@@ -28,10 +27,10 @@ triton::XMaterialSubsystem::~XMaterialSubsystem()
 
 std::optional<triton::SMaterialData::THandle> triton::XMaterialSubsystem::Create(
     const cVector4& diffuseColor,
-    const STextureData::THandle& diffuseTexture,
-    const STextureData::THandle& normalTexture,
-    const STextureData::THandle& roughnessTexture,
-    const STextureData::THandle& metallicTexture
+    const XAtlasTexture::THandle& diffuseTexture,
+    const XAtlasTexture::THandle& normalTexture,
+    const XAtlasTexture::THandle& roughnessTexture,
+    const XAtlasTexture::THandle& metallicTexture
 )
 {
     auto handleResult = _pool->Create();
