@@ -7,6 +7,7 @@
 #include "thread_guard.hpp"
 #include "input.hpp"
 #include "input_backend_sdl.hpp"
+#include "shader_pool.hpp"
 
 using namespace types;
 
@@ -14,10 +15,11 @@ void triton::XCamera::Bind(XRenderPass* pass)
 {
     CThreadGuard::AssertRender();
 
-    CGPUShader shader = pass->GetShader();
+    XShader::THandle shaderHandle = pass->GetShader();
+    XShader& shader = *_context->GetPool<XShaderPool>()->Get(shaderHandle);
 
     IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
-    gfxBackend->SetShaderUniform(shader, "ViewProjection", _viewProjectionMatrix.Get());
+    gfxBackend->SetShaderUniform(shader.GetGPUResource(), "ViewProjection", _viewProjectionMatrix.Get());
 }
 
 void triton::XCamera::Update(const cVector2& screenCursorPosition, usize screenWidth, usize screenHeight, f32 fov, f32 zNear, f32 zFar, f32 mouseSensitivity)

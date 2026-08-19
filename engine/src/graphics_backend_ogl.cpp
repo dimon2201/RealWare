@@ -138,7 +138,7 @@ void triton::XGraphicsBackendOGL::DrawQuads(usize count)
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, count);
 }
 
-triton::CGPUShader triton::XGraphicsBackendOGL::CreateShader(
+triton::CGPUShaderResource triton::XGraphicsBackendOGL::CreateShader(
     const char* vertexStr,
     const char* fragmentStr,
     const char* vertexCustomFuncStr,
@@ -251,10 +251,10 @@ triton::CGPUShader triton::XGraphicsBackendOGL::CreateShader(
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    return CGPUShader(_context, instance, 0);
+    return CGPUShaderResource(_context, instance, 0);
 }
 
-void triton::XGraphicsBackendOGL::BindShader(const CGPUShader& shader)
+void triton::XGraphicsBackendOGL::BindShader(const CGPUShaderResource& shader)
 {
     const GLuint shaderID = (GLuint)shader.GetInstance();
     glUseProgram(shaderID);
@@ -265,13 +265,13 @@ void triton::XGraphicsBackendOGL::UnbindShader()
     glUseProgram(0);
 }
 
-void triton::XGraphicsBackendOGL::DestroyShader(const CGPUShader& shader)
+void triton::XGraphicsBackendOGL::DestroyShader(const CGPUShaderResource& shader)
 {
     glDeleteProgram(shader.GetInstance());
 }
 
 void triton::XGraphicsBackendOGL::SetShaderUniform(
-    const CGPUShader& shader,
+    const CGPUShaderResource& shader,
     const std::string& name,
     const glm::mat4& matrix
 )
@@ -280,7 +280,7 @@ void triton::XGraphicsBackendOGL::SetShaderUniform(
 }
 
 void triton::XGraphicsBackendOGL::SetShaderUniform(
-    const CGPUShader& shader,
+    const CGPUShaderResource& shader,
     const std::string& name,
     types::usize count,
     const types::f32* values
@@ -290,7 +290,7 @@ void triton::XGraphicsBackendOGL::SetShaderUniform(
 }
 
 void triton::XGraphicsBackendOGL::SetShaderUniform(
-    const CGPUShader& shader,
+    const CGPUShaderResource& shader,
     const std::string& name,
     types::u32 value
 )
@@ -299,7 +299,7 @@ void triton::XGraphicsBackendOGL::SetShaderUniform(
 }
 
 void triton::XGraphicsBackendOGL::SetShaderUniform(
-    const CGPUShader& shader,
+    const CGPUShaderResource& shader,
     const std::string& name,
     types::s32 value
 )
@@ -308,7 +308,7 @@ void triton::XGraphicsBackendOGL::SetShaderUniform(
 }
 
 void triton::XGraphicsBackendOGL::BindTextureNamed(
-    const CGPUShader& shader,
+    const CGPUShaderResource& shader,
     const CGPUTexture& texture,
     const std::string& textureName,
     types::s32 slot

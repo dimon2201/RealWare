@@ -40,7 +40,7 @@ namespace triton
 		virtual void DrawQuads(types::usize count) override final;
 
         // Pipeline
-        virtual CGPUShader CreateShader(
+        virtual CGPUShaderResource CreateShader(
             const char* vertexStr,
             const char* fragmentStr,
             const char* vertexCustomFuncStr,
@@ -53,39 +53,39 @@ namespace triton
             const char** fragmentIncludePaths
         ) override final;
 
-        virtual void BindShader(const CGPUShader& shader) override final;
+        virtual void BindShader(const CGPUShaderResource& shader) override final;
 
         virtual void UnbindShader() override final;
 
-        virtual void DestroyShader(const CGPUShader& shader) override final;
+        virtual void DestroyShader(const CGPUShaderResource& shader) override final;
 
         virtual void SetShaderUniform(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const std::string& name,
             const glm::mat4& matrix
         ) override final;
 
         virtual void SetShaderUniform(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const std::string& name,
             types::usize count,
             const types::f32* values
         ) override final;
 
         virtual void SetShaderUniform(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const std::string& name,
             types::u32 value
         ) override final;
 
         virtual void SetShaderUniform(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const std::string& name,
             types::s32 value
         ) override final;
 
         virtual void BindTextureNamed(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const CGPUTexture& texture,
             const std::string& textureName,
             types::s32 slot

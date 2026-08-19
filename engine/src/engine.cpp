@@ -45,6 +45,7 @@
 #include "render_target_pool.hpp"
 #include "render_pass_pool.hpp"
 #include "atlas_texture_pool.hpp"
+#include "shader_pool.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -88,11 +89,13 @@ void triton::cEngine::Initialize()
 	_context->RegisterPool(new XRenderTargetPool(_context, K_TRUE));
 	_context->RegisterPool(new XRenderPassPool(_context, K_TRUE));
 	_context->RegisterPool(new XAtlasTexturePool(_context, K_TRUE));
+	_context->RegisterPool(new XShaderPool(_context, K_TRUE));
 
 	_context->GetPool<XInputLayoutPool>()->Allocate(64);
 	_context->GetPool<XRenderTargetPool>()->Allocate(64);
 	_context->GetPool<XRenderPassPool>()->Allocate(64);
 	_context->GetPool<XAtlasTexturePool>()->Allocate(64);
+	_context->GetPool<XShaderPool>()->Allocate(64);
 
 	// Register subsystems (order matters)
 	_context->RegisterSubsystem(new cInput(_context));

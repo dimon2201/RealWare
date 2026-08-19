@@ -253,7 +253,7 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::CREATE_SHADER:
 			{
-				CGPUShader resultGPUShader = gfxBackend->CreateShader(
+				CGPUShaderResource resultGPUShader = gfxBackend->CreateShader(
 					(const char*)cmd._args._argA,
 					(const char*)cmd._args._argB,
 					(const char*)cmd._args._argC,
@@ -265,7 +265,7 @@ void triton::cRenderThread::ExecuteCommands(
 					cmd._args._argI,
 					(const char**)cmd._args._argJ
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultGPUShader, sizeof(CGPUShader));
+				memcpy(&_sync->GetResultBuffer().data[0], &resultGPUShader, sizeof(CGPUShaderResource));
 				break;
 			}
 			case ERenderCommand::BIND_STATIC_INPUT_LAYOUT:

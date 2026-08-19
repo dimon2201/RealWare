@@ -8,6 +8,7 @@
 #include "camera_pool.hpp"
 #include "input.hpp"
 #include "batcher.hpp"
+#include "shader_pool.hpp"
 
 using namespace types;
 
@@ -17,8 +18,10 @@ void triton::XRenderPass::Bind()
 {
     CThreadGuard::AssertRender();
 
+    XShader& shader = *_context->GetPool<XShaderPool>()->Get(_shader);
+
     IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
-    gfxBackend->BindShader(_shader);
+    gfxBackend->BindShader(shader.GetGPUResource());
     gfxBackend->SetViewport(_viewport);
     gfxBackend->BindDepthState(_depthState);
     gfxBackend->BindBlendState(_blendState);
@@ -27,7 +30,7 @@ void triton::XRenderPass::Bind()
     gfxBackend->BindBuffer(_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer());
 
     for (auto& tex : _inputTextures)
-        gfxBackend->BindTextureNamed(_shader, tex.texture, tex.name, -1);
+        gfxBackend->BindTextureNamed(shader.GetGPUResource(), tex.texture, tex.name, -1);
     
     auto iaResult = _context->GetPool<XInputLayoutPool>()->Get(_inputLayout);
     if (iaResult)
@@ -68,6 +71,7 @@ void triton::XRenderPass::Render()
         case ERenderPassDispatch::Geometry:
         {
             XCamera& camera = *_context->GetPool<XCameraPool>()->Get(_camera);
+            XShader& shader = *_context->GetPool<XShaderPool>()->Get(_shader);
 
             // TODO: remove this line
             cInputWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->at(0);
@@ -84,8 +88,8 @@ void triton::XRenderPass::Render()
             gfxBackend->ClearColor(cVector4(0.45f, 0.0f, 0.8f, 1.0f));
             gfxBackend->ClearDepth(1.0f);
 
-            gfxBackend->SetShaderUniform(_shader, "UniformTime", (u32)time);
-            gfxBackend->SetShaderUniform(_shader, "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
+            gfxBackend->SetShaderUniform(shader.GetGPUResource(), "UniformTime", (u32)time);
+            gfxBackend->SetShaderUniform(shader.GetGPUResource(), "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
             
             for (usize i = 0; i < _batches.size(); i++)
             {
@@ -94,8 +98,8 @@ void triton::XRenderPass::Render()
                 const SBatchData& batch = _context->GetSubsystem<XBatchSubsystem>()->Get(batchHandle);
                 const SGeometryView geometry = batch.sharedGeometry;
 
-                gfxBackend->SetShaderUniform(_shader, "InstanceBatchType", (u32)batch.motionType);
-                gfxBackend->SetShaderUniform(_shader, "InstanceOffset", (u32)batch.bufferOffset);
+                gfxBackend->SetShaderUniform(shader.GetGPUResource(), "InstanceBatchType", (u32)batch.motionType);
+                gfxBackend->SetShaderUniform(shader.GetGPUResource(), "InstanceOffset", (u32)batch.bufferOffset);
                 gfxBackend->Draw(
                     geometry._indexCount,
                     geometry._vertexElementOffset,

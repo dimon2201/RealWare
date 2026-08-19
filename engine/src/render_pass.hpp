@@ -9,6 +9,7 @@
 #include "render_target.hpp"
 #include "camera.hpp"
 #include "input_layout.hpp"
+#include "shader.hpp"
 #include "math.hpp"
 
 namespace triton
@@ -55,7 +56,7 @@ namespace triton
         SBlendState                         _blendState = {};
         SViewport                           _viewport = {};
         XRenderTarget::THandle              _renderTarget;
-        CGPUShader                          _shader;
+        XShader::THandle                    _shader;
         XCamera::THandle                    _camera;
 
     public:
@@ -76,7 +77,7 @@ namespace triton
 
         void ResizeDepthAttachment(const cVector2& size);
 
-        CGPUShader GetShader() { return _shader; }
+        XShader::THandle GetShader() { return _shader; }
 
         void SetDispatch(ERenderPassDispatch dispatch) { _dispatch = dispatch; }
 
@@ -98,7 +99,7 @@ namespace triton
 
         void SetRenderTarget(const XRenderTarget::THandle& renderTarget) { _renderTarget = renderTarget; }
 
-        void SetShader(const CGPUShader& shader) { _shader = shader; }
+        void SetShader(const XShader::THandle& shader) { _shader = shader; }
 
         void SetCamera(const XCamera::THandle& camera) { _camera = camera; }
 

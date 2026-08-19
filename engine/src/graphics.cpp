@@ -14,6 +14,7 @@
 #include "skinning_subsystem.hpp"
 #include "skinned_bones_pool.hpp"
 #include "texture_atlas.hpp"
+#include "shader_pool.hpp"
 
 using namespace types;
 
@@ -212,29 +213,24 @@ void triton::XGraphics::CreateRenderPasses()
     const std::string compositeFinalFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_fragment.shader";
 
     XRenderPassPool* rpPool = _context->GetPool<XRenderPassPool>();
-    const char* emptyStr = "";
+    std::string emptyStr = "";
+    std::vector<SShaderDefine> emptyShaderDefineVec = {};
+    std::vector<const char*> emptyConstCharVec = {};
 
     // Opaque static render pass
     const std::vector<const char*> opaqueShaderFragmentIncludePaths = { pbrShaderPath.c_str()};
     auto opaqueStaticVertexStr = fs->TextFileToString(opaqueStaticVertexShaderPath);
     auto opaqueStaticFragmentStr = fs->TextFileToString(opaqueFragmentShaderPath);
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_SHADER,
-        (cpuword)opaqueStaticVertexStr.c_str(),
-        (cpuword)opaqueStaticFragmentStr.c_str(),
-        (cpuword)emptyStr,
-        (cpuword)emptyStr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr,
-        1,
-        (cpuword)(const char**)opaqueShaderFragmentIncludePaths.data()
-    ));
-    CGPUShader opaqueStaticShader =
-        _context->GetSubsystem<cEngine>()->
-        GetSynchronization()->
-        WaitForRenderCommandResult<CGPUShader>();
+    XShader::THandle opaqueStaticShader = *_context->GetPool<XShaderPool>()->Create(
+        _context,
+        opaqueStaticVertexStr,
+        opaqueStaticFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        opaqueShaderFragmentIncludePaths
+    );
     
     SBlendState opaqueBlendState = {};
     opaqueBlendState.factorCount = 1;
@@ -260,23 +256,16 @@ void triton::XGraphics::CreateRenderPasses()
     // Opaque skinned render pass
     auto opaqueSkinnedVertexStr = fs->TextFileToString(opaqueSkinnedVertexShaderPath);
     auto opaqueSkinnedFragmentStr = fs->TextFileToString(opaqueFragmentShaderPath);
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_SHADER,
-        (cpuword)opaqueSkinnedVertexStr.c_str(),
-        (cpuword)opaqueSkinnedFragmentStr.c_str(),
-        (cpuword)emptyStr,
-        (cpuword)emptyStr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr,
-        1,
-        (cpuword)(const char**)opaqueShaderFragmentIncludePaths.data()
-    ));
-    CGPUShader opaqueSkinnedShader =
-        _context->GetSubsystem<cEngine>()->
-        GetSynchronization()->
-        WaitForRenderCommandResult<CGPUShader>();
+    XShader::THandle opaqueSkinnedShader = *_context->GetPool<XShaderPool>()->Create(
+        _context,
+        opaqueSkinnedVertexStr,
+        opaqueSkinnedFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        opaqueShaderFragmentIncludePaths
+    );
 
     _opaqueSkinned = *rpPool->Create(_context);
     XRenderPass& opaqueSkinnedData = *rpPool->Get(_opaqueSkinned);
@@ -297,23 +286,16 @@ void triton::XGraphics::CreateRenderPasses()
     // Transparent render pass
     auto transparentVertexStr = fs->TextFileToString(transparentVertexShaderPath);
     auto transparentFragmentStr = fs->TextFileToString(transparentFragmentShaderPath);
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_SHADER,
-        (cpuword)transparentVertexStr.c_str(),
-        (cpuword)transparentFragmentStr.c_str(),
-        (cpuword)emptyStr,
-        (cpuword)emptyStr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr
-    ));
-    CGPUShader transparentShader =
-        _context->GetSubsystem<cEngine>()->
-        GetSynchronization()->
-        WaitForRenderCommandResult<CGPUShader>();
+    XShader::THandle transparentShader = *_context->GetPool<XShaderPool>()->Create(
+        _context,
+        transparentVertexStr,
+        transparentFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        emptyConstCharVec
+    );
 
     SBlendState transparentBlendState = {};
     transparentBlendState.factorCount = 2;
@@ -341,23 +323,16 @@ void triton::XGraphics::CreateRenderPasses()
     // Text render pass
     auto textVertexStr = fs->TextFileToString(textVertexShaderPath);
     auto textFragmentStr = fs->TextFileToString(textFragmentShaderPath);
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_SHADER,
-        (cpuword)textVertexStr.c_str(),
-        (cpuword)textFragmentStr.c_str(),
-        (cpuword)emptyStr,
-        (cpuword)emptyStr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr
-    ));
-    CGPUShader textShader =
-        _context->GetSubsystem<cEngine>()->
-        GetSynchronization()->
-        WaitForRenderCommandResult<CGPUShader>();
+    XShader::THandle textShader = *_context->GetPool<XShaderPool>()->Create(
+        _context,
+        textVertexStr,
+        textFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        emptyConstCharVec
+    );
 
     _text = *rpPool->Create(_context);
     XRenderPass& textData = *rpPool->Get(_text);
@@ -371,23 +346,16 @@ void triton::XGraphics::CreateRenderPasses()
     // Composite transparent render pass
     auto compositeTransparentVertexStr = fs->TextFileToString(compositeTransparentVertexShaderPath);
     auto compositeTransparentFragmentStr = fs->TextFileToString(compositeTransparentFragmentShaderPath);
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_SHADER,
-        (cpuword)compositeTransparentVertexStr.c_str(),
-        (cpuword)compositeTransparentFragmentStr.c_str(),
-        (cpuword)emptyStr,
-        (cpuword)emptyStr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr
-    ));
-    CGPUShader compositeTransparentShader =
-        _context->GetSubsystem<cEngine>()->
-        GetSynchronization()->
-        WaitForRenderCommandResult<CGPUShader>();
+    XShader::THandle compositeTransparentShader = *_context->GetPool<XShaderPool>()->Create(
+        _context,
+        compositeTransparentVertexStr,
+        compositeTransparentFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        emptyConstCharVec
+    );
 
     SBlendState compositeTransparentBlendState = {};
     compositeTransparentBlendState.factorCount = 1;
@@ -414,23 +382,16 @@ void triton::XGraphics::CreateRenderPasses()
     // Composite final render pass
     auto compositeFinalVertexStr = fs->TextFileToString(compositeFinalVertexShaderPath);
     auto compositeFinalFragmentStr = fs->TextFileToString(compositeFinalFragmentShaderPath);
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_SHADER,
-        (cpuword)compositeFinalVertexStr.c_str(),
-        (cpuword)compositeFinalFragmentStr.c_str(),
-        (cpuword)emptyStr,
-        (cpuword)emptyStr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr,
-        0,
-        (cpuword)nullptr
-    ));
-    CGPUShader compositeFinalShader =
-        _context->GetSubsystem<cEngine>()->
-        GetSynchronization()->
-        WaitForRenderCommandResult<CGPUShader>();
+    XShader::THandle compositeFinalShader = *_context->GetPool<XShaderPool>()->Create(
+        _context,
+        compositeFinalVertexStr,
+        compositeFinalFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        emptyConstCharVec
+    );
 
     SBlendState compositeFinalBlendState = {};
     compositeFinalBlendState.factorCount = 1;

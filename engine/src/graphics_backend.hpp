@@ -8,26 +8,13 @@
 #include "gpu_resource.hpp"
 #include "shader_define.hpp"
 #include "gpu_texture.hpp"
+#include "gpu_shader.hpp"
 #include "rasterizer_state.hpp"
 #include "gpu_buffer_types.hpp"
 
 namespace triton
 {
     class cContext;
-
-    class CGPUShader : public cGPUResource
-    {
-        TRITON_OBJECT(CGPUShader)
-
-    public:
-        explicit CGPUShader() = default;
-        explicit CGPUShader(
-            cContext* context,
-            types::qword instance,
-            types::qword viewInstance
-        ) : cGPUResource(context, instance, viewInstance) {}
-        ~CGPUShader() override = default;
-    };
 
     class CGPUInputLayout : public cGPUResource
     {
@@ -169,7 +156,7 @@ namespace triton
 		virtual void DrawQuads(types::usize count) = 0;
 
 		// Pipeline
-        virtual CGPUShader CreateShader(
+        virtual CGPUShaderResource CreateShader(
             const char* vertexStr,
             const char* fragmentStr,
             const char* vertexCustomFuncStr,
@@ -182,39 +169,39 @@ namespace triton
             const char** fragmentIncludePaths
         ) = 0;
 
-        virtual void BindShader(const CGPUShader& shader) = 0;
+        virtual void BindShader(const CGPUShaderResource& shader) = 0;
 
         virtual void UnbindShader() = 0;
 
-        virtual void DestroyShader(const CGPUShader& shader) = 0;
+        virtual void DestroyShader(const CGPUShaderResource& shader) = 0;
 
         virtual void SetShaderUniform(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const std::string& name,
             const glm::mat4& matrix
         ) = 0;
 
         virtual void SetShaderUniform(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const std::string& name,
             types::usize count,
             const types::f32* values
         ) = 0;
 
         virtual void SetShaderUniform(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const std::string& name,
             types::u32 value
         ) = 0;
 
         virtual void SetShaderUniform(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const std::string& name,
             types::s32 value
         ) = 0;
 
         virtual void BindTextureNamed(
-            const CGPUShader& shader,
+            const CGPUShaderResource& shader,
             const CGPUTexture& texture,
             const std::string& textureName,
             types::s32 slot
