@@ -309,7 +309,7 @@ void triton::XGraphicsBackendOGL::SetShaderUniform(
 
 void triton::XGraphicsBackendOGL::BindTextureNamed(
     const CGPUShaderResource& shader,
-    const CGPUTexture& texture,
+    const CGPUTextureResource& texture,
     const std::string& textureName,
     types::s32 slot
 )
@@ -450,8 +450,8 @@ void triton::XGraphicsBackendOGL::SetViewport(const SViewport& viewport)
 }
 
 triton::CGPURenderTarget triton::XGraphicsBackendOGL::CreateRenderTarget(
-    const std::vector<CGPUTexture>& colorAttachments,
-    const CGPUTexture& depthAttachment
+    const std::vector<CGPUTextureResource>& colorAttachments,
+    const CGPUTextureResource& depthAttachment
 )
 {
     GLuint instance = 0;
@@ -492,7 +492,7 @@ void triton::XGraphicsBackendOGL::ResizeRenderTargetColors(
     const glm::vec2& size
 )
 {
-    std::vector<CGPUTexture> newColorAttachments;
+    std::vector<CGPUTextureResource> newColorAttachments;
     for (usize i = 0; i < renderTarget.GetColorAttachmentCount(); i++)
     {
         auto& attachment = renderTarget.GetColorAttachments()[i];
@@ -531,7 +531,7 @@ void triton::XGraphicsBackendOGL::ResizeRenderTargetDepth(
     const glm::vec2& size
 )
 {
-    CGPUTexture newDepthAttachment = CreateTexture(
+    CGPUTextureResource newDepthAttachment = CreateTexture(
         cVector3(size.x, size.y, renderTarget.GetDepthAttachment().GetDepth()),
         renderTarget.GetDepthAttachment().GetDimension(),
         renderTarget.GetDepthAttachment().GetFormat(),
@@ -719,7 +719,7 @@ void triton::XGraphicsBackendOGL::DestroyBuffer(const CGPUBuffer& buffer)
     glDeleteBuffers(1, &instance);
 }
 
-triton::CGPUTexture triton::XGraphicsBackendOGL::CreateTexture(
+triton::CGPUTextureResource triton::XGraphicsBackendOGL::CreateTexture(
     const cVector3& size,
     ETextureDimension dimension,
     ETextureFormat format,
@@ -822,12 +822,12 @@ triton::CGPUTexture triton::XGraphicsBackendOGL::CreateTexture(
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
-    return CGPUTexture(_context, instance, 0, size, dimension, format, slot);
+    return CGPUTextureResource(_context, instance, 0, size, dimension, format, slot);
 }
 
-triton::CGPUTexture triton::XGraphicsBackendOGL::ResizeTexture(const CGPUTexture& texture, const cVector2& size)
+triton::CGPUTextureResource triton::XGraphicsBackendOGL::ResizeTexture(const CGPUTextureResource& texture, const cVector2& size)
 {
-    CGPUTexture newTexture = CreateTexture(
+    CGPUTextureResource newTexture = CreateTexture(
         cVector3(size.GetX(), size.GetY(), texture.GetDepth()),
         texture.GetDimension(),
         texture.GetFormat(),
@@ -839,7 +839,7 @@ triton::CGPUTexture triton::XGraphicsBackendOGL::ResizeTexture(const CGPUTexture
     return newTexture;
 }
 
-void triton::XGraphicsBackendOGL::BindTexture(const CGPUTexture& texture)
+void triton::XGraphicsBackendOGL::BindTexture(const CGPUTextureResource& texture)
 {
     if (texture.GetDimension() == ETextureDimension::Texture2D)
     {
@@ -855,7 +855,7 @@ void triton::XGraphicsBackendOGL::BindTexture(const CGPUTexture& texture)
     }
 }
 
-void triton::XGraphicsBackendOGL::UnbindTexture(const CGPUTexture& texture)
+void triton::XGraphicsBackendOGL::UnbindTexture(const CGPUTextureResource& texture)
 {
     if (texture.GetDimension() == ETextureDimension::Texture2D)
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -864,7 +864,7 @@ void triton::XGraphicsBackendOGL::UnbindTexture(const CGPUTexture& texture)
 }
 
 void triton::XGraphicsBackendOGL::WriteTexture(
-    const CGPUTexture& texture,
+    const CGPUTextureResource& texture,
     const cVector3& offset,
     const cVector2& size,
     const types::u8* data
@@ -958,7 +958,7 @@ void triton::XGraphicsBackendOGL::WriteTexture(
     }
 }
 
-void triton::XGraphicsBackendOGL::WriteTextureToFile(const CGPUTexture& texture, const std::string& filename)
+void triton::XGraphicsBackendOGL::WriteTextureToFile(const CGPUTextureResource& texture, const std::string& filename)
 {
     if (texture.GetFormat() != ETextureFormat::RGBA8)
         return;
@@ -994,7 +994,7 @@ void triton::XGraphicsBackendOGL::WriteTextureToFile(const CGPUTexture& texture,
     }
 }
 
-void triton::XGraphicsBackendOGL::GenerateTextureMips(const CGPUTexture& texture)
+void triton::XGraphicsBackendOGL::GenerateTextureMips(const CGPUTextureResource& texture)
 {
     if (texture.GetDimension() == ETextureDimension::Texture2D)
     {
@@ -1010,7 +1010,7 @@ void triton::XGraphicsBackendOGL::GenerateTextureMips(const CGPUTexture& texture
     }
 }
 
-void triton::XGraphicsBackendOGL::DestroyTexture(const CGPUTexture& texture)
+void triton::XGraphicsBackendOGL::DestroyTexture(const CGPUTextureResource& texture)
 {
     if (texture.GetDimension() == ETextureDimension::Texture2D)
         glBindTexture(GL_TEXTURE_2D, 0);

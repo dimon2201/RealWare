@@ -26,9 +26,9 @@ namespace triton
     {
         TRITON_OBJECT(XTextureAtlas)
 
-        CGPUTexture _atlasRGBA8SRGB;
-        CGPUTexture _atlasRGBA8;
-        CGPUTexture _atlasR8;
+        CGPUTextureResource _atlasRGBA8SRGB;
+        CGPUTextureResource _atlasRGBA8;
+        CGPUTextureResource _atlasR8;
         std::vector<STextureAtlasRegion> _texturesRGBA8SRGB;
         std::vector<STextureAtlasRegion> _texturesRGBA8;
         std::vector<STextureAtlasRegion> _texturesR8;
@@ -56,17 +56,17 @@ namespace triton
         void Free() override {}
         void Update() override {}
 
-        inline CGPUTexture GetAtlasRGBA8SRGB() const
+        inline CGPUTextureResource GetAtlasRGBA8SRGB() const
         {
             return _atlasRGBA8SRGB;
         }
 
-        inline CGPUTexture GetAtlasRGBA8() const
+        inline CGPUTextureResource GetAtlasRGBA8() const
         {
             return _atlasRGBA8;
         }
 
-        inline CGPUTexture GetAtlasR8() const
+        inline CGPUTextureResource GetAtlasR8() const
         {
             return _atlasR8;
         }

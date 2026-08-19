@@ -132,7 +132,7 @@ void triton::XGraphics::CreateRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    CGPUTexture color = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
+    CGPUTextureResource color = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
@@ -143,7 +143,7 @@ void triton::XGraphics::CreateRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    CGPUTexture accumulation = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
+    CGPUTextureResource accumulation = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
@@ -154,7 +154,7 @@ void triton::XGraphics::CreateRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    CGPUTexture revealage = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
+    CGPUTextureResource revealage = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
@@ -165,11 +165,11 @@ void triton::XGraphics::CreateRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    CGPUTexture depth = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
+    CGPUTextureResource depth = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
     
     XRenderTargetPool* rtPool = _context->GetPool<XRenderTargetPool>();
 
-    CGPUTexture opaqueColorAttachments[1] = { color };
+    CGPUTextureResource opaqueColorAttachments[1] = { color };
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
         1,
@@ -179,7 +179,7 @@ void triton::XGraphics::CreateRenderTargets()
     CGPURenderTarget opaqueRT = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPURenderTarget>();
     _opaqueRenderTarget = *rtPool->Create(_context, opaqueRT);
 
-    CGPUTexture transparentColorAttachments[2] = { accumulation, revealage };
+    CGPUTextureResource transparentColorAttachments[2] = { accumulation, revealage };
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
         2,

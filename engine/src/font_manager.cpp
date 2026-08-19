@@ -180,7 +180,7 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         (cpuword)atlasPixels,
         0
     ));
-    _atlas = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
+    _atlas = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
 
     memoryAllocator->Deallocate(atlasPixels);
 }

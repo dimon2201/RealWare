@@ -49,8 +49,8 @@ namespace triton
         TRITON_OBJECT(CGPURenderTarget)
 
         types::usize _colorAttachmentCount = 0;
-        CGPUTexture _colorAttachments[8];
-        CGPUTexture _depthAttachment = CGPUTexture(
+        CGPUTextureResource _colorAttachments[8];
+        CGPUTextureResource _depthAttachment = CGPUTextureResource(
             nullptr,
             0,
             0,
@@ -67,8 +67,8 @@ namespace triton
             types::qword instance,
             types::qword viewInstance,
             types::usize colorAttachmentCount,
-            const CGPUTexture* colorAttachments,
-            const CGPUTexture& depthAttachment
+            const CGPUTextureResource* colorAttachments,
+            const CGPUTextureResource& depthAttachment
         ) : cGPUResource(context, instance, viewInstance),
             _depthAttachment(depthAttachment)
         {
@@ -78,13 +78,13 @@ namespace triton
 
         inline types::usize GetColorAttachmentCount() const { return _colorAttachmentCount; }
 
-        inline CGPUTexture* GetColorAttachments() { return _colorAttachments; }
+        inline CGPUTextureResource* GetColorAttachments() { return _colorAttachments; }
 
-        inline CGPUTexture& GetDepthAttachment() { return _depthAttachment; }
+        inline CGPUTextureResource& GetDepthAttachment() { return _depthAttachment; }
 
         inline void SetColorAttachments(
             types::usize colorAttachmentCount,
-            const CGPUTexture* colorAttachments
+            const CGPUTextureResource* colorAttachments
         )
         {
             _colorAttachmentCount = colorAttachmentCount;
@@ -92,7 +92,7 @@ namespace triton
                 _colorAttachments[i] = colorAttachments[i];
         }
 
-        inline void SetDepthAttachment(const CGPUTexture& depthAttachment) { _depthAttachment = depthAttachment; }
+        inline void SetDepthAttachment(const CGPUTextureResource& depthAttachment) { _depthAttachment = depthAttachment; }
     };
 
     class CGPUBuffer : public cGPUResource
@@ -202,7 +202,7 @@ namespace triton
 
         virtual void BindTextureNamed(
             const CGPUShaderResource& shader,
-            const CGPUTexture& texture,
+            const CGPUTextureResource& texture,
             const std::string& textureName,
             types::s32 slot
         ) = 0;
@@ -232,8 +232,8 @@ namespace triton
         virtual void SetViewport(const SViewport& viewport) = 0;
 
         virtual CGPURenderTarget CreateRenderTarget(
-            const std::vector<CGPUTexture>& colorAttachments,
-            const CGPUTexture& depthAttachment
+            const std::vector<CGPUTextureResource>& colorAttachments,
+            const CGPUTextureResource& depthAttachment
         ) = 0;
 
         virtual void ResizeRenderTargetColors(
@@ -277,7 +277,7 @@ namespace triton
 
         virtual void DestroyBuffer(const CGPUBuffer& buffer) = 0;
 
-        virtual CGPUTexture CreateTexture(
+        virtual CGPUTextureResource CreateTexture(
             const cVector3& size,
             ETextureDimension dimension,
             ETextureFormat format,
@@ -285,23 +285,23 @@ namespace triton
             types::s32 slot
         ) = 0;
 
-        virtual CGPUTexture ResizeTexture(const CGPUTexture& texture, const cVector2& size) = 0;
+        virtual CGPUTextureResource ResizeTexture(const CGPUTextureResource& texture, const cVector2& size) = 0;
 
-        virtual void BindTexture(const CGPUTexture& texture) = 0;
+        virtual void BindTexture(const CGPUTextureResource& texture) = 0;
 
-        virtual void UnbindTexture(const CGPUTexture& texture) = 0;
+        virtual void UnbindTexture(const CGPUTextureResource& texture) = 0;
 
         virtual void WriteTexture(
-            const CGPUTexture& texture,
+            const CGPUTextureResource& texture,
             const cVector3& offset,
             const cVector2& size,
             const types::u8* data
         ) = 0;
 
-        virtual void WriteTextureToFile(const CGPUTexture& texture, const std::string& filename) = 0;
+        virtual void WriteTextureToFile(const CGPUTextureResource& texture, const std::string& filename) = 0;
 
-        virtual void GenerateTextureMips(const CGPUTexture& texture) = 0;
+        virtual void GenerateTextureMips(const CGPUTextureResource& texture) = 0;
 
-        virtual void DestroyTexture(const CGPUTexture& texture) = 0;
+        virtual void DestroyTexture(const CGPUTextureResource& texture) = 0;
 	};
 }

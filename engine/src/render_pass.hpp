@@ -35,10 +35,10 @@ namespace triton
 
     struct SRenderPassTexture
     {
-        SRenderPassTexture(const std::string& name, const CGPUTexture& texture) : name(name), texture(texture) {}
+        SRenderPassTexture(const std::string& name, const CGPUTextureResource& texture) : name(name), texture(texture) {}
 
         std::string name = "";
-        CGPUTexture texture;
+        CGPUTextureResource texture;
     };
 
 	struct XRenderPass : public iObject

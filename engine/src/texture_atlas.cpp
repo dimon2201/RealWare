@@ -25,7 +25,7 @@ triton::XTextureAtlas::XTextureAtlas(cContext* context, const cVector3& size) : 
         (cpuword)nullptr,
         0
     ));
-    _atlasRGBA8SRGB = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
+    _atlasRGBA8SRGB = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
@@ -36,7 +36,7 @@ triton::XTextureAtlas::XTextureAtlas(cContext* context, const cVector3& size) : 
         (cpuword)nullptr,
         1
     ));
-    _atlasRGBA8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
+    _atlasRGBA8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
@@ -47,7 +47,7 @@ triton::XTextureAtlas::XTextureAtlas(cContext* context, const cVector3& size) : 
         (cpuword)nullptr,
         2
     ));
-    _atlasR8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTexture>();
+    _atlasR8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
 }
 
 triton::XTextureAtlas::~XTextureAtlas()
@@ -111,7 +111,7 @@ std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureO
         return std::nullopt;
     }
 
-    CGPUTexture* atlas = nullptr;
+    CGPUTextureResource* atlas = nullptr;
     std::vector<STextureAtlasRegion>* textures = nullptr;
     if (format == ETextureFormat::RGBA8_SRGB_Mips)
     {

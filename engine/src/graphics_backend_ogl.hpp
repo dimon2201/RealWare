@@ -86,7 +86,7 @@ namespace triton
 
         virtual void BindTextureNamed(
             const CGPUShaderResource& shader,
-            const CGPUTexture& texture,
+            const CGPUTextureResource& texture,
             const std::string& textureName,
             types::s32 slot
         ) override final;
@@ -116,8 +116,8 @@ namespace triton
         virtual void SetViewport(const SViewport& viewport) override final;
 
         virtual CGPURenderTarget CreateRenderTarget(
-            const std::vector<CGPUTexture>& colorAttachments,
-            const CGPUTexture& depthAttachment
+            const std::vector<CGPUTextureResource>& colorAttachments,
+            const CGPUTextureResource& depthAttachment
         ) override final;
 
         virtual void ResizeRenderTargetColors(
@@ -161,7 +161,7 @@ namespace triton
 
         virtual void DestroyBuffer(const CGPUBuffer& buffer) override final;
 
-        virtual CGPUTexture CreateTexture(
+        virtual CGPUTextureResource CreateTexture(
             const cVector3& size,
             ETextureDimension dimension,
             ETextureFormat format,
@@ -169,23 +169,23 @@ namespace triton
             types::s32 slot
         ) override final;
 
-        virtual CGPUTexture ResizeTexture(const CGPUTexture& texture, const cVector2& size) override final;
+        virtual CGPUTextureResource ResizeTexture(const CGPUTextureResource& texture, const cVector2& size) override final;
 
-        virtual void BindTexture(const CGPUTexture& texture) override final;
+        virtual void BindTexture(const CGPUTextureResource& texture) override final;
 
-        virtual void UnbindTexture(const CGPUTexture& texture) override final;
+        virtual void UnbindTexture(const CGPUTextureResource& texture) override final;
 
         virtual void WriteTexture(
-            const CGPUTexture& texture,
+            const CGPUTextureResource& texture,
             const cVector3& offset,
             const cVector2& size,
             const types::u8* data
         ) override final;
 
-        virtual void WriteTextureToFile(const CGPUTexture& texture, const std::string& filename) override final;
+        virtual void WriteTextureToFile(const CGPUTextureResource& texture, const std::string& filename) override final;
 
-        virtual void GenerateTextureMips(const CGPUTexture& texture) override final;
+        virtual void GenerateTextureMips(const CGPUTextureResource& texture) override final;
 
-        virtual void DestroyTexture(const CGPUTexture& texture) override final;
+        virtual void DestroyTexture(const CGPUTextureResource& texture) override final;
 	};
 }

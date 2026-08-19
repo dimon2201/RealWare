@@ -41,7 +41,7 @@ namespace triton
         types::usize _offsetSpace = 0;
         types::usize _offsetTab = 0;
         mutable std::unordered_map<types::u8, sGlyph> _alphabet = {};
-        CGPUTexture _atlas;
+        CGPUTextureResource _atlas;
 
     public:
         explicit cFontFace(cContext* context);
@@ -56,7 +56,7 @@ namespace triton
         inline types::usize GetOffsetSpace() const { return _offsetSpace; }
         inline types::usize GetOffsetTab() const { return _offsetTab; }
         inline std::unordered_map<types::u8, sGlyph>& GetAlphabet() const { return _alphabet; }
-        inline CGPUTexture GetAtlas() const { return _atlas; }
+        inline CGPUTextureResource GetAtlas() const { return _atlas; }
         inline void SetGlyphSize(types::usize size) { _glyphSize = size; }
         inline void SetOffsetNewline(types::usize offset) { _offsetNewline = offset; }
         inline void SetOffsetSpace(types::usize offset) { _offsetSpace = offset; }
