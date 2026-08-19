@@ -169,25 +169,11 @@ void triton::XGraphics::CreateRenderTargets()
     
     XRenderTargetPool* rtPool = _context->GetPool<XRenderTargetPool>();
 
-    CGPUTextureResource opaqueColorAttachments[1] = { color };
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_RENDER_TARGET,
-        1,
-        (cpuword)&opaqueColorAttachments[0],
-        (cpuword)&depth
-    ));
-    CGPURenderTarget opaqueRT = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPURenderTarget>();
-    _opaqueRenderTarget = *rtPool->Create(_context, opaqueRT);
+    std::vector<CGPUTextureResource> opaqueColorAttachments = { color };
+    _opaqueRenderTarget = *rtPool->Create(_context, opaqueColorAttachments, depth);
 
-    CGPUTextureResource transparentColorAttachments[2] = { accumulation, revealage };
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_RENDER_TARGET,
-        2,
-        (cpuword)&transparentColorAttachments[0],
-        (cpuword)&depth
-    ));
-    CGPURenderTarget transparentRT = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPURenderTarget>();
-    _transparentRenderTarget = *rtPool->Create(_context, transparentRT);
+    std::vector<CGPUTextureResource> transparentColorAttachments = { accumulation, revealage };
+    _transparentRenderTarget = *rtPool->Create(_context, transparentColorAttachments, depth);
 }
 
 void triton::XGraphics::CreateRenderPasses()
@@ -370,8 +356,8 @@ void triton::XGraphics::CreateRenderPasses()
     compositeTransparentData.SetBatchFormat(EVertexBufferFormat::Unknown);
     compositeTransparentData.SetInputLayout(_inputLayoutProcessing);
     compositeTransparentData.SetInputTextures({
-        SRenderPassTexture("AccumulationTexture", transparentRTData._renderTarget.GetColorAttachments()[0]),
-        SRenderPassTexture("RevealageTexture", transparentRTData._renderTarget.GetColorAttachments()[1])
+        SRenderPassTexture("AccumulationTexture", transparentRTData.GetGPUResource().GetColorAttachments()[0]),
+        SRenderPassTexture("RevealageTexture", transparentRTData.GetGPUResource().GetColorAttachments()[1])
     });
     compositeTransparentData.SetShader(compositeTransparentShader);
     compositeTransparentData.SetViewport(viewport);
@@ -406,7 +392,7 @@ void triton::XGraphics::CreateRenderPasses()
     compositeFinalData.SetBatchFormat(EVertexBufferFormat::Unknown);
     compositeFinalData.SetInputLayout(_inputLayoutProcessing);
     compositeFinalData.SetInputTextures({
-        SRenderPassTexture("ColorTexture", opaqueRTData._renderTarget.GetColorAttachments()[0])
+        SRenderPassTexture("ColorTexture", opaqueRTData.GetGPUResource().GetColorAttachments()[0])
     });
     compositeFinalData.SetShader(compositeFinalShader);
     compositeFinalData.SetViewport(viewport);
@@ -431,29 +417,24 @@ void triton::XGraphics::DestroyRenderTargets()
 
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)&opaqueRT._renderTarget.GetColorAttachments()[0]
+        (cpuword)&opaqueRT.GetGPUResource().GetColorAttachments()[0]
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)&transparentRT._renderTarget.GetColorAttachments()[0]
+        (cpuword)&transparentRT.GetGPUResource().GetColorAttachments()[0]
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)&transparentRT._renderTarget.GetColorAttachments()[1]
+        (cpuword)&transparentRT.GetGPUResource().GetColorAttachments()[1]
     ));
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)&opaqueRT._renderTarget.GetDepthAttachment()
+        (cpuword)&opaqueRT.GetGPUResource().GetDepthAttachment()
     ));
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_RENDER_TARGET,
-        (cpuword)&transparentRT._renderTarget
-    ));
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_RENDER_TARGET,
-        (cpuword)&opaqueRT._renderTarget
-    ));
-}
+
+    rtPool->Destroy(_transparentRenderTarget);
+    rtPool->Destroy(_opaqueRenderTarget);
+};
 
 void triton::XGraphics::DestroyRenderPasses()
 {

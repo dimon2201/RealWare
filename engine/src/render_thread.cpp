@@ -244,11 +244,11 @@ void triton::cRenderThread::ExecuteCommands(
 				std::vector<CGPUTextureResource> attachmentsVec;
 				for (usize i = 0; i < attachmentCount; i++)
 					attachmentsVec.push_back(attachments[i]);
-				CGPURenderTarget resultRT = gfxBackend->CreateRenderTarget(
+				CGPURenderTargetResource resultRT = gfxBackend->CreateRenderTarget(
 					attachmentsVec,
 					*((CGPUTextureResource*)cmd._args._argC)
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultRT, sizeof(CGPURenderTarget));
+				memcpy(&_sync->GetResultBuffer().data[0], &resultRT, sizeof(CGPURenderTargetResource));
 				break;
 			}
 			case ERenderCommand::CREATE_SHADER:

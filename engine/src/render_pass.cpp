@@ -38,7 +38,7 @@ void triton::XRenderPass::Bind()
 
     auto rtResult = _context->GetPool<XRenderTargetPool>()->Get(_renderTarget);
     if (rtResult)
-        gfxBackend->BindRenderTarget((*rtResult).get()._renderTarget);
+        gfxBackend->BindRenderTarget((*rtResult).get().GetGPUResource());
 }
 
 void triton::XRenderPass::Unbind()
@@ -148,7 +148,7 @@ void triton::XRenderPass::ResizeColorAttachments(const cVector2& size)
 
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::RESIZE_RENDER_TARGET_COLORS,
-        (cpuword)&rt._renderTarget,
+        (cpuword)&rt.GetGPUResource(),
         size.GetX(),
         size.GetY()
     ));
@@ -160,7 +160,7 @@ void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
 
     _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::RESIZE_RENDER_TARGET_DEPTH,
-        (cpuword)&rt._renderTarget,
+        (cpuword)&rt.GetGPUResource(),
         size.GetX(),
         size.GetY()
     ));

@@ -12,63 +12,13 @@
 #include "gpu_buffer.hpp"
 #include "gpu_input_layout_resource.hpp"
 #include "gpu_render_pass_resource.hpp"
+#include "gpu_render_target_resource.hpp"
 #include "rasterizer_state.hpp"
 #include "gpu_buffer_types.hpp"
 
 namespace triton
 {
     class cContext;
-
-    class CGPURenderTarget : public cGPUResource
-    {
-        TRITON_OBJECT(CGPURenderTarget)
-
-        types::usize _colorAttachmentCount = 0;
-        CGPUTextureResource _colorAttachments[8];
-        CGPUTextureResource _depthAttachment = CGPUTextureResource(
-            nullptr,
-            0,
-            0,
-            cVector3(0.0f),
-            ETextureDimension::Unknown,
-            ETextureFormat::Unknown,
-            -1
-        );
-
-    public:
-        explicit CGPURenderTarget() = default;
-        explicit CGPURenderTarget(
-            cContext* context,
-            types::qword instance,
-            types::qword viewInstance,
-            types::usize colorAttachmentCount,
-            const CGPUTextureResource* colorAttachments,
-            const CGPUTextureResource& depthAttachment
-        ) : cGPUResource(context, instance, viewInstance),
-            _depthAttachment(depthAttachment)
-        {
-            SetColorAttachments(colorAttachmentCount, colorAttachments);
-        }
-        ~CGPURenderTarget() override = default;
-
-        inline types::usize GetColorAttachmentCount() const { return _colorAttachmentCount; }
-
-        inline CGPUTextureResource* GetColorAttachments() { return _colorAttachments; }
-
-        inline CGPUTextureResource& GetDepthAttachment() { return _depthAttachment; }
-
-        inline void SetColorAttachments(
-            types::usize colorAttachmentCount,
-            const CGPUTextureResource* colorAttachments
-        )
-        {
-            _colorAttachmentCount = colorAttachmentCount;
-            for (types::usize i = 0; i < _colorAttachmentCount; i++)
-                _colorAttachments[i] = colorAttachments[i];
-        }
-
-        inline void SetDepthAttachment(const CGPUTextureResource& depthAttachment) { _depthAttachment = depthAttachment; }
-    };
 
 	class IGraphicsBackend : public iBackend
 	{
@@ -179,28 +129,28 @@ namespace triton
 
         virtual void SetViewport(const SViewport& viewport) = 0;
 
-        virtual CGPURenderTarget CreateRenderTarget(
+        virtual CGPURenderTargetResource CreateRenderTarget(
             const std::vector<CGPUTextureResource>& colorAttachments,
             const CGPUTextureResource& depthAttachment
         ) = 0;
 
         virtual void ResizeRenderTargetColors(
-            CGPURenderTarget& renderTarget,
+            CGPURenderTargetResource& renderTarget,
             const glm::vec2& size
         ) = 0;
 
         virtual void ResizeRenderTargetDepth(
-            CGPURenderTarget& renderTarget,
+            CGPURenderTargetResource& renderTarget,
             const glm::vec2& size
         ) = 0;
 
-        virtual void UpdateRenderTargetBuffers(CGPURenderTarget& renderTarget) = 0;
+        virtual void UpdateRenderTargetBuffers(CGPURenderTargetResource& renderTarget) = 0;
 
-        virtual void BindRenderTarget(const CGPURenderTarget& renderTarget) = 0;
+        virtual void BindRenderTarget(const CGPURenderTargetResource& renderTarget) = 0;
 
         virtual void UnbindRenderTarget() = 0;
 
-        virtual void DestroyRenderTarget(const CGPURenderTarget& renderTarget) = 0;
+        virtual void DestroyRenderTarget(const CGPURenderTargetResource& renderTarget) = 0;
 
         // Resource
         virtual CGPUBufferResource CreateBuffer(

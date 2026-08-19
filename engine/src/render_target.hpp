@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <vector>
 #include "object.hpp"
 #include "handle.hpp"
-#include "graphics_backend.hpp"
+#include "gpu_render_target_resource.hpp"
 
 namespace triton
 {
@@ -14,11 +15,18 @@ namespace triton
 	{
 		TRITON_OBJECT(XRenderTarget)
 
-		CGPURenderTarget _renderTarget;
+		CGPURenderTargetResource _gpuRenderTarget;
 
 	public:
-		explicit XRenderTarget(cContext* context, const CGPURenderTarget& renderTarget);
-		~XRenderTarget() = default;
+		explicit XRenderTarget(
+			cContext* context,
+			const std::vector<CGPUTextureResource>& colorAttachments,
+			const CGPUTextureResource& depthAttachment
+		);
+
+		~XRenderTarget() override;
+
+		inline const CGPURenderTargetResource& GetGPUResource() const { return _gpuRenderTarget; }
 
 		struct THandle : public SHandle {};
 

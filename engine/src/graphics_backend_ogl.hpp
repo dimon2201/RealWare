@@ -115,28 +115,28 @@ namespace triton
 
         virtual void SetViewport(const SViewport& viewport) override final;
 
-        virtual CGPURenderTarget CreateRenderTarget(
+        virtual CGPURenderTargetResource CreateRenderTarget(
             const std::vector<CGPUTextureResource>& colorAttachments,
             const CGPUTextureResource& depthAttachment
         ) override final;
 
         virtual void ResizeRenderTargetColors(
-            CGPURenderTarget& renderTarget,
+            CGPURenderTargetResource& renderTarget,
             const glm::vec2& size
         ) override final;
 
         virtual void ResizeRenderTargetDepth(
-            CGPURenderTarget& renderTarget,
+            CGPURenderTargetResource& renderTarget,
             const glm::vec2& size
         ) override final;
 
-        virtual void UpdateRenderTargetBuffers(CGPURenderTarget& renderTarget) override final;
+        virtual void UpdateRenderTargetBuffers(CGPURenderTargetResource& renderTarget) override final;
 
-        virtual void BindRenderTarget(const CGPURenderTarget& renderTarget) override final;
+        virtual void BindRenderTarget(const CGPURenderTargetResource& renderTarget) override final;
 
         virtual void UnbindRenderTarget() override final;
 
-        virtual void DestroyRenderTarget(const CGPURenderTarget& renderTarget) override final;
+        virtual void DestroyRenderTarget(const CGPURenderTargetResource& renderTarget) override final;
 
         // Resource
         virtual CGPUBufferResource CreateBuffer(

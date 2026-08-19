@@ -449,7 +449,7 @@ void triton::XGraphicsBackendOGL::SetViewport(const SViewport& viewport)
     glViewport(viewport.rect.GetX(), viewport.rect.GetY(), viewport.rect.GetZ(), viewport.rect.GetW());
 }
 
-triton::CGPURenderTarget triton::XGraphicsBackendOGL::CreateRenderTarget(
+triton::CGPURenderTargetResource triton::XGraphicsBackendOGL::CreateRenderTarget(
     const std::vector<CGPUTextureResource>& colorAttachments,
     const CGPUTextureResource& depthAttachment
 )
@@ -484,11 +484,11 @@ triton::CGPURenderTarget triton::XGraphicsBackendOGL::CreateRenderTarget(
     if (status != GL_FRAMEBUFFER_COMPLETE)
         Print("Error: incomplete framebuffer!");
 
-    return CGPURenderTarget(_context, instance, 0, colorAttachments.size(), colorAttachments.data(), depthAttachment);
+    return CGPURenderTargetResource(_context, instance, 0, colorAttachments.size(), colorAttachments.data(), depthAttachment);
 }
 
 void triton::XGraphicsBackendOGL::ResizeRenderTargetColors(
-    CGPURenderTarget& renderTarget,
+    CGPURenderTargetResource& renderTarget,
     const glm::vec2& size
 )
 {
@@ -527,7 +527,7 @@ void triton::XGraphicsBackendOGL::ResizeRenderTargetColors(
 }
 
 void triton::XGraphicsBackendOGL::ResizeRenderTargetDepth(
-    CGPURenderTarget& renderTarget,
+    CGPURenderTargetResource& renderTarget,
     const glm::vec2& size
 )
 {
@@ -553,7 +553,7 @@ void triton::XGraphicsBackendOGL::ResizeRenderTargetDepth(
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void triton::XGraphicsBackendOGL::UpdateRenderTargetBuffers(CGPURenderTarget& renderTarget)
+void triton::XGraphicsBackendOGL::UpdateRenderTargetBuffers(CGPURenderTargetResource& renderTarget)
 {
     GLuint instance = 0;
 
@@ -582,7 +582,7 @@ void triton::XGraphicsBackendOGL::UpdateRenderTargetBuffers(CGPURenderTarget& re
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void triton::XGraphicsBackendOGL::BindRenderTarget(const CGPURenderTarget& renderTarget)
+void triton::XGraphicsBackendOGL::BindRenderTarget(const CGPURenderTargetResource& renderTarget)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)renderTarget.GetInstance());
 }
@@ -592,7 +592,7 @@ void triton::XGraphicsBackendOGL::UnbindRenderTarget()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void triton::XGraphicsBackendOGL::DestroyRenderTarget(const CGPURenderTarget& renderTarget)
+void triton::XGraphicsBackendOGL::DestroyRenderTarget(const CGPURenderTargetResource& renderTarget)
 {
     UnbindRenderTarget();
 
