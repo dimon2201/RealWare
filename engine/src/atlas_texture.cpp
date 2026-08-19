@@ -7,7 +7,7 @@ triton::XAtlasTexture::XAtlasTexture(
 	cContext* context,
 	const std::filesystem::path& filePath,
 	ETextureFormat dataFormat
-)
+) : iObject(context)
 {
 	auto result = _context->GetSubsystem<XTextureAtlas>()->Create(filePath, dataFormat);
 	if (result.has_value())
