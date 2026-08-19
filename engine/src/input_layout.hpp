@@ -5,7 +5,8 @@
 #include "object.hpp"
 #include "handle.hpp"
 #include "vertex_buffer_format.hpp"
-#include "graphics_backend.hpp"
+#include "gpu_input_layout.hpp"
+#include "gpu_buffer.hpp"
 
 namespace triton
 {
@@ -15,15 +16,17 @@ namespace triton
 	{
 		TRITON_OBJECT(XInputLayout)
 
-		CGPUInputLayout _gpuVertexArray = CGPUInputLayout(nullptr, 0, 0);
+		CGPUInputLayoutResource _gpuInputLayout;
 
 	public:
 		explicit XInputLayout(
 			cContext* context,
-			const std::vector<CGPUBuffer>& buffersToBind,
+			const std::vector<XGPUBuffer::THandle>& buffersToBind,
 			EVertexBufferFormat vertexFormat
 		);
 		~XInputLayout() override;
+
+		inline const CGPUInputLayoutResource& GetGPUResource() const { return _gpuInputLayout; }
 
 		struct THandle : public SHandle {};
 

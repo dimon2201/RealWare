@@ -105,18 +105,18 @@ void triton::XGraphics::LoadShaderFiles(
 void triton::XGraphics::CreateInputLayouts()
 {
     XGeometryStorage* gs = _context->GetSubsystem<XGeometryStorage>();
-    const std::vector<CGPUBuffer> staticInputs = {
+    const std::vector<XGPUBuffer::THandle> staticInputs = {
         gs->GetStaticVertexBuffer(),
         gs->GetStaticIndexBuffer()
     };
-    const std::vector<CGPUBuffer> skinnedInputs = {
+    const std::vector<XGPUBuffer::THandle> skinnedInputs = {
         gs->GetSkinnedVertexBuffer(),
         gs->GetSkinnedIndexBuffer()
     };
     XInputLayoutPool* iaPool = _context->GetPool<XInputLayoutPool>();
     _inputLayoutStatic = *iaPool->Create(_context, staticInputs, EVertexBufferFormat::Static_52);
     _inputLayoutSkinned = *iaPool->Create(_context, skinnedInputs, EVertexBufferFormat::Skinned_84);
-    _inputLayoutProcessing = *iaPool->Create(_context, std::vector<CGPUBuffer>(), EVertexBufferFormat::Unknown);
+    _inputLayoutProcessing = *iaPool->Create(_context, std::vector<XGPUBuffer::THandle>(), EVertexBufferFormat::Unknown);
 }
 
 void triton::XGraphics::CreateRenderTargets()

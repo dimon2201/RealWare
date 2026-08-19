@@ -34,7 +34,7 @@ void triton::XRenderPass::Bind()
     
     auto iaResult = _context->GetPool<XInputLayoutPool>()->Get(_inputLayout);
     if (iaResult)
-        gfxBackend->BindInputLayout((*iaResult).get()._gpuVertexArray);
+        gfxBackend->BindInputLayout((*iaResult).get().GetGPUResource());
 
     auto rtResult = _context->GetPool<XRenderTargetPool>()->Get(_renderTarget);
     if (rtResult)

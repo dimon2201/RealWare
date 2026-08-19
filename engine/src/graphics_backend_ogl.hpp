@@ -91,9 +91,9 @@ namespace triton
             types::s32 slot
         ) override final;
 
-        virtual CGPUInputLayout CreateInputLayout() override final;
+        virtual CGPUInputLayoutResource CreateInputLayout() override final;
 
-        virtual void BindInputLayout(const CGPUInputLayout& inputLayout) override final;
+        virtual void BindInputLayout(const CGPUInputLayoutResource& inputLayout) override final;
 
         virtual void BindStaticInputLayout() override final;
 
@@ -101,7 +101,7 @@ namespace triton
 
         virtual void UnbindInputLayout() override final;
 
-        virtual void DestroyInputLayout(const CGPUInputLayout& vertexArray) override final;
+        virtual void DestroyInputLayout(const CGPUInputLayoutResource& vertexArray) override final;
 
         virtual CGPURenderPass CreateRenderPass() override final;
 
@@ -139,27 +139,27 @@ namespace triton
         virtual void DestroyRenderTarget(const CGPURenderTarget& renderTarget) override final;
 
         // Resource
-        virtual CGPUBuffer CreateBuffer(
+        virtual CGPUBufferResource CreateBuffer(
             EGPUBufferType type,
             const types::u8* data,
             types::usize byteSize,
             types::s32 slot
         ) override final;
 
-        virtual void BindBuffer(const CGPUBuffer& buffer) override final;
+        virtual void BindBuffer(const CGPUBufferResource& buffer) override final;
 
-        virtual void BindBufferNotVAO(const CGPUBuffer& buffer) override final;
+        virtual void BindBufferNotVAO(const CGPUBufferResource& buffer) override final;
 
-        virtual void UnbindBuffer(const CGPUBuffer& buffer) override final;
+        virtual void UnbindBuffer(const CGPUBufferResource& buffer) override final;
 
         virtual void WriteBuffer(
-            const CGPUBuffer& buffer,
+            const CGPUBufferResource& buffer,
             types::usize offset,
             types::usize byteSize,
             const types::u8* data
         ) override final;
 
-        virtual void DestroyBuffer(const CGPUBuffer& buffer) override final;
+        virtual void DestroyBuffer(const CGPUBufferResource& buffer) override final;
 
         virtual CGPUTextureResource CreateTexture(
             const cVector3& size,

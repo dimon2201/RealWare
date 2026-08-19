@@ -10,52 +10,45 @@
 #include "synchronization.hpp"
 #include "thread_guard.hpp"
 #include "gpu_buffer_types.hpp"
+#include "gpu_buffer_pool.hpp"
 
 using namespace types;
 
 triton::XGeometryStorage::XGeometryStorage(cContext* context) : iObject(context)
 {
-    cEngine* engine = _context->GetSubsystem<cEngine>();
-    XRenderCommandRecorder* cmdRecorder = engine->GetRenderCommandRecorder();
-    XSynchronization* sync = engine->GetSynchronization();
-    IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
-    const sCapabilities* caps = app->GetCapabilities();
+    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
 
-    cmdRecorder->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)EGPUBufferType::Vertex,
-        (cpuword)nullptr,
+    _staticVertexBuffer = *_context->GetPool<XGPUBufferPool>()->Create(
+        _context,
+        EGPUBufferType::Vertex,
+        nullptr,
         caps->staticVertexBufferSize,
         0
-    ));
-    _staticVertexBuffer = sync->WaitForRenderCommandResult<CGPUBuffer>();
+    );
 
-    cmdRecorder->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)EGPUBufferType::Vertex,
-        (cpuword)nullptr,
+    _skinnedVertexBuffer = *_context->GetPool<XGPUBufferPool>()->Create(
+        _context,
+        EGPUBufferType::Vertex,
+        nullptr,
         caps->skinnedVertexBufferSize,
         0
-    ));
-    _skinnedVertexBuffer = sync->WaitForRenderCommandResult<CGPUBuffer>();
+    );
 
-    cmdRecorder->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)EGPUBufferType::Index,
-        (cpuword)nullptr,
+    _staticIndexBuffer = *_context->GetPool<XGPUBufferPool>()->Create(
+        _context,
+        EGPUBufferType::Index,
+        nullptr,
         caps->staticIndexBufferSize,
         0
-    ));
-    _staticIndexBuffer = sync->WaitForRenderCommandResult<CGPUBuffer>();
+    );
 
-    cmdRecorder->PushCommand(SRenderCommand(
-        ERenderCommand::CREATE_BUFFER,
-        (cpuword)EGPUBufferType::Index,
-        (cpuword)nullptr,
+    _skinnedIndexBuffer = *_context->GetPool<XGPUBufferPool>()->Create(
+        _context,
+        EGPUBufferType::Index,
+        nullptr,
         caps->skinnedIndexBufferSize,
         0
-    ));
-    _skinnedIndexBuffer = sync->WaitForRenderCommandResult<CGPUBuffer>();
+    );
 
     _staticVertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->staticVertexBufferSize);
     _skinnedVertexBufferCPU = _context->Create<XDataBuffer>(_context, caps->skinnedVertexBufferSize);
@@ -130,16 +123,19 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
         _staticVertexBufferCPU->Write(vertices, verticesByteSize, vertexBufferByteSize);
         _staticIndexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
 
+        XGPUBuffer& staticVertexBuffer = *_context->GetPool<XGPUBufferPool>()->Get(_staticVertexBuffer);
+        XGPUBuffer& staticIndexBuffer = *_context->GetPool<XGPUBufferPool>()->Get(_staticIndexBuffer);
+
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::WRITE_BUFFER,
-            (cpuword)&_staticVertexBuffer,
+            (cpuword)&staticVertexBuffer.GetGPUResource(),
             vertexBufferByteSize,
             verticesByteSize,
             (cpuword)vertexData
         ));
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::WRITE_BUFFER,
-            (cpuword)&_staticIndexBuffer,
+            (cpuword)&staticIndexBuffer.GetGPUResource(),
             indexBufferByteSize,
             indicesByteSize,
             (cpuword)indexData
@@ -178,16 +174,19 @@ std::optional<triton::SGeometryView> triton::XGeometryStorage::Create(
         _skinnedVertexBufferCPU->Write(vertices, verticesByteSize, vertexBufferByteSize);
         _skinnedIndexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
 
+        XGPUBuffer& skinnedVertexBuffer = *_context->GetPool<XGPUBufferPool>()->Get(_skinnedVertexBuffer);
+        XGPUBuffer& skinnedndexBuffer = *_context->GetPool<XGPUBufferPool>()->Get(_skinnedIndexBuffer);
+
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::WRITE_BUFFER,
-            (cpuword)&_skinnedVertexBuffer,
+            (cpuword)&skinnedVertexBuffer.GetGPUResource(),
             vertexBufferByteSize,
             verticesByteSize,
             (cpuword)vertexData
         ));
         _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::WRITE_BUFFER,
-            (cpuword)&_skinnedIndexBuffer,
+            (cpuword)&skinnedndexBuffer.GetGPUResource(),
             indexBufferByteSize,
             indicesByteSize,
             (cpuword)indexData

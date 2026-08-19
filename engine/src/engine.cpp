@@ -46,6 +46,7 @@
 #include "render_pass_pool.hpp"
 #include "atlas_texture_pool.hpp"
 #include "shader_pool.hpp"
+#include "gpu_buffer_pool.hpp"
 
 using namespace triton::ecs;
 using namespace triton::ecs::components;
@@ -85,17 +86,19 @@ void triton::cEngine::Initialize()
 	
 	// Register pools
 	_context->RegisterPool(new XCameraPool(_context, K_TRUE));
-	_context->RegisterPool(new XInputLayoutPool(_context, K_TRUE));
 	_context->RegisterPool(new XRenderTargetPool(_context, K_TRUE));
 	_context->RegisterPool(new XRenderPassPool(_context, K_TRUE));
 	_context->RegisterPool(new XAtlasTexturePool(_context, K_TRUE));
 	_context->RegisterPool(new XShaderPool(_context, K_TRUE));
+	_context->RegisterPool(new XInputLayoutPool(_context, K_TRUE));
+	_context->RegisterPool(new XGPUBufferPool(_context, K_TRUE));
 
-	_context->GetPool<XInputLayoutPool>()->Allocate(64);
 	_context->GetPool<XRenderTargetPool>()->Allocate(64);
 	_context->GetPool<XRenderPassPool>()->Allocate(64);
 	_context->GetPool<XAtlasTexturePool>()->Allocate(64);
 	_context->GetPool<XShaderPool>()->Allocate(64);
+	_context->GetPool<XInputLayoutPool>()->Allocate(64);
+	_context->GetPool<XGPUBufferPool>()->Allocate(64);
 
 	// Register subsystems (order matters)
 	_context->RegisterSubsystem(new cInput(_context));

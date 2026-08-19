@@ -333,15 +333,15 @@ void triton::XGraphicsBackendOGL::BindTextureNamed(
     }
 }
 
-triton::CGPUInputLayout triton::XGraphicsBackendOGL::CreateInputLayout()
+triton::CGPUInputLayoutResource triton::XGraphicsBackendOGL::CreateInputLayout()
 {
     GLuint instance = 0;
     glGenVertexArrays(1, (GLuint*)&instance);
 
-    return CGPUInputLayout(_context, instance, 0);
+    return CGPUInputLayoutResource(_context, instance, 0);
 }
 
-void triton::XGraphicsBackendOGL::BindInputLayout(const CGPUInputLayout& inputLayout)
+void triton::XGraphicsBackendOGL::BindInputLayout(const CGPUInputLayoutResource& inputLayout)
 {
     glBindVertexArray((GLuint)inputLayout.GetInstance());
 }
@@ -383,7 +383,7 @@ void triton::XGraphicsBackendOGL::UnbindInputLayout()
     glBindVertexArray(0);
 }
 
-void triton::XGraphicsBackendOGL::DestroyInputLayout(const CGPUInputLayout& vertexArray)
+void triton::XGraphicsBackendOGL::DestroyInputLayout(const CGPUInputLayoutResource& vertexArray)
 {
     GLuint instance = vertexArray.GetInstance();
     glDeleteVertexArrays(1, (GLuint*)&instance);
@@ -600,7 +600,7 @@ void triton::XGraphicsBackendOGL::DestroyRenderTarget(const CGPURenderTarget& re
     glDeleteFramebuffers(1, &instance);
 }
 
-triton::CGPUBuffer triton::XGraphicsBackendOGL::CreateBuffer(
+triton::CGPUBufferResource triton::XGraphicsBackendOGL::CreateBuffer(
     EGPUBufferType type,
     const types::u8* data,
     types::usize byteSize,
@@ -636,10 +636,10 @@ triton::CGPUBuffer triton::XGraphicsBackendOGL::CreateBuffer(
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
-    return CGPUBuffer(_context, instance, 0, type, byteSize, slot);
+    return CGPUBufferResource(_context, instance, 0, type, byteSize, slot);
 }
 
-void triton::XGraphicsBackendOGL::BindBuffer(const CGPUBuffer& buffer)
+void triton::XGraphicsBackendOGL::BindBuffer(const CGPUBufferResource& buffer)
 {
     if (buffer.GetBufferType() == EGPUBufferType::Vertex)
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer.GetInstance());
@@ -651,7 +651,7 @@ void triton::XGraphicsBackendOGL::BindBuffer(const CGPUBuffer& buffer)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer.GetSlot(), buffer.GetInstance());
 }
 
-void triton::XGraphicsBackendOGL::BindBufferNotVAO(const CGPUBuffer& buffer)
+void triton::XGraphicsBackendOGL::BindBufferNotVAO(const CGPUBufferResource& buffer)
 {
     if (buffer.GetBufferType() == EGPUBufferType::Uniform)
         glBindBufferBase(GL_UNIFORM_BUFFER, buffer.GetSlot(), (GLuint)buffer.GetInstance());
@@ -659,7 +659,7 @@ void triton::XGraphicsBackendOGL::BindBufferNotVAO(const CGPUBuffer& buffer)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer.GetSlot(), buffer.GetInstance());
 }
 
-void triton::XGraphicsBackendOGL::UnbindBuffer(const CGPUBuffer& buffer)
+void triton::XGraphicsBackendOGL::UnbindBuffer(const CGPUBufferResource& buffer)
 {
     if (buffer.GetBufferType() == EGPUBufferType::Vertex)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -672,7 +672,7 @@ void triton::XGraphicsBackendOGL::UnbindBuffer(const CGPUBuffer& buffer)
 }
 
 void triton::XGraphicsBackendOGL::WriteBuffer(
-    const CGPUBuffer& buffer,
+    const CGPUBufferResource& buffer,
     types::usize offset,
     types::usize byteSize,
     const types::u8* data
@@ -704,7 +704,7 @@ void triton::XGraphicsBackendOGL::WriteBuffer(
     }
 }
 
-void triton::XGraphicsBackendOGL::DestroyBuffer(const CGPUBuffer& buffer)
+void triton::XGraphicsBackendOGL::DestroyBuffer(const CGPUBufferResource& buffer)
 {
     if (buffer.GetBufferType() == EGPUBufferType::Vertex)
         glBindBuffer(GL_ARRAY_BUFFER, 0);

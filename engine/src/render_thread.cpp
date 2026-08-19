@@ -154,7 +154,7 @@ void triton::cRenderThread::ExecuteCommands(
 			case ERenderCommand::WRITE_BUFFER:
 			{
 				gfxBackend->WriteBuffer(
-					*((CGPUBuffer*)cmd._args._argA),
+					*((CGPUBufferResource*)cmd._args._argA),
 					cmd._args._argB,
 					cmd._args._argC,
 					(const u8*)cmd._args._argD
@@ -163,37 +163,37 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::CREATE_BUFFER:
 			{
-				CGPUBuffer resultBuffer = gfxBackend->CreateBuffer(
+				CGPUBufferResource resultBuffer = gfxBackend->CreateBuffer(
 					(EGPUBufferType)cmd._args._argA,
 					(u8*)cmd._args._argB,
 					cmd._args._argC,
 					cmd._args._argD
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultBuffer, sizeof(CGPUBuffer));
+				memcpy(&_sync->GetResultBuffer().data[0], &resultBuffer, sizeof(CGPUBufferResource));
 				break;
 			}
 			case ERenderCommand::BIND_BUFFER:
 			{
-				CGPUBuffer* buffer = (CGPUBuffer*)cmd._args._argA;
+				CGPUBufferResource* buffer = (CGPUBufferResource*)cmd._args._argA;
 				gfxBackend->BindBuffer(*buffer);
 				break;
 			}
 			case ERenderCommand::DESTROY_BUFFER:
 			{
 				gfxBackend->DestroyBuffer(
-					*((CGPUBuffer*)cmd._args._argA)
+					*((CGPUBufferResource*)cmd._args._argA)
 				);
 				break;
 			}
 			case ERenderCommand::CREATE_INPUT_LAYOUT:
 			{
-				CGPUInputLayout resultIA = gfxBackend->CreateInputLayout();
-				memcpy(&_sync->GetResultBuffer().data[0], &resultIA, sizeof(CGPUInputLayout));
+				CGPUInputLayoutResource resultIA = gfxBackend->CreateInputLayout();
+				memcpy(&_sync->GetResultBuffer().data[0], &resultIA, sizeof(CGPUInputLayoutResource));
 				break;
 			}
 			case ERenderCommand::BIND_INPUT_LAYOUT:
 			{
-				CGPUInputLayout* ia = (CGPUInputLayout*)cmd._args._argA;
+				CGPUInputLayoutResource* ia = (CGPUInputLayoutResource*)cmd._args._argA;
 				gfxBackend->BindInputLayout(*ia);
 				break;
 			}
@@ -204,7 +204,7 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::DESTROY_INPUT_LAYOUT:
 			{
-				CGPUInputLayout* ia = (CGPUInputLayout*)cmd._args._argA;
+				CGPUInputLayoutResource* ia = (CGPUInputLayoutResource*)cmd._args._argA;
 				gfxBackend->DestroyInputLayout(*ia);
 				break;
 			}

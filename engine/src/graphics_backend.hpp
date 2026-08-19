@@ -9,26 +9,14 @@
 #include "shader_define.hpp"
 #include "gpu_texture.hpp"
 #include "gpu_shader.hpp"
+#include "gpu_buffer.hpp"
+#include "gpu_input_layout.hpp"
 #include "rasterizer_state.hpp"
 #include "gpu_buffer_types.hpp"
 
 namespace triton
 {
     class cContext;
-
-    class CGPUInputLayout : public cGPUResource
-    {
-        TRITON_OBJECT(CGPUInputLayout)
-
-    public:
-        explicit CGPUInputLayout() = default;
-        explicit CGPUInputLayout(
-            cContext* context,
-            types::qword instance,
-            types::qword viewInstance
-        ) : cGPUResource(context, instance, viewInstance) {}
-        ~CGPUInputLayout() override = default;
-    };
 
     class CGPURenderPass : public cGPUResource
     {
@@ -93,33 +81,6 @@ namespace triton
         }
 
         inline void SetDepthAttachment(const CGPUTextureResource& depthAttachment) { _depthAttachment = depthAttachment; }
-    };
-
-    class CGPUBuffer : public cGPUResource
-    {
-        TRITON_OBJECT(CGPUBuffer)
-
-        EGPUBufferType _type = EGPUBufferType::Unknown;
-        types::usize _byteSize = 0;
-        types::s32 _slot = -1;
-
-    public:
-        explicit CGPUBuffer() = default;
-        explicit CGPUBuffer(
-            cContext* context,
-            types::qword instance,
-            types::qword viewInstance,
-            EGPUBufferType type,
-            types::usize byteSize,
-            types::s32 slot
-        ) : cGPUResource(context, instance, viewInstance), _type(type), _byteSize(byteSize), _slot(slot) {}
-        ~CGPUBuffer() override = default;
-
-        inline EGPUBufferType GetBufferType() const { return _type; }
-
-        inline types::usize GetByteSize() const { return _byteSize; }
-
-        inline types::s32 GetSlot() const { return _slot; }
     };
 
 	class IGraphicsBackend : public iBackend
@@ -207,9 +168,9 @@ namespace triton
             types::s32 slot
         ) = 0;
 
-        virtual CGPUInputLayout CreateInputLayout() = 0;
+        virtual CGPUInputLayoutResource CreateInputLayout() = 0;
 
-        virtual void BindInputLayout(const CGPUInputLayout& vertexArray) = 0;
+        virtual void BindInputLayout(const CGPUInputLayoutResource& vertexArray) = 0;
 
         virtual void BindStaticInputLayout() = 0;
 
@@ -217,7 +178,7 @@ namespace triton
 
         virtual void UnbindInputLayout() = 0;
 
-        virtual void DestroyInputLayout(const CGPUInputLayout& vertexArray) = 0;
+        virtual void DestroyInputLayout(const CGPUInputLayoutResource& vertexArray) = 0;
 
         virtual CGPURenderPass CreateRenderPass() = 0;
 
@@ -255,27 +216,27 @@ namespace triton
         virtual void DestroyRenderTarget(const CGPURenderTarget& renderTarget) = 0;
 
         // Resource
-        virtual CGPUBuffer CreateBuffer(
+        virtual CGPUBufferResource CreateBuffer(
             EGPUBufferType type,
             const types::u8* data,
             types::usize byteSize,
             types::s32 slot
         ) = 0;
 
-        virtual void BindBuffer(const CGPUBuffer& buffer) = 0;
+        virtual void BindBuffer(const CGPUBufferResource& buffer) = 0;
 
-        virtual void BindBufferNotVAO(const CGPUBuffer& buffer) = 0;
+        virtual void BindBufferNotVAO(const CGPUBufferResource& buffer) = 0;
 
-        virtual void UnbindBuffer(const CGPUBuffer& buffer) = 0;
+        virtual void UnbindBuffer(const CGPUBufferResource& buffer) = 0;
 
         virtual void WriteBuffer(
-            const CGPUBuffer& buffer,
+            const CGPUBufferResource& buffer,
             types::usize offset,
             types::usize byteSize,
             const types::u8* data
         ) = 0;
 
-        virtual void DestroyBuffer(const CGPUBuffer& buffer) = 0;
+        virtual void DestroyBuffer(const CGPUBufferResource& buffer) = 0;
 
         virtual CGPUTextureResource CreateTexture(
             const cVector3& size,

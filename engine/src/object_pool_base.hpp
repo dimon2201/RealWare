@@ -41,7 +41,7 @@ namespace triton
         types::usize				    _lastObjectCursor = 0;
         std::queue<types::usize>	    _freeSlots = {};
         types::boolean				    _bDirtyBit = types::False;
-        CGPUBuffer                      _gpuBuffer;
+        CGPUBufferResource              _gpuBuffer;
         types::s32                      _gpuBufferSlot = -1;
         EGPUBufferType                  _gpuBufferType = EGPUBufferType::Unknown;
 
@@ -84,7 +84,7 @@ namespace triton
             return SBufferView<TObject>(&_objects[0], sizeof(TObject) * _lastObjectCursor);
         }
 
-        inline CGPUBuffer GetGPUBuffer() const
+        inline CGPUBufferResource GetGPUBuffer() const
         {
             return _gpuBuffer;
         }
@@ -172,7 +172,7 @@ namespace triton
         }
 
         auto AllocateGpuBuffer = [](
-            CGPUBuffer& buffer,
+            CGPUBufferResource& buffer,
             cContext* context,
             EGPUBufferType type,
             types::usize byteSize,
@@ -187,7 +187,7 @@ namespace triton
             ));
             buffer = context->GetSubsystem<cEngine>()->
                 GetSynchronization()->
-                WaitForRenderCommandResult<CGPUBuffer>();
+                WaitForRenderCommandResult<CGPUBufferResource>();
         };
 
         if (_gpuBuffer.GetBufferType() != EGPUBufferType::Unknown && _gpuBufferSlot > -1)
