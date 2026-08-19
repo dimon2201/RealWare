@@ -47,3 +47,18 @@ add_custom_command(
     "${CMAKE_SOURCE_DIR}/runtime"
     "$<TARGET_FILE_DIR:TritonExample01>"
 )
+
+set(TRITON_OPENAL_DEBUG_DLL_PATH "${CMAKE_BINARY_DIR}/thirdparty/openal-soft/Debug/OpenAL32d.dll")
+if(EXISTS ${TRITON_OPENAL_DEBUG_DLL_PATH})
+    add_custom_command(
+        TARGET 
+        TritonExample01
+        POST_BUILD
+        COMMAND
+        ${CMAKE_COMMAND}
+        -E
+        copy
+        ${TRITON_OPENAL_DEBUG_DLL_PATH}
+        "$<TARGET_FILE_DIR:TritonExample01>/OpenAL32d.dll"
+    )
+endif()
