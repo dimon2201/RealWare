@@ -5,7 +5,7 @@
 #include "object.hpp"
 #include "handle.hpp"
 #include "vertex_buffer_format.hpp"
-#include "gpu_input_layout.hpp"
+#include "gpu_input_layout_resource.hpp"
 #include "gpu_buffer.hpp"
 
 namespace triton

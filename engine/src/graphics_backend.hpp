@@ -10,7 +10,7 @@
 #include "gpu_texture.hpp"
 #include "gpu_shader.hpp"
 #include "gpu_buffer.hpp"
-#include "gpu_input_layout.hpp"
+#include "gpu_input_layout_resource.hpp"
 #include "rasterizer_state.hpp"
 #include "gpu_buffer_types.hpp"
 
