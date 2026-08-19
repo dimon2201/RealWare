@@ -6,7 +6,7 @@
 #include <vector>
 #include "object.hpp"
 #include "handle.hpp"
-#include "gpu_shader.hpp"
+#include "gpu_shader_resource.hpp"
 #include "shader_define.hpp"
 #include "types.hpp"
 

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "gpu_resource.hpp"
-#include "gpu_texture.hpp"
+#include "gpu_texture_resource.hpp"
 #include "types.hpp"
 
 namespace triton
