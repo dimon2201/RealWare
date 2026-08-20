@@ -109,6 +109,8 @@ namespace triton
             types::usize curMaxCount
         );
 
+        void AllocateObjectBuffer(types::usize byteSize);
+
         void ReallocateObjectBuffer(types::usize prevMaxCount, types::usize curMaxCount);
 
         void DestroyObjectBuffer();
@@ -176,7 +178,7 @@ namespace triton
         if (_objects)
             ReallocateObjectBuffer(prevReservedCount, reserveCount);
         else
-            AllocatePodBuffer(_objects, reserveCount * sizeof(TObject));
+            AllocateObjectBuffer(_objects, reserveCount * sizeof(TObject));
         
         if (_bKeepStagingBuffer == types::K_TRUE)
         {
@@ -426,6 +428,15 @@ namespace triton
             temp[i] = buffer[i];
         CObjectAllocator::Deallocate(buffer);
         buffer = temp;
+    }
+
+    template <typename TObject>
+    void XObjectPool<TObject>::AllocateObjectBuffer(types::usize byteSize)
+    {
+        _objects = (TObject*)CObjectAllocator::Allocate(byteSize, 64);
+        const types::usize count = byteSize / sizeof(TObject);
+        for (types::usize i = 0; i < count; i++)
+            new (&buffer[0]) TObject(_context);
     }
 
     template <typename TObject>
