@@ -20,12 +20,14 @@ namespace triton
         types::s32                  _indexInInstancePack = -1;
         XMaterial::THandle          _material;
         types::s32                  _skinnedBoneBufferOffset = 0;
-        cMatrix4                    _worldMatrix = cMatrix4();
+        cTransform                  _transform;
 
 	public:
 		explicit XRenderInstance(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
 
         ~XRenderInstance() override = default;
+
+        inline void Transform() { _transform.Transform(); }
 
         inline types::s32 GetIndexInInstancePack() const { return _indexInInstancePack; }
 
@@ -33,7 +35,13 @@ namespace triton
 
         inline types::s32 GetSkinnedBoneBufferOffset() const { return _skinnedBoneBufferOffset; }
 
-        inline const cMatrix4& GetWorldMatrix() const { return _worldMatrix; }
+        inline const cVector3& GetWorldPosition() const { return _transform.GetPosition(); }
+
+        inline const cVector3& GetRotation() const { return _transform.GetRotation(); }
+
+        inline const cVector3& GetScale() const { return _transform.GetScale(); }
+
+        inline const cMatrix4& GetWorldMatrix() const { return _transform.GetWorld(); }
 
         inline void SetIndexInInstancePack(types::s32 indexInInstancePack) { _indexInInstancePack = indexInInstancePack; }
 
@@ -45,6 +53,12 @@ namespace triton
             _skinnedBoneBufferOffset = sk.GetSkinnedBoneBufferOffset();
         }
 
+        inline void SetWorldPosition(const cVector3& worldPosition) { _transform.SetPosition(worldPosition); }
+
+        inline void SetRotation(const cVector3& rotation) { _transform.SetRotation(rotation); }
+
+        inline void SetScale(const cVector3& scale) { _transform.SetScale(scale); }
+        
         struct THandle : public SHandle {};
 
         struct TGPULayout
