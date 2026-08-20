@@ -32,12 +32,16 @@ namespace triton
     {
         TRITON_OBJECT(XObjectPoolBase)
 
+    public:
+        static constexpr types::usize   cDefaultReservationSize = 1024;
+
     protected:
         SSlot*                          _slots = nullptr;
         TObject*                        _objects = nullptr;
         typename TObject::TGPULayout*   _staging = nullptr;
         types::boolean				    _bKeepStagingBuffer = types::True;
         types::usize				    _reservedCount = 0;
+        types::usize					_reservationSize = cDefaultReservationSize;
         types::usize				    _lastObjectCursor = 0;
         std::queue<types::usize>	    _freeSlots = {};
         types::boolean				    _bDirtyBit = types::False;
@@ -49,22 +53,23 @@ namespace triton
         explicit XObjectPoolBase(
             cContext* context,
             types::boolean bKeepCpuCopy,
+            types::usize reservationSize = cDefaultReservationSize,
             types::s32 gpuBufferSlot = -1,
             EGPUBufferType gpuBufferType = EGPUBufferType::Unknown
         );
 
         ~XObjectPoolBase() override;
 
-        void Allocate(types::usize maxCount);
+        void Reserve(types::usize reserveCount);
 
         template <typename... Args>
         std::optional<typename TObject::THandle> Create(Args&&... args);
 
-        std::optional<SObjectFrame<typename TObject::THandle>> Create(types::usize count);
+        std::optional<SObjectFrame<typename TObject::THandle>> CreateFrame(types::usize count);
 
         void Destroy(const typename TObject::THandle& handle);
 
-        void Destroy(const SObjectFrame<typename TObject::THandle>& frame);
+        void DestroyFrame(const SObjectFrame<typename TObject::THandle>& frame);
 
         std::optional<std::reference_wrapper<TObject>> Get(const typename TObject::THandle& handle);
 
@@ -106,27 +111,42 @@ namespace triton
 
         void ReallocateObjectBuffer(types::usize prevMaxCount, types::usize curMaxCount);
 
-        void OccupySlot(types::usize objectIndex, types::usize generation);
-        
-        template <typename... Args>
-        void ConstructObject(types::usize objectIndex, Args&&... args);
-
         void DestroyObjectBuffer();
 
+        void AllocateGpuBuffer(
+            CGPUBufferResource& buffer,
+            EGPUBufferType type,
+            types::usize byteSize,
+            types::s32 slot
+        );
+
         void DestroyGpuBuffer();
+
+        void OccupySlot(types::usize objectIndex, types::usize generation);
+
+        template <typename... Args>
+        void ConstructObject(types::usize objectIndex, Args&&... args);
     };
 
     template <typename TObject>
     XObjectPoolBase<TObject>::XObjectPoolBase(
         cContext* context,
         types::boolean bKeepStagingBuffer,
+        types::usize reservationSize,
         types::s32 gpuBufferSlot,
         EGPUBufferType gpuBufferType
     ) :
         iObject(context),
         _bKeepStagingBuffer(bKeepStagingBuffer),
+        _reservationSize(reservationSize),
         _gpuBufferSlot(gpuBufferSlot),
-        _gpuBufferType(gpuBufferType) {}
+        _gpuBufferType(gpuBufferType)
+    {
+        if (_reservationSize == 0)
+            _reservationSize = cDefaultReservationSize;
+
+        Reserve(reservationSize);
+    }
     
     template <typename TObject>
     XObjectPoolBase<TObject>::~XObjectPoolBase()
@@ -141,63 +161,42 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::Allocate(types::usize maxCount)
+    void XObjectPoolBase<TObject>::Reserve(types::usize reserveCount)
     {
-        _lastObjectCursor = 0;
         _bDirtyBit = types::K_TRUE;
 
-        const types::usize prevMaxCount = _reservedCount;
-        _reservedCount = maxCount;
+        const types::usize prevReservedCount = _reservedCount;
+        _reservedCount = reserveCount;
 
         if (_slots)
-            ReallocatePodBuffer<SSlot>(_slots, prevMaxCount, maxCount);
+            ReallocatePodBuffer<SSlot>(_slots, prevReservedCount, reserveCount);
         else
-            AllocatePodBuffer(_slots, maxCount * sizeof(SSlot));
+            AllocatePodBuffer(_slots, reserveCount * sizeof(SSlot));
 
         if (_objects)
-            ReallocateObjectBuffer(prevMaxCount, maxCount);
+            ReallocateObjectBuffer(prevReservedCount, reserveCount);
         else
-            AllocatePodBuffer(_objects, maxCount * sizeof(TObject));
+            AllocatePodBuffer(_objects, reserveCount * sizeof(TObject));
         
         if (_bKeepStagingBuffer == types::K_TRUE)
         {
             if (_staging)
-                ReallocatePodBuffer<typename TObject::TGPULayout>(_staging, prevMaxCount, maxCount);
+                ReallocatePodBuffer<typename TObject::TGPULayout>(_staging, prevReservedCount, reserveCount);
             else
-                AllocatePodBuffer(_staging, maxCount * sizeof(typename TObject::TGPULayout));
+                AllocatePodBuffer(_staging, reserveCount * sizeof(typename TObject::TGPULayout));
         }
         else
         {
             _staging = nullptr;
         }
 
-        auto AllocateGpuBuffer = [](
-            CGPUBufferResource& buffer,
-            cContext* context,
-            EGPUBufferType type,
-            types::usize byteSize,
-            types::s32 slot
-        ) {
-            context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-                ERenderCommand::CREATE_BUFFER,
-                (types::cpuword)type,
-                (types::cpuword)nullptr,
-                byteSize,
-                slot
-            ));
-            buffer = context->GetSubsystem<cEngine>()->
-                GetSynchronization()->
-                WaitForRenderCommandResult<CGPUBufferResource>();
-        };
-
         if (_gpuBuffer.GetBufferType() != EGPUBufferType::Unknown && _gpuBufferSlot > -1)
         {
             DestroyGpuBuffer();
             AllocateGpuBuffer(
                 _gpuBuffer,
-                _context,
                 _gpuBufferType,
-                maxCount * sizeof(typename TObject::TGPULayout),
+                reserveCount * sizeof(typename TObject::TGPULayout),
                 _gpuBufferSlot
             );
             Upload();
@@ -206,9 +205,8 @@ namespace triton
         {
             AllocateGpuBuffer(
                 _gpuBuffer,
-                _context,
                 _gpuBufferType,
-                maxCount * sizeof(typename TObject::TGPULayout),
+                reserveCount * sizeof(typename TObject::TGPULayout),
                 _gpuBufferSlot
             );
         }
@@ -218,39 +216,43 @@ namespace triton
     template <typename... Args>
     std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::Create(Args&&... args)
     {
-        types::usize lastObjectIndex = 0;
+        types::usize objectIndex = 0;
         if (_freeSlots.empty())
         {
-            lastObjectIndex = _lastObjectCursor++;
+            objectIndex = _lastObjectCursor++;
+            if (objectIndex >= _reservedCount)
+                Reserve(_reservedCount + _reservationSize);
         }
         else
         {
-            lastObjectIndex = _freeSlots.front();
+            objectIndex = _freeSlots.front();
             _freeSlots.pop();
         }
 
-        OccupySlot(lastObjectIndex, _slots[lastObjectIndex].generation + 1);
+        OccupySlot(objectIndex, _slots[objectIndex].generation + 1);
 
-        new (&_objects[lastObjectIndex]) TObject(std::forward<Args>(args)...);
+        new (&_objects[objectIndex]) TObject(std::forward<Args>(args)...);
 
         typename TObject::THandle handle;
-        handle.index = lastObjectIndex;
-        handle.generation = _slots[lastObjectIndex].generation;
+        handle.index = objectIndex;
+        handle.generation = _slots[objectIndex].generation;
 
         return handle;
     }
 
     template <typename TObject>
-    std::optional<SObjectFrame<typename TObject::THandle>> XObjectPoolBase<TObject>::Create(types::usize count)
+    std::optional<SObjectFrame<typename TObject::THandle>> XObjectPoolBase<TObject>::CreateFrame(types::usize count)
     {
         for (types::usize i = 0; i < _reservedCount; i++)
         {
-            if (i + count > _reservedCount)
-                return std::nullopt;
+            const types::usize requiredCount = i + count;
 
             types::boolean bFree = types::True;
             for (types::usize j = 0; j < count; j++)
             {
+                if (i + j >= _reservedCount)
+                    break;
+
                 if (_slots[i + j].alive == types::True)
                 {
                     bFree = types::False;
@@ -260,6 +262,13 @@ namespace triton
 
             if (bFree == types::True)
             {
+                if (requiredCount > _reservedCount)
+                {
+                    const types::usize newReservedCount =
+                        ((requiredCount + _reservationSize - 1) / _reservationSize) * _reservationSize;
+                    Reserve(newReservedCount);
+                }
+
                 while (!_freeSlots.empty())
                     _freeSlots.pop();
 
@@ -274,8 +283,8 @@ namespace triton
                     if (_slots[j].alive == types::False)
                         _freeSlots.push(j);
 
-                if (i + count > _lastObjectCursor)
-                    _lastObjectCursor = i + count;
+                if (requiredCount > _lastObjectCursor)
+                    _lastObjectCursor = requiredCount;
 
                 typename TObject::THandle begin;
                 begin.index = i;
@@ -305,7 +314,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::Destroy(const SObjectFrame<typename TObject::THandle>& frame)
+    void XObjectPoolBase<TObject>::DestroyFrame(const SObjectFrame<typename TObject::THandle>& frame)
     {
         for (types::usize i = 0; i < frame.count; i++)
         {
@@ -395,7 +404,9 @@ namespace triton
     void XObjectPoolBase<TObject>::AllocatePodBuffer(TBufferObject*& buffer, types::usize byteSize)
     {
         buffer = (TBufferObject*)CObjectAllocator::Allocate(byteSize, 64);
-        memset(buffer, 0, byteSize);
+        const types::usize count = byteSize / sizeof(TBufferObject);
+        for (types::usize i = 0; i < count; i++)
+            new (&buffer[0]) TBufferObject();
     }
 
     template <typename TObject>
@@ -408,8 +419,11 @@ namespace triton
     {
         const types::usize objectByteSize = sizeof(TBufferObject);
         TBufferObject* temp = (TBufferObject*)CObjectAllocator::Allocate(curMaxCount * objectByteSize, 64);
-        const types::usize copyElementSize = std::min(prevMaxCount, curMaxCount);
-        memcpy(&temp[0], &buffer[0], copyElementSize * objectByteSize);
+        const types::usize copySize = std::min(prevMaxCount, curMaxCount);
+        for (types::usize i = 0; i < curMaxCount; i++)
+            new (&temp[0]) TBufferObject();
+        for (types::usize i = 0; i < copySize; i++)
+            temp[i] = buffer[i];
         CObjectAllocator::Deallocate(buffer);
         buffer = temp;
     }
@@ -424,13 +438,57 @@ namespace triton
         {
             if (_slots[slotIndex].alive == types::K_FALSE)
                 continue;
-            const types::usize objectIndex = slotIndex;
-            if (objectIndex < copyElementSize)
-                CObjectAllocator::Create(&temp[0], objectIndex, std::move(_objects[objectIndex]));
-            _objects[objectIndex].~TObject();
+            CObjectAllocator::Create(&temp[0], slotIndex, std::move(_objects[slotIndex]));
+            _objects[slotIndex].~TObject();
         }
         CObjectAllocator::Deallocate(_objects);
         _objects = temp;
+    }
+
+    template <typename TObject>
+    void XObjectPoolBase<TObject>::DestroyObjectBuffer()
+    {
+        for (types::usize i = 0; i < _lastObjectCursor; i++)
+            if (_slots[i].alive == types::K_TRUE)
+                _objects[i].~TObject();
+        CObjectAllocator::Deallocate(_objects);
+
+        _lastObjectCursor = 0;
+    }
+
+
+    template <typename TObject>
+    void XObjectPoolBase<TObject>::AllocateGpuBuffer(
+        CGPUBufferResource& buffer,
+        EGPUBufferType type,
+        types::usize byteSize,
+        types::s32 slot
+    )
+    {
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+            ERenderCommand::CREATE_BUFFER,
+            (types::cpuword)type,
+            (types::cpuword)nullptr,
+            byteSize,
+            slot
+        ));
+        buffer = _context->GetSubsystem<cEngine>()->
+            GetSynchronization()->
+            WaitForRenderCommandResult<CGPUBufferResource>();
+    }
+
+
+    template <typename TObject>
+    void XObjectPoolBase<TObject>::DestroyGpuBuffer()
+    {
+        if (_gpuBufferSlot < 0 || _gpuBufferType == EGPUBufferType::Unknown)
+            return;
+
+        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+            ERenderCommand::DESTROY_BUFFER,
+            (types::cpuword)&_gpuBuffer
+        ));
+        _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
     }
 
     template <typename TObject>
@@ -445,29 +503,5 @@ namespace triton
     void XObjectPoolBase<TObject>::ConstructObject(types::usize objectIndex, Args&&... args)
     {
         CObjectAllocator::Create<TObject>(&_objects[0], objectIndex, std::forward<Args>(args)...);
-    }
-
-    template <typename TObject>
-    void XObjectPoolBase<TObject>::DestroyObjectBuffer()
-    {
-        for (types::usize i = 0; i < _lastObjectCursor; i++)
-            if (_slots[i].alive == types::K_TRUE)
-                _objects[i].~TObject();
-        CObjectAllocator::Deallocate(_objects);
-
-        _lastObjectCursor = 0;
-    }
-
-    template <typename TObject>
-    void XObjectPoolBase<TObject>::DestroyGpuBuffer()
-    {
-        if (_gpuBufferSlot < 0 || _gpuBufferType == EGPUBufferType::Unknown)
-            return;
-
-        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-            ERenderCommand::DESTROY_BUFFER,
-            (types::cpuword)&_gpuBuffer
-        ));
-        _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
     }
 }
