@@ -54,6 +54,12 @@ namespace triton
 
         void SetMaterial(const XMaterial::THandle& material);
 
+        void SetWorldPosition(const cVector3& worldPosition);
+
+        void SetRotation(const cVector3& rotation);
+
+        void SetScale(const cVector3& scale);
+
         void PlayAnimation(types::usize index);
 
         struct THandle : public SHandle {};
