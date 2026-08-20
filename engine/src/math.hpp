@@ -175,7 +175,7 @@ namespace triton
 	{
 		mutable cVector3 _position = cVector3(0.0f);
 		mutable cVector3 _rotation = cVector3(0.0f);
-		mutable cVector3 _scale = cVector3(0.0f);
+		mutable cVector3 _scale = cVector3(1.0f);
 		mutable cMatrix4 _world = cMatrix4(1.0f);
 
 	public:
