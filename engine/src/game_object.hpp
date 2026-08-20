@@ -26,7 +26,7 @@ namespace triton
         TRITON_OBJECT(XGameObject)
 
         std::string                         _name = {};
-        ERenderInstanceMotionType           _motionType = ERenderInstanceMotionType::Static;
+        ERenderInstanceMotionType           _motionType = ERenderInstanceMotionType::Unknown;
         XRenderInstancePack::THandle        _renderInstancePack;
         XRenderInstance::THandle            _renderInstance;
         XSkeleton::THandle                  _skeleton;

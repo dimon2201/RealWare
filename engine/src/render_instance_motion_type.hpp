@@ -6,6 +6,7 @@ namespace triton
 {
     enum class ERenderInstanceMotionType
     {
+        Unknown,
         Static,
         Dynamic
     };
