@@ -211,9 +211,9 @@ triton::cMatrix4 triton::cMatrix4::operator*(const cMatrix4& mat) const
 
 void triton::cTransform::Transform()
 {
-	const glm::quat quatX = glm::angleAxis(_rotation.GetX(), glm::vec3(1.0f, 0.0f, 0.0f));
-	const glm::quat quatY = glm::angleAxis(_rotation.GetY(), glm::vec3(0.0f, 1.0f, 0.0f));
-	const glm::quat quatZ = glm::angleAxis(_rotation.GetZ(), glm::vec3(0.0f, 0.0f, 1.0f));
+	const glm::quat quatX = glm::angleAxis(cMath::DegreesToRadians(_rotation.GetX()), glm::vec3(1.0f, 0.0f, 0.0f));
+	const glm::quat quatY = glm::angleAxis(cMath::DegreesToRadians(_rotation.GetY()), glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::quat quatZ = glm::angleAxis(cMath::DegreesToRadians(_rotation.GetZ()), glm::vec3(0.0f, 0.0f, 1.0f));
 	_world._mat = glm::translate(glm::mat4(1.0f), _position._vec) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), _scale._vec);
 }
 
