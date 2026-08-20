@@ -62,6 +62,8 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 		if (!result.has_value())
 			return std::nullopt;
 
+		rip.UpdateBuffer();
+
 		_renderInstance = *result;
 
 		return _renderInstance;
@@ -74,6 +76,7 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 			return std::nullopt;
 
 		rip.RemoveInstance(_renderInstance);
+		rip.UpdateBuffer();
 
 		_renderInstance = XRenderInstance::THandle();
 	}
