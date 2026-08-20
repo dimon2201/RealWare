@@ -434,9 +434,6 @@ namespace triton
     void XObjectPool<TObject>::AllocateObjectBuffer(types::usize byteSize)
     {
         _objects = (TObject*)CObjectAllocator::Allocate(byteSize, 64);
-        const types::usize count = byteSize / sizeof(TObject);
-        for (types::usize i = 0; i < count; i++)
-            new (&buffer[0]) TObject(_context);
     }
 
     template <typename TObject>
