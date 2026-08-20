@@ -421,7 +421,7 @@ namespace triton
         buffer = (TBufferObject*)CObjectAllocator::Allocate(byteSize, 64);
         const types::usize count = byteSize / sizeof(TBufferObject);
         for (types::usize i = 0; i < count; i++)
-            new (&buffer[0]) TBufferObject();
+            new (&buffer[i]) TBufferObject();
     }
 
     template <typename TObject>
