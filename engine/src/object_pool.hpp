@@ -464,7 +464,6 @@ namespace triton
         _lastObjectCursor = 0;
     }
 
-
     template <typename TObject>
     void XObjectPool<TObject>::AllocateGpuBuffer(
         CGPUBufferResource& buffer,
