@@ -2,17 +2,17 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 #include "camera.hpp"
 
 namespace triton
 {
-    class XCameraPool : public XObjectPoolBase<XCamera>
+    class XCameraPool : public XObjectPool<XCamera>
     {
         TRITON_OBJECT(XCameraPool)
 
     public:
-        using XObjectPoolBase<XCamera>::XObjectPoolBase;
+        using XObjectPool<XCamera>::XObjectPool;
         ~XCameraPool() override = default;
 
         XCamera::TGPULayout ConvertToGpuLayout(const XCamera& object) override

@@ -8,7 +8,7 @@
 #include "handle.hpp"
 #include "vertex_buffer_format.hpp"
 #include "render_instance_data.hpp"
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 #include "types.hpp"
 
 namespace triton

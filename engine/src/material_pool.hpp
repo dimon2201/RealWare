@@ -3,17 +3,17 @@
 #pragma once
 
 #include "material_data.hpp"
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 #include "atlas_texture_pool.hpp"
 
 namespace triton
 {
-    class XMaterialPool : public XObjectPoolBase<SMaterialData>
+    class XMaterialPool : public XObjectPool<SMaterialData>
     {
         TRITON_OBJECT(XMaterialPool)
 
     public:
-        using XObjectPoolBase<SMaterialData>::XObjectPoolBase;
+        using XObjectPool<SMaterialData>::XObjectPool;
         ~XMaterialPool() override = default;
 
         SMaterialData::TGPULayout ConvertToGpuLayout(const SMaterialData& object) override

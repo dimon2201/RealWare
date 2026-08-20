@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XBatchPool : public XObjectPoolBase<SBatchData>
+    class XBatchPool : public XObjectPool<SBatchData>
     {
         TRITON_OBJECT(XBatchPool)
 
     public:
-        using XObjectPoolBase<SBatchData>::XObjectPoolBase;
+        using XObjectPool<SBatchData>::XObjectPool;
         ~XBatchPool() override = default;
 
         SBatchData::TGPULayout ConvertToGpuLayout(const SBatchData& object) override

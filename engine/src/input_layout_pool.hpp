@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XInputLayoutPool : public XObjectPoolBase<XInputLayout>
+    class XInputLayoutPool : public XObjectPool<XInputLayout>
     {
         TRITON_OBJECT(XInputLayoutPool)
 
     public:
-        using XObjectPoolBase<XInputLayout>::XObjectPoolBase;
+        using XObjectPool<XInputLayout>::XObjectPool;
         ~XInputLayoutPool() override = default;
 
         XInputLayout::TGPULayout ConvertToGpuLayout(const XInputLayout& object) override

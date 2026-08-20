@@ -1,4 +1,4 @@
-// object_pool_base.hpp
+// object_pool.hpp
 
 #pragma once
 
@@ -28,9 +28,9 @@ namespace triton
     };
 
     template <typename TObject>
-    class XObjectPoolBase : public iObject
+    class XObjectPool : public iObject
     {
-        TRITON_OBJECT(XObjectPoolBase)
+        TRITON_OBJECT(XObjectPool)
 
     public:
         static constexpr types::usize   cDefaultReservationSize = 1024;
@@ -50,7 +50,7 @@ namespace triton
         EGPUBufferType                  _gpuBufferType = EGPUBufferType::Unknown;
 
     public:
-        explicit XObjectPoolBase(
+        explicit XObjectPool(
             cContext* context,
             types::boolean bKeepCpuCopy,
             types::usize reservationSize = cDefaultReservationSize,
@@ -58,7 +58,7 @@ namespace triton
             EGPUBufferType gpuBufferType = EGPUBufferType::Unknown
         );
 
-        ~XObjectPoolBase() override;
+        ~XObjectPool() override;
 
         void Reserve(types::usize reserveCount);
 
@@ -129,7 +129,7 @@ namespace triton
     };
 
     template <typename TObject>
-    XObjectPoolBase<TObject>::XObjectPoolBase(
+    XObjectPool<TObject>::XObjectPool(
         cContext* context,
         types::boolean bKeepStagingBuffer,
         types::usize reservationSize,
@@ -149,7 +149,7 @@ namespace triton
     }
     
     template <typename TObject>
-    XObjectPoolBase<TObject>::~XObjectPoolBase()
+    XObjectPool<TObject>::~XObjectPool()
     {
         DestroyGpuBuffer();
         if (_staging)
@@ -161,7 +161,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::Reserve(types::usize reserveCount)
+    void XObjectPool<TObject>::Reserve(types::usize reserveCount)
     {
         _bDirtyBit = types::K_TRUE;
 
@@ -214,7 +214,7 @@ namespace triton
 
     template <typename TObject>
     template <typename... Args>
-    std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::Create(Args&&... args)
+    std::optional<typename TObject::THandle> XObjectPool<TObject>::Create(Args&&... args)
     {
         types::usize objectIndex = 0;
         if (_freeSlots.empty())
@@ -241,7 +241,7 @@ namespace triton
     }
 
     template <typename TObject>
-    std::optional<SObjectFrame<typename TObject::THandle>> XObjectPoolBase<TObject>::CreateFrame(types::usize count)
+    std::optional<SObjectFrame<typename TObject::THandle>> XObjectPool<TObject>::CreateFrame(types::usize count)
     {
         for (types::usize i = 0; i < _reservedCount; i++)
         {
@@ -302,7 +302,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::Destroy(const typename TObject::THandle& handle)
+    void XObjectPool<TObject>::Destroy(const typename TObject::THandle& handle)
     {
         if (handle.generation != _slots[handle.index].generation ||
             _slots[handle.index].alive == types::False)
@@ -314,7 +314,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::DestroyFrame(const SObjectFrame<typename TObject::THandle>& frame)
+    void XObjectPool<TObject>::DestroyFrame(const SObjectFrame<typename TObject::THandle>& frame)
     {
         for (types::usize i = 0; i < frame.count; i++)
         {
@@ -325,7 +325,7 @@ namespace triton
     }
 
     template <typename TObject>
-    std::optional<std::reference_wrapper<TObject>> XObjectPoolBase<TObject>::Get(const typename TObject::THandle& handle)
+    std::optional<std::reference_wrapper<TObject>> XObjectPool<TObject>::Get(const typename TObject::THandle& handle)
     {
         if (handle.generation != _slots[handle.index].generation ||
             _slots[handle.index].alive == types::False)
@@ -335,14 +335,14 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::WriteToStaging(types::usize bufferIndex, const TObject& object)
+    void XObjectPool<TObject>::WriteToStaging(types::usize bufferIndex, const TObject& object)
     {
         _staging[bufferIndex] = ConvertToGpuLayout(object);
         _bDirtyBit = types::K_TRUE;
     }
 
     template <typename TObject>
-    types::usize XObjectPoolBase<TObject>::GetPackedIndex(const typename TObject::THandle& handle)
+    types::usize XObjectPool<TObject>::GetPackedIndex(const typename TObject::THandle& handle)
     {
         if (handle.generation != _slots[handle.index].generation ||
             _slots[handle.index].alive == types::False)
@@ -357,7 +357,7 @@ namespace triton
     }
 
     template <typename TObject>
-    std::optional<typename TObject::THandle> XObjectPoolBase<TObject>::GetHandle(
+    std::optional<typename TObject::THandle> XObjectPool<TObject>::GetHandle(
         const typename TObject::THandle& baseHandle,
         const types::usize offset
     )
@@ -374,7 +374,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::Upload()
+    void XObjectPool<TObject>::Upload()
     {
         if (_gpuBufferSlot == -1 || _gpuBufferType == EGPUBufferType::Unknown)
             return;
@@ -401,7 +401,7 @@ namespace triton
 
     template <typename TObject>
     template <typename TBufferObject>
-    void XObjectPoolBase<TObject>::AllocatePodBuffer(TBufferObject*& buffer, types::usize byteSize)
+    void XObjectPool<TObject>::AllocatePodBuffer(TBufferObject*& buffer, types::usize byteSize)
     {
         buffer = (TBufferObject*)CObjectAllocator::Allocate(byteSize, 64);
         const types::usize count = byteSize / sizeof(TBufferObject);
@@ -411,7 +411,7 @@ namespace triton
 
     template <typename TObject>
     template <typename TBufferObject>
-    void XObjectPoolBase<TObject>::ReallocatePodBuffer(
+    void XObjectPool<TObject>::ReallocatePodBuffer(
         TBufferObject*& buffer,
         types::usize prevMaxCount,
         types::usize curMaxCount
@@ -429,7 +429,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::ReallocateObjectBuffer(types::usize prevMaxCount, types::usize curMaxCount)
+    void XObjectPool<TObject>::ReallocateObjectBuffer(types::usize prevMaxCount, types::usize curMaxCount)
     {
         const types::usize objectByteSize = sizeof(TObject);
         TObject* temp = (TObject*)CObjectAllocator::Allocate(curMaxCount * objectByteSize, 64);
@@ -446,7 +446,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::DestroyObjectBuffer()
+    void XObjectPool<TObject>::DestroyObjectBuffer()
     {
         for (types::usize i = 0; i < _lastObjectCursor; i++)
             if (_slots[i].alive == types::K_TRUE)
@@ -458,7 +458,7 @@ namespace triton
 
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::AllocateGpuBuffer(
+    void XObjectPool<TObject>::AllocateGpuBuffer(
         CGPUBufferResource& buffer,
         EGPUBufferType type,
         types::usize byteSize,
@@ -479,7 +479,7 @@ namespace triton
 
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::DestroyGpuBuffer()
+    void XObjectPool<TObject>::DestroyGpuBuffer()
     {
         if (_gpuBufferSlot < 0 || _gpuBufferType == EGPUBufferType::Unknown)
             return;
@@ -492,7 +492,7 @@ namespace triton
     }
 
     template <typename TObject>
-    void XObjectPoolBase<TObject>::OccupySlot(types::usize objectIndex, types::usize generation)
+    void XObjectPool<TObject>::OccupySlot(types::usize objectIndex, types::usize generation)
     {
         _slots[objectIndex].generation = generation;
         _slots[objectIndex].alive = types::K_TRUE;
@@ -500,7 +500,7 @@ namespace triton
 
     template <typename TObject>
     template <typename... Args>
-    void XObjectPoolBase<TObject>::ConstructObject(types::usize objectIndex, Args&&... args)
+    void XObjectPool<TObject>::ConstructObject(types::usize objectIndex, Args&&... args)
     {
         CObjectAllocator::Create<TObject>(&_objects[0], objectIndex, std::forward<Args>(args)...);
     }

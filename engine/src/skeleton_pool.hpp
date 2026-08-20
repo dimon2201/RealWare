@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XSkeletonPool : public XObjectPoolBase<SSkeletonData>
+    class XSkeletonPool : public XObjectPool<SSkeletonData>
     {
         TRITON_OBJECT(XSkeletonPool)
 
     public:
-        using XObjectPoolBase<SSkeletonData>::XObjectPoolBase;
+        using XObjectPool<SSkeletonData>::XObjectPool;
         ~XSkeletonPool() override = default;
 
         SSkeletonData::TGPULayout ConvertToGpuLayout(const SSkeletonData& object) override

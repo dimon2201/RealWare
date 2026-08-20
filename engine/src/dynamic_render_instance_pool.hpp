@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XDynamicRenderInstancePool : public XObjectPoolBase<SDynamicRenderInstanceData>
+    class XDynamicRenderInstancePool : public XObjectPool<SDynamicRenderInstanceData>
     {
         TRITON_OBJECT(XDynamicRenderInstancePool)
 
     public:
-        using XObjectPoolBase<SDynamicRenderInstanceData>::XObjectPoolBase;
+        using XObjectPool<SDynamicRenderInstanceData>::XObjectPool;
         ~XDynamicRenderInstancePool() override = default;
 
         SDynamicRenderInstanceData::TGPULayout ConvertToGpuLayout(const SDynamicRenderInstanceData& object) override

@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XGPUBufferPool : public XObjectPoolBase<XGPUBuffer>
+    class XGPUBufferPool : public XObjectPool<XGPUBuffer>
     {
         TRITON_OBJECT(XGPUBufferPool)
 
     public:
-        using XObjectPoolBase<XGPUBuffer>::XObjectPoolBase;
+        using XObjectPool<XGPUBuffer>::XObjectPool;
         ~XGPUBufferPool() override = default;
 
         XGPUBuffer::TGPULayout ConvertToGpuLayout(const XGPUBuffer& object) override

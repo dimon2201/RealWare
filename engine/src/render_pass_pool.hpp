@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XRenderPassPool : public XObjectPoolBase<XRenderPass>
+    class XRenderPassPool : public XObjectPool<XRenderPass>
     {
         TRITON_OBJECT(XRenderPassPool)
 
     public:
-        using XObjectPoolBase<XRenderPass>::XObjectPoolBase;
+        using XObjectPool<XRenderPass>::XObjectPool;
         ~XRenderPassPool() override = default;
 
         XRenderPass::TGPULayout ConvertToGpuLayout(const XRenderPass& object) override

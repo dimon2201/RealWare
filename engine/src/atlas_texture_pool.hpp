@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XAtlasTexturePool : public XObjectPoolBase<XAtlasTexture>
+    class XAtlasTexturePool : public XObjectPool<XAtlasTexture>
     {
         TRITON_OBJECT(XAtlasTexturePool)
 
     public:
-        using XObjectPoolBase<XAtlasTexture>::XObjectPoolBase;
+        using XObjectPool<XAtlasTexture>::XObjectPool;
         ~XAtlasTexturePool() override = default;
 
         XAtlasTexture::TGPULayout ConvertToGpuLayout(const XAtlasTexture& object) override

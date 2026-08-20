@@ -2,18 +2,18 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 #include "skeleton_pool.hpp"
 #include "material_pool.hpp"
 
 namespace triton
 {
-    class XStaticRenderInstancePool : public XObjectPoolBase<SStaticRenderInstanceData>
+    class XStaticRenderInstancePool : public XObjectPool<SStaticRenderInstanceData>
     {
         TRITON_OBJECT(XStaticRenderInstancePool)
 
     public:
-        using XObjectPoolBase<SStaticRenderInstanceData>::XObjectPoolBase;
+        using XObjectPool<SStaticRenderInstanceData>::XObjectPool;
         ~XStaticRenderInstancePool() override = default;
 
         SStaticRenderInstanceData::TGPULayout ConvertToGpuLayout(const SStaticRenderInstanceData& object) override

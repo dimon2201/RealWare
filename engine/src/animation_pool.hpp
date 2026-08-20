@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XAnimationPool : public XObjectPoolBase<SAnimationData>
+    class XAnimationPool : public XObjectPool<SAnimationData>
     {
         TRITON_OBJECT(XAnimationPool)
 
     public:
-        using XObjectPoolBase<SAnimationData>::XObjectPoolBase;
+        using XObjectPool<SAnimationData>::XObjectPool;
         ~XAnimationPool() override = default;
 
         SAnimationData::TGPULayout ConvertToGpuLayout(const SAnimationData& object) override

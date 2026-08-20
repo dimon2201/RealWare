@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "object_pool_base.hpp"
+#include "object_pool.hpp"
 
 namespace triton
 {
-    class XSkinnedBonesPool : public XObjectPoolBase<SSkinnedBoneData>
+    class XSkinnedBonesPool : public XObjectPool<SSkinnedBoneData>
     {
         TRITON_OBJECT(XSkinnedBonesPool)
 
     public:
-        using XObjectPoolBase<SSkinnedBoneData>::XObjectPoolBase;
+        using XObjectPool<SSkinnedBoneData>::XObjectPool;
         ~XSkinnedBonesPool() override = default;
 
         SSkinnedBoneData::TGPULayout ConvertToGpuLayout(const SSkinnedBoneData& object) override
