@@ -8,7 +8,9 @@
 #include <mutex>
 #include <tuple>
 #include "object.hpp"
+#include "context.hpp"
 #include "thread_guard.hpp"
+#include "input.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -98,14 +100,11 @@ namespace triton
 		SRenderCommand cmds[1024];
 	};
 
-	class XRenderCommandRecorder : public iObject
+	class XRenderCommandRecorder
 	{
-		TRITON_OBJECT(XRenderCommandRecorder)
-
 		SRenderCommandPack _renderCommandPack;
 
 	public:
-		explicit XRenderCommandRecorder(cContext* context) : iObject(context) {}
 		virtual ~XRenderCommandRecorder() = default;
 
 		inline void Clear()
@@ -174,10 +173,9 @@ namespace triton
 		types::u8* data = nullptr;
 	};
 
-	class XSynchronization : public iObject
+	class XSynchronization
 	{
-		TRITON_OBJECT(XSynchronization)
-
+		cContext* _context = nullptr;
 		XRenderCommandRecorder* _cmdRecorder = nullptr;
 		std::atomic<types::boolean> _bIsRenderThreadInitialized = { types::K_FALSE };
 		SProducedFrameData _producedFrameData[2];
@@ -192,9 +190,10 @@ namespace triton
 	public:
 		explicit XSynchronization(
 			cContext* context,
-			XRenderCommandRecorder* cmdRecorder
+			XRenderCommandRecorder* cmdRecorder,
+			types::usize resultBufferByteSize
 		);
-		~XSynchronization() override;
+		~XSynchronization();
 
 		void WaitForRenderThreadToInit();
 
@@ -208,7 +207,8 @@ namespace triton
 
 		void ProduceFrame(
 			EProducedFrameOp operation,
-			const SRenderCommandPack& renderCommandPack
+			const SRenderCommandPack& renderCommandPack,
+			cInputWindow* window
 		);
 
 		void ReleaseFrame();
@@ -227,7 +227,8 @@ namespace triton
 			WaitForReleasedFrame();
 			ProduceFrame(
 				EProducedFrameOp::ExecuteCommandsOnly,
-				_cmdRecorder->GetRenderCommandPack()
+				_cmdRecorder->GetRenderCommandPack(),
+				&_context->GetSubsystem<CInput>()->GetWindows()->at(0)
 			);
 			_cmdRecorder->Clear();
 			WaitForRenderJobFinish();

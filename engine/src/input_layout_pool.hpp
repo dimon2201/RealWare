@@ -6,13 +6,13 @@
 
 namespace triton
 {
-    class XInputLayoutPool : public XObjectPool<XInputLayout>
+    class CInputLayoutPool : public CObjectPool<XInputLayout>
     {
-        TRITON_OBJECT(XInputLayoutPool)
+        TRITON_CLASS_NAME(CInputLayoutPool)
 
     public:
-        using XObjectPool<XInputLayout>::XObjectPool;
-        ~XInputLayoutPool() override = default;
+        using CObjectPool<XInputLayout>::CObjectPool;
+        ~CInputLayoutPool() override = default;
 
         XInputLayout::TGPULayout ConvertToGpuLayout(const XInputLayout& object) override
         {

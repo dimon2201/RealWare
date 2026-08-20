@@ -1,7 +1,6 @@
 // event_manager.cpp
 
-#pragma once
-
+/*
 #include "application.hpp"
 #include "context.hpp"
 #include "engine.hpp"
@@ -11,14 +10,18 @@
 using namespace types;
 
 triton::cEventHandler::cEventHandler(cContext* context, iObject* receiver, eEventType type, EventFunction&& function)
-    : iObject(context), _receiver(receiver), _type(type), _function(std::make_shared<EventFunction>(std::move(function))) {}
+    :
+    _context(context),
+    _receiver(receiver),
+    _type(type),
+    _function(std::make_shared<EventFunction>(std::move(function))) {}
 
 void triton::cEventHandler::Invoke(iObject* self, XDataBuffer* data)
 {
     _function->operator()(self, _context, data);
 }
 
-triton::cEventDispatcher::cEventDispatcher(cContext* context) : iObject(context)
+triton::cEventDispatcher::cEventDispatcher()
 {
     const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
 
@@ -93,4 +96,4 @@ void triton::cEventDispatcher::Send(eEventType type, XDataBuffer* data)
         cEventHandler* eventHandler = listener->At(i).data;
         eventHandler->Invoke(eventHandler->GetReceiver(), data);
     }
-}
+}*/

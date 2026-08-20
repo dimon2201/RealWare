@@ -5,7 +5,7 @@
 #include "object.hpp"
 #include "handle.hpp"
 #include "rasterizer_state.hpp"
-#include "batch_data.hpp"
+#include "render_instance_pack.hpp"
 #include "render_target.hpp"
 #include "camera.hpp"
 #include "input_layout.hpp"
@@ -45,22 +45,22 @@ namespace triton
 	{
         TRITON_OBJECT(XRenderPass)
 
-        ERenderPassDispatch                 _dispatch = ERenderPassDispatch::None;
-        EVertexBufferFormat                 _batchFormat = EVertexBufferFormat::Unknown;
-        std::vector<SBatchData::THandle>    _batches = {};
-        XInputLayout::THandle               _inputLayout;
+        ERenderPassDispatch                         _dispatch = ERenderPassDispatch::None;
+        EVertexBufferFormat                         _batchFormat = EVertexBufferFormat::Unknown;
+        std::vector<XRenderInstancePack::THandle>   _renderInstancePacks = {};
+        XInputLayout::THandle                       _inputLayout;
         std::vector<CGPUBufferResource>             _inputBuffers = {};
-        std::vector<SRenderPassTexture>     _inputTextures = {};
-        EBuiltinRenderPassType              _shaderRenderPath = EBuiltinRenderPassType::None;
-        SDepthState                         _depthState = SDepthState(0, 0);
-        SBlendState                         _blendState = {};
-        SViewport                           _viewport = {};
-        XRenderTarget::THandle              _renderTarget;
-        XShader::THandle                    _shader;
-        XCamera::THandle                    _camera;
+        std::vector<SRenderPassTexture>             _inputTextures = {};
+        EBuiltinRenderPassType                      _shaderRenderPath = EBuiltinRenderPassType::None;
+        SDepthState                                 _depthState = SDepthState(0, 0);
+        SBlendState                                 _blendState = {};
+        SViewport                                   _viewport = {};
+        XRenderTarget::THandle                      _renderTarget;
+        XShader::THandle                            _shader;
+        XCamera::THandle                            _camera;
 
     public:
-        explicit XRenderPass(cContext* context);
+        explicit XRenderPass(cContext* context, types::s32 poolIndex);
         ~XRenderPass() = default;
 
         void Bind();
@@ -83,7 +83,7 @@ namespace triton
 
         void SetBatchFormat(EVertexBufferFormat batchFormat) { _batchFormat = batchFormat; }
 
-        void SetBatches(const std::vector<SBatchData::THandle>& batches) { _batches = batches; }
+        void SetRenderInstancePacks(const std::vector<XRenderInstancePack::THandle>& packs) { _renderInstancePacks = packs; }
 
         void SetInputLayout(const XInputLayout::THandle& inputLayout) { _inputLayout = inputLayout; }
 

@@ -19,6 +19,7 @@ namespace triton
 	public:
 		explicit XGPUBuffer(
 			cContext* context,
+			types::s32 poolIndex,
 			EGPUBufferType type,
 			const types::u8* data,
 			types::usize byteSize,

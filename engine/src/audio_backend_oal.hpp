@@ -12,8 +12,6 @@ namespace triton
 
     class cAudioBackendOAL final : public iAudioBackend
     {
-        TRITON_OBJECT(cAudioBackendOAL)
-
         ALCdevice* _alDevice = nullptr;
         ALCcontext* _alContext = nullptr;
 

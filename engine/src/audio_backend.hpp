@@ -13,7 +13,7 @@ namespace triton
 
     class iAudioBackend : public iBackend
     {
-        TRITON_OBJECT(iAudioBackend)
+        TRITON_CLASS_NAME(iAudioBackend)
 
     public:
         explicit iAudioBackend(cContext* context);

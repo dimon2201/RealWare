@@ -20,6 +20,7 @@ namespace triton
 	public:
 		explicit XRenderTarget(
 			cContext* context,
+			types::s32 poolIndex,
 			const std::vector<CGPUTextureResource>& colorAttachments,
 			const CGPUTextureResource& depthAttachment
 		);

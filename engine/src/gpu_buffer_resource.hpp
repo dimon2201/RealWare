@@ -10,8 +10,6 @@ namespace triton
 {
     class CGPUBufferResource : public cGPUResource
     {
-        TRITON_OBJECT(CGPUBufferResource)
-
         EGPUBufferType _type = EGPUBufferType::Unknown;
         types::usize _byteSize = 0;
         types::s32 _slot = -1;
@@ -19,13 +17,12 @@ namespace triton
     public:
         explicit CGPUBufferResource() = default;
         explicit CGPUBufferResource(
-            cContext* context,
             types::qword instance,
             types::qword viewInstance,
             EGPUBufferType type,
             types::usize byteSize,
             types::s32 slot
-        ) : cGPUResource(context, instance, viewInstance), _type(type), _byteSize(byteSize), _slot(slot) {}
+        ) : cGPUResource(instance, viewInstance), _type(type), _byteSize(byteSize), _slot(slot) {}
         ~CGPUBufferResource() override = default;
 
         inline EGPUBufferType GetBufferType() const { return _type; }

@@ -4,5 +4,5 @@
 
 using namespace types;
 
-triton::cGPUResource::cGPUResource(cContext* context, qword instance, qword viewInstance)
-	: iObject(context), _instance(instance), _viewInstance(viewInstance) {}
+triton::cGPUResource::cGPUResource(qword instance, qword viewInstance)
+	: _instance(instance), _viewInstance(viewInstance) {}

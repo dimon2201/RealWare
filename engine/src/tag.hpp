@@ -4,7 +4,6 @@
 
 #include <string>
 #include <array>
-#include "stack_value.hpp"
 #include "types.hpp"
 
 namespace triton

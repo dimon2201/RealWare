@@ -11,18 +11,16 @@
 #include <unordered_map>
 #include "model3d_backend.hpp"
 #include "vertex.hpp"
-#include "material_data.hpp"
-#include "skeleton_data.hpp"
+#include "material.hpp"
+#include "skeleton.hpp"
 #include "animation.hpp"
 
 namespace triton
 {
+    class cContext;
     class cVector3;
-    class XMaterialSubsystem;
-    class XSkeletonSubsystem;
-    class XAnimationSubsystem;
-    class XTextureAtlas;
-    struct SBone;
+    class CTextureAtlas;
+    struct SSkeletonBone;
     struct SAnimation;
     struct SSkeletonData;
 
@@ -47,8 +45,6 @@ namespace triton
 
     class XModel3DBackendAssimp final : public IModel3DBackend
     {
-        TRITON_OBJECT(XModel3DBackendAssimp)
-
     public:
         explicit XModel3DBackendAssimp(cContext* context) : IModel3DBackend(context) {}
         ~XModel3DBackendAssimp() override = default;
@@ -80,6 +76,7 @@ namespace triton
         );
         
         std::optional<SModel3DData> ParseImportedScene(
+            cContext* context,
             const Assimp::Importer& importer,
             const aiScene* scene,
             const std::string& modelFolderPath = ""
@@ -118,18 +115,19 @@ namespace triton
         void ParseMaterialData(const aiScene* scene, std::vector<SModel3DMaterialData>& materials);
         
         void CreateMaterials(
+            cContext* context,
             const std::string& modelFolderPath,
-            XTextureAtlas* textureAtlas,
-            XMaterialSubsystem* materialSubsystem,
+            CTextureAtlas* textureAtlas,
             const std::vector<SModel3DMaterialData>& materials,
-            std::vector<SMaterialData::THandle>& modelMaterials,
+            std::vector<XMaterial::THandle>& modelMaterials,
             const aiScene* scene
         );
 
         void SetAbsoluteMaterialIndices(
+            cContext* context,
             SSkinnedVertexGPULayout*& vertexData,
             types::usize vertexCount,
-            const std::vector<SMaterialData::THandle>& modelMaterials
+            const std::vector<XMaterial::THandle>& modelMaterials
         );
         
         void DeallocateTempBitangentBuffer(cVector3* bitangents);
@@ -139,11 +137,16 @@ namespace triton
             SSkinnedVertexGPULayout* vertexData,
             types::usize vertexCount,
             std::unordered_map<std::string, types::usize>& boneIndices,
-            std::vector<SBone>& bones,
+            std::vector<SSkeletonBone>& bones,
             std::vector<std::vector<SBoneWeight>>& vertexWeights
         );
 
-        void FinalizeBoneWeights(SSkinnedVertexGPULayout* vertexData, types::usize vertexCount, std::vector<std::vector<SBoneWeight>>& vertexWeights);
+        void FinalizeBoneWeights(
+            cContext* context,
+            SSkinnedVertexGPULayout* vertexData,
+            types::usize vertexCount,
+            std::vector<std::vector<SBoneWeight>>& vertexWeights
+        );
         
         types::boolean AccumulateRootTransform(
             const aiNode* node,
@@ -157,44 +160,47 @@ namespace triton
             const aiNode* node,
             types::s32 parentBone,
             std::unordered_map<std::string, types::usize>& boneIndices,
-            std::vector<SBone>& bones
+            std::vector<SSkeletonBone>& bones
         );
 
         void CreateSkeleton(
-            SSkeletonData::THandle& modelSkeleton,
-            const std::vector<SBone>& bones,
-            XSkeletonSubsystem* skeletonSubsystem,
+            cContext* context,
+            XSkeleton::THandle& modelSkeleton,
+            const std::vector<SSkeletonBone>& bones,
             const aiMatrix4x4& accumulatedRootTransform
         );
 
         void CreateAnimations(
+            cContext* context,
             const aiScene* scene,
             const std::unordered_map<std::string, types::usize>& boneIndices,
-            XAnimationSubsystem* animationSubsystem,
-            SSkeletonData::THandle modelSkeleton,
-            std::vector<SAnimationData::THandle>& modelAnimations
+            XSkeleton::THandle modelSkeleton,
+            std::vector<XAnimation::THandle>& modelAnimations
         );
         
         std::optional<XAtlasTexture::THandle> CreateTexture(
+            cContext* context,
             ETextureFormat dataFormat,
             const std::string& modelFolderPath,
-            XTextureAtlas* textureAtlas,
+            CTextureAtlas* textureAtlas,
             const std::string& textureFilePath,
             types::boolean bIsEmbedded,
             const aiTexture* texture
         );
         
         std::optional<XAtlasTexture::THandle> CreateTextureFromModelData(
+            cContext* context,
             ETextureFormat dataFormat,
-            XTextureAtlas* textureAtlas,
+            CTextureAtlas* textureAtlas,
             const std::string& textureFilePath,
             const aiTexture* texture
         );
         
         std::optional<XAtlasTexture::THandle> CreateTextureFromFile(
+            cContext* context,
             ETextureFormat dataFormat,
             const std::string& modelFolderPath,
-            XTextureAtlas* textureAtlas,
+            CTextureAtlas* textureAtlas,
             const std::string& textureFilePath
         );
         
@@ -203,9 +209,9 @@ namespace triton
             const types::u32* indexData,
             types::usize vertexCount,
             types::usize indexCount,
-            const std::vector<SMaterialData::THandle>& modelMaterials,
-            SSkeletonData::THandle modelSkeleton,
-            const std::vector<SAnimationData::THandle>& modelAnimations
+            const std::vector<XMaterial::THandle>& modelMaterials,
+            XSkeleton::THandle modelSkeleton,
+            const std::vector<XAnimation::THandle>& modelAnimations
         );
 
         cMatrix4 ConvertMatrix(const aiMatrix4x4& mat);

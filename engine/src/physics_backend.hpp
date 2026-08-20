@@ -92,8 +92,6 @@ namespace triton
 
     class IPhysicsBackend : public iBackend
     {
-        TRITON_OBJECT(IPhysicsBackend)
-
     public:
         explicit IPhysicsBackend(cContext* context) : iBackend(context) {}
         ~IPhysicsBackend() override = default;

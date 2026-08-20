@@ -6,7 +6,6 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "math.hpp"
-#include "object.hpp"
 #include "gpu_texture_resource.hpp"
 #include "types.hpp"
 
@@ -30,10 +29,9 @@ namespace triton
         void* _bitmapData = nullptr;
     };
 
-    class cFontFace : public iObject
+    class cFontFace
     {
-        TRITON_OBJECT(cFontFace)
-
+        cContext* _context = nullptr;
         FT_Face _font = {};
         types::usize _glyphCount = 0;
         types::usize _glyphSize = 0;
@@ -45,7 +43,7 @@ namespace triton
 
     public:
         explicit cFontFace(cContext* context);
-        virtual ~cFontFace() override final;
+        ~cFontFace();
 
         void FillAlphabetAndFindAtlasSize(types::usize& xOffset, types::usize& atlasWidth, types::usize& atlasHeight);
         void FillAtlasWithGlyphs(types::usize& atlasWidth, types::usize& atlasHeight);
@@ -63,16 +61,14 @@ namespace triton
         inline void SetOffsetTab(types::usize offset) { _offsetTab = offset; }
     };
 
-    class cText : public iObject
+    class cText
     {
-        TRITON_OBJECT(cText)
-
         cFontFace* _font = nullptr;
         std::string _text = "";
 
     public:
-        explicit cText(cContext* context);
-        virtual ~cText() override final;
+        explicit cText();
+        ~cText();
 
         inline cFontFace* GetFont() const { return _font; }
         inline const std::string& GetText() const { return _text; }
@@ -80,16 +76,15 @@ namespace triton
         inline void SetText(const std::string& text) { _text = text; }
     };
 
-    class cFont : public iObject
+    class cFont
     {
-        TRITON_OBJECT(cFont)
-
+        cContext* _context = nullptr;
         types::boolean _initialized = types::K_FALSE;
         FT_Library _lib = {};
 
     public:
         explicit cFont(cContext* context);
-        virtual ~cFont() override final;
+        ~cFont();
 
         cFontFace* CreateFontTTF(const std::string& filename, types::usize glyphSize);
         cText* CreateText(cFontFace* font, const std::string& text);

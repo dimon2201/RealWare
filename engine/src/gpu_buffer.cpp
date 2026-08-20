@@ -8,13 +8,14 @@ using namespace types;
 
 triton::XGPUBuffer::XGPUBuffer(
     cContext* context,
+    s32 poolIndex,
     EGPUBufferType type,
     const u8* data,
     usize byteSize,
     s32 slot
-) : iObject(context)
+) : iObject(context, poolIndex)
 {
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)type,
         (cpuword)data,
@@ -22,18 +23,18 @@ triton::XGPUBuffer::XGPUBuffer(
         slot
     ));
     _gpuBuffer =
-        _context->GetSubsystem<cEngine>()->
+        _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
         WaitForRenderCommandResult<CGPUBufferResource>();
 }
 
 triton::XGPUBuffer::~XGPUBuffer()
 {
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)&_gpuBuffer
     ));
-    _context->GetSubsystem<cEngine>()->
+    _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
         WaitForRenderCommandResult<void*>();
 }

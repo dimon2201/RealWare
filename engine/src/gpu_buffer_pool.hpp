@@ -6,13 +6,13 @@
 
 namespace triton
 {
-    class XGPUBufferPool : public XObjectPool<XGPUBuffer>
+    class CGPUBufferPool : public CObjectPool<XGPUBuffer>
     {
-        TRITON_OBJECT(XGPUBufferPool)
+        TRITON_CLASS_NAME(CGPUBufferPool)
 
     public:
-        using XObjectPool<XGPUBuffer>::XObjectPool;
-        ~XGPUBufferPool() override = default;
+        using CObjectPool<XGPUBuffer>::CObjectPool;
+        ~CGPUBufferPool() override = default;
 
         XGPUBuffer::TGPULayout ConvertToGpuLayout(const XGPUBuffer& object) override
         {

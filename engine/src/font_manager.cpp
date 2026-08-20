@@ -10,7 +10,7 @@
 #include "engine.hpp"
 #include "log.hpp"
 #include "graphics_backend.hpp"
-#include "dynamic_array.hpp"
+#include "object_allocator.hpp"
 
 using namespace types;
 
@@ -52,17 +52,15 @@ void MakeAtlasSizePowerOf2(usize& atlasWidth, usize& atlasHeight)
     atlasHeight = NextPowerOfTwo(atlasHeight);
 }
 
-triton::cFontFace::cFontFace(cContext* context) : iObject(context) {}
+triton::cFontFace::cFontFace(cContext* context) : _context(context) {}
 
 triton::cFontFace::~cFontFace()
 {
-    cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
-
     for (const auto& glyph : _alphabet)
-        memoryAllocator->Deallocate(glyph.second._bitmapData);
+        CObjectAllocator::Deallocate(glyph.second._bitmapData);
     _alphabet.clear();
 
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&_atlas
     ));
@@ -72,7 +70,7 @@ triton::cFontFace::~cFontFace()
 
 void triton::cFontFace::FillAlphabetAndFindAtlasSize(usize& xOffset, usize& atlasWidth, usize& atlasHeight)
 {
-    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+    const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
     const FT_Face ftFont = _font;
@@ -128,7 +126,7 @@ void triton::cFontFace::FillAlphabetAndFindAtlasSize(usize& xOffset, usize& atla
 
 void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeight)
 {
-    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+    const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
     usize maxGlyphHeight = 0;
@@ -170,7 +168,7 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         }
     }
 
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         atlasWidth,
         atlasHeight,
@@ -180,16 +178,16 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         (cpuword)atlasPixels,
         0
     ));
-    _atlas = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
+    _atlas = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
 
     memoryAllocator->Deallocate(atlasPixels);
 }
 
-triton::cText::cText(cContext* context) : iObject(context) {}
+triton::cText::cText() {}
 
 triton::cText::~cText() {}
 
-triton::cFont::cFont(cContext* context) : iObject(context)
+triton::cFont::cFont(cContext* context) : _context(context)
 {
     if (FT_Init_FreeType(&_lib))
     {
@@ -253,7 +251,7 @@ triton::cFontFace* triton::cFont::CreateFontTTF(const std::string& filename, usi
 
 triton::cText* triton::cFont::CreateText(cFontFace* font, const std::string& text)
 {
-    cText* textObject = (cText*)_context->Create<cText>(_context);
+    cText* textObject = (cText*)_context->Create<cText>();
 
     textObject->SetFont(font);
     textObject->SetText(text);
@@ -273,7 +271,7 @@ void triton::cFont::DestroyText(cText* text)
 
 f32 triton::cFont::GetTextWidth(cFontFace* font, const std::string& text) const
 {
-    cInput* input = _context->GetSubsystem<cInput>();
+    CInput* input = _context->GetSubsystem<CInput>();
 
     f32 textWidth = 0.0f;
     f32 maxTextWidth = 0.0f;
@@ -315,7 +313,7 @@ f32 triton::cFont::GetTextWidth(cFontFace* font, const std::string& text) const
 
 f32 triton::cFont::GetTextHeight(cFontFace* font, const std::string& text) const
 {
-    cInput* input = _context->GetSubsystem<cInput>();
+    CInput* input = _context->GetSubsystem<CInput>();
 
     f32 textHeight = 0.0f;
     f32 maxHeight = 0.0f;

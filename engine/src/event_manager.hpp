@@ -4,8 +4,6 @@
 
 #include <memory>
 #include <functional>
-#include "object.hpp"
-#include "hash_table.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -13,19 +11,18 @@ namespace triton
     class XDataBuffer;
     class cContext;
     
-    class cEventHandler : public iObject
+    class cEventHandler
     {
-        TRITON_OBJECT(cEventHandler)
-
         friend class mEvent;
 
+        cContext* _context = nullptr;
         eEventType _type = eEventType::NONE;
         iObject* _receiver = nullptr;
         mutable std::shared_ptr<EventFunction> _function;
 
     public:
-        explicit cEventHandler(cContext* context, iObject* receiver, eEventType type, EventFunction&& function);
-        virtual ~cEventHandler() override final = default;
+        explicit cEventHandler(iObject* receiver, eEventType type, EventFunction&& function);
+        ~cEventHandler() = default;
 
         void Invoke(iObject* self, XDataBuffer* data);
         inline iObject* GetReceiver() const { return _receiver; }
@@ -33,15 +30,13 @@ namespace triton
         inline std::shared_ptr<EventFunction> GetFunction() const { return _function; }
     };
 
-    class cEventDispatcher : public iObject
+    class cEventDispatcher
     {
-        TRITON_OBJECT(cEventDispatcher)
-
-        cHashTable<eEventType, XDynamicArray<cEventHandler>>* _listeners = nullptr;
+        TRITON_CLASS_NAME(cEventDispatcher)
 
     public:
-        explicit cEventDispatcher(cContext* context);
-        virtual ~cEventDispatcher() override final;
+        explicit cEventDispatcher();
+        ~cEventDispatcher();
 
         void Subscribe(iObject* receiver, eEventType type, EventFunction&& function);
         void Unsubscribe(iObject* receiver, eEventType type);

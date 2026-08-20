@@ -6,13 +6,13 @@
 
 namespace triton
 {
-    class XShaderPool : public XObjectPool<XShader>
+    class CShaderPool : public CObjectPool<XShader>
     {
-        TRITON_OBJECT(XShaderPool)
+        TRITON_CLASS_NAME(CShaderPool)
 
     public:
-        using XObjectPool<XShader>::XObjectPool;
-        ~XShaderPool() override = default;
+        using CObjectPool<XShader>::CObjectPool;
+        ~CShaderPool() override = default;
 
         XShader::TGPULayout ConvertToGpuLayout(const XShader& object) override
         {

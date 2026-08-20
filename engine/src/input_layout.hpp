@@ -21,6 +21,7 @@ namespace triton
 	public:
 		explicit XInputLayout(
 			cContext* context,
+			types::s32 poolIndex,
 			const std::vector<XGPUBuffer::THandle>& buffersToBind,
 			EVertexBufferFormat vertexFormat
 		);

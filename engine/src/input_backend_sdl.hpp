@@ -13,8 +13,6 @@ namespace triton
     
 	class cInputBackendSDL final : public iInputBackend
 	{
-        TRITON_OBJECT(cInputBackendSDL)
-
         static constexpr types::usize kMaxKeyboardKeyCount = 256;
         static constexpr types::usize kMaxMouseKeyCount = 256;
         types::s32 _keys[kMaxKeyboardKeyCount] = {};

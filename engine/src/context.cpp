@@ -2,6 +2,8 @@
 
 #include "context.hpp"
 #include "memory_pool.hpp"
+#include "subsystem.hpp"
+#include "pool.hpp"
 
 triton::cMemoryAllocator* triton::cContext::CreateMemoryAllocator()
 {
@@ -16,16 +18,16 @@ void triton::cContext::DestroyMemoryAllocator(cMemoryAllocator* allocator)
 	delete _allocator;
 }
 
-void triton::cContext::RegisterSubsystem(iObject* object)
+void triton::cContext::RegisterSubsystem(CSubsystem* subsystem)
 {
 	// TODO: static_assert that T must inherit from iObject
-	ClassType type = object->GetType();
+	ClassType type = subsystem->GetType();
 	const auto it = _subsystems.find(type);
 	if (it == _subsystems.end())
-		_subsystems.insert({ type, object });
+		_subsystems.insert({ type, subsystem });
 }
 
-void triton::cContext::RegisterPool(iObject* pool)
+void triton::cContext::RegisterPool(CPool* pool)
 {
 	ClassType type = pool->GetType();
 	const auto it = _pools.find(type);

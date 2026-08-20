@@ -10,19 +10,19 @@
 
 namespace triton
 {
-    class cEngine;
+    class cContext;
+    class CEngine;
 
-    class IApplication : public iObject
+    class IApplication
     {
-        TRITON_OBJECT(IApplication)
-
     protected:
+        cContext* _context = nullptr;
         const sCapabilities* _caps = nullptr;
-        cEngine* _engine = nullptr;
+        CEngine* _engine = nullptr;
 
     public:
         explicit IApplication(cContext* context, const sCapabilities* caps);
-        virtual ~IApplication() override;
+        virtual ~IApplication();
 
         virtual void Setup() = 0;
         virtual void Update() = 0;
@@ -34,7 +34,7 @@ namespace triton
             return _caps;
         }
 
-        inline cEngine* GetEngine() const
+        inline CEngine* GetEngine() const
         {
             return _engine;
         }

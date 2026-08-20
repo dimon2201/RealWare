@@ -12,15 +12,15 @@
 
 namespace triton
 {
+	class cContext;
 	class IGraphicsBackend;
-	class XGraphics;
+	class CGraphics;
 	class XSynchronization;
 	struct SRenderCommandPack;
 
 	class cRenderThread final : public cThread
 	{
-		TRITON_OBJECT(cRenderThread)
-
+		cContext* _context = nullptr;
 		XSynchronization* _sync = nullptr;
 
 	public:
@@ -36,7 +36,7 @@ namespace triton
 		void ExecuteCommands(
 			const SRenderCommandPack& renderCommandPack,
 			IGraphicsBackend* gfxBackend,
-			XGraphics* gfx
+			CGraphics* gfx
 		);
 
 		void Present(const cInputWindow* window, IGraphicsBackend* gfxBackend);

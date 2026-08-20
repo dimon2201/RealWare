@@ -8,14 +8,13 @@
 #include "context.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
-#include "handle_allocator.hpp"
 #include "filesystem_manager.hpp"
 
 using namespace types;
 
-triton::XTextureAtlas::XTextureAtlas(cContext* context, const cVector3& size) : ISubsys(context)
+triton::CTextureAtlas::CTextureAtlas(cContext* context, const cVector3& size) : CSubsystem(context)
 {
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
         size.GetY(),
@@ -25,8 +24,8 @@ triton::XTextureAtlas::XTextureAtlas(cContext* context, const cVector3& size) : 
         (cpuword)nullptr,
         0
     ));
-    _atlasRGBA8SRGB = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _atlasRGBA8SRGB = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
         size.GetY(),
@@ -36,8 +35,8 @@ triton::XTextureAtlas::XTextureAtlas(cContext* context, const cVector3& size) : 
         (cpuword)nullptr,
         1
     ));
-    _atlasRGBA8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _atlasRGBA8 = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         size.GetX(),
         size.GetY(),
@@ -47,26 +46,26 @@ triton::XTextureAtlas::XTextureAtlas(cContext* context, const cVector3& size) : 
         (cpuword)nullptr,
         2
     ));
-    _atlasR8 = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
+    _atlasR8 = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
 }
 
-triton::XTextureAtlas::~XTextureAtlas()
+triton::CTextureAtlas::~CTextureAtlas()
 {
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&_atlasR8
     ));
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&_atlasRGBA8
     ));
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&_atlasRGBA8SRGB
     ));
 }
 
-std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::Create(
+std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::Create(
     const std::filesystem::path& filePath,
     ETextureFormat dataFormat
 )
@@ -74,7 +73,7 @@ std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::Create(
     return CreateTextureOnAtlasFromFile(dataFormat, filePath.generic_string());
 }
 
-std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::Create(
+std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::Create(
     const u8* byteData,
     usize byteDataByteSize,
     usize width,
@@ -95,7 +94,7 @@ std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::Create(
     );
 }
 
-std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureOnAtlas(
+std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::CreateTextureOnAtlas(
     ETextureFormat format,
     const cVector2& size,
     const types::u8* data
@@ -160,7 +159,7 @@ std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureO
                     const cVector2 pixelOffset = cVector2(x, y);
                     const cVector2 pixelSize = size;
 
-                    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+                    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
                         ERenderCommand::WRITE_TEXTURE,
                         (cpuword)atlas,
                         pixelOffset.GetX(),
@@ -171,11 +170,11 @@ std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureO
                         (cpuword)data
                     ));
                     if (format == ETextureFormat::RGBA8_SRGB_Mips)
-                        _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+                        _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
                             ERenderCommand::GENERATE_TEXTURE_MIPS,
                             (cpuword)atlas
                         ));
-                    _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>(); // TODO: do proper synchronization here
+                    _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>(); // TODO: do proper synchronization here
 
                     STextureAtlasRegion readyTexture;
                     readyTexture.zAtlasLayer = layer;
@@ -195,12 +194,12 @@ std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureO
     return std::nullopt;
 }
 
-std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureOnAtlasFromFile(
+std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::CreateTextureOnAtlasFromFile(
     ETextureFormat dataFormat,
     const std::string& filePath
 )
 {
-    cDataFile* df = _context->GetSubsystem<cFileSystem>()->CreateDataFile(filePath, K_FALSE);
+    cDataFile* df = _context->GetSubsystem<CFileSystem>()->CreateDataFile(filePath, K_FALSE);
     if (!df->Exists())
         return std::nullopt;
     XDataBuffer* db = df->GetBuffer();
@@ -333,7 +332,7 @@ std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureO
     }
 }
 
-std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureOnAtlasFromBytes(
+std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::CreateTextureOnAtlasFromBytes(
     ETextureFormat expectedPixelDataFormat,
     const u8* byteData,
     usize byteDataByteSize,
@@ -446,7 +445,7 @@ std::optional<triton::STextureAtlasRegion> triton::XTextureAtlas::CreateTextureO
     return tex;
 }
 
-types::boolean triton::XTextureAtlas::IsOverlapping(
+types::boolean triton::CTextureAtlas::IsOverlapping(
     const STextureAtlasRegion& candidateTexture,
     const STextureAtlasRegion& atlasTexture
 )
@@ -467,7 +466,7 @@ types::boolean triton::XTextureAtlas::IsOverlapping(
         atlasTexture.offsetNorm.GetY();
 }
 
-types::u8* triton::XTextureAtlas::RecreatePixelBuffer(usize srcChannelCount, usize dstChannelCount, const cVector2& size, const u8* data)
+types::u8* triton::CTextureAtlas::RecreatePixelBuffer(usize srcChannelCount, usize dstChannelCount, const cVector2& size, const u8* data)
 {
     const usize copyChannels = std::min(srcChannelCount, dstChannelCount);
     const usize dstPixelCount = size.GetX() * size.GetY();
@@ -483,7 +482,7 @@ types::u8* triton::XTextureAtlas::RecreatePixelBuffer(usize srcChannelCount, usi
     return buffer;
 }
 
-void triton::XTextureAtlas::DestroyPixelBuffer(const u8* rgbaByteData)
+void triton::CTextureAtlas::DestroyPixelBuffer(const u8* rgbaByteData)
 {
     _context->GetMemoryAllocator()->Deallocate((void*)rgbaByteData);
 }

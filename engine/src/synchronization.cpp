@@ -5,21 +5,22 @@
 #include "render_thread.hpp"
 #include "context.hpp"
 #include "input.hpp"
+#include "object_allocator.hpp"
 
 using namespace types;
 
 triton::XSynchronization::XSynchronization(
 	cContext* context,
-	XRenderCommandRecorder* cmdRecorder
-) : iObject(context), _cmdRecorder(cmdRecorder)
+	XRenderCommandRecorder* cmdRecorder,
+	usize resultBufferByteSize
+) : _context(context), _cmdRecorder(cmdRecorder)
 {
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-	_resultBuffer.data = (u8*)_context->GetMemoryAllocator()->Allocate(caps->futureResultBufferByteSize, 64);
+	_resultBuffer.data = (u8*)CObjectAllocator::Allocate(resultBufferByteSize, 64);
 }
 
 triton::XSynchronization::~XSynchronization()
 {
-	_context->GetMemoryAllocator()->Deallocate(_resultBuffer.data);
+	CObjectAllocator::Deallocate(_resultBuffer.data);
 }
 
 void triton::XSynchronization::WaitForRenderThreadToInit()
@@ -69,12 +70,11 @@ void triton::XSynchronization::InitRenderThread()
 
 void triton::XSynchronization::ProduceFrame(
 	EProducedFrameOp operation,
-	const SRenderCommandPack& renderCommandPack
+	const SRenderCommandPack& renderCommandPack,
+	cInputWindow* window
 )
 {
 	CThreadGuard::AssertMain();
-
-	cInputWindow* window = &_context->GetSubsystem<cInput>()->GetWindows()->at(0);
 
 	const usize writeIndex = _writeIndex;
 	_producedFrameData[writeIndex].Clear();

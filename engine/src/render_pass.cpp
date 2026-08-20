@@ -7,18 +7,21 @@
 #include "render_target_pool.hpp"
 #include "camera_pool.hpp"
 #include "input.hpp"
-#include "batcher.hpp"
+#include "render_instance_pack.hpp"
 #include "shader_pool.hpp"
+#include "render_instance_static_pool.hpp"
+#include "render_instance_dynamic_pool.hpp"
+#include "render_instance_pack_pool.hpp"
 
 using namespace types;
 
-triton::XRenderPass::XRenderPass(cContext* context) : iObject(context) {}
+triton::XRenderPass::XRenderPass(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
 
 void triton::XRenderPass::Bind()
 {
     CThreadGuard::AssertRender();
 
-    XShader& shader = *_context->GetPool<XShaderPool>()->Get(_shader);
+    XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
     IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
     gfxBackend->BindShader(shader.GetGPUResource());
@@ -26,17 +29,18 @@ void triton::XRenderPass::Bind()
     gfxBackend->BindDepthState(_depthState);
     gfxBackend->BindBlendState(_blendState);
 
-    gfxBackend->BindBuffer(_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->GetGPUBuffer());
-    gfxBackend->BindBuffer(_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer());
+    gfxBackend->BindBuffer(_context->GetPool<CRenderInstanceStaticPool>()->GetGPUBuffer());
+    gfxBackend->BindBuffer(_context->GetPool<CRenderInstanceDynamicPool>()->GetGPUBuffer());
+    gfxBackend->BindBuffer(_context->GetPool<CMaterialPool>()->GetGPUBuffer());
 
     for (auto& tex : _inputTextures)
         gfxBackend->BindTextureNamed(shader.GetGPUResource(), tex.texture, tex.name, -1);
     
-    auto iaResult = _context->GetPool<XInputLayoutPool>()->Get(_inputLayout);
+    auto iaResult = _context->GetPool<CInputLayoutPool>()->Get(_inputLayout);
     if (iaResult)
         gfxBackend->BindInputLayout((*iaResult).get().GetGPUResource());
 
-    auto rtResult = _context->GetPool<XRenderTargetPool>()->Get(_renderTarget);
+    auto rtResult = _context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
     if (rtResult)
         gfxBackend->BindRenderTarget((*rtResult).get().GetGPUResource());
 }
@@ -51,11 +55,11 @@ void triton::XRenderPass::Unbind()
     //for (auto& tex : _inputTextures)
     //    gfxResourceBackend->UnbindTexture(tex._texture);
     
-    auto iaResult = _context->GetPool<XInputLayoutPool>()->Get(_inputLayout);
+    auto iaResult = _context->GetPool<CInputLayoutPool>()->Get(_inputLayout);
     if (iaResult)
         gfxBackend->UnbindInputLayout();
 
-    auto rtResult = _context->GetPool<XRenderTargetPool>()->Get(_renderTarget);
+    auto rtResult = _context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
     if (rtResult)
         gfxBackend->UnbindRenderTarget();
 }
@@ -70,12 +74,12 @@ void triton::XRenderPass::Render()
     {
         case ERenderPassDispatch::Geometry:
         {
-            XCamera& camera = *_context->GetPool<XCameraPool>()->Get(_camera);
-            XShader& shader = *_context->GetPool<XShaderPool>()->Get(_shader);
+            XCamera& camera = *_context->GetPool<CCameraPool>()->Get(_camera);
+            XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
             // TODO: remove this line
-            cInputWindow& ibw = _context->GetSubsystem<cInput>()->GetWindows()->at(0);
-            cVector2 cursorPos = _context->GetSubsystem<cInput>()->GetCursorPosition(&ibw);
+            cInputWindow& ibw = _context->GetSubsystem<CInput>()->GetWindows()->at(0);
+            cVector2 cursorPos = _context->GetSubsystem<CInput>()->GetCursorPosition(&ibw);
             camera.Update(cursorPos, 800, 600, 65.0f, 0.01f, 10000.0f, 0.1f);
             cVector4 cameraWorldPos = cVector4(camera._worldPosition.GetX(), camera._worldPosition.GetY(), camera._worldPosition.GetZ(), 0.0f);
             ///////////////////////////////////////////////////////////////////////////
@@ -91,20 +95,20 @@ void triton::XRenderPass::Render()
             gfxBackend->SetShaderUniform(shader.GetGPUResource(), "UniformTime", (u32)time);
             gfxBackend->SetShaderUniform(shader.GetGPUResource(), "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
             
-            for (usize i = 0; i < _batches.size(); i++)
+            for (usize i = 0; i < _renderInstancePacks.size(); i++)
             {
                 // Static
-                SBatchData::THandle batchHandle = _batches.at(i);
-                const SBatchData& batch = _context->GetSubsystem<XBatchSubsystem>()->Get(batchHandle);
-                const SGeometryView geometry = batch.sharedGeometry;
+                XRenderInstancePack::THandle ripHandle = _renderInstancePacks.at(i);
+                XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(ripHandle);
+                const SGeometryView geometry = rip.GetSharedGeometry();
 
-                gfxBackend->SetShaderUniform(shader.GetGPUResource(), "InstanceBatchType", (u32)batch.motionType);
-                gfxBackend->SetShaderUniform(shader.GetGPUResource(), "InstanceOffset", (u32)batch.bufferOffset);
+                gfxBackend->SetShaderUniform(shader.GetGPUResource(), "InstanceBatchType", (u32)rip.GetMotionType());
+                gfxBackend->SetShaderUniform(shader.GetGPUResource(), "InstanceOffset", (u32)rip.GetBufferOffset());
                 gfxBackend->Draw(
                     geometry._indexCount,
                     geometry._vertexElementOffset,
                     geometry._indexElementOffset,
-                    batch.instanceCount
+                    rip.GetInstanceCount()
                 );
 
                 // Dynamic
@@ -144,9 +148,9 @@ void triton::XRenderPass::ResizeViewport(const cVector2& size)
 
 void triton::XRenderPass::ResizeColorAttachments(const cVector2& size)
 {
-    XRenderTarget& rt = *_context->GetPool<XRenderTargetPool>()->Get(_renderTarget);
+    XRenderTarget& rt = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
 
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::RESIZE_RENDER_TARGET_COLORS,
         (cpuword)&rt.GetGPUResource(),
         size.GetX(),
@@ -156,9 +160,9 @@ void triton::XRenderPass::ResizeColorAttachments(const cVector2& size)
 
 void triton::XRenderPass::ResizeDepthAttachment(const cVector2& size)
 {
-    XRenderTarget& rt = *_context->GetPool<XRenderTargetPool>()->Get(_renderTarget);
+    XRenderTarget& rt = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
 
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::RESIZE_RENDER_TARGET_DEPTH,
         (cpuword)&rt.GetGPUResource(),
         size.GetX(),

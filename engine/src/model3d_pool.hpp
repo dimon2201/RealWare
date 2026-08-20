@@ -3,20 +3,21 @@
 #pragma once
 
 #include "object_pool.hpp"
+#include "model3d.hpp"
 
 namespace triton
 {
-    class XModel3DPool : public XObjectPool<SModel3DData>
+    class CModel3DPool : public CObjectPool<XModel3D>
     {
-        TRITON_OBJECT(XModel3DPool)
+        TRITON_CLASS_NAME(CModel3DPool)
 
     public:
-        using XObjectPool<SModel3DData>::XObjectPool;
-        ~XModel3DPool() override = default;
+        using CObjectPool<XModel3D>::CObjectPool;
+        ~CModel3DPool() override = default;
 
-        SModel3DData::TGPULayout ConvertToGpuLayout(const SModel3DData& object) override
+        XModel3D::TGPULayout ConvertToGpuLayout(const XModel3D& object) override
         {
-            SModel3DData::TGPULayout gpul;
+            XModel3D::TGPULayout gpul;
 
             return gpul;
         }

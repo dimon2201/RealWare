@@ -26,8 +26,6 @@ namespace triton
 
     class XPhysicsBackendJolt final : public IPhysicsBackend
     {
-        TRITON_OBJECT(XPhysicsBackendJolt)
-
     public:
         explicit XPhysicsBackendJolt(cContext* context);
         ~XPhysicsBackendJolt() override;

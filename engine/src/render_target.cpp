@@ -10,20 +10,21 @@ using namespace types;
 
 triton::XRenderTarget::XRenderTarget(
 	cContext* context,
+    s32 poolIndex,
     const std::vector<CGPUTextureResource>& colorAttachments,
     const CGPUTextureResource& depthAttachment
-) : iObject(context)
+) : iObject(context, poolIndex)
 {
     CThreadGuard::AssertMain();
 
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
         1,
         (cpuword)colorAttachments.data(),
         (cpuword)&depthAttachment
     ));
     _gpuRenderTarget =
-        _context->GetSubsystem<cEngine>()->
+        _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
         WaitForRenderCommandResult<CGPURenderTargetResource>();
 }
@@ -32,11 +33,11 @@ triton::XRenderTarget::~XRenderTarget()
 {
     CThreadGuard::AssertMain();
 
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_RENDER_TARGET,
         (cpuword)&_gpuRenderTarget
     ));
-    _context->GetSubsystem<cEngine>()->
+    _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
         WaitForRenderCommandResult<void*>();
 }

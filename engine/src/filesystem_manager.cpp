@@ -10,17 +10,14 @@
 #include "memory_pool.hpp"
 #include "data_buffer.hpp"
 #include "engine.hpp"
+#include "object_allocator.hpp"
 
 using namespace types;
 
-triton::cDataFile::cDataFile(cContext* context, const std::string& path, types::boolean isText)
-    : iObject(context)
+triton::cDataFile::cDataFile(cContext* context, const std::string& path, types::boolean isText) : _context(context)
 {
-    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
-    auto memoryAllocator = _context->GetMemoryAllocator();
-
     if (_data)
-        memoryAllocator->Deallocate(_data);
+        CObjectAllocator::Deallocate(_data);
 
     std::ifstream inputFile(path, std::ios::binary);
     if (!inputFile.is_open())
@@ -40,7 +37,7 @@ triton::cDataFile::cDataFile(cContext* context, const std::string& path, types::
     inputFile.seekg(0, std::ios::beg);
     const usize dataByteSize = byteSize + (isText == K_TRUE ? 1 : 0);
 
-    _data = _context->Create<XDataBuffer>(_context, dataByteSize);
+    _data = _context->Create<XDataBuffer>(dataByteSize);
     inputFile.read((char*)_data->GetData(), _data->GetByteSize());
 
     inputFile.close();
@@ -52,16 +49,16 @@ triton::cDataFile::~cDataFile()
         _context->Destroy<XDataBuffer>(_data);
 }
 
-triton::cFileSystem::cFileSystem(cContext* context) : iObject(context) {}
+triton::CFileSystem::CFileSystem(cContext* context) : CSubsystem(context) {}
 
-triton::cDataFile* triton::cFileSystem::CreateDataFile(const std::string& path, types::boolean isText)
+triton::cDataFile* triton::CFileSystem::CreateDataFile(const std::string& path, types::boolean isText)
 {
     cDataFile* file = _context->Create<cDataFile>(_context, path, isText);
 
     return file;
 }
 
-std::string triton::cFileSystem::TextFileToString(const std::string& path)
+std::string triton::CFileSystem::TextFileToString(const std::string& path)
 {
     cDataFile* file = _context->Create<cDataFile>(_context, path, K_TRUE);
     std::string str = "";
@@ -72,7 +69,7 @@ std::string triton::cFileSystem::TextFileToString(const std::string& path)
     return str;
 }
 
-usize triton::cFileSystem::BinFileToArray(const std::string& path, types::u8* array, usize offset, usize maxByteSize)
+usize triton::CFileSystem::BinFileToArray(const std::string& path, types::u8* array, usize offset, usize maxByteSize)
 {
     cDataFile* file = _context->Create<cDataFile>(_context, path, K_FALSE);
     if (offset + file->GetBuffer()->GetByteSize() > maxByteSize)
@@ -88,7 +85,7 @@ usize triton::cFileSystem::BinFileToArray(const std::string& path, types::u8* ar
     return fileByteSize;
 }
 
-usize triton::cFileSystem::TellFileByteSize(const std::string& path)
+usize triton::CFileSystem::TellFileByteSize(const std::string& path)
 {
     std::ifstream inputFile(path, std::ios::binary);
     inputFile.seekg(0, std::ios::end);
@@ -99,7 +96,7 @@ usize triton::cFileSystem::TellFileByteSize(const std::string& path)
     return byteSize;
 }
 
-void triton::cFileSystem::DestroyDataFile(cDataFile* file)
+void triton::CFileSystem::DestroyDataFile(cDataFile* file)
 {
     if (file == nullptr)
         return;

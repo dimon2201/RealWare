@@ -7,16 +7,18 @@
 #include "geometry_view.hpp"
 #include "vertex_buffer_format.hpp"
 #include "gpu_buffer.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
 {
     class cEngine;
     class XDataBuffer;
+    class cContext;
 
-    class XGeometryStorage : public iObject
+    class CGeometryStorage final : public CSubsystem
     {
-        TRITON_OBJECT(XGeometryStorage)
+        TRITON_CLASS_NAME(CGeometryStorage)
 
         XGPUBuffer::THandle _staticVertexBuffer;
         XGPUBuffer::THandle _skinnedVertexBuffer;
@@ -32,8 +34,8 @@ namespace triton
         types::usize _skinnedIndexBufferPointer = 0;
 
     public:
-        explicit XGeometryStorage(cContext* context);
-        virtual ~XGeometryStorage() override;
+        explicit CGeometryStorage(cContext* context);
+        ~CGeometryStorage();
 
         std::optional<triton::SGeometryView> Create(
             EVertexBufferFormat format,
@@ -43,22 +45,22 @@ namespace triton
             types::usize inputIndexCount
         );
 
-        inline XGPUBuffer::THandle GetStaticVertexBuffer() const
+        inline const XGPUBuffer::THandle& GetStaticVertexBuffer() const
         {
             return _staticVertexBuffer;
         }
 
-        inline XGPUBuffer::THandle GetSkinnedVertexBuffer() const
+        inline const XGPUBuffer::THandle& GetSkinnedVertexBuffer() const
         {
             return _skinnedVertexBuffer;
         }
 
-        inline XGPUBuffer::THandle GetStaticIndexBuffer() const
+        inline const XGPUBuffer::THandle& GetStaticIndexBuffer() const
         {
             return _staticIndexBuffer;
         }
 
-        inline XGPUBuffer::THandle GetSkinnedIndexBuffer() const
+        inline const XGPUBuffer::THandle& GetSkinnedIndexBuffer() const
         {
             return _skinnedIndexBuffer;
         }

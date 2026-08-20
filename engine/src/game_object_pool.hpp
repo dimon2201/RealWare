@@ -3,20 +3,21 @@
 #pragma once
 
 #include "object_pool.hpp"
+#include "game_object.hpp"
 
 namespace triton
 {
-    class XGameObjectPool : public XObjectPool<SGameObjectData>
+    class CGameObjectPool : public CObjectPool<XGameObject>
     {
-        TRITON_OBJECT(XGameObjectPool)
+        TRITON_CLASS_NAME(CGameObjectPool)
 
     public:
-        using XObjectPool<SGameObjectData>::XObjectPool;
-        ~XGameObjectPool() override = default;
+        using CObjectPool<XGameObject>::CObjectPool;
+        ~CGameObjectPool() override = default;
 
-        SGameObjectData::TGPULayout ConvertToGpuLayout(const SGameObjectData& object) override
+        XGameObject::TGPULayout ConvertToGpuLayout(const XGameObject& object) override
         {
-            SGameObjectData::TGPULayout gpul;
+            XGameObject::TGPULayout gpul;
 
             return gpul;
         }

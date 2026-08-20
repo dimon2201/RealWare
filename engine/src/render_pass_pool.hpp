@@ -6,13 +6,13 @@
 
 namespace triton
 {
-    class XRenderPassPool : public XObjectPool<XRenderPass>
+    class CRenderPassPool : public CObjectPool<XRenderPass>
     {
-        TRITON_OBJECT(XRenderPassPool)
+        TRITON_CLASS_NAME(CRenderPassPool)
 
     public:
-        using XObjectPool<XRenderPass>::XObjectPool;
-        ~XRenderPassPool() override = default;
+        using CObjectPool<XRenderPass>::CObjectPool;
+        ~CRenderPassPool() override = default;
 
         XRenderPass::TGPULayout ConvertToGpuLayout(const XRenderPass& object) override
         {

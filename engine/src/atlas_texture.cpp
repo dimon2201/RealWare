@@ -2,14 +2,16 @@
 
 #include "atlas_texture.hpp"
 #include "texture_atlas.hpp"
+#include "context.hpp"
 
 triton::XAtlasTexture::XAtlasTexture(
 	cContext* context,
+	types::s32 poolIndex,
 	const std::filesystem::path& filePath,
 	ETextureFormat dataFormat
-) : iObject(context)
+) : iObject(context, poolIndex)
 {
-	auto result = _context->GetSubsystem<XTextureAtlas>()->Create(filePath, dataFormat);
+	auto result = _context->GetSubsystem<CTextureAtlas>()->Create(filePath, dataFormat);
 	if (result.has_value())
 		_region = *result;
 	else
@@ -18,6 +20,7 @@ triton::XAtlasTexture::XAtlasTexture(
 
 triton::XAtlasTexture::XAtlasTexture(
 	cContext* context,
+	types::s32 poolIndex,
 	const types::u8* byteData,
 	types::usize byteDataByteSize,
 	types::usize width,
@@ -25,9 +28,9 @@ triton::XAtlasTexture::XAtlasTexture(
 	types::usize channelCount,
 	ETextureFileFormat fileFormat,
 	ETextureFormat byteDataFormat
-)
+) : iObject(context, poolIndex)
 {
-	auto result = _context->GetSubsystem<XTextureAtlas>()->Create(
+	auto result = _context->GetSubsystem<CTextureAtlas>()->Create(
 		byteData,
 		byteDataByteSize,
 		width,

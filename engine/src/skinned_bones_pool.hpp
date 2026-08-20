@@ -6,18 +6,18 @@
 
 namespace triton
 {
-    class XSkinnedBonesPool : public XObjectPool<SSkinnedBoneData>
+    class CSkinnedBonesPool : public CObjectPool<CSkinnedBone>
     {
-        TRITON_OBJECT(XSkinnedBonesPool)
+        TRITON_CLASS_NAME(CSkinnedBonesPool)
 
     public:
-        using XObjectPool<SSkinnedBoneData>::XObjectPool;
-        ~XSkinnedBonesPool() override = default;
+        using CObjectPool<CSkinnedBone>::CObjectPool;
+        ~CSkinnedBonesPool() override = default;
 
-        SSkinnedBoneData::TGPULayout ConvertToGpuLayout(const SSkinnedBoneData& object) override
+        CSkinnedBone::TGPULayout ConvertToGpuLayout(const CSkinnedBone& object) override
         {
-            SSkinnedBoneData::TGPULayout gpul;
-            gpul.modelMatrix = object.modelMatrix;
+            CSkinnedBone::TGPULayout gpul;
+            gpul.modelMatrix = object.GetModelMatrix();
 
             return gpul;
         }

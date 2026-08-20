@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include "category.hpp"
-#include "ecs.hpp"
-#include "system.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -13,10 +11,8 @@ namespace triton
 	class iAudioBackend;
 	class XDataBuffer;
 
-	class cAudio : public ecs::cSystem
+	class cAudio : public CSubsystem
 	{
-		TRITON_OBJECT(cAudio)
-
 	public:
 		enum class eContainerFormat
 		{
@@ -34,7 +30,7 @@ namespace triton
 		};
 
 		explicit cAudio(cContext* context);
-		virtual ~cAudio() override final = default;
+		cAudio() = default;
 		virtual void OnFrameUpdate();
 		void CreateSound(eContainerFormat format, const ::std::string& filePath);
 	};

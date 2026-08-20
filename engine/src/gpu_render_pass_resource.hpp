@@ -7,19 +7,14 @@
 
 namespace triton
 {
-    class cContext;
-
     class CGPURenderPassResource : public cGPUResource
     {
-        TRITON_OBJECT(CGPURenderPassResource)
-
     public:
         explicit CGPURenderPassResource() = default;
         explicit CGPURenderPassResource(
-            cContext* context,
             types::qword instance,
             types::qword viewInstance
-        ) : cGPUResource(context, instance, viewInstance) {}
+        ) : cGPUResource(instance, viewInstance) {}
         ~CGPURenderPassResource() override = default;
     };
 }

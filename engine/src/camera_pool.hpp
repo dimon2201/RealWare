@@ -7,13 +7,13 @@
 
 namespace triton
 {
-    class XCameraPool : public XObjectPool<XCamera>
+    class CCameraPool : public CObjectPool<XCamera>
     {
-        TRITON_OBJECT(XCameraPool)
+        TRITON_CLASS_NAME(CCameraPool)
 
     public:
-        using XObjectPool<XCamera>::XObjectPool;
-        ~XCameraPool() override = default;
+        using CObjectPool<XCamera>::CObjectPool;
+        ~CCameraPool() override = default;
 
         XCamera::TGPULayout ConvertToGpuLayout(const XCamera& object) override
         {

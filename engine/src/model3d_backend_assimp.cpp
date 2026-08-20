@@ -2,17 +2,17 @@
 
 #include <filesystem>
 #include "model3d_backend_assimp.hpp"
-#include "model3d_data.hpp"
+#include "model3d.hpp"
 #include "context.hpp"
 #include "math.hpp"
-#include "material_subsystem.hpp"
-#include "skeleton_subsystem.hpp"
-#include "animation_subsystem.hpp"
-#include "bone.hpp"
+#include "skeleton_bone.hpp"
 #include "animation.hpp"
 #include "material_pool.hpp"
 #include "texture_atlas.hpp"
 #include "atlas_texture_pool.hpp"
+#include "object_allocator.hpp"
+#include "skeleton_pool.hpp"
+#include "animation_pool.hpp"
 
 using namespace types;
 
@@ -28,6 +28,7 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(c
     );
 
     return ParseImportedScene(
+        _context,
         importer,
         scene,
         modelFolderPath
@@ -50,12 +51,14 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(
     );
 
     return ParseImportedScene(
+        _context,
         importer,
         scene
     );
 }
 
 std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImportedScene(
+    cContext* context,
     const Assimp::Importer& importer,
     const aiScene* scene,
     const std::string& modelFolderPath
@@ -71,13 +74,13 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
     u32* indexData = nullptr;
     cVector3* bitangents = nullptr;
     std::vector<SModel3DMaterialData> materials = {};
-    std::vector<SMaterialData::THandle> modelMaterials = {};
+    std::vector<XMaterial::THandle> modelMaterials = {};
     std::unordered_map<std::string, types::usize> boneIndices = {};
-    std::vector<SBone> bones = {};
+    std::vector<SSkeletonBone> bones = {};
     std::vector<std::vector<SBoneWeight>> vertexWeights;
-    SSkeletonData::THandle modelSkeleton = {};
+    XSkeleton::THandle modelSkeleton = {};
     usize boneOffset = 0;
-    std::vector<SAnimationData::THandle> modelAnimations = {};
+    std::vector<XAnimation::THandle> modelAnimations = {};
     aiNode* boneRootNode = nullptr;
     aiMatrix4x4 parentRootTransform = aiMatrix4x4();
     aiMatrix4x4 accumulatedRootTransform = aiMatrix4x4();
@@ -95,20 +98,20 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
     {
         ParseMaterialData(scene, materials);
         CreateMaterials(
+            context,
             modelFolderPath,
-            _context->GetSubsystem<XTextureAtlas>(),
-            _context->GetSubsystem<XMaterialSubsystem>(),
+            context->GetSubsystem<CTextureAtlas>(),
             materials,
             modelMaterials,
             scene
         );
-        SetAbsoluteMaterialIndices(vertexData, vertexCount, modelMaterials);
+        SetAbsoluteMaterialIndices(context, vertexData, vertexCount, modelMaterials);
     }
 
     ParseIndexData(scene, indexData, indexOffsets);
 
     CreateBones(scene, vertexData, vertexCount, boneIndices, bones, vertexWeights);
-    FinalizeBoneWeights(vertexData, vertexCount, vertexWeights);
+    FinalizeBoneWeights(context, vertexData, vertexCount, vertexWeights);
     AccumulateRootTransform(
         scene->mRootNode,
         boneRootNode,
@@ -118,12 +121,18 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
     );
     CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
     CreateSkeleton(
+        context,
         modelSkeleton,
         bones,
-        _context->GetSubsystem<XSkeletonSubsystem>(),
         accumulatedRootTransform
     );
-    CreateAnimations(scene, boneIndices, _context->GetSubsystem<XAnimationSubsystem>(), modelSkeleton, modelAnimations);
+    CreateAnimations(
+        context,
+        scene,
+        boneIndices,
+        modelSkeleton,
+        modelAnimations
+    );
 
     return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials, modelSkeleton, modelAnimations);
 }
@@ -133,9 +142,9 @@ void triton::XModel3DBackendAssimp::DestroyModel(SModel3DData& model)
     model.vertexCount = 0;
     model.indexCount = 0;
     if (model.indexData)
-        _context->GetMemoryAllocator()->Deallocate((void*)model.indexData);
+        CObjectAllocator::Deallocate((void*)model.indexData);
     if (model.vertexData)
-        _context->GetMemoryAllocator()->Deallocate((void*)model.vertexData);
+        CObjectAllocator::Deallocate((void*)model.vertexData);
 }
 
 void triton::XModel3DBackendAssimp::ImportScene(
@@ -200,13 +209,13 @@ void triton::XModel3DBackendAssimp::AllocateVertexIndexBuffers(
     usize indexCount
 )
 {
-    vertexData = (SSkinnedVertexGPULayout*)_context->GetMemoryAllocator()->Allocate(vertexCount * sizeof(SSkinnedVertexGPULayout), 64);
-    indices = (u32*)_context->GetMemoryAllocator()->Allocate(indexCount * sizeof(u32), 64);
+    vertexData = (SSkinnedVertexGPULayout*)CObjectAllocator::Allocate(vertexCount * sizeof(SSkinnedVertexGPULayout), 64);
+    indices = (u32*)CObjectAllocator::Allocate(indexCount * sizeof(u32), 64);
 }
 
 void triton::XModel3DBackendAssimp::AllocateTempBitangentBuffer(cVector3*& bitangents, usize vertexCount)
 {
-    bitangents = (cVector3*)_context->GetMemoryAllocator()->Allocate(vertexCount * sizeof(cVector3), 64);
+    bitangents = (cVector3*)CObjectAllocator::Allocate(vertexCount * sizeof(cVector3), 64);
 }
 
 void triton::XModel3DBackendAssimp::ParseVertexData(
@@ -337,17 +346,18 @@ void triton::XModel3DBackendAssimp::ParseMaterialData(const aiScene* scene, std:
 }
 
 void triton::XModel3DBackendAssimp::CreateMaterials(
+    cContext* context,
     const std::string& modelFolderPath,
-    XTextureAtlas* textureAtlas,
-    XMaterialSubsystem* materialSubsystem,
+    CTextureAtlas* textureAtlas,
     const std::vector<SModel3DMaterialData>& materials,
-    std::vector<SMaterialData::THandle>& modelMaterials,
+    std::vector<XMaterial::THandle>& modelMaterials,
     const aiScene* scene
 )
 {
     for (auto& material : materials)
     {
         auto diffOpt = CreateTexture(
+            context,
             ETextureFormat::RGBA8_SRGB_Mips,
             modelFolderPath,
             textureAtlas,
@@ -356,6 +366,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
             scene->GetEmbeddedTexture(material.diffuseTextureFilePath.c_str())
         );
         auto normOpt = CreateTexture(
+            context,
             ETextureFormat::RGBA8,
             modelFolderPath,
             textureAtlas,
@@ -364,6 +375,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
             scene->GetEmbeddedTexture(material.normalTextureFilePath.c_str())
         );
         auto rghnOpt = CreateTexture(
+            context,
             ETextureFormat::R8,
             modelFolderPath,
             textureAtlas,
@@ -372,6 +384,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
             scene->GetEmbeddedTexture(material.roughnessTextureFilePath.c_str())
         );
         auto metlOpt = CreateTexture(
+            context,
             ETextureFormat::R8,
             modelFolderPath,
             textureAtlas,
@@ -381,7 +394,7 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
         );
 
         modelMaterials.push_back(
-            *materialSubsystem->Create(
+            *context->GetPool<CMaterialPool>()->Create(
                 cVector4(1.0f),
                 diffOpt.has_value() ? *diffOpt : XAtlasTexture::THandle(),
                 normOpt.has_value() ? *normOpt : XAtlasTexture::THandle(),
@@ -393,21 +406,22 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
 }
 
 void triton::XModel3DBackendAssimp::SetAbsoluteMaterialIndices(
+    cContext* context,
     SSkinnedVertexGPULayout*& vertexData,
     usize vertexCount,
-    const std::vector<SMaterialData::THandle>& modelMaterials
+    const std::vector<XMaterial::THandle>& modelMaterials
 )
 {
     for (usize i = 0; i < vertexCount; i++)
         vertexData[i].materialIndex =
-            _context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetPackedIndex(
+            context->GetPool<CMaterialPool>()->GetPackedIndex(
                 modelMaterials.at(vertexData[i].materialIndex)
            );
 }
 
 void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bitangents)
 {
-    _context->GetMemoryAllocator()->Deallocate(bitangents);
+    CObjectAllocator::Deallocate(bitangents);
 }
 
 void triton::XModel3DBackendAssimp::CreateBones(
@@ -415,7 +429,7 @@ void triton::XModel3DBackendAssimp::CreateBones(
     SSkinnedVertexGPULayout* vertexData,
     usize vertexCount,
     std::unordered_map<std::string, usize>& boneIndices,
-    std::vector<SBone>& bones,
+    std::vector<SSkeletonBone>& bones,
     std::vector<std::vector<SBoneWeight>>& vertexWeights
 )
 {
@@ -432,7 +446,7 @@ void triton::XModel3DBackendAssimp::CreateBones(
             usize realBoneIndex = 0;
             if (boneIndices.find(boneName) == boneIndices.end())
             {
-                SBone b = {};
+                SSkeletonBone b = {};
                 b.name = boneName;
                 b.modelMatrix = ConvertMatrix(bone->mOffsetMatrix);
 
@@ -460,6 +474,7 @@ void triton::XModel3DBackendAssimp::CreateBones(
 }
 
 void triton::XModel3DBackendAssimp::FinalizeBoneWeights(
+    cContext* context,
     SSkinnedVertexGPULayout* vertexData,
     types::usize vertexCount,
     std::vector<std::vector<SBoneWeight>>& vertexWeights
@@ -478,7 +493,7 @@ void triton::XModel3DBackendAssimp::FinalizeBoneWeights(
             }
         );
 
-        const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+        const sCapabilities* caps = context->GetSubsystem<CEngine>()->GetCapabilities();
         if (weights.size() > caps->maxBoneCountPerVertex)
             weights.resize(caps->maxBoneCountPerVertex);
 
@@ -540,7 +555,7 @@ void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
     const aiNode* node,
     s32 parentBone,
     std::unordered_map<std::string, usize>& boneIndices,
-    std::vector<SBone>& bones
+    std::vector<SSkeletonBone>& bones
 )
 {
     s32 currentBone = -1;
@@ -569,35 +584,35 @@ void triton::XModel3DBackendAssimp::CreateBoneHierarchy(
 }
 
 void triton::XModel3DBackendAssimp::CreateSkeleton(
-    SSkeletonData::THandle& modelSkeleton,
-    const std::vector<SBone>& bones,
-    XSkeletonSubsystem* skeletonSubsystem,
+    cContext* context,
+    XSkeleton::THandle& modelSkeleton,
+    const std::vector<SSkeletonBone>& bones,
     const aiMatrix4x4& accumulatedRootTransform
 )
 {
-    modelSkeleton = *skeletonSubsystem->Create(
+    modelSkeleton = *context->GetPool<CSkeletonPool>()->Create(
         bones,
         ConvertMatrix(accumulatedRootTransform)
     );
 }
 
 void triton::XModel3DBackendAssimp::CreateAnimations(
+    cContext* context,
     const aiScene* scene,
     const std::unordered_map<std::string, usize>& boneIndices,
-    XAnimationSubsystem* animationSubsystem,
-    SSkeletonData::THandle modelSkeleton,
-    std::vector<SAnimationData::THandle>& modelAnimations
+    XSkeleton::THandle modelSkeleton,
+    std::vector<XAnimation::THandle>& modelAnimations
 )
 {
     for (usize animIdx = 0; animIdx < scene->mNumAnimations; ++animIdx)
     {
         const aiAnimation* srcAnim = scene->mAnimations[animIdx];
 
-        SAnimationData animation = {};
-        animation.name = srcAnim->mName.C_Str();
-        animation.duration = srcAnim->mDuration;
-        animation.ticksPerSecond = srcAnim->mTicksPerSecond;
-        animation.animKeys.reserve(srcAnim->mNumChannels);
+        auto animationName = srcAnim->mName.C_Str();
+        auto animationDuration = srcAnim->mDuration;
+        auto animationTicksPerSecond = srcAnim->mTicksPerSecond;
+        auto animationKeys = std::vector<SAnimationKey>();
+        animationKeys.reserve(srcAnim->mNumChannels);
 
         for (usize channelIdx = 0; channelIdx < srcAnim->mNumChannels; ++channelIdx)
         {
@@ -643,38 +658,40 @@ void triton::XModel3DBackendAssimp::CreateAnimations(
                 animKey.scaleKeys.push_back(bsk);
             }
 
-            animation.animKeys.push_back(std::move(animKey));
+            animationKeys.push_back(std::move(animKey));
         }
 
         modelAnimations.push_back(
-            *animationSubsystem->Create(
-                animation.name,
-                animation.duration,
-                animation.ticksPerSecond,
-                animation.animKeys
+            *context->GetPool<CAnimationPool>()->Create(
+                animationName,
+                animationDuration,
+                animationTicksPerSecond,
+                animationKeys
             )
         );
     }
 }
 
 std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::CreateTexture(
+    cContext* context,
     ETextureFormat dataFormat,
     const std::string& modelFolderPath,
-    XTextureAtlas* textureAtlas,
+    CTextureAtlas* textureAtlas,
     const std::string& textureFilePath,
     boolean bIsEmbedded,
     const aiTexture* texture
 )
 {
     if (bIsEmbedded == K_TRUE)
-        return CreateTextureFromModelData(dataFormat, textureAtlas, textureFilePath, texture);
+        return CreateTextureFromModelData(context, dataFormat, textureAtlas, textureFilePath, texture);
     else
-        return CreateTextureFromFile(dataFormat, modelFolderPath, textureAtlas, textureFilePath);
+        return CreateTextureFromFile(context, dataFormat, modelFolderPath, textureAtlas, textureFilePath);
 }
 
 std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::CreateTextureFromModelData(
+    cContext* context,
     ETextureFormat dataFormat,
-    XTextureAtlas* textureAtlas,
+    CTextureAtlas* textureAtlas,
     const std::string& textureFilePath,
     const aiTexture* texture
 )
@@ -691,8 +708,7 @@ std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::Cre
         const char* fmtHint = &texture->achFormatHint[0];
         if (fmtHint[0] == 'p' && fmtHint[1] == 'n' && fmtHint[2] == 'g')
         {
-            return _context->GetPool<XAtlasTexturePool>()->Create(
-                _context,
+            return context->GetPool<CAtlasTexturePool>()->Create(
                 fileData,
                 fileByteSize,
                 0,
@@ -704,8 +720,7 @@ std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::Cre
         }
         else if (fmtHint[0] == 'd' && fmtHint[1] == 'd' && fmtHint[2] == 's')
         {
-            return _context->GetPool<XAtlasTexturePool>()->Create(
-                _context,
+            return context->GetPool<CAtlasTexturePool>()->Create(
                 fileData,
                 fileByteSize,
                 0,
@@ -735,9 +750,10 @@ std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::Cre
 }
 
 std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::CreateTextureFromFile(
+    cContext* context,
     ETextureFormat dataFormat,
     const std::string& modelFolderPath,
-    XTextureAtlas* textureAtlas,
+    CTextureAtlas* textureAtlas,
     const std::string& textureFilePath
 )
 {
@@ -761,7 +777,7 @@ std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::Cre
         newTextureFilePath = path.generic_string();
     }
     
-    return _context->GetPool<XAtlasTexturePool>()->Create(_context, newTextureFilePath, dataFormat);
+    return context->GetPool<CAtlasTexturePool>()->Create(newTextureFilePath, dataFormat);
 }
 
 triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(
@@ -769,9 +785,9 @@ triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(
     const u32* indexData,
     usize vertexCount,
     usize indexCount,
-    const std::vector<SMaterialData::THandle>& modelMaterials,
-    SSkeletonData::THandle modelSkeleton,
-    const std::vector<SAnimationData::THandle>& modelAnimations
+    const std::vector<XMaterial::THandle>& modelMaterials,
+    XSkeleton::THandle modelSkeleton,
+    const std::vector<XAnimation::THandle>& modelAnimations
 )
 {
     SModel3DData m3dd;

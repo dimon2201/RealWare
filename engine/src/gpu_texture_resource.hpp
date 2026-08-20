@@ -11,8 +11,6 @@ namespace triton
 {
     class CGPUTextureResource : public cGPUResource
     {
-        TRITON_OBJECT(CGPUTextureResource)
-
         cVector3 _size = cVector3(0.0f);
         ETextureDimension _dimension = ETextureDimension::Unknown;
         ETextureFormat _format = ETextureFormat::Unknown;
@@ -21,14 +19,13 @@ namespace triton
     public:
         explicit CGPUTextureResource() = default;
         explicit CGPUTextureResource(
-            cContext* context,
             types::qword instance,
             types::qword viewInstance,
             const cVector3& size,
             ETextureDimension dimension,
             ETextureFormat format,
             types::s32 slot
-        ) : cGPUResource(context, instance, viewInstance),
+        ) : cGPUResource(instance, viewInstance),
             _size(size),
             _dimension(dimension),
             _format(format),

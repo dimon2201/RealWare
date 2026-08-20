@@ -23,7 +23,7 @@ void triton::cWorkItem::Execute()
         _function->operator()(_data);
 }
 
-triton::cWorkQueue::cWorkQueue(cContext* context, types::usize threadCount) : iObject(context), _threadCount(threadCount)
+triton::cWorkQueue::cWorkQueue(types::usize threadCount) : _threadCount(threadCount)
 {
 }
 
@@ -52,7 +52,7 @@ void triton::cWorkQueue::ProcessWorkItems()
     }
 }
 
-triton::cThread::cThread(cContext* context) : iObject(context)
+triton::cThread::cThread()
 {
 }
 
@@ -79,7 +79,7 @@ void triton::cThread::Stop()
         _handle.join();
 }
 
-triton::cWorkerThread::cWorkerThread(cContext* context, cWorkQueue* owner) : cThread(context), _owner(owner)
+triton::cWorkerThread::cWorkerThread(cWorkQueue* owner) : _owner(owner)
 {
 }
 
@@ -88,19 +88,24 @@ void triton::cWorkerThread::ThreadFunction()
     _owner->ProcessWorkItems();
 }
 
-triton::cThreadSubsystem::cThreadSubsystem(cContext* context, usize threadCount)
-    : iObject(context)
+triton::cThreadSubsystem::cThreadSubsystem(usize threadCount)
 {
-    _workQueue = _context->Create<cWorkQueue>(_context, threadCount);
-    for (usize i = 0; i < threadCount; i++)
-        _workerThreads.push_back(_context->Create<cWorkerThread>(_context, _workQueue));
+    // TODO: rewrite this
+    // ||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVV
+    //_workQueue = _context->Create<cWorkQueue>(_context, threadCount);
+    //for (usize i = 0; i < threadCount; i++)
+    //    _workerThreads.push_back(_context->Create<cWorkerThread>(_context, _workQueue));
 }
 
 triton::cThreadSubsystem::~cThreadSubsystem()
 {
-    for (usize i = 0; i < _workerThreads.size(); i++)
-        _context->Destroy<cWorkerThread>(_workerThreads.at(i));
-    _context->Destroy<cWorkQueue>(_workQueue);
+    // TODO: rewrite this
+    // ||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVV
+    //for (usize i = 0; i < _workerThreads.size(); i++)
+    //    _context->Destroy<cWorkerThread>(_workerThreads.at(i));
+    //_context->Destroy<cWorkQueue>(_workQueue);
 }
 
 void triton::cThreadSubsystem::SubmitWorkItem(cWorkItem&& task)

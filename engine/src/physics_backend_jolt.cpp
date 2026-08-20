@@ -188,7 +188,7 @@ triton::XPhysicsBackendJolt::~XPhysicsBackendJolt()
 
 triton::SPhysicsWorldBackendData triton::XPhysicsBackendJolt::CreateWorld()
 {
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+	const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetCapabilities();
 
 	TempAllocatorImpl* tempAllocator = new TempAllocatorImpl(caps->maxPhysicsTempBufferByteSize);
 	JobSystemThreadPool* jobSystem = new JobSystemThreadPool(

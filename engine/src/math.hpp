@@ -7,7 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include "object.hpp"
+#include "tag.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -15,6 +16,7 @@ namespace triton
 	class cQuaternion;
 	class cMatrix4;
 	class cTransform;
+	class cContext;
 
 	class cVector2
 	{
@@ -191,10 +193,11 @@ namespace triton
 		inline void SetScale(const cVector3& scale) { _scale = scale; }
 	};
 
-	class cMath : public iObject
+	class cMath : public CSubsystem
 	{
-		TRITON_OBJECT(cMath)
+		TRITON_CLASS_NAME(cMath)
 
+	public:
 		enum class EEulerAngle
 		{
 			PITCH,
@@ -202,17 +205,16 @@ namespace triton
 			ROLL
 		};
 
-		static types::qword HashBytes(const types::u8* data, types::usize dataByteSize, types::qword mask);
-
-	public:
 		explicit cMath(cContext* context);
-		virtual ~cMath() override final = default;
+		~cMath() = default;
 
 		static types::f32 DegreesToRadians(types::f32 degrees);
 		static types::qword MakeHashMask(types::usize size);
 
 		template <typename TValue>
 		static types::qword Hash(const TValue& value, types::qword mask);
+
+		static types::qword HashBytes(const types::u8* data, types::usize dataByteSize, types::qword mask);
 
 		static cMatrix4 Transform(
 			cVector3 worldPosition,

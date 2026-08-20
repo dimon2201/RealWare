@@ -7,16 +7,14 @@
 
 namespace triton
 {
-    class XDataBuffer : public iObject
+    class XDataBuffer
     {
-        TRITON_OBJECT(XDataBuffer)
-
         types::u8* _data = nullptr;
         types::usize _byteSize = 0;
 
     public:
-        explicit XDataBuffer(cContext* context, types::usize byteSize);
-        virtual ~XDataBuffer() override;
+        explicit XDataBuffer(types::usize byteSize);
+        ~XDataBuffer();
 
         void Write(const types::u8* data, types::usize byteSize, types::usize byteOffset);
         void Erase(types::usize byteSize, types::usize byteOffset);

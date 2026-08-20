@@ -2,30 +2,30 @@
 
 #pragma once
 
-#include "material_data.hpp"
+#include "material.hpp"
 #include "object_pool.hpp"
 #include "atlas_texture_pool.hpp"
 
 namespace triton
 {
-    class XMaterialPool : public XObjectPool<SMaterialData>
+    class CMaterialPool : public CObjectPool<XMaterial>
     {
-        TRITON_OBJECT(XMaterialPool)
+        TRITON_CLASS_NAME(CMaterialPool)
 
     public:
-        using XObjectPool<SMaterialData>::XObjectPool;
-        ~XMaterialPool() override = default;
+        using CObjectPool<XMaterial>::CObjectPool;
+        ~CMaterialPool() override = default;
 
-        SMaterialData::TGPULayout ConvertToGpuLayout(const SMaterialData& object) override
+        XMaterial::TGPULayout ConvertToGpuLayout(const XMaterial& object) override
         {
-            SMaterialData::TGPULayout gpul;
+            XMaterial::TGPULayout gpul;
 
-            auto difRes = _context->GetPool<XAtlasTexturePool>()->Get(object.diffuseTexture);
-            auto norRes = _context->GetPool<XAtlasTexturePool>()->Get(object.normalTexture);
-            auto rghRes = _context->GetPool<XAtlasTexturePool>()->Get(object.roughnessTexture);
-            auto metRes = _context->GetPool<XAtlasTexturePool>()->Get(object.metallicTexture);
+            auto difRes = _context->GetPool<CAtlasTexturePool>()->Get(object.GetDiffuseTexture());
+            auto norRes = _context->GetPool<CAtlasTexturePool>()->Get(object.GetNormalTexture());
+            auto rghRes = _context->GetPool<CAtlasTexturePool>()->Get(object.GetRoughnessTexture());
+            auto metRes = _context->GetPool<CAtlasTexturePool>()->Get(object.GetMetallicTexture());
 
-            gpul.diffuseColor = object.diffuseColor;
+            gpul.diffuseColor = object.GetDiffuseColor();
             if (difRes.has_value())
             {
                 XAtlasTexture& dif = *difRes;

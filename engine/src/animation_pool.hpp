@@ -6,17 +6,17 @@
 
 namespace triton
 {
-    class XAnimationPool : public XObjectPool<SAnimationData>
+    class CAnimationPool : public CObjectPool<XAnimation>
     {
-        TRITON_OBJECT(XAnimationPool)
+        TRITON_CLASS_NAME(CAnimationPool)
 
     public:
-        using XObjectPool<SAnimationData>::XObjectPool;
-        ~XAnimationPool() override = default;
+        using CObjectPool<XAnimation>::CObjectPool;
+        ~CAnimationPool() override = default;
 
-        SAnimationData::TGPULayout ConvertToGpuLayout(const SAnimationData& object) override
+        XAnimation::TGPULayout ConvertToGpuLayout(const XAnimation& object) override
         {
-            SAnimationData::TGPULayout gpul;
+            XAnimation::TGPULayout gpul;
 
             return gpul;
         }

@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include "object.hpp"
 #include "input_window.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -23,9 +24,9 @@ namespace triton
 
 	inline std::thread::id gMainThreadId = std::this_thread::get_id();
 
-	class cEngine final : public iObject
+	class CEngine final : public CSubsystem
 	{
-		TRITON_OBJECT(cEngine)
+		TRITON_CLASS_NAME(CEngine)
 
 		IApplication* _app = nullptr;
 		const sCapabilities* _caps = nullptr;
@@ -34,8 +35,8 @@ namespace triton
 		cRenderThread* _renderThread = nullptr;
 
 	public:
-		explicit cEngine(cContext* context, IApplication* app);
-		virtual ~cEngine() override final;
+		explicit CEngine(cContext* context, IApplication* app);
+		~CEngine();
 
 		void Initialize();
 		void Shutdown();

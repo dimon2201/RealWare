@@ -9,7 +9,6 @@
 #include <mutex>
 #include <memory>
 #include <atomic>
-#include "object.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -33,10 +32,8 @@ namespace triton
         inline std::shared_ptr<WorkFunction> GetFunction() const { return _function; }
     };
 
-    class cWorkQueue final : public iObject
+    class cWorkQueue final
     {
-        TRITON_OBJECT(cWorkQueue)
-
         types::usize _threadCount = 0;
         std::queue<cWorkItem> _queue;
         std::mutex _queueMutex;
@@ -45,23 +42,18 @@ namespace triton
         std::atomic<types::boolean> _stop;
             
     public:
-        explicit cWorkQueue(
-            cContext* context,
-            types::usize threadCount = std::thread::hardware_concurrency()
-        );
+        explicit cWorkQueue(types::usize threadCount = std::thread::hardware_concurrency());
 
         void SubmitWorkItem(cWorkItem&& task);
         void ProcessWorkItems();
     };
 
-    class cThread : public iObject
+    class cThread
     {
-        TRITON_OBJECT(cThread)
-
         std::thread _handle;
 
     public:
-        explicit cThread(cContext* context);
+        explicit cThread();
         virtual ~cThread();
 
         virtual void ThreadFunction() = 0;
@@ -72,29 +64,22 @@ namespace triton
 
     class cWorkerThread : public cThread
     {
-        TRITON_OBJECT(cWorkerThread)
-
         cWorkQueue* _owner = nullptr;
 
     public:
-        explicit cWorkerThread(cContext* context, cWorkQueue* owner);
+        explicit cWorkerThread(cWorkQueue* owner);
 
         virtual void ThreadFunction() override;
     };
 
-    class cThreadSubsystem : public iObject
+    class cThreadSubsystem
     {
-        TRITON_OBJECT(cThreadSubsystem)
-
         cWorkQueue* _workQueue = nullptr;
         std::vector<cWorkerThread*> _workerThreads = {};
 
     public:
-        explicit cThreadSubsystem(
-            cContext* context,
-            types::usize threadCount = std::thread::hardware_concurrency()
-        );
-        virtual ~cThreadSubsystem();
+        explicit cThreadSubsystem(types::usize threadCount = std::thread::hardware_concurrency());
+        ~cThreadSubsystem();
         
         void SubmitWorkItem(cWorkItem&& task);
         void ExecuteWorkItems();

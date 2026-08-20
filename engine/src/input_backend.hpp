@@ -4,6 +4,7 @@
 
 #include <string>
 #include "math.hpp"
+#include "object.hpp"
 #include "backend.hpp"
 #include "input_backend_window.hpp"
 #include "input_window.hpp"
@@ -37,11 +38,11 @@ namespace triton
 
 	class iInputBackend : public iBackend
 	{
-        TRITON_OBJECT(iInputBackend)
+        TRITON_CLASS_NAME(iInputBackend)
 
 	public:
 		explicit iInputBackend(cContext* context);
-		virtual ~iInputBackend() override = default;
+		~iInputBackend() override = default;
 
         virtual sInputBackendWindow CreatePlatformWindow(
             const ::std::string& title,

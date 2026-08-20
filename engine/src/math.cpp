@@ -217,7 +217,7 @@ void triton::cTransform::Transform()
 	_world._mat = glm::translate(glm::mat4(1.0f), _position._vec) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), _scale._vec);
 }
 
-triton::cMath::cMath(cContext* context) : iObject(context) {}
+triton::cMath::cMath(cContext* context) : CSubsystem(context) {}
 
 f32 triton::cMath::DegreesToRadians(f32 degrees)
 {

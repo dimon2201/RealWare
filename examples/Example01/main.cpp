@@ -2,40 +2,26 @@
 #include "capabilities.hpp"
 #include "context.hpp"
 #include "application.hpp"
-#include "ecs_subsystem.hpp"
-#include "components.hpp"
 #include "graphics.hpp"
 #include "vertex.hpp"
 #include "camera.hpp"
-#include "game_object_subsystem.hpp"
-#include "material_subsystem.hpp"
 #include "math.hpp"
-#include "model3d_subsystem.hpp"
-#include "animation_subsystem.hpp"
-#include "skeleton_subsystem.hpp"
 #include "animation.hpp"
-#include "object_pool_base.hpp"
 #include "camera_pool.hpp"
 #include "geometry_storage.hpp"
 #include "model3d_pool.hpp"
 #include "skin_pool.hpp"
 #include "game_object_pool.hpp"
-#include "batcher.hpp"
 #include "render_pass_pool.hpp"
+#include "render_instance_pack_pool.hpp"
+#include "material_pool.hpp"
+#include "geometry_storage.hpp"
 
 using namespace triton;
-using namespace triton::ecs;
-using namespace triton::ecs::components;
 using namespace types;
 
 class cMyApplication final : public IApplication
 {
-    SModel3DData::THandle m3d, m3d_2;
-    XDynamicArray<int>* da;
-    SStaticRenderInstanceData::THandle ri;
-    SSkinData::THandle m3dSkin;
-    SGameObjectData::THandle goh;
-
 public:
     cMyApplication(cContext* context, const sCapabilities* caps) : IApplication(context, caps)
     {
@@ -47,21 +33,19 @@ public:
 
     virtual void Setup() override final
     {
-        XGameObjectSubsystem* gos = _context->GetSubsystem<XGameObjectSubsystem>();
-        XGeometryStorage* gs = _context->GetSubsystem<XGeometryStorage>();
-        XBatchSubsystem* bs = _context->GetSubsystem<XBatchSubsystem>();
-        XSkinningSubsystem* sks = _context->GetSubsystem<XSkinningSubsystem>();
-        XMaterialSubsystem* ms = _context->GetSubsystem<XMaterialSubsystem>();
-        XGraphics* gfx = _context->GetSubsystem<XGraphics>();
+        CGeometryStorage* gs = _context->GetSubsystem<CGeometryStorage>();
+        CGraphics* gfx = _context->GetSubsystem<CGraphics>();
+        CRenderInstancePackPool* instancePackPool = _context->GetPool<CRenderInstancePackPool>();
+        CMaterialPool* materialPool = _context->GetPool<CMaterialPool>();
+        CGameObjectPool* gameObjectPool = _context->GetPool<CGameObjectPool>();
 
-        _context->GetPool<XCameraPool>()->Allocate(1);
-        auto camh = *_context->GetPool<XCameraPool>()->Create(_context);
-        XCamera& camo = *_context->GetPool<XCameraPool>()->Get(camh);
+        auto camh = *_context->GetPool<CCameraPool>()->Create();
+        XCamera& camo = *_context->GetPool<CCameraPool>()->Get(camh);
         camo._worldPosition = cVector3(0.0f, 1.0f, 1.0f);
         
         XRenderPass& opaqueStaticRP = 
-            *_context->GetPool<XRenderPassPool>()->Get(
-                _context->GetSubsystem<XGraphics>()->GetOpaqueStaticRenderPass()
+            *_context->GetPool<CRenderPassPool>()->Get(
+                _context->GetSubsystem<CGraphics>()->GetOpaqueStaticRenderPass()
             );
         
         opaqueStaticRP.SetCamera(camh);
@@ -125,36 +109,45 @@ public:
             (u8*)&triInds[0],
             3
         );
-        SBatchData::THandle batch1 = *bs->Create(
+        XRenderInstancePack::THandle instancePack1 = *instancePackPool->Create(
             ERenderInstanceMotionType::Static,
             triGeom,
             2
         );
-        SBatchData::THandle batch2 = *bs->Create(
+        XRenderInstancePack::THandle instancePack2 = *instancePackPool->Create(
             ERenderInstanceMotionType::Static,
             triGeom,
             3
         );
-        auto material1 = *ms->Create(cVector4(1.0f, 0.0f, 0.0f, 1.0f), {}, {}, {}, {});
-        auto material2 = *ms->Create(cVector4(0.0f, 1.0f, 0.0f, 1.0f), {}, {}, {}, {});
-        auto material3 = *ms->Create(cVector4(0.0f, 0.0f, 1.0f, 1.0f), {}, {}, {}, {});
+        XAtlasTexture::THandle emptyTexHandle = XAtlasTexture::THandle();
+        auto material1 = *materialPool->Create(
+            cVector4(1.0f, 0.0f, 0.0f, 1.0f),
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle
+        );
+        auto material2 = *materialPool->Create(
+            cVector4(0.0f, 1.0f, 0.0f, 1.0f),
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle
+        );
+        auto material3 = *materialPool->Create(
+            cVector4(0.0f, 0.0f, 1.0f, 1.0f),
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle
+        );
         
-        opaqueStaticRP.SetBatches({ batch1, batch2 });
+        opaqueStaticRP.SetRenderInstancePacks({ instancePack1, instancePack2 });
 
-        auto gameObject1 = *gos->Create("MyObject1");
-        gos->SetRenderableStatic(gameObject1, True, batch1);
-        gos->SetMaterial(gameObject1, material1);
-        gos->SetWorldMatrix(gameObject1, cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f))));
-
-        auto gameObject2 = *gos->Create("MyObject2");
-        gos->SetRenderableStatic(gameObject2, True, batch2);
-        gos->SetMaterial(gameObject2, material2);
-        gos->SetWorldMatrix(gameObject2, cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f))));
-
-        auto gameObject3 = *gos->Create("MyObject3");
-        gos->SetRenderableStatic(gameObject3, True, batch2);
-        gos->SetMaterial(gameObject3, material3);
-        gos->SetWorldMatrix(gameObject3, cMatrix4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 4.0f, 0.0f))));
+        auto gameObject1Handle = *gameObjectPool->Create("MyObject1");
+        XGameObject& gameObject1 = *gameObjectPool->Get(gameObject1Handle);
+        gameObject1.SetRenderable(True, instancePack1);
+        gameObject1.SetMaterial(material1);
 
         //triGod1.worldPosition = cVector3(-1.0f, 0.0f, 0.0f);
         //triGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);

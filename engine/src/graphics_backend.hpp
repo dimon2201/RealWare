@@ -22,8 +22,10 @@ namespace triton
 
 	class IGraphicsBackend : public iBackend
 	{
+        TRITON_CLASS_NAME(IGraphicsBackend)
+
 	public:
-		explicit IGraphicsBackend(cContext* context) : iBackend(context) {}
+        explicit IGraphicsBackend(cContext* context) : iBackend(context) {}
 		~IGraphicsBackend() override = default;
 
 		// Context

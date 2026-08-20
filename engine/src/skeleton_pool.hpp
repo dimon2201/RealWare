@@ -3,20 +3,21 @@
 #pragma once
 
 #include "object_pool.hpp"
+#include "skeleton.hpp"
 
 namespace triton
 {
-    class XSkeletonPool : public XObjectPool<SSkeletonData>
+    class CSkeletonPool : public CObjectPool<XSkeleton>
     {
-        TRITON_OBJECT(XSkeletonPool)
+        TRITON_CLASS_NAME(CSkeletonPool)
 
     public:
-        using XObjectPool<SSkeletonData>::XObjectPool;
-        ~XSkeletonPool() override = default;
+        using CObjectPool<XSkeleton>::CObjectPool;
+        ~CSkeletonPool() override = default;
 
-        SSkeletonData::TGPULayout ConvertToGpuLayout(const SSkeletonData& object) override
+        XSkeleton::TGPULayout ConvertToGpuLayout(const XSkeleton& object) override
         {
-            SSkeletonData::TGPULayout gpul;
+            XSkeleton::TGPULayout gpul;
 
             return gpul;
         }

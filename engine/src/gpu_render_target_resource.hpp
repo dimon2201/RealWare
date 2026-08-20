@@ -8,34 +8,21 @@
 
 namespace triton
 {
-    class cContext;
-
     class CGPURenderTargetResource : public cGPUResource
     {
-        TRITON_OBJECT(CGPURenderTargetResource)
-
         types::usize _colorAttachmentCount = 0;
         CGPUTextureResource _colorAttachments[8];
-        CGPUTextureResource _depthAttachment = CGPUTextureResource(
-            nullptr,
-            0,
-            0,
-            cVector3(0.0f),
-            ETextureDimension::Unknown,
-            ETextureFormat::Unknown,
-            -1
-        );
+        CGPUTextureResource _depthAttachment;
 
     public:
         explicit CGPURenderTargetResource() = default;
         explicit CGPURenderTargetResource(
-            cContext* context,
             types::qword instance,
             types::qword viewInstance,
             types::usize colorAttachmentCount,
             const CGPUTextureResource* colorAttachments,
             const CGPUTextureResource& depthAttachment
-        ) : cGPUResource(context, instance, viewInstance),
+        ) : cGPUResource(instance, viewInstance),
             _depthAttachment(depthAttachment)
         {
             SetColorAttachments(colorAttachmentCount, colorAttachments);

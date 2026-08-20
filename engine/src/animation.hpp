@@ -2,58 +2,48 @@
 
 #pragma once
 
+#include <optional>
+#include "object.hpp"
 #include "handle.hpp"
 #include "math.hpp"
+#include "animation_key.hpp"
+#include "animation_frame.hpp"
+#include "skeleton.hpp"
 
 namespace triton
 {
     class cMatrix4;
 
-    struct SBonePositionKey
+    class XAnimation : public iObject
     {
-        types::f32 time = 0.0f;
-        cVector3 position = cVector3(0.0f);
-    };
+        TRITON_OBJECT(XAnimation)
 
-    struct SBoneRotationKey
-    {
-        types::f32 time = 0.0f;
-        cQuaternion rotation = cQuaternion();
-    };
+        std::string _name = "";
+        types::f32 _duration = 0.0f;
+        types::f32 _ticksPerSecond = 0.0f;
+        std::vector<SAnimationKey> _keys = {};
 
-    struct SBoneScaleKey
-    {
-        types::f32 time = 0.0f;
-        cVector3 scale = cVector3(0.0f);
-    };
+    public:
+        explicit XAnimation(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
 
-    struct SAnimationKey
-    {
-        types::usize localBoneIndex = 0;
-        std::vector<SBonePositionKey> positionKeys = {};
-        std::vector<SBoneRotationKey> rotationKeys = {};
-        std::vector<SBoneScaleKey> scaleKeys = {};
-    };
+        explicit XAnimation(
+            cContext* context,
+            types::s32 poolIndex,
+            const std::string& name,
+            types::f32 duration,
+            types::f32 ticksPerSecond,
+            const std::vector<SAnimationKey> keys
+        );
+        
+        ~XAnimation() override = default;
 
-    struct SAnimationData
-    {
+        std::optional<triton::SAnimationFrame> EvaluateFrame(
+            const XSkeleton::THandle& skeleton,
+            types::f32 time
+        );
+
         struct THandle : public SHandle {};
 
         struct TGPULayout {};
-
-        std::string name = "";
-        types::f32 duration = 0.0f;
-        types::f32 ticksPerSecond = 0.0f;
-        std::vector<SAnimationKey> animKeys = {};
-    };
-
-    struct SFrameBone
-    {
-        cMatrix4 transformMatrix = cMatrix4();
-    };
-
-    struct SFrame
-    {
-        std::vector<SFrameBone> frameBones = {};
     };
 }

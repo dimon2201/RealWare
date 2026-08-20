@@ -2,18 +2,17 @@
 
 #pragma once
 
-#include "object.hpp"
-
 namespace triton
 {
 	class cContext;
 
-	class iBackend : public iObject
+	class iBackend
 	{
-		TRITON_OBJECT(iBackend)
+	protected:
+		cContext* _context = nullptr;
 
 	public:
-		explicit iBackend(cContext* context);
-		virtual ~iBackend() override = default;
+		explicit iBackend(cContext* context) : _context(context) {}
+		virtual ~iBackend() = default;
 	};
 }

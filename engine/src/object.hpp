@@ -8,7 +8,6 @@
 #include "event_types.hpp"
 #include "memory_pool.hpp"
 #include "tag.hpp"
-#include "stack_value.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -23,6 +22,12 @@ namespace triton
 		public: \
 			static ClassType GetTypeStatic() { return #typeName; } \
 			virtual ClassType GetType() const override { return GetTypeStatic(); } \
+
+	#define TRITON_CLASS_NAME(className) \
+		public: \
+			static std::string GetTypeStatic() { return #className; } \
+			virtual ClassType GetType() const { return GetTypeStatic(); } \
+		private: \
 
 	class cIdentifier
 	{

@@ -5,13 +5,9 @@
 #include "audio.hpp"
 #include "context.hpp"
 #include "engine.hpp"
-#include "components.hpp"
 #include "log.hpp"
 
 using namespace types;
-
-using namespace triton::ecs;
-using namespace triton::ecs::components;
 
 struct sWAVHeader
 {
@@ -31,7 +27,7 @@ struct sWAVHeader
 	types::u32 _numSamples = 0;
 };
 
-triton::cAudio::cAudio(cContext* context) : cSystem(context) {}
+triton::cAudio::cAudio(cContext* context) : CSubsystem(context) {}
 
 void triton::cAudio::OnFrameUpdate() {}
 
@@ -52,7 +48,7 @@ void triton::cAudio::CreateSound(eContainerFormat format, const std::string& fil
 
 	sAudioSound sound = {};
 
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+	const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
 	cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
 	if (format == eContainerFormat::WAV)

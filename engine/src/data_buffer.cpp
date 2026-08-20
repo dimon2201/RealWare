@@ -8,28 +8,21 @@
 #include "context.hpp"
 #include "engine.hpp"
 #include "application.hpp"
+#include "object_allocator.hpp"
 
 using namespace types;
 
-triton::XDataBuffer::XDataBuffer(cContext* context, usize byteSize) : iObject(context)
+triton::XDataBuffer::XDataBuffer(usize byteSize)
 {
-	const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
-	auto memoryAllocator = _context->GetMemoryAllocator();
-
 	_byteSize = byteSize;
-	_data = (u8*)memoryAllocator->Allocate(_byteSize, caps->memoryAlignment);
+	_data = (u8*)CObjectAllocator::Allocate(_byteSize, 64);
 	memset(_data, 0, _byteSize);
 }
 
 triton::XDataBuffer::~XDataBuffer()
 {
-	if (_data != nullptr)
-	{
-		const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
-		auto memoryAllocator = _context->GetMemoryAllocator();
-
-		memoryAllocator->Deallocate(_data);
-	}
+	if (_data)
+		CObjectAllocator::Deallocate(_data);
 }
 
 void triton::XDataBuffer::Write(const u8* data, usize byteSize, usize byteOffset)

@@ -8,14 +8,13 @@
 #include "graphics.hpp"
 #include "graphics_backend.hpp"
 #include "thread_guard.hpp"
-#include "dynamic_array.hpp"
 
 using namespace types;
 
 triton::cRenderThread::cRenderThread(
 	cContext* context,
 	XSynchronization* sync
-) : cThread(context), _sync(sync)
+) : _context(context), _sync(sync)
 {
 }
 
@@ -33,7 +32,7 @@ void triton::cRenderThread::ThreadFunction()
 	IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
 
 	// Create graphics contexts for windows
-	cInput* inputSubsystem = _context->GetSubsystem<cInput>();
+	CInput* inputSubsystem = _context->GetSubsystem<CInput>();
 	std::vector<cInputWindow>* windows = inputSubsystem->GetWindows();
 	for (usize i = 0; i < windows->size(); i++)
 	{
@@ -72,7 +71,7 @@ void triton::cRenderThread::ThreadFunction()
 			else if (frame.operation == EProducedFrameOp::ExecuteFull)
 			{
 				// Full job
-				XGraphics* gfx = _context->GetSubsystem<XGraphics>();
+				CGraphics* gfx = _context->GetSubsystem<CGraphics>();
 				ExecuteCommands(
 					frame.renderCommandPack,
 					gfxBackend,
@@ -86,7 +85,7 @@ void triton::cRenderThread::ThreadFunction()
 			else if (frame.operation == EProducedFrameOp::ExecuteCommandsOnly)
 			{
 				// Execute render commands only
-				XGraphics* gfx = _context->GetSubsystem<XGraphics>();
+				CGraphics* gfx = _context->GetSubsystem<CGraphics>();
 				ExecuteCommands(
 					frame.renderCommandPack,
 					gfxBackend,
@@ -111,7 +110,7 @@ void triton::cRenderThread::ThreadFunction()
 void triton::cRenderThread::ExecuteCommands(
 	const SRenderCommandPack& renderCommandPack,
 	IGraphicsBackend* gfxBackend,
-	XGraphics* gfx
+	CGraphics* gfx
 )
 {
 	for (usize i = 0; i < renderCommandPack.count; i++)

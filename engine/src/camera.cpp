@@ -16,7 +16,7 @@ void triton::XCamera::Bind(XRenderPass* pass)
     CThreadGuard::AssertRender();
 
     XShader::THandle shaderHandle = pass->GetShader();
-    XShader& shader = *_context->GetPool<XShaderPool>()->Get(shaderHandle);
+    XShader& shader = *_context->GetPool<CShaderPool>()->Get(shaderHandle);
 
     IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
     gfxBackend->SetShaderUniform(shader.GetGPUResource(), "ViewProjection", _viewProjectionMatrix.Get());
@@ -47,7 +47,7 @@ void triton::XCamera::Update(const cVector2& screenCursorPosition, usize screenW
     AddEuler(cMath::EEulerAngle::YAW, mouseDelta.GetX() * mouseSensitivity * deltaTime);
     
     const f32 camSpeed = 0.1f;
-    cInput* input = _context->GetSubsystem<cInput>();
+    CInput* input = _context->GetSubsystem<CInput>();
     iInputBackend* ib = _context->GetBackend<iInputBackend>();
     const f32 forward = input->GetKeyPressed(ib->GetKeyW()) * camSpeed * deltaTime;
     const f32 backward = input->GetKeyPressed(ib->GetKeyS()) * camSpeed * deltaTime;

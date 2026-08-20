@@ -4,12 +4,11 @@
 #include "context.hpp"
 #include "input_backend.hpp"
 #include "thread_guard.hpp"
-#include "dynamic_array.hpp"
 
 using namespace types;
 
 triton::cInputWindow::cInputWindow(cContext* context, const sInputBackendWindow& backendWindow)
-    : iObject(context), _backendWindow(backendWindow) {}
+    : _context(context), _backendWindow(backendWindow) {}
     
 types::boolean triton::cInputWindow::IsWindowFocused() const
 {
@@ -23,42 +22,37 @@ const triton::cVector2& triton::cInputWindow::GetSize() const
     return _backendWindow.size;
 }
 
-triton::cInput::cInput(cContext* context) : iObject(context) {}
+triton::CInput::CInput(cContext* context) : CSubsystem(context) {}
 
-void triton::cInput::Initialize()
+void triton::CInput::Initialize(const sCapabilities& caps)
 {
     if (_windows != nullptr)
         return;
 
-    const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
-    sChunkAllocatorDescriptor cad = {};
-    cad.chunkByteSize = caps->hashTableChunkByteSize;
-    cad.maxChunkCount = caps->hashTableMaxChunkCount;
-    cad.hashTableSize = caps->hashTableSize;
     _windows = new std::vector<cInputWindow>();
 
-    cInput* input = _context->GetSubsystem<cInput>();
+    CInput* input = _context->GetSubsystem<CInput>();
     if (input == nullptr)
         return;
 
-    for (usize i = 0; i < caps->windowCount; i++)
+    for (usize i = 0; i < caps.windowCount; i++)
     {
         cInputWindow* window = input->CreatePlatformWindow(
-            caps->windows[i].windowTitle,
-            cVector2(caps->windows[i].windowWidth, caps->windows[i].windowHeight),
-            caps->windows[i].fullscreen
+            caps.windows[i].windowTitle,
+            cVector2(caps.windows[i].windowWidth, caps.windows[i].windowHeight),
+            caps.windows[i].fullscreen
         );
 
         _windows->push_back(*window);
     }
 }
 
-void triton::cInput::Shutdown()
+void triton::CInput::Shutdown()
 {
     //_context->Destroy<XDynamicArray<cInputWindow>>(_windows);
 }
 
-triton::cInputWindow* triton::cInput::CreatePlatformWindow(
+triton::cInputWindow* triton::CInput::CreatePlatformWindow(
     const std::string& title,
     const cVector2& size,
     types::boolean fullscreen
@@ -73,15 +67,15 @@ triton::cInputWindow* triton::cInput::CreatePlatformWindow(
     return window;
 }
 
-void triton::cInput::DestroyWindow(cInputWindow* window)
+void triton::CInput::DestroyWindow(cInputWindow* window)
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
-    input->DestroyWindow(window->_backendWindow);
+    input->DestroyWindow(window->GetBackendWindow());
 
     _context->Destroy<cInputWindow>(window);
 }
 
-void triton::cInput::ResizeWindows(const cVector2& newSize)
+void triton::CInput::ResizeWindows(const cVector2& newSize)
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
 
@@ -89,28 +83,28 @@ void triton::cInput::ResizeWindows(const cVector2& newSize)
         input->ResizeWindow(_windows->at(i).GetBackendWindow(), newSize);
 }
 
-triton::cVector2 triton::cInput::GetCursorPosition(cInputWindow* window)
+triton::cVector2 triton::CInput::GetCursorPosition(cInputWindow* window)
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
     
     return input->GetCursorPosition(window->GetBackendWindow());
 }
 
-triton::cVector2 triton::cInput::GetMonitorSize() const
+triton::cVector2 triton::CInput::GetMonitorSize() const
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
 
     return input->GetMonitorSize();
 }
 
-types::boolean triton::cInput::GetKeyPressed(types::qword keyCode) const
+types::boolean triton::CInput::GetKeyPressed(types::qword keyCode) const
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
 
     return input->GetKeyPressed(keyCode);
 }
 
-types::boolean triton::cInput::GetMouseKeyPressed(types::qword keyCode) const
+types::boolean triton::CInput::GetMouseKeyPressed(types::qword keyCode) const
 {
     iInputBackend* input = _context->GetBackend<iInputBackend>();
 

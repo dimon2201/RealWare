@@ -6,13 +6,13 @@
 
 namespace triton
 {
-    class XAtlasTexturePool : public XObjectPool<XAtlasTexture>
+    class CAtlasTexturePool : public CObjectPool<XAtlasTexture>
     {
-        TRITON_OBJECT(XAtlasTexturePool)
+        TRITON_CLASS_NAME(CAtlasTexturePool)
 
     public:
-        using XObjectPool<XAtlasTexture>::XObjectPool;
-        ~XAtlasTexturePool() override = default;
+        using CObjectPool<XAtlasTexture>::CObjectPool;
+        ~CAtlasTexturePool() override = default;
 
         XAtlasTexture::TGPULayout ConvertToGpuLayout(const XAtlasTexture& object) override
         {

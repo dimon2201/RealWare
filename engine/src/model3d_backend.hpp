@@ -5,16 +5,31 @@
 #include <string>
 #include <optional>
 #include "backend.hpp"
+#include "object.hpp"
 #include "model3d_formats.hpp"
+#include "vertex.hpp"
+#include "material.hpp"
+#include "skeleton.hpp"
+#include "animation.hpp"
 
 namespace triton
 {
     struct SVertex;
-    struct SModel3DData;
+
+    struct SModel3DData
+    {
+        const SSkinnedVertexGPULayout* vertexData = nullptr;
+        const types::u32* indexData = nullptr;
+        types::usize vertexCount = 0;
+        types::usize indexCount = 0;
+        std::vector<XMaterial::THandle> materials = {};
+        XSkeleton::THandle skeleton = {};
+        std::vector<XAnimation::THandle> animations = {};
+    };
 
     class IModel3DBackend : public iBackend
     {
-        TRITON_OBJECT(IModel3DBackend)
+        TRITON_CLASS_NAME(IModel3DBackend)
 
     public:
         explicit IModel3DBackend(cContext* context) : iBackend(context) {}

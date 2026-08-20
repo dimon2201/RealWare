@@ -8,11 +8,10 @@
 #include <filesystem>
 #include "object.hpp"
 #include "math.hpp"
-#include "linear_array.hpp"
 #include "atlas_texture.hpp"
 #include "graphics_backend.hpp"
 #include "texture_file_formats.hpp"
-#include "DELETE_THIS_FILE_ASAP.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -20,11 +19,10 @@ namespace triton
     class cContext;
     class iGraphicsBackend;
     class cApplication;
-    class XTexturePool;
 
-    class XTextureAtlas : public ISubsys
+    class CTextureAtlas final : public CSubsystem
     {
-        TRITON_OBJECT(XTextureAtlas)
+        TRITON_CLASS_NAME(CTextureAtlas)
 
         CGPUTextureResource _atlasRGBA8SRGB;
         CGPUTextureResource _atlasRGBA8;
@@ -34,8 +32,8 @@ namespace triton
         std::vector<STextureAtlasRegion> _texturesR8;
 
     public:
-        explicit XTextureAtlas(cContext* context, const cVector3& size);
-        ~XTextureAtlas() override;
+        explicit CTextureAtlas(cContext* context, const cVector3& size);
+        ~CTextureAtlas();
 
         std::optional<STextureAtlasRegion> Create(
             const std::filesystem::path& filePath,
@@ -51,10 +49,6 @@ namespace triton
             ETextureFileFormat byteDataFormat,
             ETextureFormat pixelDataFormat
         );
-
-        void Init() override {}
-        void Free() override {}
-        void Update() override {}
 
         inline CGPUTextureResource GetAtlasRGBA8SRGB() const
         {

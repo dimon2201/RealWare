@@ -183,7 +183,7 @@ triton::CGPUShaderResource triton::XGraphicsBackendOGL::CreateShader(
 
     std::string vertexCppStrInclude = "";
     std::string fragmentCppStrInclude = "";
-    cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
+    CFileSystem* fs = _context->GetSubsystem<CFileSystem>();
     cMemoryAllocator* ma = _context->GetMemoryAllocator();
     if (vertexIncludePathCount > 0)
     {
@@ -251,7 +251,7 @@ triton::CGPUShaderResource triton::XGraphicsBackendOGL::CreateShader(
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    return CGPUShaderResource(_context, instance, 0);
+    return CGPUShaderResource(instance, 0);
 }
 
 void triton::XGraphicsBackendOGL::BindShader(const CGPUShaderResource& shader)
@@ -338,7 +338,7 @@ triton::CGPUInputLayoutResource triton::XGraphicsBackendOGL::CreateInputLayout()
     GLuint instance = 0;
     glGenVertexArrays(1, (GLuint*)&instance);
 
-    return CGPUInputLayoutResource(_context, instance, 0);
+    return CGPUInputLayoutResource(instance, 0);
 }
 
 void triton::XGraphicsBackendOGL::BindInputLayout(const CGPUInputLayoutResource& inputLayout)
@@ -391,7 +391,7 @@ void triton::XGraphicsBackendOGL::DestroyInputLayout(const CGPUInputLayoutResour
 
 triton::CGPURenderPassResource triton::XGraphicsBackendOGL::CreateRenderPass()
 {
-    return CGPURenderPassResource(_context, 0, 0);
+    return CGPURenderPassResource(0, 0);
 }
 
 void triton::XGraphicsBackendOGL::BindRenderPass(const CGPURenderPassResource& renderPass)
@@ -484,7 +484,7 @@ triton::CGPURenderTargetResource triton::XGraphicsBackendOGL::CreateRenderTarget
     if (status != GL_FRAMEBUFFER_COMPLETE)
         Print("Error: incomplete framebuffer!");
 
-    return CGPURenderTargetResource(_context, instance, 0, colorAttachments.size(), colorAttachments.data(), depthAttachment);
+    return CGPURenderTargetResource(instance, 0, colorAttachments.size(), colorAttachments.data(), depthAttachment);
 }
 
 void triton::XGraphicsBackendOGL::ResizeRenderTargetColors(
@@ -636,7 +636,7 @@ triton::CGPUBufferResource triton::XGraphicsBackendOGL::CreateBuffer(
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
-    return CGPUBufferResource(_context, instance, 0, type, byteSize, slot);
+    return CGPUBufferResource(instance, 0, type, byteSize, slot);
 }
 
 void triton::XGraphicsBackendOGL::BindBuffer(const CGPUBufferResource& buffer)
@@ -822,7 +822,7 @@ triton::CGPUTextureResource triton::XGraphicsBackendOGL::CreateTexture(
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
-    return CGPUTextureResource(_context, instance, 0, size, dimension, format, slot);
+    return CGPUTextureResource(instance, 0, size, dimension, format, slot);
 }
 
 triton::CGPUTextureResource triton::XGraphicsBackendOGL::ResizeTexture(const CGPUTextureResource& texture, const cVector2& size)
@@ -976,7 +976,7 @@ void triton::XGraphicsBackendOGL::WriteTextureToFile(const CGPUTextureResource& 
 
     if (texture.GetDimension() == ETextureDimension::Texture2D)
     {
-        const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetCapabilities();
+        const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetCapabilities();
         cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
         u8* pixels = (u8*)memoryAllocator->Allocate(

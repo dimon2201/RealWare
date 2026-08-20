@@ -9,30 +9,27 @@
 #include "filesystem_manager.hpp"
 #include "input.hpp"
 #include "geometry_storage.hpp"
-#include "material_subsystem.hpp"
-#include "batcher.hpp"
-#include "skinning_subsystem.hpp"
 #include "skinned_bones_pool.hpp"
 #include "texture_atlas.hpp"
 #include "shader_pool.hpp"
 
 using namespace types;
 
-triton::XGraphics::XGraphics(cContext* context) : iObject(context)
+triton::CGraphics::CGraphics(cContext* context) : CSubsystem(context)
 {
     CreateInputLayouts();
     CreateRenderTargets();
     CreateRenderPasses();
 }
 
-triton::XGraphics::~XGraphics()
+triton::CGraphics::~CGraphics()
 {
     DestroyRenderPasses();
     DestroyRenderTargets();
     DestroyInputLayouts();
 }
 
-void triton::XGraphics::ExecutePasses()
+void triton::CGraphics::ExecutePasses()
 {
     CThreadGuard::AssertRender();
 
@@ -41,7 +38,7 @@ void triton::XGraphics::ExecutePasses()
     UnbindBuffers();
 }
 
-void triton::XGraphics::ResizeRenderTargets(const cVector2& size)
+void triton::CGraphics::ResizeRenderTargets(const cVector2& size)
 {
     // TODO: finish this to make resizing work
     // |||||||||||||||||||||||||||||||||||||||
@@ -83,14 +80,14 @@ void triton::XGraphics::ResizeRenderTargets(const cVector2& size)
     //_compositeFinal->SetInputTexture(0, SRenderPassTexture("ColorTexture", opaqueColorAttachments[0]));
 }
 
-void triton::XGraphics::LoadShaderFiles(
+void triton::CGraphics::LoadShaderFiles(
     const std::string& vertexFuncPath,
     const std::string& fragmentFuncPath,
     std::string& vertexFunc,
     std::string& fragmentFunc
 )
 {
-    cFileSystem* fileSystem = _context->GetSubsystem<cFileSystem>();
+    CFileSystem* fileSystem = _context->GetSubsystem<CFileSystem>();
 
     cDataFile* vertexFuncFile = fileSystem->CreateDataFile(vertexFuncPath, K_TRUE);
     cDataFile* fragmentFuncFile = fileSystem->CreateDataFile(fragmentFuncPath, K_TRUE);
@@ -102,9 +99,9 @@ void triton::XGraphics::LoadShaderFiles(
     fileSystem->DestroyDataFile(fragmentFuncFile);
 }
 
-void triton::XGraphics::CreateInputLayouts()
+void triton::CGraphics::CreateInputLayouts()
 {
-    XGeometryStorage* gs = _context->GetSubsystem<XGeometryStorage>();
+    CGeometryStorage* gs = _context->GetSubsystem<CGeometryStorage>();
     const std::vector<XGPUBuffer::THandle> staticInputs = {
         gs->GetStaticVertexBuffer(),
         gs->GetStaticIndexBuffer()
@@ -113,16 +110,16 @@ void triton::XGraphics::CreateInputLayouts()
         gs->GetSkinnedVertexBuffer(),
         gs->GetSkinnedIndexBuffer()
     };
-    XInputLayoutPool* iaPool = _context->GetPool<XInputLayoutPool>();
-    _inputLayoutStatic = *iaPool->Create(_context, staticInputs, EVertexBufferFormat::Static_52);
-    _inputLayoutSkinned = *iaPool->Create(_context, skinnedInputs, EVertexBufferFormat::Skinned_84);
-    _inputLayoutProcessing = *iaPool->Create(_context, std::vector<XGPUBuffer::THandle>(), EVertexBufferFormat::Unknown);
+    CInputLayoutPool* iaPool = _context->GetPool<CInputLayoutPool>();
+    _inputLayoutStatic = *iaPool->Create(staticInputs, EVertexBufferFormat::Static_52);
+    _inputLayoutSkinned = *iaPool->Create(skinnedInputs, EVertexBufferFormat::Skinned_84);
+    _inputLayoutProcessing = *iaPool->Create(std::vector<XGPUBuffer::THandle>(), EVertexBufferFormat::Unknown);
 }
 
-void triton::XGraphics::CreateRenderTargets()
+void triton::CGraphics::CreateRenderTargets()
 {
-    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->at(0).GetSize();
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    cVector2 windowSize = _context->GetSubsystem<CInput>()->GetWindows()->at(0).GetSize();
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -132,8 +129,8 @@ void triton::XGraphics::CreateRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    CGPUTextureResource color = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    CGPUTextureResource color = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -143,8 +140,8 @@ void triton::XGraphics::CreateRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    CGPUTextureResource accumulation = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    CGPUTextureResource accumulation = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -154,8 +151,8 @@ void triton::XGraphics::CreateRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    CGPUTextureResource revealage = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    CGPUTextureResource revealage = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
         windowSize.GetY(),
@@ -165,22 +162,22 @@ void triton::XGraphics::CreateRenderTargets()
         (cpuword)nullptr,
         0
     ));
-    CGPUTextureResource depth = _context->GetSubsystem<cEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
+    CGPUTextureResource depth = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
     
-    XRenderTargetPool* rtPool = _context->GetPool<XRenderTargetPool>();
+    CRenderTargetPool* rtPool = _context->GetPool<CRenderTargetPool>();
 
     std::vector<CGPUTextureResource> opaqueColorAttachments = { color };
-    _opaqueRenderTarget = *rtPool->Create(_context, opaqueColorAttachments, depth);
+    _opaqueRenderTarget = *rtPool->Create(opaqueColorAttachments, depth);
 
     std::vector<CGPUTextureResource> transparentColorAttachments = { accumulation, revealage };
-    _transparentRenderTarget = *rtPool->Create(_context, transparentColorAttachments, depth);
+    _transparentRenderTarget = *rtPool->Create(transparentColorAttachments, depth);
 }
 
-void triton::XGraphics::CreateRenderPasses()
+void triton::CGraphics::CreateRenderPasses()
 {
-    cVector2 windowSize = _context->GetSubsystem<cInput>()->GetWindows()->at(0).GetSize();
-    XTextureAtlas* textureAtlas = _context->GetSubsystem<XTextureAtlas>();
-    cFileSystem* fs = _context->GetSubsystem<cFileSystem>();
+    cVector2 windowSize = _context->GetSubsystem<CInput>()->GetWindows()->at(0).GetSize();
+    CTextureAtlas* textureAtlas = _context->GetSubsystem<CTextureAtlas>();
+    CFileSystem* fs = _context->GetSubsystem<CFileSystem>();
 
     SViewport viewport;
     viewport.rect = cVector4(0.0f, 0.0f, windowSize.GetX(), windowSize.GetY());
@@ -198,7 +195,7 @@ void triton::XGraphics::CreateRenderPasses()
     const std::string compositeFinalVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_vertex.shader";
     const std::string compositeFinalFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_fragment.shader";
 
-    XRenderPassPool* rpPool = _context->GetPool<XRenderPassPool>();
+    CRenderPassPool* rpPool = _context->GetPool<CRenderPassPool>();
     std::string emptyStr = "";
     std::vector<SShaderDefine> emptyShaderDefineVec = {};
     std::vector<const char*> emptyConstCharVec = {};
@@ -207,8 +204,7 @@ void triton::XGraphics::CreateRenderPasses()
     const std::vector<const char*> opaqueShaderFragmentIncludePaths = { pbrShaderPath.c_str()};
     auto opaqueStaticVertexStr = fs->TextFileToString(opaqueStaticVertexShaderPath);
     auto opaqueStaticFragmentStr = fs->TextFileToString(opaqueFragmentShaderPath);
-    XShader::THandle opaqueStaticShader = *_context->GetPool<XShaderPool>()->Create(
-        _context,
+    XShader::THandle opaqueStaticShader = *_context->GetPool<CShaderPool>()->Create(
         opaqueStaticVertexStr,
         opaqueStaticFragmentStr,
         emptyStr,
@@ -223,7 +219,7 @@ void triton::XGraphics::CreateRenderPasses()
     opaqueBlendState.srcFactors[0] = EBlendFactor::ONE;
     opaqueBlendState.dstFactors[0] = EBlendFactor::ZERO;
     
-    _opaqueStatic = *rpPool->Create(_context);
+    _opaqueStatic = *rpPool->Create();
     XRenderPass& opaqueStaticData = *rpPool->Get(_opaqueStatic);
     opaqueStaticData.SetDispatch(ERenderPassDispatch::Geometry);
     opaqueStaticData.SetBatchFormat(EVertexBufferFormat::Static_52);
@@ -242,8 +238,7 @@ void triton::XGraphics::CreateRenderPasses()
     // Opaque skinned render pass
     auto opaqueSkinnedVertexStr = fs->TextFileToString(opaqueSkinnedVertexShaderPath);
     auto opaqueSkinnedFragmentStr = fs->TextFileToString(opaqueFragmentShaderPath);
-    XShader::THandle opaqueSkinnedShader = *_context->GetPool<XShaderPool>()->Create(
-        _context,
+    XShader::THandle opaqueSkinnedShader = *_context->GetPool<CShaderPool>()->Create(
         opaqueSkinnedVertexStr,
         opaqueSkinnedFragmentStr,
         emptyStr,
@@ -253,7 +248,7 @@ void triton::XGraphics::CreateRenderPasses()
         opaqueShaderFragmentIncludePaths
     );
 
-    _opaqueSkinned = *rpPool->Create(_context);
+    _opaqueSkinned = *rpPool->Create();
     XRenderPass& opaqueSkinnedData = *rpPool->Get(_opaqueSkinned);
     opaqueSkinnedData.SetDispatch(ERenderPassDispatch::Geometry);
     opaqueSkinnedData.SetBatchFormat(EVertexBufferFormat::Skinned_84);
@@ -272,8 +267,7 @@ void triton::XGraphics::CreateRenderPasses()
     // Transparent render pass
     auto transparentVertexStr = fs->TextFileToString(transparentVertexShaderPath);
     auto transparentFragmentStr = fs->TextFileToString(transparentFragmentShaderPath);
-    XShader::THandle transparentShader = *_context->GetPool<XShaderPool>()->Create(
-        _context,
+    XShader::THandle transparentShader = *_context->GetPool<CShaderPool>()->Create(
         transparentVertexStr,
         transparentFragmentStr,
         emptyStr,
@@ -290,7 +284,7 @@ void triton::XGraphics::CreateRenderPasses()
     transparentBlendState.srcFactors[1] = EBlendFactor::ZERO;
     transparentBlendState.dstFactors[1] = EBlendFactor::INV_SRC_COLOR;
 
-    _transparent = *rpPool->Create(_context);
+    _transparent = *rpPool->Create();
     XRenderPass& transparentData = *rpPool->Get(_transparent);
     transparentData.SetDispatch(ERenderPassDispatch::Geometry);
     transparentData.SetBatchFormat(EVertexBufferFormat::Static_52);
@@ -309,8 +303,7 @@ void triton::XGraphics::CreateRenderPasses()
     // Text render pass
     auto textVertexStr = fs->TextFileToString(textVertexShaderPath);
     auto textFragmentStr = fs->TextFileToString(textFragmentShaderPath);
-    XShader::THandle textShader = *_context->GetPool<XShaderPool>()->Create(
-        _context,
+    XShader::THandle textShader = *_context->GetPool<CShaderPool>()->Create(
         textVertexStr,
         textFragmentStr,
         emptyStr,
@@ -320,7 +313,7 @@ void triton::XGraphics::CreateRenderPasses()
         emptyConstCharVec
     );
 
-    _text = *rpPool->Create(_context);
+    _text = *rpPool->Create();
     XRenderPass& textData = *rpPool->Get(_text);
     textData.SetDispatch(ERenderPassDispatch::Text);
     textData.SetBatchFormat(EVertexBufferFormat::Unknown);
@@ -332,8 +325,7 @@ void triton::XGraphics::CreateRenderPasses()
     // Composite transparent render pass
     auto compositeTransparentVertexStr = fs->TextFileToString(compositeTransparentVertexShaderPath);
     auto compositeTransparentFragmentStr = fs->TextFileToString(compositeTransparentFragmentShaderPath);
-    XShader::THandle compositeTransparentShader = *_context->GetPool<XShaderPool>()->Create(
-        _context,
+    XShader::THandle compositeTransparentShader = *_context->GetPool<CShaderPool>()->Create(
         compositeTransparentVertexStr,
         compositeTransparentFragmentStr,
         emptyStr,
@@ -348,9 +340,9 @@ void triton::XGraphics::CreateRenderPasses()
     compositeTransparentBlendState.srcFactors[0] = EBlendFactor::SRC_ALPHA;
     compositeTransparentBlendState.dstFactors[0] = EBlendFactor::INV_SRC_ALPHA;
 
-    XRenderTarget& transparentRTData = *_context->GetPool<XRenderTargetPool>()->Get(_transparentRenderTarget);
+    XRenderTarget& transparentRTData = *_context->GetPool<CRenderTargetPool>()->Get(_transparentRenderTarget);
 
-    _compositeTransparent = *rpPool->Create(_context);
+    _compositeTransparent = *rpPool->Create();
     XRenderPass& compositeTransparentData = *rpPool->Get(_compositeTransparent);
     compositeTransparentData.SetDispatch(ERenderPassDispatch::Processing);
     compositeTransparentData.SetBatchFormat(EVertexBufferFormat::Unknown);
@@ -368,8 +360,7 @@ void triton::XGraphics::CreateRenderPasses()
     // Composite final render pass
     auto compositeFinalVertexStr = fs->TextFileToString(compositeFinalVertexShaderPath);
     auto compositeFinalFragmentStr = fs->TextFileToString(compositeFinalFragmentShaderPath);
-    XShader::THandle compositeFinalShader = *_context->GetPool<XShaderPool>()->Create(
-        _context,
+    XShader::THandle compositeFinalShader = *_context->GetPool<CShaderPool>()->Create(
         compositeFinalVertexStr,
         compositeFinalFragmentStr,
         emptyStr,
@@ -384,9 +375,9 @@ void triton::XGraphics::CreateRenderPasses()
     compositeFinalBlendState.srcFactors[0] = EBlendFactor::ONE;
     compositeFinalBlendState.dstFactors[0] = EBlendFactor::ZERO;
 
-    XRenderTarget& opaqueRTData = *_context->GetPool<XRenderTargetPool>()->Get(_opaqueRenderTarget);
+    XRenderTarget& opaqueRTData = *_context->GetPool<CRenderTargetPool>()->Get(_opaqueRenderTarget);
 
-    _compositeFinal = *rpPool->Create(_context);
+    _compositeFinal = *rpPool->Create();
     XRenderPass& compositeFinalData = *rpPool->Get(_compositeFinal);
     compositeFinalData.SetDispatch(ERenderPassDispatch::Processing);
     compositeFinalData.SetBatchFormat(EVertexBufferFormat::Unknown);
@@ -400,34 +391,34 @@ void triton::XGraphics::CreateRenderPasses()
     compositeFinalData.SetBlendState(compositeFinalBlendState);
 }
 
-void triton::XGraphics::DestroyInputLayouts()
+void triton::CGraphics::DestroyInputLayouts()
 {
-    XInputLayoutPool* iaPool = _context->GetPool<XInputLayoutPool>();
+    CInputLayoutPool* iaPool = _context->GetPool<CInputLayoutPool>();
     iaPool->Destroy(_inputLayoutProcessing);
     iaPool->Destroy(_inputLayoutSkinned);
     iaPool->Destroy(_inputLayoutStatic);
 }
 
-void triton::XGraphics::DestroyRenderTargets()
+void triton::CGraphics::DestroyRenderTargets()
 {
-    XRenderTargetPool* rtPool = _context->GetPool<XRenderTargetPool>();
+    CRenderTargetPool* rtPool = _context->GetPool<CRenderTargetPool>();
 
     XRenderTarget& opaqueRT = *rtPool->Get(_opaqueRenderTarget);
     XRenderTarget& transparentRT = *rtPool->Get(_transparentRenderTarget);
 
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&opaqueRT.GetGPUResource().GetColorAttachments()[0]
     ));
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&transparentRT.GetGPUResource().GetColorAttachments()[0]
     ));
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&transparentRT.GetGPUResource().GetColorAttachments()[1]
     ));
-    _context->GetSubsystem<cEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_TEXTURE,
         (cpuword)&opaqueRT.GetGPUResource().GetDepthAttachment()
     ));
@@ -436,9 +427,9 @@ void triton::XGraphics::DestroyRenderTargets()
     rtPool->Destroy(_opaqueRenderTarget);
 };
 
-void triton::XGraphics::DestroyRenderPasses()
+void triton::CGraphics::DestroyRenderPasses()
 {
-    XRenderPassPool* rpPool = _context->GetPool<XRenderPassPool>();
+    CRenderPassPool* rpPool = _context->GetPool<CRenderPassPool>();
 
     rpPool->Destroy(_compositeFinal);
     rpPool->Destroy(_compositeTransparent);
@@ -448,7 +439,7 @@ void triton::XGraphics::DestroyRenderPasses()
     rpPool->Destroy(_opaqueStatic);
 }
 
-void triton::XGraphics::BindBuffers()
+void triton::CGraphics::BindBuffers()
 {
     //_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer()->Bind();
     //_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->GetGPUBuffer()->Bind();
@@ -456,7 +447,7 @@ void triton::XGraphics::BindBuffers()
     //_context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->GetGPUBuffer()->Bind();
 }
 
-void triton::XGraphics::UnbindBuffers()
+void triton::CGraphics::UnbindBuffers()
 {
     //_context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->GetGPUBuffer()->Unbind();
     //_context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->GetGPUBuffer()->Unbind();
@@ -464,9 +455,9 @@ void triton::XGraphics::UnbindBuffers()
     //_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->GetGPUBuffer()->Unbind();
 }
 
-void triton::XGraphics::ExecuteBuiltinPasses()
+void triton::CGraphics::ExecuteBuiltinPasses()
 {
-    XRenderPassPool* rpPool = _context->GetPool<XRenderPassPool>();
+    CRenderPassPool* rpPool = _context->GetPool<CRenderPassPool>();
 
     XRenderPass& opaqueStatic = *rpPool->Get(_opaqueStatic);
     XRenderPass& compositeFinal = *rpPool->Get(_compositeFinal);
@@ -495,7 +486,7 @@ void triton::XGraphics::ExecuteBuiltinPasses()
 
         const cTransform transform(&it);
 
-        IApplication* app = _context->GetSubsystem<cEngine>()->GetApplication();
+        IApplication* app = _context->GetSubsystem<CEngine>()->GetApplication();
         const glm::vec2 windowSize = app->GetWindow()->GetSize();
         const glm::vec2 textPosition = glm::vec2((transform._position.x * 2.0f) - 1.0f, (transform._position.y * 2.0f) - 1.0f);
         const glm::vec2 textScale = glm::vec2(

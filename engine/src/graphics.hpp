@@ -9,6 +9,7 @@
 #include "render_target.hpp"
 #include "render_pass.hpp"
 #include "math.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -17,9 +18,9 @@ namespace triton
     class XRenderTargetPool;
     class XRenderPassPool;
 
-	class XGraphics : public iObject
+	class CGraphics : public CSubsystem
 	{
-        TRITON_OBJECT(XGraphics)
+        TRITON_CLASS_NAME(CGraphics)
 
         XInputLayout::THandle _inputLayoutStatic;
         XInputLayout::THandle _inputLayoutSkinned;
@@ -34,8 +35,8 @@ namespace triton
         XRenderPass::THandle _compositeFinal;
 
 	public:
-        explicit XGraphics(cContext* context);
-        ~XGraphics() override;
+        explicit CGraphics(cContext* context);
+        ~CGraphics() override;
 
         void ExecutePasses();
 

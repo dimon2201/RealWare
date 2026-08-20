@@ -6,21 +6,23 @@
 #include <string>
 #include <typeinfo>
 #include "log.hpp"
-#include "object.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-	class cTime : public iObject
+	class cContext;
+
+	class cTime : public CSubsystem
 	{
-		TRITON_OBJECT(cTime)
+		TRITON_CLASS_NAME(cTime)
 
 		std::chrono::steady_clock::time_point _timepointLast;
 		types::f32 _deltaTime = 0.0f;
 
 	public:
 		explicit cTime(cContext* context);
-		virtual ~cTime() override final = default;
+		~cTime() = default;
 
 		void BeginFrame();
 		void Update();

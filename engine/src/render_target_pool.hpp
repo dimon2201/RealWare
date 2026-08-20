@@ -6,13 +6,13 @@
 
 namespace triton
 {
-    class XRenderTargetPool : public XObjectPool<XRenderTarget>
+    class CRenderTargetPool : public CObjectPool<XRenderTarget>
     {
-        TRITON_OBJECT(XRenderTargetPool)
+        TRITON_CLASS_NAME(CRenderTargetPool)
 
     public:
-        using XObjectPool<XRenderTarget>::XObjectPool;
-        ~XRenderTargetPool() override = default;
+        using CObjectPool<XRenderTarget>::CObjectPool;
+        ~CRenderTargetPool() override = default;
 
         XRenderTarget::TGPULayout ConvertToGpuLayout(const XRenderTarget& object) override
         {

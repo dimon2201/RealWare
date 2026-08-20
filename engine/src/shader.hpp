@@ -21,6 +21,7 @@ namespace triton
 	public:
 		explicit XShader(
 			cContext* context,
+			types::s32 poolIndex,
 			const std::string& vertexStr,
 			const std::string& fragmentStr,
 			const std::string& vertexCustomFuncStr,

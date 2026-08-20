@@ -3,10 +3,11 @@
 #pragma once
 
 #include <vector>
-#include "object.hpp"
 #include "input_backend.hpp"
 #include "input_window.hpp"
+#include "capabilities.hpp"
 #include "math.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 struct GLFWwindow;
@@ -17,17 +18,17 @@ namespace triton
     template <typename TValue>
     class XDynamicArray;
 
-	class cInput : public iObject
+	class CInput final : public CSubsystem
 	{
-        TRITON_OBJECT(cInput)
+        TRITON_CLASS_NAME(CInput)
 
         std::vector<cInputWindow>* _windows = nullptr; // TODO: replace with DynamicArray<T>
 
 	public:
-		explicit cInput(cContext* context);
-		virtual ~cInput() override final = default;
+		explicit CInput(cContext* context);
+		~CInput() = default;
 
-        void Initialize();
+        void Initialize(const sCapabilities& caps);
         void Shutdown();
         cInputWindow* CreatePlatformWindow(
             const std::string& title,

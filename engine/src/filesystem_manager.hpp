@@ -4,20 +4,22 @@
 
 #include "object.hpp"
 #include "data_buffer.hpp"
+#include "subsystem.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-    class cDataFile : public iObject
-    {
-        TRITON_OBJECT(cDataFile)
+    class cContext;
 
+    class cDataFile
+    {
+        cContext* _context = nullptr;
         types::boolean _bExists = types::K_FALSE;
         XDataBuffer* _data = nullptr;
 
     public:
         explicit cDataFile(cContext* context, const std::string& path, types::boolean isText);
-        virtual ~cDataFile() override final;
+        ~cDataFile();
 
         inline void* GetData() const;
         inline XDataBuffer* GetBuffer() const { return _data; }
@@ -28,13 +30,13 @@ namespace triton
         }
     };
 
-    class cFileSystem : public iObject
+    class CFileSystem : public CSubsystem
     {
-        TRITON_OBJECT(cFileSystem)
+        TRITON_CLASS_NAME(CFileSystem)
 
     public:
-        explicit cFileSystem(cContext* context);
-        ~cFileSystem() = default;
+        explicit CFileSystem(cContext* context);
+        ~CFileSystem() override = default;
 
         cDataFile* CreateDataFile(const std::string& path, types::boolean isText);
         std::string TextFileToString(const std::string& path);

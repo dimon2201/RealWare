@@ -12,13 +12,15 @@ namespace triton
 {
 	class cMemoryAllocator;
 	class iBackend;
+	class CSubsystem;
+	class CPool;
 
 	class cContext
 	{
 		cMemoryAllocator* _allocator = nullptr;
-		::std::unordered_map<ClassType, std::shared_ptr<iBackend>> _backends;
-		::std::unordered_map<ClassType, iObject*> _subsystems;
-		std::unordered_map<ClassType, iObject*> _pools;
+		::std::unordered_map<ClassType, iBackend*> _backends;
+		::std::unordered_map<ClassType, CSubsystem*> _subsystems;
+		std::unordered_map<ClassType, CPool*> _pools;
 
 	public:
 		explicit cContext() = default;
@@ -39,9 +41,9 @@ namespace triton
 		template <typename T>
 		void RegisterBackend(T* backend);
 
-		void RegisterSubsystem(iObject* object);
+		void RegisterSubsystem(CSubsystem* subsystem);
 
-		void RegisterPool(iObject* pool);
+		void RegisterPool(CPool* pool);
 
 		template <typename T>
 		void ReleaseSubsystem();
@@ -68,7 +70,7 @@ T* triton::cContext::Create(Args&&... args)
 	// TODO: rewrite object creation system completely
 	// temporary solution
 
-	const sCapabilities* caps = GetSubsystem<cEngine>()->GetCapabilities();
+	const sCapabilities* caps = GetSubsystem<CEngine>()->GetCapabilities();
 	cMemoryAllocator* memoryAllocator = GetMemoryAllocator();
 	T* object = (T*)memoryAllocator->Allocate(sizeof(T), caps->memoryAlignment);
 	
@@ -119,7 +121,7 @@ void triton::cContext::RegisterBackend(T* backend)
 	const ClassType type = T::GetTypeStatic();
 	const auto it = _backends.find(type);
 	if (it == _backends.end())
-		_backends.insert({ type, std::shared_ptr<iBackend>(backend) });
+		_backends.insert({ type, backend });
 }
 
 template <typename T>
@@ -146,7 +148,7 @@ T* triton::cContext::GetBackend() const
 	const ClassType type = T::GetTypeStatic();
 	const auto it = _backends.find(type);
 	if (it != _backends.end())
-		return (T*)it->second.get();
+		return (T*)it->second;
 	else
 		return nullptr;
 }

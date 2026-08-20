@@ -8,12 +8,11 @@ namespace triton
 {
     class cContext;
 
-    class cInputWindow : public iObject
+    class cInputWindow
     {
-        TRITON_OBJECT(cInputWindow)
-
         friend class cInput;
 
+        cContext* _context = nullptr;
         mutable sInputBackendWindow _backendWindow = {};
 
     public:
@@ -24,7 +23,7 @@ namespace triton
         };
 
         explicit cInputWindow(cContext* context, const sInputBackendWindow& backendWindow);
-        virtual ~cInputWindow() override final = default;
+        ~cInputWindow() = default;
 
         types::boolean IsWindowFocused() const;
 

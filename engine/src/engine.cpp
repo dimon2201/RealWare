@@ -15,24 +15,16 @@
 #include "thread_subsystem.hpp"
 #include "audio.hpp"
 #include "math.hpp"
-#include "ecs.hpp"
 #include "input_backend_sdl.hpp"
 #include "graphics_backend_ogl.hpp"
 #include "audio_backend_oal.hpp"
 #include "render_thread.hpp"
 #include "thread_guard.hpp"
 #include "geometry_storage.hpp"
-#include "ecs_subsystem.hpp"
-#include "handle_allocator.hpp"
-#include "game_object_subsystem.hpp"
-#include "material_subsystem.hpp"
 #include "model3d_backend.hpp"
 #include "model3d_backend_assimp.hpp"
-#include "model3d_subsystem.hpp"
-#include "animation_subsystem.hpp"
-#include "skeleton_subsystem.hpp"
-#include "skinning_subsystem.hpp"
-#include "batcher.hpp"
+#include "animation_pool.hpp"
+#include "render_instance_pack_pool.hpp"
 #include "synchronization.hpp"
 #include "render_thread.hpp"
 #include "camera_pool.hpp"
@@ -47,23 +39,23 @@
 #include "atlas_texture_pool.hpp"
 #include "shader_pool.hpp"
 #include "gpu_buffer_pool.hpp"
+#include "render_instance_static_pool.hpp"
+#include "render_instance_dynamic_pool.hpp"
 
-using namespace triton::ecs;
-using namespace triton::ecs::components;
 using namespace types;
 
-triton::cEngine::cEngine(cContext* context, IApplication* app) : iObject(context), _app(app)
+triton::CEngine::CEngine(cContext* context, IApplication* app) : CSubsystem(context), _app(app)
 {
 	if (_app != nullptr)
 		_caps = _app->GetCapabilities();
 }
 
-triton::cEngine::~cEngine()
+triton::CEngine::~CEngine()
 {
 	Shutdown();
 }
 
-void triton::cEngine::Initialize()
+void triton::CEngine::Initialize()
 {
 	CThreadGuard::CaptureMainThreadId();
 
@@ -73,119 +65,118 @@ void triton::cEngine::Initialize()
 	// Create memory allocator
 	_context->CreateMemoryAllocator();
 
+	CObjectAllocator::Initialize(_context->GetMemoryAllocator());
+
 	InitializeRenderCommandRecorder();
 	InitializeSynchronization();
-
-	CObjectAllocator::Initialize(_context->GetMemoryAllocator());
 
 	// Register backends
 	_context->RegisterBackend<iInputBackend>(new cInputBackendSDL(_context));
 	_context->RegisterBackend<IGraphicsBackend>(new XGraphicsBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 	_context->RegisterBackend<IModel3DBackend>(new XModel3DBackendAssimp(_context));
-	
-	// Register pools
-	_context->RegisterPool(new XCameraPool(_context, K_TRUE));
-	_context->RegisterPool(new XAtlasTexturePool(_context, K_TRUE));
-	_context->RegisterPool(new XShaderPool(_context, K_TRUE));
-	_context->RegisterPool(new XInputLayoutPool(_context, K_TRUE));
-	_context->RegisterPool(new XGPUBufferPool(_context, K_TRUE));
-	_context->RegisterPool(new XRenderPassPool(_context, K_TRUE));
-	_context->RegisterPool(new XRenderTargetPool(_context, K_TRUE));
 
-	_context->GetPool<XAtlasTexturePool>()->Allocate(64);
-	_context->GetPool<XShaderPool>()->Allocate(64);
-	_context->GetPool<XInputLayoutPool>()->Allocate(64);
-	_context->GetPool<XGPUBufferPool>()->Allocate(64);
-	_context->GetPool<XRenderPassPool>()->Allocate(64);
-	_context->GetPool<XRenderTargetPool>()->Allocate(64);
+	// Register subsystems and pools (order matters)
+	_context->RegisterSubsystem(new CInput(_context));
 
-	// Register subsystems (order matters)
-	_context->RegisterSubsystem(new cInput(_context));
-	_context->GetSubsystem<cInput>()->Initialize();
+	_context->GetSubsystem<CInput>()->Initialize(*_caps);
 
 	InitializeRenderThread();
 
-	_context->RegisterSubsystem(new XTextureAtlas(_context, cVector3(8193, 8193, 4)));
-	_context->RegisterSubsystem(new XMaterialSubsystem(_context));
-	_context->RegisterSubsystem(new XGeometryStorage(_context));
-	_context->RegisterSubsystem(new cFileSystem(_context));
-	_context->RegisterSubsystem(new XGraphics(_context));
-	_context->RegisterSubsystem(new XGameObjectSubsystem(_context));
-	_context->GetSubsystem<XGameObjectSubsystem>()->Init();
-	_context->RegisterSubsystem(new XModel3DSubsystem(_context));
-	_context->RegisterSubsystem(new XAnimationSubsystem(_context));
-	_context->GetSubsystem<XAnimationSubsystem>()->Init();
-	_context->RegisterSubsystem(new XSkeletonSubsystem(_context));
-	_context->GetSubsystem<XSkeletonSubsystem>()->Init();
-	_context->RegisterSubsystem(new XSkinningSubsystem(_context));
-	_context->GetSubsystem<XSkinningSubsystem>()->Init();
-	_context->RegisterSubsystem(new XBatchSubsystem(_context));
-	//_context->RegisterSubsystem(new cFont(_context));
-	//_context->RegisterSubsystem(new cPhysics(_context));
-	//_context->RegisterSubsystem(new cThread(_context));
-	//_context->RegisterSubsystem(new cTime(_context));
-	//_context->RegisterSubsystem(new cEventDispatcher(_context));
-	//_context->RegisterSubsystem(new cMath(_context));
-	//_context->RegisterSubsystem(new cECSSystem(_context));
+	// Register pools
+	_context->RegisterPool(new CCameraPool(_context, K_TRUE));
 
-	_context->GetSubsystem<XAnimationSubsystem>()->GetPool()->Allocate(64);
-	_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Allocate(64);
-	_context->GetSubsystem<XGameObjectSubsystem>()->GetPool()->Allocate(64);
-	_context->GetSubsystem<XMaterialSubsystem>()->GetPool()->Allocate(64);
-	_context->GetSubsystem<XBatchSubsystem>()->GetBatchPool()->Allocate(64);
-	_context->GetSubsystem<XBatchSubsystem>()->GetStaticRenderInstancePool()->Allocate(64);
-	_context->GetSubsystem<XBatchSubsystem>()->GetDynamicRenderInstancePool()->Allocate(64);
-	_context->GetSubsystem<XSkeletonSubsystem>()->GetPool()->Allocate(64);
-	_context->GetSubsystem<XSkinningSubsystem>()->GetSkinPool()->Allocate(64);
-	_context->GetSubsystem<XSkinningSubsystem>()->GetSkinnedBonesPool()->Allocate(65536);
+	_context->RegisterPool(new CAtlasTexturePool(_context, K_TRUE));
 
-	// Create systems
-	//cAudio* audioSystem = _context->Create<cAudio>(_context, cAudio::API::OAL);
-	//cCameraSystem* camera = _context->Create<cCameraSystem>(_context);
+	_context->RegisterPool(new CShaderPool(_context, K_TRUE));
 
-	// Subscribe systems to core events
-	//audioSystem->Subscribe(
-	//	eEventType::FRAME_UPDATE,
-	//	[audioSystem] (iObject* self, cContext* context, XDataBuffer* data) {
-	//		audioSystem->OnFrameUpdate();
-	//	}
-	//);
+	_context->RegisterPool(new CInputLayoutPool(_context, K_TRUE));
 
-	// Create texture manager
-	//cTextureAtlas* texture = _context->GetSubsystem<cTextureAtlas>();
-	//texture->SetAtlas(glm::vec3(2048, 2048, 16));
+	_context->RegisterPool(new CGPUBufferPool(_context, K_TRUE));
 
-	// Create sound context
-	//cAudio* audio = _context->GetSubsystem<cAudio>();
+	_context->RegisterPool(new CRenderPassPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CRenderTargetPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CRenderInstancePackPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CRenderInstanceStaticPool(
+		_context,
+		K_TRUE,
+		CRenderInstanceStaticPool::cDefaultReservationSize,
+		0,
+		EGPUBufferType::Storage
+	));
+
+	_context->RegisterPool(new CRenderInstanceDynamicPool(
+		_context,
+		K_TRUE,
+		CRenderInstanceDynamicPool::cDefaultReservationSize,
+		1,
+		EGPUBufferType::Storage
+	));
+
+	_context->RegisterPool(new CAnimationPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CGameObjectPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CMaterialPool(
+		_context,
+		K_TRUE,
+		CMaterialPool::cDefaultReservationSize,
+		2,
+		EGPUBufferType::Storage
+	));
+
+	_context->RegisterPool(new CModel3DPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CSkeletonPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CSkinnedBonesPool(
+		_context,
+		K_TRUE,
+		CSkinnedBonesPool::cDefaultReservationSize,
+		3,
+		EGPUBufferType::Storage
+	));
+
+	_context->RegisterPool(new CSkinPool(_context, K_TRUE));
+
+	_context->RegisterSubsystem(new CTextureAtlas(_context, cVector3(8193, 8193, 4)));
+
+	_context->RegisterSubsystem(new CGeometryStorage(_context));
+
+	_context->RegisterSubsystem(new CFileSystem(_context));
+
+	_context->RegisterSubsystem(new CGraphics(_context));
 }
 
-void triton::cEngine::Shutdown()
+void triton::CEngine::Shutdown()
 {
 	ReleaseRenderThread();
 	ReleaseSynchronization();
 	ReleaseRenderCommandRecorder();
-	_context->GetSubsystem<cInput>()->Shutdown();
+	_context->GetSubsystem<CInput>()->Shutdown();
 }
 
-void triton::cEngine::Run()
+void triton::CEngine::Run()
 {
 	MainThreadFunction();
 }
 
-void triton::cEngine::InitializeSynchronization()
+void triton::CEngine::InitializeSynchronization()
 {
-	_sync = _context->Create<XSynchronization>(_context, _cmdRecorder);
+	_sync = _context->Create<XSynchronization>(_context, _cmdRecorder, 1024);
 }
 
-void triton::cEngine::InitializeRenderCommandRecorder()
+void triton::CEngine::InitializeRenderCommandRecorder()
 {
 	CThreadGuard::AssertMain();
 
-	_cmdRecorder = _context->Create<XRenderCommandRecorder>(_context);
+	_cmdRecorder = _context->Create<XRenderCommandRecorder>();
 }
 
-void triton::cEngine::InitializeRenderThread()
+void triton::CEngine::InitializeRenderThread()
 {
 	CThreadGuard::AssertMain();
 
@@ -197,23 +188,23 @@ void triton::cEngine::InitializeRenderThread()
 	_sync->WaitForRenderThreadToInit();
 }
 
-void triton::cEngine::ReleaseSynchronization()
+void triton::CEngine::ReleaseSynchronization()
 {
 	_context->Destroy<XSynchronization>(_sync);
 }
 
-void triton::cEngine::ReleaseRenderCommandRecorder()
+void triton::CEngine::ReleaseRenderCommandRecorder()
 {
 	_context->Destroy<XRenderCommandRecorder>(_cmdRecorder);
 }
 
-void triton::cEngine::ReleaseRenderThread()
+void triton::CEngine::ReleaseRenderThread()
 {
 	_renderThread->Stop();
 	_context->Destroy<cRenderThread>(_renderThread);
 }
 
-void triton::cEngine::MainThreadFunction()
+void triton::CEngine::MainThreadFunction()
 {
 	CThreadGuard::AssertMain();
 
@@ -227,7 +218,7 @@ void triton::cEngine::MainThreadFunction()
 	_app->Setup();
 
 	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
-	cInputWindow& window = _context->GetSubsystem<cInput>()->GetWindows()->at(0);
+	cInputWindow& window = _context->GetSubsystem<CInput>()->GetWindows()->at(0);
 	boolean bIsRunning = K_TRUE;
 
 	while (bIsRunning)
@@ -255,13 +246,10 @@ void triton::cEngine::MainThreadFunction()
 			ZoneScopedN("Main Job");
 
 			_app->Update();
-			_context->GetSubsystem<XGameObjectSubsystem>()->Update();
-			_context->GetSubsystem<XMaterialSubsystem>()->Update();
-			_context->GetSubsystem<XTextureAtlas>()->Update();
-			_context->GetSubsystem<XAnimationSubsystem>()->Update();
-			_context->GetSubsystem<XSkeletonSubsystem>()->Update();
-			_context->GetSubsystem<XSkinningSubsystem>()->Update();
-			_context->GetSubsystem<XBatchSubsystem>()->Update();
+			_context->GetPool<CRenderInstanceStaticPool>()->Update();
+			_context->GetPool<CRenderInstanceDynamicPool>()->Update();
+			_context->GetPool<CMaterialPool>()->Update();
+			_context->GetPool<CSkinnedBonesPool>()->Update();
 		}
 		
 		{
@@ -275,7 +263,8 @@ void triton::cEngine::MainThreadFunction()
 
 			_sync->ProduceFrame(
 				producedFrameOp,
-				_cmdRecorder->GetRenderCommandPack()
+				_cmdRecorder->GetRenderCommandPack(),
+				&_context->GetSubsystem<CInput>()->GetWindows()->at(0)
 			);
 		}
 	}

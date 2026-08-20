@@ -30,12 +30,14 @@ namespace triton
 	public:
 		explicit XAtlasTexture(
 			cContext* context,
+			types::s32 poolIndex,
 			const std::filesystem::path& filePath,
 			ETextureFormat dataFormat
 		);
 
 		explicit XAtlasTexture(
 			cContext* context,
+			types::s32 poolIndex,
 			const types::u8* byteData,
 			types::usize byteDataByteSize,
 			types::usize width,

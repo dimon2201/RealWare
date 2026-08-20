@@ -6,17 +6,17 @@
 
 namespace triton
 {
-    class XSkinPool : public XObjectPool<SSkinData>
+    class CSkinPool : public CObjectPool<XSkin>
     {
-        TRITON_OBJECT(XSkinPool)
+        TRITON_CLASS_NAME(CSkinPool)
 
     public:
-        using XObjectPool<SSkinData>::XObjectPool;
-        ~XSkinPool() override = default;
+        using CObjectPool<XSkin>::CObjectPool;
+        ~CSkinPool() override = default;
 
-        SSkinData::TGPULayout ConvertToGpuLayout(const SSkinData& object) override
+        XSkin::TGPULayout ConvertToGpuLayout(const XSkin& object) override
         {
-            SSkinData::TGPULayout gpul;
+            XSkin::TGPULayout gpul;
 
             return gpul;
         }
