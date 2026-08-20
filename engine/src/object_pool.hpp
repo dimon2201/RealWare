@@ -235,7 +235,7 @@ namespace triton
 
         OccupySlot(objectIndex, _slots[objectIndex].generation + 1);
 
-        new (&_objects[objectIndex]) TObject(std::forward<Args>(args)...);
+        new (&_objects[objectIndex]) TObject(_context, objectIndex, std::forward<Args>(args)...);
 
         typename TObject::THandle handle;
         handle.index = objectIndex;
