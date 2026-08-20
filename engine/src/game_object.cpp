@@ -15,10 +15,11 @@ triton::XGameObject::XGameObject(cContext* context, s32 poolIndex, const std::st
 
 triton::XGameObject::XGameObject(
     cContext* context,
+	s32 poolIndex,
     const std::string& name,
     const SModel3DData& model,
     const XRenderInstancePack::THandle& renderInstancePack
-)
+) : iObject(context, poolIndex)
 {
 	_skeleton = model.skeleton;
 	_animations = model.animations;

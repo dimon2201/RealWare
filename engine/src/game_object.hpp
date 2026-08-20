@@ -40,6 +40,7 @@ namespace triton
 
         explicit XGameObject(
             cContext* context,
+            types::s32 poolIndex,
             const std::string& name,
             const SModel3DData& model,
             const XRenderInstancePack::THandle& renderInstancePack
