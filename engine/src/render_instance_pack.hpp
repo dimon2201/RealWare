@@ -20,7 +20,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XRenderInstancePack)
 
-		ERenderInstanceMotionType				_motionType = ERenderInstanceMotionType::Static;
+		ERenderInstanceMotionType				_motionType = ERenderInstanceMotionType::Unknown;
 		SGeometryView							_sharedGeometry = {};
 		types::usize							_bufferOffset = 0;
 		types::usize							_lastInstanceCursor = 0;
