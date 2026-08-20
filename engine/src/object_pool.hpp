@@ -77,6 +77,8 @@ namespace triton
 
         types::usize GetPackedIndex(const typename TObject::THandle& handle);
 
+        types::usize GetPackedIndex(types::s32 freeIndex);
+
         std::optional<typename TObject::THandle> GetHandle(
             const typename TObject::THandle& baseHandle,
             const types::usize offset
@@ -352,6 +354,17 @@ namespace triton
 
         types::usize packedIndex = 0;
         for (types::usize i = 0; i < handle.index; i++)
+            if (_slots[i].alive == types::True)
+                ++packedIndex;
+
+        return packedIndex;
+    }
+
+    template <typename TObject>
+    types::usize XObjectPool<TObject>::GetPackedIndex(types::s32 freeIndex)
+    {
+        types::usize packedIndex = 0;
+        for (types::usize i = 0; i < freeIndex; i++)
             if (_slots[i].alive == types::True)
                 ++packedIndex;
 
