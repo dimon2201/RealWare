@@ -278,7 +278,7 @@ namespace triton
                 {
                     OccupySlot(i + j, _slots[i + j].generation + 1);
 
-                    new (&_objects[i + j]) TObject();
+                    new (&_objects[i + j]) TObject(_context);
                 }
 
                 for (types::usize j = 0; j < _lastObjectCursor; j++)
