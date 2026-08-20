@@ -50,13 +50,14 @@ namespace triton
 		types::boolean _occupied = types::K_FALSE;
 		types::s64 _allocatorIndex = 0;
 		types::boolean _allocatedUsingMemAllocator = types::K_FALSE;
+		types::s32 _poolIndex = -1;
 		cTag _id;
 
 	public:
 
 		iObject() = default; // TODO: remove this <<<<<-----
 
-		explicit iObject(cContext* context) : _context(context) {}
+		explicit iObject(cContext* context, types::s32 poolIndex) : _context(context), _poolIndex(poolIndex) {}
 		virtual ~iObject() = default;
 
 		// TODO: Copying of object is now removed, bring it back
