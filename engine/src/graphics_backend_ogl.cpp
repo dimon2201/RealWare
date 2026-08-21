@@ -87,8 +87,6 @@ void triton::XGraphicsBackendOGL::SwapWindowBuffers(const sInputBackendWindow& w
 
 void triton::XGraphicsBackendOGL::ClearColor(const cVector4& color)
 {
-    glDisable(GL_CULL_FACE);
-
     glClearColor(color.GetX(), color.GetY(), color.GetZ(), color.GetW());
     glClear(GL_COLOR_BUFFER_BIT);
 }

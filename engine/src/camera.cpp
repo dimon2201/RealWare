@@ -8,10 +8,11 @@
 #include "input.hpp"
 #include "input_backend_sdl.hpp"
 #include "shader_pool.hpp"
+#include "render_pass_geometry.hpp"
 
 using namespace types;
 
-void triton::XCamera::Bind(XRenderPass* pass)
+void triton::XCamera::Bind(XRenderPassGeometry* pass)
 {
     CThreadGuard::AssertRender();
 

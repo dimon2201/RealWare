@@ -35,7 +35,7 @@
 #include "animation_pool.hpp"
 #include "input_layout_pool.hpp"
 #include "render_target_pool.hpp"
-#include "render_pass_pool.hpp"
+#include "render_pass_pools.hpp"
 #include "atlas_texture_pool.hpp"
 #include "shader_pool.hpp"
 #include "gpu_buffer_pool.hpp"
@@ -94,7 +94,9 @@ void triton::CEngine::Initialize()
 
 	_context->RegisterPool(new CGPUBufferPool(_context, K_TRUE));
 
-	_context->RegisterPool(new CRenderPassPool(_context, K_TRUE));
+	_context->RegisterPool(new CRenderPassGeometryPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CRenderPassProcessingPool(_context, K_TRUE));
 
 	_context->RegisterPool(new CRenderTargetPool(_context, K_TRUE));
 

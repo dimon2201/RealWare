@@ -7,10 +7,21 @@
 
 namespace triton
 {
+    struct SClearState final
+    {
+        SClearState() = default;
+        SClearState(const cVector4& color, types::f32 depth) : color(color), depth(depth) {}
+
+        cVector4 color = cVector4(1.0f);
+        types::f32 depth = 1.0f;
+    };
+
     class SDepthState final
     {
     public:
-        SDepthState(types::boolean useDepthTest_, types::boolean useDepthWrite_) : useDepthTest(useDepthTest_), useDepthWrite(useDepthWrite_) {}
+        SDepthState() = default;
+        SDepthState(types::boolean useDepthTest_, types::boolean useDepthWrite_)
+            : useDepthTest(useDepthTest_), useDepthWrite(useDepthWrite_) {}
 
         types::boolean useDepthTest = types::K_TRUE;
         types::boolean useDepthWrite = types::K_TRUE;
