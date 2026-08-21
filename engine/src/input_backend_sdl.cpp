@@ -48,6 +48,8 @@ triton::sInputBackendWindow triton::cInputBackendSDL::CreatePlatformWindow(
             ibw.size.GetY(),
             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
         );
+
+        SDL_SetWindowRelativeMouseMode((SDL_Window*)ibw.instance, true);
     }
     else
     {
@@ -77,6 +79,11 @@ void triton::cInputBackendSDL::ResizeWindow(sInputBackendWindow& window, const c
         return;
 
     window.size = cVector2(newSize.GetX(), newSize.GetY());
+}
+
+void triton::cInputBackendSDL::PreparePollEvent()
+{
+    _bMouseMoved = False;
 }
 
 triton::SEvent triton::cInputBackendSDL::PollEvent()
@@ -119,9 +126,13 @@ triton::SEvent triton::cInputBackendSDL::PollEvent()
             }
             case SDL_EVENT_MOUSE_MOTION:
             {
+                _bMouseMoved = True;
+
                 e.type = EWindowEvent::MouseMotion;
                 e.argA = event.motion.x;
                 e.argB = event.motion.y;
+                e.argC = event.motion.xrel;
+                e.argD = event.motion.yrel;
                 return e;
             }
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -186,7 +197,7 @@ void triton::cInputBackendSDL::ProcessEvent(const SEvent& event)
 
         case EWindowEvent::MouseMotion:
         {
-            input->SetWindowCursorPosition(cVector2(event.argA, event.argB));
+            input->SetWindowCursorPosition(cVector2(event.argA, event.argB), cVector2(event.argC, event.argD));
             break;
         }
 
@@ -227,6 +238,14 @@ triton::cVector2 triton::cInputBackendSDL::GetCursorPosition(sInputBackendWindow
     return _cursorPosition;
 }
 
+triton::cVector2 triton::cInputBackendSDL::GetMouseDelta()
+{
+    if (_bMouseMoved == True)
+        return _mouseDelta;
+    else
+        return cVector2(0.0f);
+}
+
 void triton::cInputBackendSDL::SetKeyPressed(qword keyCode, boolean isPressed)
 {
     _keys[keyCode] = isPressed;
@@ -242,9 +261,10 @@ void triton::cInputBackendSDL::SetWindowFocus(boolean isFocused)
     _isFocused = isFocused;
 }
 
-void triton::cInputBackendSDL::SetWindowCursorPosition(const cVector2& cursorPosition)
+void triton::cInputBackendSDL::SetWindowCursorPosition(const cVector2& cursorPosition, const cVector2& mouseDelta)
 {
     _cursorPosition = cursorPosition;
+    _mouseDelta = mouseDelta;
 }
 
 void triton::cInputBackendSDL::SetVSync(cpuword flag)

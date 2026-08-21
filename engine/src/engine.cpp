@@ -229,6 +229,7 @@ void triton::CEngine::MainThreadFunction()
 
 		EProducedFrameOp producedFrameOp = EProducedFrameOp::ExecuteFull;
 		SEvent e = {};
+		inputBackend->PreparePollEvent();
 		while ((e = inputBackend->PollEvent()).type != EWindowEvent::None)
 		{
 			if (e.type == EWindowEvent::Quit)
@@ -248,6 +249,7 @@ void triton::CEngine::MainThreadFunction()
 			ZoneScopedN("Main Job");
 
 			_app->Update();
+
 			_context->GetPool<CRenderInstanceStaticPool>()->Update();
 			_context->GetPool<CRenderInstanceDynamicPool>()->Update();
 			_context->GetPool<CMaterialPool>()->Update();

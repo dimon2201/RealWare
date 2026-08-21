@@ -29,7 +29,15 @@ namespace triton
         ~XCamera() override = default;
 
         void Bind(XRenderPassGeometry* pass);
-        void Update(const cVector2& screenCursorPosition, types::usize screenWidth, types::usize screenHeight, types::f32 fov, types::f32 zNear, types::f32 zFar, types::f32 mouseSensitivity);
+        void Update(
+            const cVector2& mouseDelta,
+            types::usize screenWidth,
+            types::usize screenHeight,
+            types::f32 fov,
+            types::f32 zNear,
+            types::f32 zFar,
+            types::f32 mouseSensitivity
+        );
         void AddEuler(cMath::EEulerAngle angle, types::f32 value);
         void Move(types::f32 value);
         void Strafe(types::f32 value);
