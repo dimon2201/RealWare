@@ -25,13 +25,15 @@ triton::XGameObject::XGameObject(
 	_animations = model.animations;
 	_skin = *_context->GetPool<CSkinPool>()->Create(_skeleton);
 	_animations = model.animations;
+	_renderInstancePack = renderInstancePack;
 
 	XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(_renderInstancePack);
+	_motionType = rip.GetMotionType();
 
 	CRenderInstancePool* renderInstancePool = nullptr;
-	if (rip.GetMotionType() == ERenderInstanceMotionType::Static)
+	if (_motionType == ERenderInstanceMotionType::Static)
 		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (rip.GetMotionType() == ERenderInstanceMotionType::Dynamic)
+	else if (_motionType == ERenderInstanceMotionType::Dynamic)
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
 	XRenderInstance::THandle renderInstanceHandle = *SetRenderable(True, renderInstancePack);
@@ -44,17 +46,17 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 	const XRenderInstancePack::THandle& renderInstancePack
 )
 {
-	XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(renderInstancePack);
-
-	CRenderInstancePool* renderInstancePool = nullptr;
-	if (rip.GetMotionType() == ERenderInstanceMotionType::Static)
-		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (rip.GetMotionType() == ERenderInstanceMotionType::Dynamic)
-		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
-
 	if (bIsRenderable == True)
 	{
+		XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(renderInstancePack);
+		_motionType = rip.GetMotionType();
 		_renderInstancePack = renderInstancePack;
+
+		CRenderInstancePool* renderInstancePool = nullptr;
+		if (_motionType == ERenderInstanceMotionType::Static)
+			renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
+		else if (_motionType == ERenderInstanceMotionType::Dynamic)
+			renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
 		if (renderInstancePool->Get(_renderInstance).has_value())
 			return std::nullopt;
@@ -71,95 +73,74 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 	}
 	else if (bIsRenderable == False)
 	{
-		_renderInstancePack = XRenderInstancePack::THandle();
+		CRenderInstancePool* renderInstancePool = nullptr;
+		if (_motionType == ERenderInstanceMotionType::Static)
+			renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
+		else if (_motionType == ERenderInstanceMotionType::Dynamic)
+			renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
 		if (!renderInstancePool->Get(_renderInstance).has_value())
 			return std::nullopt;
 
+		XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(_renderInstancePack);
 		rip.RemoveInstance(_renderInstance);
 		rip.UpdateBuffer();
 
+		_motionType = ERenderInstanceMotionType::Unknown;
+		_renderInstancePack = XRenderInstancePack::THandle();
 		_renderInstance = XRenderInstance::THandle();
 	}
 }
 
 void triton::XGameObject::SetMaterial(const XMaterial::THandle& material)
 {
-	XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(_renderInstancePack);
-
 	CRenderInstancePool* renderInstancePool = nullptr;
-	if (rip.GetMotionType() == ERenderInstanceMotionType::Static)
+	if (_motionType == ERenderInstanceMotionType::Static)
 		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (rip.GetMotionType() == ERenderInstanceMotionType::Dynamic)
+	else if (_motionType == ERenderInstanceMotionType::Dynamic)
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
 	XRenderInstance& ri = *renderInstancePool->Get(_renderInstance);
 	ri.SetMaterial(material);
-
-	renderInstancePool->WriteToStaging(
-		renderInstancePool->GetPackedIndex(_renderInstance),
-		ri
-	);
 }
 
 void triton::XGameObject::SetWorldPosition(const cVector3& worldPosition)
 {
-	XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(_renderInstancePack);
-
 	CRenderInstancePool* renderInstancePool = nullptr;
-	if (rip.GetMotionType() == ERenderInstanceMotionType::Static)
+	if (_motionType == ERenderInstanceMotionType::Static)
 		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (rip.GetMotionType() == ERenderInstanceMotionType::Dynamic)
+	else if (_motionType == ERenderInstanceMotionType::Dynamic)
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
 	XRenderInstance& ri = *renderInstancePool->Get(_renderInstance);
 	ri.SetWorldPosition(worldPosition);
 	ri.Transform();
-
-	renderInstancePool->WriteToStaging(
-		renderInstancePool->GetPackedIndex(_renderInstance),
-		ri
-	);
 }
 
 void triton::XGameObject::SetRotation(const cVector3& rotation)
 {
-	XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(_renderInstancePack);
-
 	CRenderInstancePool* renderInstancePool = nullptr;
-	if (rip.GetMotionType() == ERenderInstanceMotionType::Static)
+	if (_motionType == ERenderInstanceMotionType::Static)
 		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (rip.GetMotionType() == ERenderInstanceMotionType::Dynamic)
+	else if (_motionType == ERenderInstanceMotionType::Dynamic)
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
 	XRenderInstance& ri = *renderInstancePool->Get(_renderInstance);
 	ri.SetRotation(rotation);
 	ri.Transform();
-
-	renderInstancePool->WriteToStaging(
-		renderInstancePool->GetPackedIndex(_renderInstance),
-		ri
-	);
 }
 
 void triton::XGameObject::SetScale(const cVector3& scale)
 {
-	XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(_renderInstancePack);
-
 	CRenderInstancePool* renderInstancePool = nullptr;
-	if (rip.GetMotionType() == ERenderInstanceMotionType::Static)
+	if (_motionType == ERenderInstanceMotionType::Static)
 		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (rip.GetMotionType() == ERenderInstanceMotionType::Dynamic)
+	else if (_motionType == ERenderInstanceMotionType::Dynamic)
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
 	XRenderInstance& ri = *renderInstancePool->Get(_renderInstance);
 	ri.SetScale(scale);
 	ri.Transform();
-
-	renderInstancePool->WriteToStaging(
-		renderInstancePool->GetPackedIndex(_renderInstance),
-		ri
-	);
 }
 
 void triton::XGameObject::PlayAnimation(usize index)

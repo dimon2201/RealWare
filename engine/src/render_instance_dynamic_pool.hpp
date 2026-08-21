@@ -8,6 +8,8 @@ namespace triton
 {
     class CRenderInstanceDynamicPool : public CRenderInstancePool
     {
+        TRITON_CLASS_NAME(CRenderInstanceDynamicPool)
+
         using CRenderInstancePool::CRenderInstancePool;
     };
 }

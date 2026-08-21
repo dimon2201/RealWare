@@ -396,16 +396,11 @@ namespace triton
 
         if (_bDirtyBit == types::K_TRUE)
         {
-            types::usize packedSize = 0;
-            for (types::usize i = 0; i < _lastObjectCursor; i++)
-                if (_slots[i].alive == types::K_TRUE)
-                    ++packedSize;
-
             _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
                 ERenderCommand::WRITE_BUFFER,
                 (types::cpuword)&_gpuBuffer,
                 0,
-                packedSize * sizeof(typename TObject::TGPULayout),
+                _lastObjectCursor * sizeof(typename TObject::TGPULayout),
                 (types::cpuword)&_staging[0]
             ));
             _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
@@ -436,7 +431,7 @@ namespace triton
         TBufferObject* temp = (TBufferObject*)CObjectAllocator::Allocate(curMaxCount * objectByteSize, 64);
         const types::usize copySize = std::min(prevMaxCount, curMaxCount);
         for (types::usize i = 0; i < curMaxCount; i++)
-            new (&temp[0]) TBufferObject();
+            new (&temp[i]) TBufferObject();
         for (types::usize i = 0; i < copySize; i++)
             temp[i] = buffer[i];
         CObjectAllocator::Deallocate(buffer);
