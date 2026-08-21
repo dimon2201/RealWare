@@ -43,7 +43,11 @@ namespace triton
 
 		std::optional<XRenderInstance::THandle> AddInstance();
 
+		std::optional<std::vector<XRenderInstance::THandle>> AddInstances(types::usize count);
+ 
 		void RemoveInstance(const XRenderInstance::THandle& instance);
+
+		void RemoveInstances(const std::vector<XRenderInstance::THandle>& instances);
 
 		inline ERenderInstanceMotionType GetMotionType() const { return _motionType; }
 
