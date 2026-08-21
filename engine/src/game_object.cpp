@@ -48,10 +48,6 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 {
 	if (bIsRenderable == True)
 	{
-		XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(renderInstancePack);
-		_motionType = rip.GetMotionType();
-		_renderInstancePack = renderInstancePack;
-
 		CRenderInstancePool* renderInstancePool = nullptr;
 		if (_motionType == ERenderInstanceMotionType::Static)
 			renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
@@ -60,6 +56,10 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 
 		if (renderInstancePool->Get(_renderInstance).has_value())
 			return std::nullopt;
+
+		XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(renderInstancePack);
+		_motionType = rip.GetMotionType();
+		_renderInstancePack = renderInstancePack;
 
 		auto result = rip.AddInstance();
 		if (!result.has_value())
