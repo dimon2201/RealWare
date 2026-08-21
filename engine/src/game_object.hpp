@@ -53,6 +53,11 @@ namespace triton
             const XRenderInstancePack::THandle& renderInstancePack = XRenderInstancePack::THandle()
         );
 
+        void SetRenderable(
+            const XRenderInstancePack::THandle& renderInstancePack,
+            const XRenderInstance::THandle& renderInstance
+        );
+
         void SetMaterial(const XMaterial::THandle& material);
 
         void SetWorldPosition(const cVector3& worldPosition);

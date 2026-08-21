@@ -89,6 +89,25 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 	}
 }
 
+void triton::XGameObject::SetRenderable(
+	const XRenderInstancePack::THandle& renderInstancePack,
+	const XRenderInstance::THandle& renderInstance
+)
+{
+	XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(renderInstancePack);
+	_motionType = rip.GetMotionType();
+
+	CRenderInstancePool* renderInstancePool = nullptr;
+	if (_motionType == ERenderInstanceMotionType::Static)
+		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
+	else if (_motionType == ERenderInstanceMotionType::Dynamic)
+		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
+
+	XRenderInstance& ri = *renderInstancePool->Get(renderInstance);
+	_renderInstancePack = renderInstancePack;
+	_renderInstance = renderInstance;
+}
+
 void triton::XGameObject::SetMaterial(const XMaterial::THandle& material)
 {
 	CRenderInstancePool* renderInstancePool = nullptr;
