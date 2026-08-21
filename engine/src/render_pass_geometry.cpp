@@ -58,7 +58,11 @@ void triton::XRenderPassGeometry::Draw()
 {
     IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
 
-    XCamera& camera = *_context->GetPool<CCameraPool>()->Get(_camera);
+    auto cameraResult = _context->GetPool<CCameraPool>()->Get(_camera);
+    if (!cameraResult.has_value())
+        return;
+
+    XCamera& camera = *cameraResult;
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
     // TODO: remove this line

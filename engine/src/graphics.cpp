@@ -254,6 +254,7 @@ void triton::CGraphics::CreateRenderPasses()
 
     _opaqueSkinned = *geometryRPPool->Create();
     XRenderPassGeometry& opaqueSkinnedData = *geometryRPPool->Get(_opaqueSkinned);
+    opaqueSkinnedData.SetClearState(std::nullopt);
     opaqueSkinnedData.SetInputLayout(_inputLayoutSkinned);
     opaqueSkinnedData.SetInputTextures({
         SShaderTextureBinding("TextureAtlasRGBA8SRGB", textureAtlas->GetAtlasRGBA8SRGB()),
@@ -464,10 +465,11 @@ void triton::CGraphics::ExecuteBuiltinPasses()
     CRenderPassProcessingPool* processingRPPool = _context->GetPool<CRenderPassProcessingPool>();
 
     XRenderPassGeometry& opaqueStatic = *geometryRPPool->Get(_opaqueStatic);
+    XRenderPassGeometry& opaqueSkinned = *geometryRPPool->Get(_opaqueSkinned);
     XRenderPassProcessing& compositeFinal = *processingRPPool->Get(_compositeFinal);
 
     opaqueStatic.Render();
-    //opaqueSkinned->Execute();
+    opaqueSkinned.Render();
     compositeFinal.Render();
 }
 

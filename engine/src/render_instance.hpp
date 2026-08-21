@@ -20,7 +20,7 @@ namespace triton
         types::s32                  _indexInInstancePack = -1;
         types::s32                  _accessIndex = -1;
         XMaterial::THandle          _material;
-        types::s32                  _skinnedBoneBufferOffset = 0;
+        types::s32                  _skinnedBoneBufferOffset = -1;
         cTransform                  _transform;
 
 	public:

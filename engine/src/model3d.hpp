@@ -25,7 +25,7 @@ namespace triton
 
 	class XModel3D : public iObject
 	{
-        TRITON_OBJECT(XModel3D)
+        TRITON_CLASS_NAME(XModel3D)
 
         SModel3DData            _data;
         asset::CModel3DAsset*   _asset = nullptr;
@@ -42,6 +42,14 @@ namespace triton
         );
 
         ~XModel3D() override;
+
+        inline const SSkinnedVertexGPULayout* GetVertices() const { return _data.vertexData; }
+
+        inline const types::u32* GetIndices() const { return _data.indexData; }
+
+        inline types::usize GetVertexCount() const { return _data.vertexCount; }
+
+        inline types::usize GetIndexCount() const { return _data.indexCount; }
 
         struct THandle : public SHandle {};
 

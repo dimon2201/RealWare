@@ -12,7 +12,7 @@
 #include "model3d_pool.hpp"
 #include "skin_pool.hpp"
 #include "game_object_pool.hpp"
-#include "render_pass_pool.hpp"
+#include "render_pass_pools.hpp"
 #include "render_instance_pack_pool.hpp"
 #include "material_pool.hpp"
 #include "geometry_storage.hpp"
@@ -38,17 +38,18 @@ public:
         CRenderInstancePackPool* instancePackPool = _context->GetPool<CRenderInstancePackPool>();
         CMaterialPool* materialPool = _context->GetPool<CMaterialPool>();
         CGameObjectPool* gameObjectPool = _context->GetPool<CGameObjectPool>();
+        CModel3DPool* model3DPool = _context->GetPool<CModel3DPool>();
 
         auto camh = *_context->GetPool<CCameraPool>()->Create();
         XCamera& camo = *_context->GetPool<CCameraPool>()->Get(camh);
         camo._worldPosition = cVector3(0.0f, 1.0f, 1.0f);
         
-        XRenderPass& opaqueStaticRP = 
-            *_context->GetPool<CRenderPassPool>()->Get(
-                _context->GetSubsystem<CGraphics>()->GetOpaqueStaticRenderPass()
+        XRenderPassGeometry& opaqueSkinnedRP = 
+            *_context->GetPool<CRenderPassGeometryPool>()->Get(
+                _context->GetSubsystem<CGraphics>()->GetOpaqueSkinnedRenderPass()
             );
         
-        opaqueStaticRP.SetCamera(camh);
+        opaqueSkinnedRP.SetCamera(camh);
         
         /*m3d = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModelFromAsset(
             "C:/My/My_Projects_Programming/TritonEngine/tools/tasset/bin/Chort2.tasset"
@@ -102,6 +103,15 @@ public:
         //    "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/nathan/nathan_triton.fbx"
         //);
         //auto m3dd = *_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Get(m3d);
+
+        auto modelHandle = *_context->GetPool<CModel3DPool>()->Create(
+            EModel3DFileType::Raw,
+            "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/stanford_dragon/stanford_dragon.fbx"
+        );
+        XModel3D& model = *_context->GetPool<CModel3DPool>()->Get(modelHandle);
+
+        const usize cGridSize = 2;
+        const usize cGridStep = 256;
         SGeometryView triGeom = *gs->Create(
             EVertexBufferFormat::Static_52,
             (u8*)&triVerts[0],
@@ -109,15 +119,17 @@ public:
             (u8*)&triInds[0],
             3
         );
-        XRenderInstancePack::THandle instancePack1 = *instancePackPool->Create(
-            ERenderInstanceMotionType::Static,
-            triGeom,
-            2
+        SGeometryView modelGeom = *gs->Create(
+            EVertexBufferFormat::Skinned_84,
+            (u8*)model.GetVertices(),
+            model.GetVertexCount(),
+            (u8*)model.GetIndices(),
+            model.GetIndexCount()
         );
-        XRenderInstancePack::THandle instancePack2 = *instancePackPool->Create(
+        XRenderInstancePack::THandle instancePack1Handle = *instancePackPool->Create(
             ERenderInstanceMotionType::Static,
-            triGeom,
-            3
+            modelGeom,
+            cGridSize * cGridSize * cGridSize
         );
         XAtlasTexture::THandle emptyTexHandle = XAtlasTexture::THandle();
         auto material1 = *materialPool->Create(
@@ -127,27 +139,39 @@ public:
             emptyTexHandle,
             emptyTexHandle
         );
-        auto material2 = *materialPool->Create(
-            cVector4(0.0f, 1.0f, 0.0f, 1.0f),
-            emptyTexHandle,
-            emptyTexHandle,
-            emptyTexHandle,
-            emptyTexHandle
-        );
-        auto material3 = *materialPool->Create(
-            cVector4(0.0f, 0.0f, 1.0f, 1.0f),
-            emptyTexHandle,
-            emptyTexHandle,
-            emptyTexHandle,
-            emptyTexHandle
-        );
         
-        opaqueStaticRP.SetRenderInstancePacks({ instancePack1, instancePack2 });
+        opaqueSkinnedRP.SetRenderInstancePacks({ instancePack1Handle });
 
-        auto gameObject1Handle = *gameObjectPool->Create("MyObject1");
-        XGameObject& gameObject1 = *gameObjectPool->Get(gameObject1Handle);
-        gameObject1.SetRenderable(True, instancePack1);
-        gameObject1.SetMaterial(material1);
+        XRenderInstancePack& instancePack1 = *instancePackPool->Get(instancePack1Handle);
+        const std::vector<XRenderInstance::THandle> instances =
+            *instancePack1.AddInstances(cGridSize * cGridSize * cGridSize);
+
+        for (s32 x = 0; x < cGridSize; x++)
+        {
+            for (s32 y = 0; y < cGridSize; y++)
+            {
+                for (s32 z = 0; z < cGridSize; z++)
+                {
+                    auto gameObjectHandle = *gameObjectPool->Create("MyObject");
+                    XGameObject& gameObject = *gameObjectPool->Get(gameObjectHandle);
+                    gameObject.SetRenderable(
+                        instancePack1Handle,
+                        instances[z + (y * cGridSize) + (x * cGridSize * cGridSize)]
+                    );
+                    gameObject.SetMaterial(material1);
+                    gameObject.SetWorldPosition(
+                        cVector3(
+                            (x - s32(cGridSize / 2)) * (s32)cGridStep,
+                            (y - s32(cGridSize / 2)) * (s32)cGridStep,
+                            (z - s32(cGridSize / 2)) * (s32)cGridStep
+                        )
+                    );
+                    gameObject.SetRotation(
+                        cVector3(-90.0f, 0.0f, 0.0f)
+                    );
+                }
+            }
+        }
 
         //triGod1.worldPosition = cVector3(-1.0f, 0.0f, 0.0f);
         //triGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);

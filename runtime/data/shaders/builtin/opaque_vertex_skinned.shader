@@ -52,8 +52,8 @@ struct Skinning
 	mat4 modelMatrix;
 };
 
-layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[1024]; };
-layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[1024]; };
+layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[]; };
+layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[]; };
 layout(std430, binding = 2) buffer MaterialBuffer { Material materials[]; };
 layout(std430, binding = 3) buffer SkinningBuffer { Skinning skinning[]; };
 
@@ -76,9 +76,9 @@ void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in 
 void main()
 {
 	Instance instance;
-	if (InstanceBatchType == 0)
+	if (InstanceBatchType == 1)
 		instance = staticInstances[gl_InstanceID + InstanceOffset];
-	else if (InstanceBatchType == 1)
+	else if (InstanceBatchType == 2)
 		instance = dynamicInstances[gl_InstanceID + InstanceOffset];
 	Material material;
 	if (InMaterialIndex == -1)
