@@ -65,7 +65,8 @@ namespace triton
         template <typename... Args>
         std::optional<typename TObject::THandle> Create(Args&&... args);
 
-        std::optional<SObjectFrame<typename TObject::THandle>> CreateFrame(types::usize count);
+        template <typename... Args>
+        std::optional<SObjectFrame<typename TObject::THandle>> CreateFrame(types::usize count, Args&&... args);
 
         void Destroy(const typename TObject::THandle& handle);
 
@@ -83,6 +84,8 @@ namespace triton
             const typename TObject::THandle& baseHandle,
             const types::usize offset
         );
+
+        typename TObject::THandle GetHandle(types::usize index);
 
         void Upload();
 
@@ -245,7 +248,8 @@ namespace triton
     }
 
     template <typename TObject>
-    std::optional<SObjectFrame<typename TObject::THandle>> CObjectPool<TObject>::CreateFrame(types::usize count)
+    template <typename... Args>
+    std::optional<SObjectFrame<typename TObject::THandle>> CObjectPool<TObject>::CreateFrame(types::usize count, Args&&... args)
     {
         for (types::usize i = 0; i < _reservedCount; i++)
         {
@@ -280,7 +284,7 @@ namespace triton
                 {
                     OccupySlot(i + j, _slots[i + j].generation + 1);
 
-                    new (&_objects[i + j]) TObject(_context, i + j);
+                    new (&_objects[i + j]) TObject(_context, i + j, std::forward<Args>(args)...);
                 }
 
                 for (types::usize j = 0; j < _lastObjectCursor; j++)
@@ -386,6 +390,16 @@ namespace triton
         offsetHandle.generation = _slots[offsetHandle.index].generation;
 
         return offsetHandle;
+    }
+
+    template <typename TObject>
+    typename TObject::THandle CObjectPool<TObject>::GetHandle(types::usize index)
+    {
+        typename TObject::THandle handle;
+        handle.index = index;
+        handle.generation = _slots[handle.index].generation;
+
+        return handle;
     }
 
     template <typename TObject>
