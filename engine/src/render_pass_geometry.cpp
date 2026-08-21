@@ -64,7 +64,7 @@ void triton::XRenderPassGeometry::Draw()
     // TODO: remove this line
     cInputWindow& ibw = _context->GetSubsystem<CInput>()->GetWindows()->at(0);
     cVector2 cursorPos = _context->GetSubsystem<CInput>()->GetCursorPosition(&ibw);
-    camera.Update(cursorPos, 800, 600, 65.0f, 0.01f, 100.0f, 0.1f);
+    camera.Update(cursorPos, 800, 600, 65.0f, 0.01f, 10000.0f, 0.1f);
     cVector4 cameraWorldPos = cVector4(camera._worldPosition.GetX(), camera._worldPosition.GetY(), camera._worldPosition.GetZ(), 0.0f);
     ///////////////////////////////////////////////////////////////////////////
 
