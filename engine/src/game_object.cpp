@@ -99,6 +99,11 @@ void triton::XGameObject::SetMaterial(const XMaterial::THandle& material)
 
 	XRenderInstance& ri = *renderInstancePool->Get(_renderInstance);
 	ri.SetMaterial(material);
+
+	renderInstancePool->WriteToStaging(
+		ri.GetAccessIndex(),
+		ri
+	);
 }
 
 void triton::XGameObject::SetWorldPosition(const cVector3& worldPosition)
@@ -112,6 +117,11 @@ void triton::XGameObject::SetWorldPosition(const cVector3& worldPosition)
 	XRenderInstance& ri = *renderInstancePool->Get(_renderInstance);
 	ri.SetWorldPosition(worldPosition);
 	ri.Transform();
+
+	renderInstancePool->WriteToStaging(
+		ri.GetAccessIndex(),
+		ri
+	);
 }
 
 void triton::XGameObject::SetRotation(const cVector3& rotation)
@@ -125,6 +135,11 @@ void triton::XGameObject::SetRotation(const cVector3& rotation)
 	XRenderInstance& ri = *renderInstancePool->Get(_renderInstance);
 	ri.SetRotation(rotation);
 	ri.Transform();
+
+	renderInstancePool->WriteToStaging(
+		ri.GetAccessIndex(),
+		ri
+	);
 }
 
 void triton::XGameObject::SetScale(const cVector3& scale)
@@ -138,6 +153,11 @@ void triton::XGameObject::SetScale(const cVector3& scale)
 	XRenderInstance& ri = *renderInstancePool->Get(_renderInstance);
 	ri.SetScale(scale);
 	ri.Transform();
+
+	renderInstancePool->WriteToStaging(
+		ri.GetAccessIndex(),
+		ri
+	);
 }
 
 void triton::XGameObject::PlayAnimation(usize index)
