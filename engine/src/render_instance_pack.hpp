@@ -26,7 +26,6 @@ namespace triton
 		types::usize							_instanceCount = 0;
 		types::usize							_maxInstanceCount = 0;
 		SObjectFrame<XRenderInstance::THandle>	_frame;
-		std::vector<types::s32>					_freeFrameIndices = {};
 
 	public:
 		explicit XRenderInstancePack(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
@@ -43,11 +42,7 @@ namespace triton
 
 		std::optional<XRenderInstance::THandle> AddInstance();
 
-		std::optional<std::vector<XRenderInstance::THandle>> AddInstances(types::usize count);
- 
 		void RemoveInstance(const XRenderInstance::THandle& instance);
-
-		void RemoveInstances(const std::vector<XRenderInstance::THandle>& instances);
 
 		inline ERenderInstanceMotionType GetMotionType() const { return _motionType; }
 
@@ -60,8 +55,5 @@ namespace triton
 		struct THandle : public SHandle {};
 
 		struct TGPULayout {};
-
-	private:
-		void CalculateInstanceAccessIndicesAndBufferOffset();
 	};
 }

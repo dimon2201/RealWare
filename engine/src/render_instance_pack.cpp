@@ -29,10 +29,8 @@ triton::XRenderInstancePack::XRenderInstancePack(
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
 	_frame = *renderInstancePool->CreateFrame(maxInstanceCount);
+	_bufferOffset = renderInstancePool->GetPackedIndex(_frame.begin);
 	_maxInstanceCount = maxInstanceCount;
-
-	for (usize i = 0; i < maxInstanceCount; i++)
-		_freeFrameIndices.push_back(i);
 }
 
 triton::XRenderInstancePack::~XRenderInstancePack()
@@ -51,154 +49,56 @@ std::optional<triton::XRenderInstance::THandle> triton::XRenderInstancePack::Add
 	if (_instanceCount >= _maxInstanceCount)
 		return std::nullopt;
 
-	_instanceCount += 1;
-
-	s32 instanceIndex = -1;
-	if (_freeFrameIndices.empty())
-	{
-		return std::nullopt;
-	}
-	else
-	{
-		instanceIndex = _freeFrameIndices.back();
-		_freeFrameIndices.pop_back();
-	}
-
 	CRenderInstancePool* renderInstancePool = nullptr;
 	if (_motionType == ERenderInstanceMotionType::Static)
 		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
 	else if (_motionType == ERenderInstanceMotionType::Dynamic)
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
+
+	const usize instanceIndex = _instanceCount++;
 
 	const XRenderInstance::THandle& beginHandle = _frame.begin;
-	const XRenderInstance::THandle curHandle =
+	const XRenderInstance::THandle currentHandle =
 		*renderInstancePool->GetHandle(beginHandle, instanceIndex);
 
-	XRenderInstance& ri = *renderInstancePool->Get(curHandle);
+	XRenderInstance& ri = *renderInstancePool->Get(currentHandle);
 	ri.SetIndexInInstancePack(instanceIndex);
+	ri.SetAccessIndex(_bufferOffset + instanceIndex);
 
-	CalculateInstanceAccessIndicesAndBufferOffset();
-
-	return curHandle;
-}
-
-std::optional<std::vector<triton::XRenderInstance::THandle>> triton::XRenderInstancePack::AddInstances(usize count)
-{
-	if (_instanceCount + count > _maxInstanceCount)
-		return std::nullopt;
-
-	_instanceCount += count;
-
-	CRenderInstancePool* renderInstancePool = nullptr;
-	if (_motionType == ERenderInstanceMotionType::Static)
-		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (_motionType == ERenderInstanceMotionType::Dynamic)
-		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
-
-	std::vector<XRenderInstance::THandle> instances = {};
-
-	for (usize i = 0; i < count; i++)
-	{
-		s32 instanceIndex = -1;
-		if (_freeFrameIndices.empty())
-		{
-			return std::nullopt;
-		}
-		else
-		{
-			instanceIndex = _freeFrameIndices.back();
-			_freeFrameIndices.pop_back();
-		}
-
-		const XRenderInstance::THandle& beginHandle = _frame.begin;
-		const XRenderInstance::THandle curHandle =
-			*renderInstancePool->GetHandle(beginHandle, instanceIndex);
-
-		XRenderInstance& ri = *renderInstancePool->Get(curHandle);
-		ri.SetIndexInInstancePack(instanceIndex);
-
-		instances.push_back(curHandle);
-	}
-
-	CalculateInstanceAccessIndicesAndBufferOffset();
-
-	return instances;
+	return currentHandle;
 }
 
 void triton::XRenderInstancePack::RemoveInstance(const XRenderInstance::THandle& instance)
 {
-	_instanceCount -= 1;
-
 	CRenderInstancePool* renderInstancePool = nullptr;
 	if (_motionType == ERenderInstanceMotionType::Static)
 		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
 	else if (_motionType == ERenderInstanceMotionType::Dynamic)
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
-
-	XRenderInstance& ri = *renderInstancePool->Get(instance);
-	_freeFrameIndices.push_back(ri.GetIndexInInstancePack());
-
-	CalculateInstanceAccessIndicesAndBufferOffset();
-}
-
-void triton::XRenderInstancePack::RemoveInstances(const std::vector<XRenderInstance::THandle>& instances)
-{
-	const usize count = instances.size();
-
-	_instanceCount -= count;
-
-	CRenderInstancePool* renderInstancePool = nullptr;
-	if (_motionType == ERenderInstanceMotionType::Static)
-		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (_motionType == ERenderInstanceMotionType::Dynamic)
-		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
-
-	for (usize i = 0; i < count; i++)
+	
+	if (_instanceCount > 1)
 	{
-		XRenderInstance& ri = *renderInstancePool->Get(instances.at(i));
-		_freeFrameIndices.push_back(ri.GetIndexInInstancePack());
+		const usize lastInstanceIndex = _instanceCount - 1;
+
+		const XRenderInstance::THandle instanceCurrentHandle = instance;
+		const XRenderInstance::THandle instanceLastHandle =
+			*renderInstancePool->GetHandle(_frame.begin, lastInstanceIndex);
+
+		XRenderInstance& instanceCurrent = *renderInstancePool->Get(instanceCurrentHandle);
+		XRenderInstance& instanceLast = *renderInstancePool->Get(instanceLastHandle);
+
+		const usize currentInstanceIndex = instanceCurrent.GetIndexInInstancePack();
+
+		instanceCurrent = instanceLast;
+		instanceCurrent.SetIndexInInstancePack(currentInstanceIndex);
+		instanceCurrent.SetAccessIndex(_bufferOffset + currentInstanceIndex);
+
+		renderInstancePool->WriteToStaging(
+			instanceCurrent.GetAccessIndex(),
+			instanceCurrent
+		);
 	}
 
-	CalculateInstanceAccessIndicesAndBufferOffset();
-}
-
-void triton::XRenderInstancePack::CalculateInstanceAccessIndicesAndBufferOffset()
-{
-	CRenderInstancePool* renderInstancePool = nullptr;
-	if (_motionType == ERenderInstanceMotionType::Static)
-		renderInstancePool = _context->GetPool<CRenderInstanceStaticPool>();
-	else if (_motionType == ERenderInstanceMotionType::Dynamic)
-		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
-
-	auto CheckAlive = [this](const s32 index) -> boolean {
-		for (usize i = 0; i < _freeFrameIndices.size(); i++)
-		{
-			if (index == _freeFrameIndices.at(i))
-				return False;
-		}
-		return True;
-	};
-
-	const usize objectCount = _frame.count;
-	const usize beginIndex = renderInstancePool->GetPackedIndex(_frame.begin);
-	for (usize i = 0; i < objectCount; i++)
-	{
-		if (CheckAlive(i) == False)
-			continue;
-
-		const XRenderInstance::THandle handle = *renderInstancePool->GetHandle(_frame.begin, i);
-		XRenderInstance& ri = *renderInstancePool->Get(handle);
-
-		s32 packedIndexInInstancePack = 0;
-		const s32 indexInInstancePack = ri.GetIndexInInstancePack();
-		for (usize index = 0; index < indexInInstancePack; index++)
-		{
-			if (CheckAlive(index) == True)
-				++packedIndexInInstancePack;
-		}
-
-		ri.SetAccessIndex(beginIndex + packedIndexInInstancePack);
-	}
-
-	_bufferOffset = beginIndex;
+	if (_instanceCount)
+		--_instanceCount;
 }
