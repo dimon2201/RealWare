@@ -65,8 +65,6 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 		if (!result.has_value())
 			return std::nullopt;
 
-		rip.UpdateBuffer();
-
 		_renderInstance = *result;
 
 		return _renderInstance;
@@ -84,7 +82,6 @@ std::optional<triton::XRenderInstance::THandle> triton::XGameObject::SetRenderab
 
 		XRenderInstancePack& rip = *_context->GetPool<CRenderInstancePackPool>()->Get(_renderInstancePack);
 		rip.RemoveInstance(_renderInstance);
-		rip.UpdateBuffer();
 
 		_motionType = ERenderInstanceMotionType::Unknown;
 		_renderInstancePack = XRenderInstancePack::THandle();

@@ -23,12 +23,10 @@ namespace triton
 		ERenderInstanceMotionType				_motionType = ERenderInstanceMotionType::Unknown;
 		SGeometryView							_sharedGeometry = {};
 		types::usize							_bufferOffset = 0;
-		types::usize							_lastInstanceCursor = 0;
 		types::usize							_instanceCount = 0;
 		types::usize							_maxInstanceCount = 0;
 		SObjectFrame<XRenderInstance::THandle>	_frame;
 		std::vector<types::s32>					_freeFrameIndices = {};
-		types::boolean							_bDirtyBit = types::False;
 
 	public:
 		explicit XRenderInstancePack(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
@@ -47,8 +45,6 @@ namespace triton
 
 		void RemoveInstance(const XRenderInstance::THandle& instance);
 
-		void UpdateBuffer();
-
 		inline ERenderInstanceMotionType GetMotionType() const { return _motionType; }
 
 		inline const SGeometryView& GetSharedGeometry() const { return _sharedGeometry; }
@@ -62,8 +58,6 @@ namespace triton
 		struct TGPULayout {};
 
 	private:
-		void MarkDirty();
-
-		void PackInstancesToStagingBuffer();
+		void CalculateInstanceAccessIndicesAndBufferOffset();
 	};
 }

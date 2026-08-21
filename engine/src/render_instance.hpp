@@ -18,6 +18,7 @@ namespace triton
 
         ERenderInstanceMotionType   _usage = ERenderInstanceMotionType::Static;
         types::s32                  _indexInInstancePack = -1;
+        types::s32                  _accessIndex = -1;
         XMaterial::THandle          _material;
         types::s32                  _skinnedBoneBufferOffset = 0;
         cTransform                  _transform;
@@ -30,6 +31,8 @@ namespace triton
         inline void Transform() { _transform.Transform(); }
 
         inline types::s32 GetIndexInInstancePack() const { return _indexInInstancePack; }
+
+        inline types::s32 GetAccessIndex() const { return _accessIndex; }
 
         inline const XMaterial::THandle& GetMaterial() const { return _material; }
 
@@ -44,6 +47,8 @@ namespace triton
         inline const cMatrix4& GetWorldMatrix() const { return _transform.GetWorld(); }
 
         inline void SetIndexInInstancePack(types::s32 indexInInstancePack) { _indexInInstancePack = indexInInstancePack; }
+
+        inline void SetAccessIndex(types::s32 accessIndex) { _accessIndex = accessIndex; }
 
         inline void SetMaterial(const XMaterial::THandle& material) { _material = material; }
 
