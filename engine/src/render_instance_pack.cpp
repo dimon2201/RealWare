@@ -114,7 +114,6 @@ void triton::XRenderInstancePack::CalculateInstanceAccessIndicesAndBufferOffset(
 		return True;
 	};
 
-	usize aliveObjectCount = 0;
 	const usize objectCount = _frame.count;
 	const usize beginIndex = renderInstancePool->GetPackedIndex(_frame.begin);
 	for (usize objectIndex = 0; objectIndex < objectCount; objectIndex++)
@@ -134,9 +133,6 @@ void triton::XRenderInstancePack::CalculateInstanceAccessIndicesAndBufferOffset(
 		}
 
 		ri.SetAccessIndex(beginIndex + packedIndexInInstancePack);
-
-		if (packedIndexInInstancePack > aliveObjectCount)
-			aliveObjectCount = packedIndexInInstancePack;
 	}
 
 	_bufferOffset = beginIndex;
