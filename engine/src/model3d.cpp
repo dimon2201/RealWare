@@ -114,11 +114,13 @@ triton::XModel3D::XModel3D(
 			);
 
 			XMaterial::THandle material = *_context->GetPool<CMaterialPool>()->Create(
-				cVector4(1.0f),
 				diffuseTexture,
 				normalTexture,
 				roughnessTexture,
-				metallicTexture
+				metallicTexture,
+				cVector4(1.0f),
+				cVector4(1.0f),
+				0.0f
 			);
 
 			_data.materials.push_back(material);

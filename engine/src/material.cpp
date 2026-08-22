@@ -6,18 +6,22 @@
 triton::XMaterial::XMaterial(
     cContext* context,
     types::s32 poolIndex,
-    const cVector4& diffuseColor,
     const XAtlasTexture::THandle& diffuseTexture,
     const XAtlasTexture::THandle& normalTexture,
     const XAtlasTexture::THandle& roughnessTexture,
-    const XAtlasTexture::THandle& metallicTexture
+    const XAtlasTexture::THandle& metallicTexture,
+    const cVector4& diffuseColor,
+    const cVector4& specularColor,
+    types::f32 shininess
 ) :
     iObject(context, poolIndex),
-    _diffuseColor(diffuseColor),
     _diffuseTexture(diffuseTexture),
     _normalTexture(normalTexture),
     _roughnessTexture(roughnessTexture),
-    _metallicTexture(metallicTexture)
+    _metallicTexture(metallicTexture),
+    _diffuseColor(diffuseColor),
+    _specularColor(specularColor),
+    _shininess(shininess)
 {
     CMaterialPool* pool = _context->GetPool<CMaterialPool>();
     pool->WriteToStaging(

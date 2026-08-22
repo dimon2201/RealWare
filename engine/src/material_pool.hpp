@@ -25,7 +25,6 @@ namespace triton
             auto rghRes = _context->GetPool<CAtlasTexturePool>()->Get(object.GetRoughnessTexture());
             auto metRes = _context->GetPool<CAtlasTexturePool>()->Get(object.GetMetallicTexture());
 
-            gpul.diffuseColor = object.GetDiffuseColor();
             if (difRes.has_value())
             {
                 XAtlasTexture& dif = *difRes;
@@ -54,6 +53,9 @@ namespace triton
                 gpul.metallicTextureLayout.normOffset = met.GetOffsetNorm();
                 gpul.metallicTextureLayout.normSize = met.GetSizeNorm();
             }
+            gpul.diffuseColor = object.GetDiffuseColor();
+            gpul.specularColor = object.GetSpecularColor();
+            gpul.shininess = object.GetShininess();
 
             return gpul;
         }

@@ -28,6 +28,8 @@ struct Material
 	Texture roughnessTexture;
 	Texture metallicTexture;
 	vec4 diffuseColor;
+	vec4 specularColor;
+	float shininess;
 };
 
 struct Skinning
@@ -37,11 +39,13 @@ struct Skinning
 
 struct OutputMaterial
 {
-	vec4 diffuseColor;
 	vec3 diffuseAtlasTexcoord;
 	vec3 normalAtlasTexcoord;
 	vec3 roughnessAtlasTexcoord;
 	vec3 metallicAtlasTexcoord;
+	vec4 diffuseColor;
+	vec4 specularColor;
+	float shininess;
 };
 
 layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[]; };
@@ -83,11 +87,13 @@ void main()
 	Material material;
 	material = materials[instance.materialIndex];
 	
-	vsOutputMaterial.diffuseColor = material.diffuseColor;
 	vsOutputMaterial.diffuseAtlasTexcoord = CalculateAtlasTexcoord(material.diffuseTexture);
 	vsOutputMaterial.normalAtlasTexcoord = CalculateAtlasTexcoord(material.normalTexture);
 	vsOutputMaterial.roughnessAtlasTexcoord = CalculateAtlasTexcoord(material.roughnessTexture);
 	vsOutputMaterial.metallicAtlasTexcoord = CalculateAtlasTexcoord(material.metallicTexture);
+	vsOutputMaterial.diffuseColor = material.diffuseColor;
+	vsOutputMaterial.specularColor = material.specularColor;
+	vsOutputMaterial.shininess = material.shininess;
 
 	int skinnedBoneBufferOffset = instance.skinnedBoneBufferOffset;
 	mat4 skinMatrix = 

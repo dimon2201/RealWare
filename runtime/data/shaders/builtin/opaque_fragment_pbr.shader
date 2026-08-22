@@ -2,11 +2,13 @@ layout(location = 0) out vec4 outPixelColor;
 
 struct InputMaterial
 {
-	vec4 diffuseColor;
 	vec3 diffuseAtlasTexcoord;
 	vec3 normalAtlasTexcoord;
 	vec3 roughnessAtlasTexcoord;
 	vec3 metallicAtlasTexcoord;
+	vec4 diffuseColor;
+	vec4 specularColor;
+	float shininess;
 };
 
 in InputMaterial vsOutputMaterial;

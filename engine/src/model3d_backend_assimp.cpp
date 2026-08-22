@@ -499,11 +499,13 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
 
         modelMaterials.push_back(
             *context->GetPool<CMaterialPool>()->Create(
-                cVector4(1.0f),
                 diffOpt.has_value() ? *diffOpt : XAtlasTexture::THandle(),
                 normOpt.has_value() ? *normOpt : XAtlasTexture::THandle(),
                 rghnOpt.has_value() ? *rghnOpt : XAtlasTexture::THandle(),
-                metlOpt.has_value() ? *metlOpt : XAtlasTexture::THandle()
+                metlOpt.has_value() ? *metlOpt : XAtlasTexture::THandle(),
+                cVector4(1.0f),
+                cVector4(1.0f),
+                0.0f
             )
         );
     }
