@@ -59,7 +59,7 @@ namespace triton
 
         inline types::f32 GetShininess() const { return _shininess; }
 
-        inline void SetShininess(types::f32 shininess) { _shininess = shininess; }
+        void SetShininess(types::f32 shininess);
 
         struct THandle : public SHandle {};
 

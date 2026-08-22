@@ -29,3 +29,14 @@ triton::XMaterial::XMaterial(
         *this
     );
 }
+
+void triton::XMaterial::SetShininess(types::f32 shininess)
+{
+    _shininess = shininess;
+
+    CMaterialPool* pool = _context->GetPool<CMaterialPool>();
+    pool->WriteToStaging(
+        pool->GetPackedIndex(_poolIndex),
+        *this
+    );
+}
