@@ -26,6 +26,8 @@ namespace triton
         XInputLayout::THandle               _inputLayoutStatic;
         XInputLayout::THandle               _inputLayoutSkinned;
         XInputLayout::THandle               _inputLayoutProcessing;
+        XShader::THandle                    _opaqueRigidPhongShader;
+        XShader::THandle                    _opaqueSkinnedPhongShader;
         XShader::THandle                    _opaqueRigidPBRShader;
         XShader::THandle                    _opaqueSkinnedPBRShader;
         XShader::THandle                    _transparentShader;

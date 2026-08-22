@@ -133,6 +133,8 @@ void triton::CGraphics::CreateShaders()
         "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex_skinned.shader";
     const std::string opaqueFragmentPBRShaderPath =
         "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_fragment_pbr.shader";
+    const std::string opaqueFragmentPhongShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_fragment_phong.shader";
     const std::string transparentVertexShaderPath =
         "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/transparent_vertex.shader";
     const std::string transparentFragmentShaderPath =
@@ -157,10 +159,10 @@ void triton::CGraphics::CreateShaders()
     const std::vector<const char*> opaqueShaderFragmentIncludePaths = { pbrShaderPath.c_str() };
 
     auto opaqueStaticVertexStr = fs->TextFileToString(opaqueStaticVertexShaderPath);
-    auto opaqueStaticFragmentStr = fs->TextFileToString(opaqueFragmentPBRShaderPath);
+    auto opaqueStaticPBRFragmentStr = fs->TextFileToString(opaqueFragmentPBRShaderPath);
     _opaqueRigidPBRShader = *_context->GetPool<CShaderPool>()->Create(
         opaqueStaticVertexStr,
-        opaqueStaticFragmentStr,
+        opaqueStaticPBRFragmentStr,
         emptyStr,
         emptyStr,
         emptyShaderDefineVec,
@@ -169,10 +171,32 @@ void triton::CGraphics::CreateShaders()
     );
 
     auto opaqueSkinnedVertexStr = fs->TextFileToString(opaqueSkinnedVertexShaderPath);
-    auto opaqueSkinnedFragmentStr = fs->TextFileToString(opaqueFragmentPBRShaderPath);
+    auto opaqueSkinnedPBRFragmentStr = fs->TextFileToString(opaqueFragmentPBRShaderPath);
     _opaqueSkinnedPBRShader = *_context->GetPool<CShaderPool>()->Create(
         opaqueSkinnedVertexStr,
-        opaqueSkinnedFragmentStr,
+        opaqueSkinnedPBRFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        opaqueShaderFragmentIncludePaths
+    );
+
+    auto opaqueStaticPhongFragmentStr = fs->TextFileToString(opaqueFragmentPhongShaderPath);
+    _opaqueRigidPhongShader = *_context->GetPool<CShaderPool>()->Create(
+        opaqueStaticVertexStr,
+        opaqueStaticPhongFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        opaqueShaderFragmentIncludePaths
+    );
+
+    auto opaqueSkinnedPhongFragmentStr = fs->TextFileToString(opaqueFragmentPhongShaderPath);
+    _opaqueSkinnedPhongShader = *_context->GetPool<CShaderPool>()->Create(
+        opaqueSkinnedVertexStr,
+        opaqueSkinnedPhongFragmentStr,
         emptyStr,
         emptyStr,
         emptyShaderDefineVec,
