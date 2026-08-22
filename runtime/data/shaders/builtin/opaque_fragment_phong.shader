@@ -38,8 +38,8 @@ void main()
 	const vec3 viewDirectionWorldSpace = normalize(cameraPositionWorldSpace.xyz - pixelPositionWorldSpace);
 
 	const vec3 phongBRDF = BlinnPhong_BRDF(
-		vsOutputMaterial.diffuseColor,
-		vsOutputMaterial.vec3 specularColor,
+		vsOutputMaterial.diffuseColor.xyz,
+		vsOutputMaterial.specularColor.xyz,
 		vsOutputMaterial.shininess,
 		normal,
 		viewDirectionWorldSpace,
