@@ -77,6 +77,7 @@ vec3 PBR_BRDF(
 
 vec3 BlinnPhong_BRDF(
     vec3 diffuseColor,
+	vec3 specularColor,
     float shininess,
     vec3 normalWorldSpace,
     vec3 viewDirectionWorldSpace,
@@ -84,10 +85,12 @@ vec3 BlinnPhong_BRDF(
 )
 {
     vec3 H = normalize(viewDirectionWorldSpace + lightDirectionWorldSpace);
-    float NdotH = max(dot(N, H), 0.0);
+    float NdotH = max(dot(normalWorldSpace, H), 0.0);
+
     vec3 diffuseBRDF = diffuseColor;
-    vec3 specularBRDF = pow(NdotH, shininess);
+    vec3 specularBRDF = specularColor * pow(NdotH, shininess);
+
 	vec3 BRDF = diffuseBRDF + specularBRDF;
 
-    return diffuseBRDF + specularBRDF;
+    return BRDF;
 }
