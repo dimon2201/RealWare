@@ -26,6 +26,12 @@ namespace triton
         XInputLayout::THandle               _inputLayoutStatic;
         XInputLayout::THandle               _inputLayoutSkinned;
         XInputLayout::THandle               _inputLayoutProcessing;
+        XShader::THandle                    _opaqueRigidPBRShader;
+        XShader::THandle                    _opaqueSkinnedPBRShader;
+        XShader::THandle                    _transparentShader;
+        XShader::THandle                    _textShader;
+        XShader::THandle                    _compositeTransparentShader;
+        XShader::THandle                    _compositeFinalShader;
         XRenderTarget::THandle              _opaqueRenderTarget;
         XRenderTarget::THandle              _transparentRenderTarget;
         XRenderPassGeometry::THandle        _opaqueStatic;
@@ -52,11 +58,15 @@ namespace triton
     private:
         void CreateInputLayouts();
 
+        void CreateShaders();
+
         void CreateRenderTargets();
 
         void CreateRenderPasses();
 
         void DestroyInputLayouts();
+
+        void DestroyShaders();
 
         void DestroyRenderTargets();
 

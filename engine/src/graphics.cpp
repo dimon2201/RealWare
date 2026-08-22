@@ -21,6 +21,7 @@ using namespace types;
 triton::CGraphics::CGraphics(cContext* context) : CSubsystem(context)
 {
     CreateInputLayouts();
+    CreateShaders();
     CreateRenderTargets();
     CreateRenderPasses();
 }
@@ -29,6 +30,7 @@ triton::CGraphics::~CGraphics()
 {
     DestroyRenderPasses();
     DestroyRenderTargets();
+    DestroyShaders();
     DestroyInputLayouts();
 }
 
@@ -119,6 +121,114 @@ void triton::CGraphics::CreateInputLayouts()
     _inputLayoutProcessing = *iaPool->Create(std::vector<XGPUBuffer::THandle>(), EVertexBufferFormat::Unknown);
 }
 
+void triton::CGraphics::CreateShaders()
+{
+    CFileSystem* fs = _context->GetSubsystem<CFileSystem>();
+
+    const std::string pbrShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/brdf.shader";
+    const std::string opaqueStaticVertexShaderPath = 
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex_static.shader";
+    const std::string opaqueSkinnedVertexShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex_skinned.shader";
+    const std::string opaqueFragmentPBRShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_fragment_pbr.shader";
+    const std::string transparentVertexShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/transparent_vertex.shader";
+    const std::string transparentFragmentShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/transparent_fragment.shader";
+    const std::string textVertexShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/text_vertex.shader";
+    const std::string textFragmentShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/text_fragment.shader";
+    const std::string compositeTransparentVertexShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_transparent_vertex.shader";
+    const std::string compositeTransparentFragmentShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_transparent_fragment.shader";
+    const std::string compositeFinalVertexShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_vertex.shader";
+    const std::string compositeFinalFragmentShaderPath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_fragment.shader";
+
+    std::string emptyStr = "";
+    std::vector<SShaderDefine> emptyShaderDefineVec = {};
+    std::vector<const char*> emptyConstCharVec = {};
+
+    const std::vector<const char*> opaqueShaderFragmentIncludePaths = { pbrShaderPath.c_str() };
+
+    auto opaqueStaticVertexStr = fs->TextFileToString(opaqueStaticVertexShaderPath);
+    auto opaqueStaticFragmentStr = fs->TextFileToString(opaqueFragmentPBRShaderPath);
+    _opaqueRigidPBRShader = *_context->GetPool<CShaderPool>()->Create(
+        opaqueStaticVertexStr,
+        opaqueStaticFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        opaqueShaderFragmentIncludePaths
+    );
+
+    auto opaqueSkinnedVertexStr = fs->TextFileToString(opaqueSkinnedVertexShaderPath);
+    auto opaqueSkinnedFragmentStr = fs->TextFileToString(opaqueFragmentPBRShaderPath);
+    _opaqueSkinnedPBRShader = *_context->GetPool<CShaderPool>()->Create(
+        opaqueSkinnedVertexStr,
+        opaqueSkinnedFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        opaqueShaderFragmentIncludePaths
+    );
+
+    auto transparentVertexStr = fs->TextFileToString(transparentVertexShaderPath);
+    auto transparentFragmentStr = fs->TextFileToString(transparentFragmentShaderPath);
+    _transparentShader = *_context->GetPool<CShaderPool>()->Create(
+        transparentVertexStr,
+        transparentFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        emptyConstCharVec
+    );
+
+    auto textVertexStr = fs->TextFileToString(textVertexShaderPath);
+    auto textFragmentStr = fs->TextFileToString(textFragmentShaderPath);
+    _textShader = *_context->GetPool<CShaderPool>()->Create(
+        textVertexStr,
+        textFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        emptyConstCharVec
+    );
+
+    auto compositeTransparentVertexStr = fs->TextFileToString(compositeTransparentVertexShaderPath);
+    auto compositeTransparentFragmentStr = fs->TextFileToString(compositeTransparentFragmentShaderPath);
+    _compositeTransparentShader = *_context->GetPool<CShaderPool>()->Create(
+        compositeTransparentVertexStr,
+        compositeTransparentFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        emptyConstCharVec
+    );
+
+    auto compositeFinalVertexStr = fs->TextFileToString(compositeFinalVertexShaderPath);
+    auto compositeFinalFragmentStr = fs->TextFileToString(compositeFinalFragmentShaderPath);
+    _compositeFinalShader = *_context->GetPool<CShaderPool>()->Create(
+        compositeFinalVertexStr,
+        compositeFinalFragmentStr,
+        emptyStr,
+        emptyStr,
+        emptyShaderDefineVec,
+        emptyConstCharVec,
+        emptyConstCharVec
+    );
+}
+
 void triton::CGraphics::CreateRenderTargets()
 {
     cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
@@ -185,19 +295,6 @@ void triton::CGraphics::CreateRenderPasses()
     SViewport viewport;
     viewport.rect = cVector4(0.0f, 0.0f, windowSize.GetX(), windowSize.GetY());
 
-    const std::string pbrShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/brdf.shader";
-    const std::string opaqueStaticVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex_static.shader";
-    const std::string opaqueSkinnedVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_vertex_skinned.shader";
-    const std::string opaqueFragmentPBRShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/opaque_fragment_pbr.shader";
-    const std::string transparentVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/transparent_vertex.shader";
-    const std::string transparentFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/transparent_fragment.shader";
-    const std::string textVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/text_vertex.shader";
-    const std::string textFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/text_fragment.shader";
-    const std::string compositeTransparentVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_transparent_vertex.shader";
-    const std::string compositeTransparentFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_transparent_fragment.shader";
-    const std::string compositeFinalVertexShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_vertex.shader";
-    const std::string compositeFinalFragmentShaderPath = "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/composite_final_fragment.shader";
-
     CRenderPassGeometryPool* geometryRPPool = _context->GetPool<CRenderPassGeometryPool>();
     CRenderPassProcessingPool* processingRPPool = _context->GetPool<CRenderPassProcessingPool>();
 
@@ -211,19 +308,6 @@ void triton::CGraphics::CreateRenderPasses()
     opaqueBlendState.dstFactors[0] = EBlendFactor::ZERO;
 
     // Opaque static render pass
-    const std::vector<const char*> opaqueShaderFragmentIncludePaths = { pbrShaderPath.c_str()};
-    auto opaqueStaticVertexStr = fs->TextFileToString(opaqueStaticVertexShaderPath);
-    auto opaqueStaticFragmentStr = fs->TextFileToString(opaqueFragmentPBRShaderPath);
-    XShader::THandle opaqueStaticShader = *_context->GetPool<CShaderPool>()->Create(
-        opaqueStaticVertexStr,
-        opaqueStaticFragmentStr,
-        emptyStr,
-        emptyStr,
-        emptyShaderDefineVec,
-        emptyConstCharVec,
-        opaqueShaderFragmentIncludePaths
-    );
-    
     _opaqueStatic = *geometryRPPool->Create();
     XRenderPassGeometry& opaqueStaticData = *geometryRPPool->Get(_opaqueStatic);
     opaqueStaticData.SetClearState(SClearState(cVector4(0.055f, 0.075f, 0.090f, 1.0f) * 2.0f, 1.0f));
@@ -233,25 +317,13 @@ void triton::CGraphics::CreateRenderPasses()
         SShaderTextureBinding("textureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
         SShaderTextureBinding("textureAtlasR8", textureAtlas->GetAtlasR8())
     });
-    opaqueStaticData.SetShader(opaqueStaticShader);
+    opaqueStaticData.SetShader(_opaqueRigidPBRShader);
     opaqueStaticData.SetViewport(viewport);
     opaqueStaticData.SetDepthState(SDepthState(K_TRUE, K_TRUE));
     opaqueStaticData.SetBlendState(opaqueBlendState);
     opaqueStaticData.SetRenderTarget(_opaqueRenderTarget);
 
     // Opaque skinned render pass
-    auto opaqueSkinnedVertexStr = fs->TextFileToString(opaqueSkinnedVertexShaderPath);
-    auto opaqueSkinnedFragmentStr = fs->TextFileToString(opaqueFragmentPBRShaderPath);
-    XShader::THandle opaqueSkinnedShader = *_context->GetPool<CShaderPool>()->Create(
-        opaqueSkinnedVertexStr,
-        opaqueSkinnedFragmentStr,
-        emptyStr,
-        emptyStr,
-        emptyShaderDefineVec,
-        emptyConstCharVec,
-        opaqueShaderFragmentIncludePaths
-    );
-
     _opaqueSkinned = *geometryRPPool->Create();
     XRenderPassGeometry& opaqueSkinnedData = *geometryRPPool->Get(_opaqueSkinned);
     opaqueSkinnedData.SetClearState(std::nullopt);
@@ -261,25 +333,13 @@ void triton::CGraphics::CreateRenderPasses()
         SShaderTextureBinding("textureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
         SShaderTextureBinding("textureAtlasR8", textureAtlas->GetAtlasR8())
     });
-    opaqueSkinnedData.SetShader(opaqueSkinnedShader);
+    opaqueSkinnedData.SetShader(_opaqueSkinnedPBRShader);
     opaqueSkinnedData.SetViewport(viewport);
     opaqueSkinnedData.SetDepthState(SDepthState(K_TRUE, K_TRUE));
     opaqueSkinnedData.SetBlendState(opaqueBlendState);
     opaqueSkinnedData.SetRenderTarget(_opaqueRenderTarget);
 
     // Transparent render pass
-    auto transparentVertexStr = fs->TextFileToString(transparentVertexShaderPath);
-    auto transparentFragmentStr = fs->TextFileToString(transparentFragmentShaderPath);
-    XShader::THandle transparentShader = *_context->GetPool<CShaderPool>()->Create(
-        transparentVertexStr,
-        transparentFragmentStr,
-        emptyStr,
-        emptyStr,
-        emptyShaderDefineVec,
-        emptyConstCharVec,
-        emptyConstCharVec
-    );
-
     SBlendState transparentBlendState = {};
     transparentBlendState.factorCount = 2;
     transparentBlendState.srcFactors[0] = EBlendFactor::ONE;
@@ -295,7 +355,7 @@ void triton::CGraphics::CreateRenderPasses()
         SShaderTextureBinding("textureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
         SShaderTextureBinding("textureAtlasR8", textureAtlas->GetAtlasR8())
     });
-    transparentData.SetShader(transparentShader);
+    transparentData.SetShader(_transparentShader);
     transparentData.SetViewport(viewport);
     transparentData.SetDepthState(SDepthState(K_TRUE, K_FALSE));
     transparentData.SetBlendState(transparentBlendState);
@@ -324,18 +384,6 @@ void triton::CGraphics::CreateRenderPasses()
     textData.SetRenderTarget(_opaqueRenderTarget);*/
 
     // Composite transparent render pass
-    auto compositeTransparentVertexStr = fs->TextFileToString(compositeTransparentVertexShaderPath);
-    auto compositeTransparentFragmentStr = fs->TextFileToString(compositeTransparentFragmentShaderPath);
-    XShader::THandle compositeTransparentShader = *_context->GetPool<CShaderPool>()->Create(
-        compositeTransparentVertexStr,
-        compositeTransparentFragmentStr,
-        emptyStr,
-        emptyStr,
-        emptyShaderDefineVec,
-        emptyConstCharVec,
-        emptyConstCharVec
-    );
-
     SBlendState compositeTransparentBlendState = {};
     compositeTransparentBlendState.factorCount = 1;
     compositeTransparentBlendState.srcFactors[0] = EBlendFactor::SRC_ALPHA;
@@ -355,22 +403,10 @@ void triton::CGraphics::CreateRenderPasses()
         compositeTransparentBlendState,
         SDepthState(False, False),
         _opaqueRenderTarget,
-        compositeTransparentShader
+        _compositeTransparentShader
     );
 
     // Composite final render pass
-    auto compositeFinalVertexStr = fs->TextFileToString(compositeFinalVertexShaderPath);
-    auto compositeFinalFragmentStr = fs->TextFileToString(compositeFinalFragmentShaderPath);
-    XShader::THandle compositeFinalShader = *_context->GetPool<CShaderPool>()->Create(
-        compositeFinalVertexStr,
-        compositeFinalFragmentStr,
-        emptyStr,
-        emptyStr,
-        emptyShaderDefineVec,
-        emptyConstCharVec,
-        emptyConstCharVec
-    );
-
     SBlendState compositeFinalBlendState = {};
     compositeFinalBlendState.factorCount = 1;
     compositeFinalBlendState.srcFactors[0] = EBlendFactor::ONE;
@@ -389,7 +425,7 @@ void triton::CGraphics::CreateRenderPasses()
         compositeFinalBlendState,
         SDepthState(False, False),
         XRenderTarget::THandle(),
-        compositeFinalShader
+        _compositeFinalShader
     );
 }
 
@@ -399,6 +435,17 @@ void triton::CGraphics::DestroyInputLayouts()
     iaPool->Destroy(_inputLayoutProcessing);
     iaPool->Destroy(_inputLayoutSkinned);
     iaPool->Destroy(_inputLayoutStatic);
+}
+
+void triton::CGraphics::DestroyShaders()
+{
+    CShaderPool* shaderPool = _context->GetPool<CShaderPool>();
+    shaderPool->Destroy(_opaqueRigidPBRShader);
+    shaderPool->Destroy(_opaqueSkinnedPBRShader);
+    shaderPool->Destroy(_transparentShader);
+    shaderPool->Destroy(_textShader);
+    shaderPool->Destroy(_compositeTransparentShader);
+    shaderPool->Destroy(_compositeFinalShader);
 }
 
 void triton::CGraphics::DestroyRenderTargets()
