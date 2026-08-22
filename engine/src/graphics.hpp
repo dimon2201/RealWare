@@ -9,6 +9,7 @@
 #include "render_target.hpp"
 #include "render_pass_geometry.hpp"
 #include "render_pass_processing.hpp"
+#include "render_shading_model_enum.hpp"
 #include "math.hpp"
 #include "subsystem.hpp"
 #include "types.hpp"
