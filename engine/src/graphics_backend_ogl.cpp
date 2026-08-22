@@ -66,11 +66,11 @@ void triton::XGraphicsBackendOGL::CreateGraphicsContext(SWindowBackend& window)
     glbinding::initialize(SDL_GL_GetProcAddress);
 
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glDepthFunc(GL_LESS);
-    //glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(GLDebugCallback, nullptr);
