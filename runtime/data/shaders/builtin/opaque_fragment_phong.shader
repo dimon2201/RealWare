@@ -31,12 +31,12 @@ void main()
 	normal = normal * 2.0 - 1.0;
 	normal = normalize(tangentToWorldMatrix * normal);
 
-	const vec3 lightPositionWorldSpace = vec3(0.0f, 1.0f, 1.0f);
+	const vec3 lightPositionWorldSpace = vec3(0.0f, 100.0f, 0.0f);
 	const vec3 lightDirectionWorldSpace = normalize(lightPositionWorldSpace - pixelPositionWorldSpace);
 	const vec3 viewDirectionWorldSpace = normalize(cameraPositionWorldSpace.xyz - pixelPositionWorldSpace);
 
 	const vec3 phongBRDF = BlinnPhong_BRDF(
-		vsOutputMaterial.diffuseColor.xyz,
+		diffuseColor.xyz,
 		vsOutputMaterial.specularColor.xyz,
 		vsOutputMaterial.shininess,
 		normal,
