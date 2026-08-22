@@ -27,8 +27,6 @@ void main()
 		vsOutputMaterial.diffuseColor *
 		texture(textureAtlasRGBA8SRGB, vsOutputMaterial.diffuseAtlasTexcoord);
 	vec3 normal = texture(textureAtlasRGBA8, vsOutputMaterial.normalAtlasTexcoord).xyz;
-	const float roughness = texture(textureAtlasR8, vsOutputMaterial.roughnessAtlasTexcoord).x;
-	const float metallic = texture(textureAtlasR8, vsOutputMaterial.metallicAtlasTexcoord).x;
 
 	normal = normal * 2.0 - 1.0;
 	normal = normalize(tangentToWorldMatrix * normal);
