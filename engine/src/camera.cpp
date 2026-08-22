@@ -5,8 +5,7 @@
 #include "time.hpp"
 #include "render_pass.hpp"
 #include "thread_guard.hpp"
-#include "input.hpp"
-#include "input_backend_sdl.hpp"
+#include "input_backend.hpp"
 #include "shader_pool.hpp"
 #include "render_pass_geometry.hpp"
 
@@ -45,12 +44,15 @@ void triton::XCamera::Update(const cVector2& mouseDelta, usize screenWidth, usiz
     AddEuler(cMath::EEulerAngle::YAW, -mouseDelta.GetX() * mouseSensitivity * deltaTime);
     
     const f32 camSpeed = 0.1f;
-    CInput* input = _context->GetSubsystem<CInput>();
-    iInputBackend* ib = _context->GetBackend<iInputBackend>();
-    const f32 forward = input->GetKeyPressed(ib->GetKeyW()) * camSpeed * deltaTime;
-    const f32 backward = input->GetKeyPressed(ib->GetKeyS()) * camSpeed * deltaTime;
-    const f32 left = input->GetKeyPressed(ib->GetKeyA()) * camSpeed * deltaTime;
-    const f32 right = input->GetKeyPressed(ib->GetKeyD()) * camSpeed * deltaTime;
+    IInputBackend* ib = _context->GetBackend<IInputBackend>();
+    EKeyState ksW = ib->GetKey(EKeyCode::W);
+    EKeyState ksS = ib->GetKey(EKeyCode::S);
+    EKeyState ksA = ib->GetKey(EKeyCode::A);
+    EKeyState ksD = ib->GetKey(EKeyCode::D);
+    const f32 forward = ksW == EKeyState::Pressed ? camSpeed * deltaTime : 0.0f;
+    const f32 backward = ksS == EKeyState::Pressed ? camSpeed * deltaTime : 0.0f;
+    const f32 left = ksA == EKeyState::Pressed ? camSpeed * deltaTime : 0.0f;
+    const f32 right = ksD == EKeyState::Pressed ? camSpeed * deltaTime : 0.0f;
     if (forward > 0.0f || backward > 0.0f || left > 0.0f || right > 0.0f)
     {
         Move(forward);

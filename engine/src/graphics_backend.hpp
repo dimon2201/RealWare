@@ -3,7 +3,7 @@
 #pragma once
 
 #include "backend.hpp"
-#include "input_backend_window.hpp"
+#include "input_window_backend.hpp"
 #include "math.hpp"
 #include "gpu_resource.hpp"
 #include "shader_define.hpp"
@@ -29,11 +29,11 @@ namespace triton
 		~IGraphicsBackend() override = default;
 
 		// Context
-		virtual void CreateGraphicsContext(sInputBackendWindow& window) = 0;
+		virtual void CreateGraphicsContext(SWindowBackend& window) = 0;
 
-		virtual void MakeWindowGraphicsContextCurrent(const sInputBackendWindow& window) = 0;
+		virtual void MakeWindowGraphicsContextCurrent(const SWindowBackend& window) = 0;
 
-		virtual void SwapWindowBuffers(const sInputBackendWindow& window) = 0;
+		virtual void SwapWindowBuffers(const SWindowBackend& window) = 0;
 
 		// Drawcall
 		virtual void ClearColor(const cVector4& color) = 0;

@@ -7,7 +7,6 @@
 #include <mutex>
 #include <condition_variable>
 #include "object.hpp"
-#include "input_window.hpp"
 #include "subsystem.hpp"
 #include "types.hpp"
 
@@ -29,7 +28,6 @@ namespace triton
 		TRITON_CLASS_NAME(CEngine)
 
 		IApplication* _app = nullptr;
-		const sCapabilities* _caps = nullptr;
 		XSynchronization* _sync = nullptr;
 		XRenderCommandRecorder* _cmdRecorder = nullptr;
 		cRenderThread* _renderThread = nullptr;
@@ -43,17 +41,10 @@ namespace triton
 		void Run();
 
 		inline IApplication* GetApplication() const { return _app; }
-		inline const sCapabilities* GetCapabilities() const { return _caps; }
 
-		inline XRenderCommandRecorder* GetRenderCommandRecorder()
-		{
-			return _cmdRecorder;
-		}
+		inline XRenderCommandRecorder* GetRenderCommandRecorder() { return _cmdRecorder; }
 
-		inline XSynchronization* GetSynchronization()
-		{
-			return _sync;
-		}
+		inline XSynchronization* GetSynchronization() { return _sync; }
 
 	private:
 		void InitializeSynchronization();

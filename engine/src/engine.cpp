@@ -5,7 +5,6 @@
 #include "application.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
-#include "input.hpp"
 #include "texture_atlas.hpp"
 #include "filesystem_manager.hpp"
 #include "font_manager.hpp"
@@ -41,13 +40,13 @@
 #include "gpu_buffer_pool.hpp"
 #include "render_instance_static_pool.hpp"
 #include "render_instance_dynamic_pool.hpp"
+#include "window.hpp"
 
 using namespace types;
 
 triton::CEngine::CEngine(cContext* context, IApplication* app) : CSubsystem(context), _app(app)
 {
-	if (_app != nullptr)
-		_caps = _app->GetCapabilities();
+	Initialize();
 }
 
 triton::CEngine::~CEngine()
@@ -67,23 +66,21 @@ void triton::CEngine::Initialize()
 
 	CObjectAllocator::Initialize(_context->GetMemoryAllocator());
 
-	InitializeRenderCommandRecorder();
-	InitializeSynchronization();
-
 	// Register backends
-	_context->RegisterBackend<iInputBackend>(new cInputBackendSDL(_context));
+	_context->RegisterBackend<IInputBackend>(new CInputBackendSDL(_context));
 	_context->RegisterBackend<IGraphicsBackend>(new XGraphicsBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 	_context->RegisterBackend<IModel3DBackend>(new XModel3DBackendAssimp(_context));
 
-	// Register subsystems and pools (order matters)
-	_context->RegisterSubsystem(new CInput(_context));
+	// Create application window
+	_app->CreateWindow();
 
-	_context->GetSubsystem<CInput>()->Initialize(*_caps);
-
+	// Initialize render thread
+	InitializeRenderCommandRecorder();
+	InitializeSynchronization();
 	InitializeRenderThread();
 
-	// Register pools
+	// Register subsystems and pools (order matters)
 	_context->RegisterPool(new CCameraPool(_context, K_TRUE));
 
 	_context->RegisterPool(new CAtlasTexturePool(_context, K_TRUE));
@@ -158,7 +155,6 @@ void triton::CEngine::Shutdown()
 	ReleaseRenderThread();
 	ReleaseSynchronization();
 	ReleaseRenderCommandRecorder();
-	_context->GetSubsystem<CInput>()->Shutdown();
 }
 
 void triton::CEngine::Run()
@@ -183,7 +179,7 @@ void triton::CEngine::InitializeRenderThread()
 	CThreadGuard::AssertMain();
 
 	// Create render thread
-	_renderThread = _context->Create<cRenderThread>(_context, _sync);
+	_renderThread = _context->Create<cRenderThread>(_context, _sync, _app->GetWindow());
 	_renderThread->Run();
 
 	// Wait until render thread gets initialized
@@ -219,17 +215,20 @@ void triton::CEngine::MainThreadFunction()
 
 	_app->Setup();
 
-	iInputBackend* inputBackend = _context->GetBackend<iInputBackend>();
-	cInputWindow& window = _context->GetSubsystem<CInput>()->GetWindows()->at(0);
-	boolean bIsRunning = K_TRUE;
+	boolean bIsRunning = True;
+
+	IInputBackend* inputBackend = _context->GetBackend<IInputBackend>();
+	CWindow* window = _app->GetWindow();
 
 	while (bIsRunning)
 	{
 		FrameMark;
 
 		EProducedFrameOp producedFrameOp = EProducedFrameOp::ExecuteFull;
-		SEvent e = {};
+		SWindowEvent e = {};
+
 		inputBackend->PreparePollEvent();
+
 		while ((e = inputBackend->PollEvent()).type != EWindowEvent::None)
 		{
 			if (e.type == EWindowEvent::Quit)
@@ -240,7 +239,7 @@ void triton::CEngine::MainThreadFunction()
 			}
 			else
 			{
-				inputBackend->ProcessEvent(e);
+				inputBackend->ProcessEvent(e, window->GetBackendWindow());
 			}
 		}
 
@@ -267,8 +266,7 @@ void triton::CEngine::MainThreadFunction()
 
 			_sync->ProduceFrame(
 				producedFrameOp,
-				_cmdRecorder->GetRenderCommandPack(),
-				&_context->GetSubsystem<CInput>()->GetWindows()->at(0)
+				_cmdRecorder->GetRenderCommandPack()
 			);
 		}
 	}

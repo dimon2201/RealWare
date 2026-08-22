@@ -2,55 +2,69 @@
 
 #pragma once
 
+#include <SDL3/SDL.h>
+#include <unordered_map>
 #include "input_backend.hpp"
+#include "input_key_state_enum.hpp"
 #include "types.hpp"
-
-struct GLFWwindow;
 
 namespace triton
 {
 	class cContext;
     
-	class cInputBackendSDL final : public iInputBackend
+	class CInputBackendSDL final : public IInputBackend
 	{
-        static constexpr types::usize kMaxKeyboardKeyCount = 256;
-        static constexpr types::usize kMaxMouseKeyCount = 256;
-        types::s32 _keys[kMaxKeyboardKeyCount] = {};
-        types::s32 _mouseKeys[kMaxMouseKeyCount] = {};
-        types::boolean _isFocused = types::K_FALSE;
+        std::unordered_map<types::u32, EKeyCode> _keyMap = {};
+        EKeyState _keyState[256] = {};
+        types::boolean _isFocused = types::False;
         types::boolean _bMouseMoved = types::False;
         cVector2 _cursorPosition = cVector2(0.0f);
         cVector2 _mouseDelta = cVector2(0.0f);
 
 	public:
-		explicit cInputBackendSDL(cContext* context);
-		virtual ~cInputBackendSDL() override final = default;
+		explicit CInputBackendSDL(cContext* context);
+		virtual ~CInputBackendSDL() override final = default;
 
-        virtual sInputBackendWindow CreatePlatformWindow(
+        virtual SWindowBackend CreateBackendWindow(
             const std::string& title,
             const cVector2& size,
             types::boolean fullscreen
         ) override final;
-        virtual void DestroyWindow(sInputBackendWindow& window) override final;
-        virtual void ResizeWindow(sInputBackendWindow& window, const cVector2& size) override final;
+
+        virtual void DestroyBackendWindow(SWindowBackend& window) override final;
+
+        virtual void ResizeWindow(SWindowBackend& window, const cVector2& size) override final;
+
         virtual void PreparePollEvent() override final;
-        virtual SEvent PollEvent() override final;
-        virtual void ProcessEvent(const SEvent& event) override final;
-        virtual void* GetWindowWin32Handle(sInputBackendWindow& window) override final;
-        virtual types::boolean GetKeyPressed(types::qword keyCode) override final;
-        virtual types::boolean GetMouseKeyPressed(types::qword keyCode) override final;
-        virtual cVector2 GetCursorPosition(sInputBackendWindow& window) override final;
+
+        virtual SWindowEvent PollEvent() override final;
+
+        virtual void ProcessEvent(const SWindowEvent& event, SWindowBackend& window) override final;
+
+        virtual void* GetWindowWin32Handle(SWindowBackend& window) override final;
+
+        virtual EKeyState GetKey(EKeyCode key) override final;
+
+        virtual cVector2 GetCursorPosition(SWindowBackend& window) override final;
+
         virtual cVector2 GetMouseDelta() override final;
-        virtual void SetKeyPressed(types::qword keyCode, types::boolean isPressed) override final;
-        virtual void SetMouseKeyPressed(types::qword keyCode, types::boolean isPressed) override final;
-        virtual void SetWindowFocus(types::boolean isFocused) override final;
-        virtual void SetWindowCursorPosition(const cVector2& cursorPosition, const cVector2& mouseDelta) override final;
-        virtual void SetVSync(types::cpuword flag) override final;
+
         virtual cVector2 GetMonitorSize() override final;
+
+        virtual void SetKey(types::cpuword internalKey, EKeyState state) override final;
+
+        virtual void SetWindowFocus(types::boolean isFocused) override final;
+
+        virtual void SetWindowMouse(
+            const cVector2& cursorPosition,
+            const cVector2& mouseDelta
+        ) override final;
+
+        virtual void SetVSync(types::cpuword flag) override final;
+
         virtual types::boolean IsWindowFocused() override final;
-        virtual types::cpuword GetKeyW() override final;
-        virtual types::cpuword GetKeyA() override final;
-        virtual types::cpuword GetKeyS() override final;
-        virtual types::cpuword GetKeyD() override final;
+
+    private:
+        void InitializeKeyMap();
 	};
 }

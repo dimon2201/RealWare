@@ -7,7 +7,6 @@
 #include "render_target_pool.hpp"
 #include "input_layout_pool.hpp"
 #include "filesystem_manager.hpp"
-#include "input.hpp"
 #include "geometry_storage.hpp"
 #include "skinned_bones_pool.hpp"
 #include "texture_atlas.hpp"
@@ -15,6 +14,7 @@
 #include "render_instance_static_pool.hpp"
 #include "render_instance_dynamic_pool.hpp"
 #include "material_pool.hpp"
+#include "window.hpp"
 
 using namespace types;
 
@@ -121,7 +121,7 @@ void triton::CGraphics::CreateInputLayouts()
 
 void triton::CGraphics::CreateRenderTargets()
 {
-    cVector2 windowSize = _context->GetSubsystem<CInput>()->GetWindows()->at(0).GetSize();
+    cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
@@ -178,7 +178,7 @@ void triton::CGraphics::CreateRenderTargets()
 
 void triton::CGraphics::CreateRenderPasses()
 {
-    cVector2 windowSize = _context->GetSubsystem<CInput>()->GetWindows()->at(0).GetSize();
+    cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
     CTextureAtlas* textureAtlas = _context->GetSubsystem<CTextureAtlas>();
     CFileSystem* fs = _context->GetSubsystem<CFileSystem>();
 

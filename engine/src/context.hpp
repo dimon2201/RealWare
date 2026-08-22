@@ -70,9 +70,9 @@ T* triton::cContext::Create(Args&&... args)
 	// TODO: rewrite object creation system completely
 	// temporary solution
 
-	const sCapabilities* caps = GetSubsystem<CEngine>()->GetCapabilities();
+	const sCapabilities& caps = GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
 	cMemoryAllocator* memoryAllocator = GetMemoryAllocator();
-	T* object = (T*)memoryAllocator->Allocate(sizeof(T), caps->memoryAlignment);
+	T* object = (T*)memoryAllocator->Allocate(sizeof(T), caps.memoryAlignment);
 	
 	new (object) T(std::forward<Args>(args)...);
 

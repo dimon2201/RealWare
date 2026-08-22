@@ -10,12 +10,12 @@
 #include "object.hpp"
 #include "context.hpp"
 #include "thread_guard.hpp"
-#include "input.hpp"
+#include "application.hpp"
 #include "types.hpp"
 
 namespace triton
 {
-	class cInputWindow;
+	class CWindow;
 
 	enum class ERenderCommand
 	{
@@ -142,18 +142,15 @@ namespace triton
 
 		void Apply(
 			EProducedFrameOp operation_,
-			const SRenderCommandPack& renderCommandPack_,
-			cInputWindow* window_
+			const SRenderCommandPack& renderCommandPack_
 		)
 		{
 			operation = operation_;
 			renderCommandPack = renderCommandPack_;
-			window = window_;
 		}
 
 		EProducedFrameOp operation = EProducedFrameOp::None;
 		SRenderCommandPack renderCommandPack;
-		cInputWindow* window = nullptr;
 	};
 
 	struct alignas(64) SReleasedFrameData
@@ -207,8 +204,7 @@ namespace triton
 
 		void ProduceFrame(
 			EProducedFrameOp operation,
-			const SRenderCommandPack& renderCommandPack,
-			cInputWindow* window
+			const SRenderCommandPack& renderCommandPack
 		);
 
 		void ReleaseFrame();
@@ -227,8 +223,7 @@ namespace triton
 			WaitForReleasedFrame();
 			ProduceFrame(
 				EProducedFrameOp::ExecuteCommandsOnly,
-				_cmdRecorder->GetRenderCommandPack(),
-				&_context->GetSubsystem<CInput>()->GetWindows()->at(0)
+				_cmdRecorder->GetRenderCommandPack()
 			);
 			_cmdRecorder->Clear();
 			WaitForRenderJobFinish();

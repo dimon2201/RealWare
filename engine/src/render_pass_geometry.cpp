@@ -10,6 +10,7 @@
 #include "camera_pool.hpp"
 #include "render_target_pool.hpp"
 #include "render_instance_pack_pool.hpp"
+#include "input_backend.hpp"
 
 using namespace types;
 
@@ -66,7 +67,7 @@ void triton::XRenderPassGeometry::Draw()
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
     // TODO: remove this line
-    const cVector2 mouseDelta = _context->GetBackend<iInputBackend>()->GetMouseDelta();
+    const cVector2 mouseDelta = _context->GetBackend<IInputBackend>()->GetMouseDelta();
     camera.Update(mouseDelta, 800, 600, 65.0f, 0.01f, 10000.0f, 0.1f);
     cVector4 cameraWorldPos = cVector4(camera._worldPosition.GetX(), camera._worldPosition.GetY(), camera._worldPosition.GetZ(), 0.0f);
     ///////////////////////////////////////////////////////////////////////////

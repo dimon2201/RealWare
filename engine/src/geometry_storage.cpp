@@ -16,40 +16,40 @@ using namespace types;
 
 triton::CGeometryStorage::CGeometryStorage(cContext* context) : CSubsystem(context)
 {
-    const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetCapabilities();
+    const sCapabilities& caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
 
     _staticVertexBuffer = *_context->GetPool<CGPUBufferPool>()->Create(
         EGPUBufferType::Vertex,
         nullptr,
-        caps->staticVertexBufferSize,
+        caps.staticVertexBufferSize,
         0
     );
 
     _skinnedVertexBuffer = *_context->GetPool<CGPUBufferPool>()->Create(
         EGPUBufferType::Vertex,
         nullptr,
-        caps->skinnedVertexBufferSize,
+        caps.skinnedVertexBufferSize,
         0
     );
 
     _staticIndexBuffer = *_context->GetPool<CGPUBufferPool>()->Create(
         EGPUBufferType::Index,
         nullptr,
-        caps->staticIndexBufferSize,
+        caps.staticIndexBufferSize,
         0
     );
 
     _skinnedIndexBuffer = *_context->GetPool<CGPUBufferPool>()->Create(
         EGPUBufferType::Index,
         nullptr,
-        caps->skinnedIndexBufferSize,
+        caps.skinnedIndexBufferSize,
         0
     );
 
-    _staticVertexBufferCPU = _context->Create<XDataBuffer>(caps->staticVertexBufferSize);
-    _skinnedVertexBufferCPU = _context->Create<XDataBuffer>(caps->skinnedVertexBufferSize);
-    _staticIndexBufferCPU = _context->Create<XDataBuffer>(caps->staticIndexBufferSize);
-    _skinnedIndexBufferCPU = _context->Create<XDataBuffer>(caps->skinnedIndexBufferSize);
+    _staticVertexBufferCPU = _context->Create<XDataBuffer>(caps.staticVertexBufferSize);
+    _skinnedVertexBufferCPU = _context->Create<XDataBuffer>(caps.skinnedVertexBufferSize);
+    _staticIndexBufferCPU = _context->Create<XDataBuffer>(caps.staticIndexBufferSize);
+    _skinnedIndexBufferCPU = _context->Create<XDataBuffer>(caps.skinnedIndexBufferSize);
 }
 
 triton::CGeometryStorage::~CGeometryStorage()

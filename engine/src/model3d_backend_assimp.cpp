@@ -493,9 +493,9 @@ void triton::XModel3DBackendAssimp::FinalizeBoneWeights(
             }
         );
 
-        const sCapabilities* caps = context->GetSubsystem<CEngine>()->GetCapabilities();
-        if (weights.size() > caps->maxBoneCountPerVertex)
-            weights.resize(caps->maxBoneCountPerVertex);
+        const sCapabilities& caps = context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
+        if (weights.size() > caps.maxBoneCountPerVertex)
+            weights.resize(caps.maxBoneCountPerVertex);
 
         f32 sum = 0.0f;
         for (const auto& w : weights)

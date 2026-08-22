@@ -6,11 +6,11 @@
 #include "memory_pool.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
-#include "input.hpp"
 #include "engine.hpp"
 #include "log.hpp"
 #include "graphics_backend.hpp"
 #include "object_allocator.hpp"
+#include "window.hpp"
 
 using namespace types;
 
@@ -70,7 +70,7 @@ triton::cFontFace::~cFontFace()
 
 void triton::cFontFace::FillAlphabetAndFindAtlasSize(usize& xOffset, usize& atlasWidth, usize& atlasHeight)
 {
-    const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
+    const sCapabilities& caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
     const FT_Face ftFont = _font;
@@ -96,7 +96,7 @@ void triton::cFontFace::FillAlphabetAndFindAtlasSize(usize& xOffset, usize& atla
             glyph._top = ftFont->glyph->bitmap_top;
             glyph._advanceX = ftFont->glyph->advance.x >> 6;
             glyph._advanceY = ftFont->glyph->advance.y >> 6;
-            glyph._bitmapData = memoryAllocator->Allocate(glyph._width * glyph._height, caps->memoryAlignment);
+            glyph._bitmapData = memoryAllocator->Allocate(glyph._width * glyph._height, caps.memoryAlignment);
 
             if (ftFont->glyph->bitmap.buffer)
                 memcpy(glyph._bitmapData, ftFont->glyph->bitmap.buffer, glyph._width * glyph._height);
@@ -126,12 +126,12 @@ void triton::cFontFace::FillAlphabetAndFindAtlasSize(usize& xOffset, usize& atla
 
 void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeight)
 {
-    const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
+    const sCapabilities& caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
     cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
     usize maxGlyphHeight = 0;
 
-    void* atlasPixels = memoryAllocator->Allocate(atlasWidth * atlasHeight, caps->memoryAlignment);
+    void* atlasPixels = memoryAllocator->Allocate(atlasWidth * atlasHeight, caps.memoryAlignment);
     memset(atlasPixels, 0, atlasWidth * atlasHeight);
 
     usize xOffset = 0;
@@ -271,12 +271,10 @@ void triton::cFont::DestroyText(cText* text)
 
 f32 triton::cFont::GetTextWidth(cFontFace* font, const std::string& text) const
 {
-    CInput* input = _context->GetSubsystem<CInput>();
-
     f32 textWidth = 0.0f;
     f32 maxTextWidth = 0.0f;
     const usize textByteSize = strlen(text.c_str());
-    const cVector2 windowSize = input->GetWindows()->at(0).GetSize();
+    const cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
 
     for (usize i = 0; i < textByteSize; i++)
     {
@@ -313,12 +311,10 @@ f32 triton::cFont::GetTextWidth(cFontFace* font, const std::string& text) const
 
 f32 triton::cFont::GetTextHeight(cFontFace* font, const std::string& text) const
 {
-    CInput* input = _context->GetSubsystem<CInput>();
-
     f32 textHeight = 0.0f;
     f32 maxHeight = 0.0f;
     const usize textByteSize = strlen(text.c_str());
-    const cVector2 windowSize = input->GetWindows()->at(0).GetSize();
+    const cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
 
     for (usize i = 0; i < textByteSize; i++)
     {

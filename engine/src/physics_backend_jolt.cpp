@@ -17,6 +17,7 @@
 #include "context.hpp"
 #include "engine.hpp"
 #include "capabilities.hpp"
+#include "application.hpp"
 
 using namespace JPH;
 using namespace types;
@@ -188,9 +189,9 @@ triton::XPhysicsBackendJolt::~XPhysicsBackendJolt()
 
 triton::SPhysicsWorldBackendData triton::XPhysicsBackendJolt::CreateWorld()
 {
-	const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetCapabilities();
+	const sCapabilities& caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
 
-	TempAllocatorImpl* tempAllocator = new TempAllocatorImpl(caps->maxPhysicsTempBufferByteSize);
+	TempAllocatorImpl* tempAllocator = new TempAllocatorImpl(caps.maxPhysicsTempBufferByteSize);
 	JobSystemThreadPool* jobSystem = new JobSystemThreadPool(
 		cMaxPhysicsJobs,
 		cMaxPhysicsBarriers,
@@ -201,10 +202,10 @@ triton::SPhysicsWorldBackendData triton::XPhysicsBackendJolt::CreateWorld()
 	ObjectLayerPairFilterImpl* objectVsObjectLayerFilter = new ObjectLayerPairFilterImpl();
 	PhysicsSystem* physicsSystem = new PhysicsSystem();
 	physicsSystem->Init(
-		caps->maxPhysicsSimulationBodyCount,
-		caps->maxPhysicsSimulationBodyMutexCount,
-		caps->maxPhysicsSimulationBodyPairCount,
-		caps->maxPhysicsSimulationContactConstraintCount,
+		caps.maxPhysicsSimulationBodyCount,
+		caps.maxPhysicsSimulationBodyMutexCount,
+		caps.maxPhysicsSimulationBodyPairCount,
+		caps.maxPhysicsSimulationContactConstraintCount,
 		*broadPhaseLayerInterface,
 		*objectVsBroadphaseLayerFilter,
 		*objectVsObjectLayerFilter

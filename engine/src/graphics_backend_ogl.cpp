@@ -6,6 +6,7 @@
 #include "graphics_backend_ogl.hpp"
 #include "context.hpp"
 #include "filesystem_manager.hpp"
+#include "application.hpp"
 #include "log.hpp"
 
 using namespace gl;
@@ -53,7 +54,7 @@ namespace triton
     }
 }
 
-void triton::XGraphicsBackendOGL::CreateGraphicsContext(sInputBackendWindow& window)
+void triton::XGraphicsBackendOGL::CreateGraphicsContext(SWindowBackend& window)
 {
     window.renderContextInstance = (qword)SDL_GL_CreateContext((SDL_Window*)window.instance);
     if (!window.renderContextInstance)
@@ -75,12 +76,12 @@ void triton::XGraphicsBackendOGL::CreateGraphicsContext(sInputBackendWindow& win
     glDebugMessageCallback(GLDebugCallback, nullptr);
 }
 
-void triton::XGraphicsBackendOGL::MakeWindowGraphicsContextCurrent(const sInputBackendWindow& window)
+void triton::XGraphicsBackendOGL::MakeWindowGraphicsContextCurrent(const SWindowBackend& window)
 {
     SDL_GL_MakeCurrent((SDL_Window*)window.instance, (SDL_GLContext)window.renderContextInstance);
 }
 
-void triton::XGraphicsBackendOGL::SwapWindowBuffers(const sInputBackendWindow& window)
+void triton::XGraphicsBackendOGL::SwapWindowBuffers(const SWindowBackend& window)
 {
     SDL_GL_SwapWindow((SDL_Window*)window.instance);
 }
@@ -974,12 +975,12 @@ void triton::XGraphicsBackendOGL::WriteTextureToFile(const CGPUTextureResource& 
 
     if (texture.GetDimension() == ETextureDimension::Texture2D)
     {
-        const sCapabilities* caps = _context->GetSubsystem<CEngine>()->GetCapabilities();
+        const sCapabilities& caps = _context->GetSubsystem<CEngine>()->GetApplication()->GetCapabilities();
         cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
         u8* pixels = (u8*)memoryAllocator->Allocate(
             texture.GetWidth() * texture.GetHeight() * formatByteCount,
-            caps->memoryAlignment
+            caps.memoryAlignment
         );
 
         glBindTexture(GL_TEXTURE_2D, texture.GetInstance());

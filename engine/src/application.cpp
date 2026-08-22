@@ -11,21 +11,31 @@
 #include "memory_pool.hpp"
 #include "event_manager.hpp"
 #include "thread_subsystem.hpp"
-#include "input.hpp"
+#include "window.hpp"
 #include "time.hpp"
 #include "log.hpp"
 
 using namespace types;
 
-triton::IApplication::IApplication(cContext* context, const sCapabilities* caps) : _context(context), _caps(caps)
+triton::IApplication::IApplication(cContext* context, const sCapabilities& caps) : _context(context), _caps(caps)
 {
     _engine = new CEngine(_context, this);
-    _engine->Initialize();
 }
 
 triton::IApplication::~IApplication()
 {
+    delete _window;
     delete _engine;
+}
+
+void triton::IApplication::CreateWindow()
+{
+    _window = new CWindow(
+        _context,
+        _caps.window.title,
+        _caps.window.size,
+        _caps.window.fullscreen
+    );
 }
 
 void triton::IApplication::Run()

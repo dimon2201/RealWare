@@ -2,16 +2,13 @@
 
 #pragma once
 
-#include <SDL3/SDL.h>
 #include "input_backend_sdl.hpp"
-#include "input.hpp"
 #include "context.hpp"
-#include "graphics.hpp"
 #include "types.hpp"
 
 using namespace types;
 
-triton::cInputBackendSDL::cInputBackendSDL(cContext* context) : iInputBackend(context)
+triton::CInputBackendSDL::CInputBackendSDL(cContext* context) : IInputBackend(context)
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -27,45 +24,47 @@ triton::cInputBackendSDL::cInputBackendSDL(cContext* context) : iInputBackend(co
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+    InitializeKeyMap();
 }
 
-triton::sInputBackendWindow triton::cInputBackendSDL::CreatePlatformWindow(
+triton::SWindowBackend triton::CInputBackendSDL::CreateBackendWindow(
     const std::string& title,
     const cVector2& size,
     boolean fullscreen
 )
 {
-    sInputBackendWindow ibw = {};
-    ibw.title = title;
-    ibw.size = size;
-    ibw.fullscreen = fullscreen;
+    SWindowBackend wb = {};
+    wb.title = title;
+    wb.size = size;
+    wb.fullscreen = fullscreen;
 
-    if (fullscreen == K_FALSE)
+    if (fullscreen == False)
     {
-        ibw.instance = (qword)SDL_CreateWindow(
-            ibw.title.c_str(),
-            ibw.size.GetX(),
-            ibw.size.GetY(),
+        wb.instance = (qword)SDL_CreateWindow(
+            wb.title.c_str(),
+            wb.size.GetX(),
+            wb.size.GetY(),
             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
         );
 
-        SDL_SetWindowRelativeMouseMode((SDL_Window*)ibw.instance, true);
+        SDL_SetWindowRelativeMouseMode((SDL_Window*)wb.instance, true);
     }
     else
     {
         // TODO: add fullscreen mode
     }
 
-    if (!ibw.instance)
+    if (!wb.instance)
     {
         Print("Error: SDL_CreateWindow failed");
-        return ibw;
+        return wb;
     }
 
-    return ibw;
+    return wb;
 }
 
-void triton::cInputBackendSDL::DestroyWindow(sInputBackendWindow& window)
+void triton::CInputBackendSDL::DestroyBackendWindow(SWindowBackend& window)
 {
     if (window.instance == 0)
         return;
@@ -73,7 +72,7 @@ void triton::cInputBackendSDL::DestroyWindow(sInputBackendWindow& window)
     SDL_DestroyWindow((SDL_Window*)window.instance);
 }
 
-void triton::cInputBackendSDL::ResizeWindow(sInputBackendWindow& window, const cVector2& newSize)
+void triton::CInputBackendSDL::ResizeWindow(SWindowBackend& window, const cVector2& newSize)
 {
     if (window.instance == 0)
         return;
@@ -81,16 +80,18 @@ void triton::cInputBackendSDL::ResizeWindow(sInputBackendWindow& window, const c
     window.size = cVector2(newSize.GetX(), newSize.GetY());
 }
 
-void triton::cInputBackendSDL::PreparePollEvent()
+void triton::CInputBackendSDL::PreparePollEvent()
 {
     _bMouseMoved = False;
 }
 
-triton::SEvent triton::cInputBackendSDL::PollEvent()
+triton::SWindowEvent triton::CInputBackendSDL::PollEvent()
 {
-    SEvent e = {};
+    SWindowEvent e = {};
     e.type = EWindowEvent::None;
+
     SDL_Event event = {};
+
     if (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -158,64 +159,62 @@ triton::SEvent triton::cInputBackendSDL::PollEvent()
     return e;
 }
 
-void triton::cInputBackendSDL::ProcessEvent(const SEvent& event)
+void triton::CInputBackendSDL::ProcessEvent(const SWindowEvent& event, SWindowBackend& window)
 {
-    iInputBackend* input = _context->GetBackend<iInputBackend>();
-    sInputBackendWindow& ibw = _context->GetSubsystem<CInput>()->GetWindows()->at(0).GetBackendWindow();
     switch (event.type)
     {
         case EWindowEvent::KeyDown:
         {
-            input->SetKeyPressed(event.argA, K_TRUE);
+            SetKey(event.argA, EKeyState::Pressed);
             break;
         }
 
         case EWindowEvent::KeyUp:
         {
-            input->SetKeyPressed(event.argA, K_FALSE);
+            SetKey(event.argA, EKeyState::Released);
             break;
         }
 
         case EWindowEvent::FocusGained:
         {
-            if (input->IsWindowFocused() == K_FALSE)
-                input->SetWindowFocus(K_TRUE);
+            if (IsWindowFocused() == K_FALSE)
+                SetWindowFocus(K_TRUE);
             break;
         }
 
         case EWindowEvent::FocusLost:
         {
-            input->SetWindowFocus(K_FALSE);
+            SetWindowFocus(K_FALSE);
             break;
         }
 
         case EWindowEvent::Resized:
         {
-            input->ResizeWindow(ibw, cVector2(event.argA, event.argB));
+            ResizeWindow(window, cVector2(event.argA, event.argB));
             break;
         }
 
         case EWindowEvent::MouseMotion:
         {
-            input->SetWindowCursorPosition(cVector2(event.argA, event.argB), cVector2(event.argC, event.argD));
+            SetWindowMouse(cVector2(event.argA, event.argB), cVector2(event.argC, event.argD));
             break;
         }
 
         case EWindowEvent::MouseButtonDown:
         {
-            input->SetMouseKeyPressed(event.argA, K_TRUE);
+            SetKey(event.argA, EKeyState::Pressed);
             break;
         }
 
         case EWindowEvent::MouseButtonUp:
         {
-            input->SetMouseKeyPressed(event.argB, K_FALSE);
+            SetKey(event.argB, EKeyState::Released);
             break;
         }
     }
 }
 
-void* triton::cInputBackendSDL::GetWindowWin32Handle(sInputBackendWindow& window)
+void* triton::CInputBackendSDL::GetWindowWin32Handle(SWindowBackend& window)
 {
     if (window.instance == 0)
         return nullptr;
@@ -223,22 +222,17 @@ void* triton::cInputBackendSDL::GetWindowWin32Handle(sInputBackendWindow& window
     return nullptr; //(void*)glfwGetWin32Window((GLFWwindow*)window.instance);
 }
 
-boolean triton::cInputBackendSDL::GetKeyPressed(qword keyCode)
+triton::EKeyState triton::CInputBackendSDL::GetKey(EKeyCode key)
 {
-    return _keys[keyCode];
+    return _keyState[(usize)key];
 }
 
-boolean triton::cInputBackendSDL::GetMouseKeyPressed(qword keyCode)
-{
-    return _mouseKeys[keyCode];
-}
-
-triton::cVector2 triton::cInputBackendSDL::GetCursorPosition(sInputBackendWindow& window)
+triton::cVector2 triton::CInputBackendSDL::GetCursorPosition(SWindowBackend& window)
 {
     return _cursorPosition;
 }
 
-triton::cVector2 triton::cInputBackendSDL::GetMouseDelta()
+triton::cVector2 triton::CInputBackendSDL::GetMouseDelta()
 {
     if (_bMouseMoved == True)
         return _mouseDelta;
@@ -246,58 +240,46 @@ triton::cVector2 triton::cInputBackendSDL::GetMouseDelta()
         return cVector2(0.0f);
 }
 
-void triton::cInputBackendSDL::SetKeyPressed(qword keyCode, boolean isPressed)
+triton::cVector2 triton::CInputBackendSDL::GetMonitorSize()
 {
-    _keys[keyCode] = isPressed;
+    return cVector2(0.0f); //cVector2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 }
 
-void triton::cInputBackendSDL::SetMouseKeyPressed(qword keyCode, boolean isPressed)
+void triton::CInputBackendSDL::SetKey(types::cpuword internalKey, EKeyState state)
 {
-    _mouseKeys[keyCode] = isPressed;
+    auto result = _keyMap.find(internalKey);
+    if (result != _keyMap.end())
+        _keyState[(usize)result->second] = state;
 }
 
-void triton::cInputBackendSDL::SetWindowFocus(boolean isFocused)
+void triton::CInputBackendSDL::SetWindowFocus(boolean isFocused)
 {
     _isFocused = isFocused;
 }
 
-void triton::cInputBackendSDL::SetWindowCursorPosition(const cVector2& cursorPosition, const cVector2& mouseDelta)
+void triton::CInputBackendSDL::SetWindowMouse(const cVector2& cursorPosition, const cVector2& mouseDelta)
 {
     _cursorPosition = cursorPosition;
     _mouseDelta = mouseDelta;
 }
 
-void triton::cInputBackendSDL::SetVSync(cpuword flag)
+void triton::CInputBackendSDL::SetVSync(cpuword flag)
 {
     // TODO: Implement SDL VSync
 }
 
-triton::cVector2 triton::cInputBackendSDL::GetMonitorSize()
-{
-    return cVector2(0.0f); //cVector2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
-}
-
-boolean triton::cInputBackendSDL::IsWindowFocused()
+boolean triton::CInputBackendSDL::IsWindowFocused()
 {
     return _isFocused;
 }
 
-types::cpuword triton::cInputBackendSDL::GetKeyW()
+void triton::CInputBackendSDL::InitializeKeyMap()
 {
-    return SDL_SCANCODE_W;
-}
-
-types::cpuword triton::cInputBackendSDL::GetKeyA()
-{
-    return SDL_SCANCODE_A;
-}
-
-types::cpuword triton::cInputBackendSDL::GetKeyS()
-{
-    return SDL_SCANCODE_S;
-}
-
-types::cpuword triton::cInputBackendSDL::GetKeyD()
-{
-    return SDL_SCANCODE_D;
+    _keyMap.emplace(SDL_BUTTON_LEFT, EKeyCode::MouseLeft);
+    _keyMap.emplace(SDL_BUTTON_MIDDLE, EKeyCode::MouseMiddle);
+    _keyMap.emplace(SDL_BUTTON_RIGHT, EKeyCode::MouseRight);
+    _keyMap.emplace(SDL_SCANCODE_W, EKeyCode::W);
+    _keyMap.emplace(SDL_SCANCODE_A, EKeyCode::A);
+    _keyMap.emplace(SDL_SCANCODE_S, EKeyCode::S);
+    _keyMap.emplace(SDL_SCANCODE_D, EKeyCode::D);
 }

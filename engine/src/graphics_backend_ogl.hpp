@@ -13,11 +13,11 @@ namespace triton
 		~XGraphicsBackendOGL() override = default;
 
 		// Context
-		virtual void CreateGraphicsContext(sInputBackendWindow& window) override final;
+		virtual void CreateGraphicsContext(SWindowBackend& window) override final;
 
-		virtual void MakeWindowGraphicsContextCurrent(const sInputBackendWindow& window) override final;
+		virtual void MakeWindowGraphicsContextCurrent(const SWindowBackend& window) override final;
 
-		virtual void SwapWindowBuffers(const sInputBackendWindow& window) override final;
+		virtual void SwapWindowBuffers(const SWindowBackend& window) override final;
 
 		// Drawcall
 		virtual void ClearColor(const cVector4& color) override final;

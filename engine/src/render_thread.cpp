@@ -4,23 +4,12 @@
 #include "render_thread.hpp"
 #include "context.hpp"
 #include "engine.hpp"
-#include "input.hpp"
+#include "window.hpp"
 #include "graphics.hpp"
 #include "graphics_backend.hpp"
 #include "thread_guard.hpp"
 
 using namespace types;
-
-triton::cRenderThread::cRenderThread(
-	cContext* context,
-	XSynchronization* sync
-) : _context(context), _sync(sync)
-{
-}
-
-triton::cRenderThread::~cRenderThread()
-{
-}
 
 void triton::cRenderThread::ThreadFunction()
 {
@@ -32,13 +21,9 @@ void triton::cRenderThread::ThreadFunction()
 	IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
 
 	// Create graphics contexts for windows
-	CInput* inputSubsystem = _context->GetSubsystem<CInput>();
-	std::vector<cInputWindow>* windows = inputSubsystem->GetWindows();
-	for (usize i = 0; i < windows->size(); i++)
-	{
-		gfxBackend->CreateGraphicsContext(windows->at(i).GetBackendWindow());
-		gfxBackend->MakeWindowGraphicsContextCurrent(windows->at(i).GetBackendWindow());
-	}
+	CWindow* window = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow();
+	gfxBackend->CreateGraphicsContext(window->GetBackendWindow());
+	gfxBackend->MakeWindowGraphicsContextCurrent(window->GetBackendWindow());
 
 	_sync->InitRenderThread();
 	
@@ -80,7 +65,7 @@ void triton::cRenderThread::ThreadFunction()
 
 				gfx->ExecutePasses();
 
-				Present(frame.window, gfxBackend);
+				Present(gfxBackend);
 			}
 			else if (frame.operation == EProducedFrameOp::ExecuteCommandsOnly)
 			{
@@ -281,7 +266,7 @@ void triton::cRenderThread::ExecuteCommands(
 	}
 }
 
-void triton::cRenderThread::Present(const cInputWindow* window, IGraphicsBackend* gfxBackend)
+void triton::cRenderThread::Present(IGraphicsBackend* gfxBackend)
 {
-	gfxBackend->SwapWindowBuffers(window->GetBackendWindow());
+	gfxBackend->SwapWindowBuffers(_window->GetBackendWindow());
 }

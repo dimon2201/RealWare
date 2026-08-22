@@ -23,7 +23,7 @@ using namespace types;
 class cMyApplication final : public IApplication
 {
 public:
-    cMyApplication(cContext* context, const sCapabilities* caps) : IApplication(context, caps)
+    cMyApplication(cContext* context, const sCapabilities& caps) : IApplication(context, caps)
     {
     }
 
@@ -44,12 +44,12 @@ public:
         XCamera& camo = *_context->GetPool<CCameraPool>()->Get(camh);
         camo._worldPosition = cVector3(0.0f, 1.0f, 1.0f);
         
-        XRenderPassGeometry& opaqueSkinnedRP = 
+        XRenderPassGeometry& opaqueStaticRP = 
             *_context->GetPool<CRenderPassGeometryPool>()->Get(
-                _context->GetSubsystem<CGraphics>()->GetOpaqueSkinnedRenderPass()
+                _context->GetSubsystem<CGraphics>()->GetOpaqueStaticRenderPass()
             );
         
-        opaqueSkinnedRP.SetCamera(camh);
+        opaqueStaticRP.SetCamera(camh);
         
         /*m3d = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModelFromAsset(
             "C:/My/My_Projects_Programming/TritonEngine/tools/tasset/bin/Chort2.tasset"
@@ -104,14 +104,14 @@ public:
         //);
         //auto m3dd = *_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Get(m3d);
 
-        auto modelHandle = *_context->GetPool<CModel3DPool>()->Create(
-            EModel3DFileType::Raw,
-            "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/stanford_dragon/stanford_dragon.fbx"
-        );
-        XModel3D& model = *_context->GetPool<CModel3DPool>()->Get(modelHandle);
+        //auto modelHandle = *_context->GetPool<CModel3DPool>()->Create(
+        //    EModel3DFileType::Raw,
+        //    "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/stanford_dragon/stanford_dragon.fbx"
+        //);
+        //XModel3D& model = *_context->GetPool<CModel3DPool>()->Get(modelHandle);
 
-        const usize cGridSize = 2;
-        const usize cGridStep = 256;
+        const usize cGridSize = 16;
+        const usize cGridStep = 8;
         SGeometryView triGeom = *gs->Create(
             EVertexBufferFormat::Static_52,
             (u8*)&triVerts[0],
@@ -119,16 +119,16 @@ public:
             (u8*)&triInds[0],
             3
         );
-        SGeometryView modelGeom = *gs->Create(
-            EVertexBufferFormat::Skinned_84,
-            (u8*)model.GetVertices(),
-            model.GetVertexCount(),
-            (u8*)model.GetIndices(),
-            model.GetIndexCount()
-        );
+        //SGeometryView modelGeom = *gs->Create(
+        //    EVertexBufferFormat::Skinned_84,
+        //    (u8*)model.GetVertices(),
+        //    model.GetVertexCount(),
+        //    (u8*)model.GetIndices(),
+        //    model.GetIndexCount()
+        //);
         XRenderInstancePack::THandle instancePack1Handle = *instancePackPool->Create(
             ERenderInstanceMotionType::Static,
-            modelGeom,
+            triGeom,
             cGridSize * cGridSize * cGridSize
         );
         XAtlasTexture::THandle emptyTexHandle = XAtlasTexture::THandle();
@@ -139,12 +139,22 @@ public:
             emptyTexHandle,
             emptyTexHandle
         );
+        auto material2 = *materialPool->Create(
+            cVector4(0.0f, 1.0f, 0.0f, 1.0f),
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle
+        );
+        auto material3 = *materialPool->Create(
+            cVector4(0.0f, 0.0f, 1.0f, 1.0f),
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle,
+            emptyTexHandle
+        );
         
-        opaqueSkinnedRP.SetRenderInstancePacks({ instancePack1Handle });
-
-        XRenderInstancePack& instancePack1 = *instancePackPool->Get(instancePack1Handle);
-        const std::vector<XRenderInstance::THandle> instances =
-            *instancePack1.AddInstances(cGridSize * cGridSize * cGridSize);
+        opaqueStaticRP.SetRenderInstancePacks({ instancePack1Handle });
 
         for (s32 x = 0; x < cGridSize; x++)
         {
@@ -155,8 +165,8 @@ public:
                     auto gameObjectHandle = *gameObjectPool->Create("MyObject");
                     XGameObject& gameObject = *gameObjectPool->Get(gameObjectHandle);
                     gameObject.SetRenderable(
-                        instancePack1Handle,
-                        instances[z + (y * cGridSize) + (x * cGridSize * cGridSize)]
+                        True,
+                        instancePack1Handle
                     );
                     gameObject.SetMaterial(material1);
                     gameObject.SetWorldPosition(
@@ -165,9 +175,6 @@ public:
                             (y - s32(cGridSize / 2)) * (s32)cGridStep,
                             (z - s32(cGridSize / 2)) * (s32)cGridStep
                         )
-                    );
-                    gameObject.SetRotation(
-                        cVector3(-90.0f, 0.0f, 0.0f)
                     );
                 }
             }
@@ -291,16 +298,14 @@ int main()
     std::cout << "Context initialized." << std::endl;
 
     sCapabilities caps = {};
-    caps.windowCount = 1;
-    caps.windows[0].windowTitle = "My Test Application";
-    caps.windows[0].windowWidth = 800;
-    caps.windows[0].windowHeight = 600;
-    caps.windows[0].fullscreen = K_FALSE;
+    caps.window.title = "My Test Application";
+    caps.window.size = cVector2(800, 600);
+    caps.window.fullscreen = K_FALSE;
     caps.hashTableChunkByteSize = 1024;
     caps.staticVertexBufferSize = 70 * 1024 * 1024;
     caps.skinnedVertexBufferSize = 70 * 1024 * 1024;
 
-    cMyApplication* myApp = new cMyApplication(context, &caps);
+    cMyApplication* myApp = new cMyApplication(context, caps);
     std::cout << "Application initialized." << std::endl;
 
     myApp->Run();

@@ -16,19 +16,23 @@ namespace triton
 	class IGraphicsBackend;
 	class CGraphics;
 	class XSynchronization;
+	class CWindow;
 	struct SRenderCommandPack;
 
 	class cRenderThread final : public cThread
 	{
 		cContext* _context = nullptr;
 		XSynchronization* _sync = nullptr;
+		CWindow* _window = nullptr;
 
 	public:
 		explicit cRenderThread(
 			cContext* context,
-			XSynchronization* sync
-		);
-		~cRenderThread() override;
+			XSynchronization* sync,
+			CWindow* window
+		) : _context(context), _sync(sync), _window(window) {}
+
+		~cRenderThread() override = default;
 
 		virtual void ThreadFunction() override;
 
@@ -39,6 +43,6 @@ namespace triton
 			CGraphics* gfx
 		);
 
-		void Present(const cInputWindow* window, IGraphicsBackend* gfxBackend);
+		void Present(IGraphicsBackend* gfxBackend);
 	};
 }

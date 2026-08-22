@@ -4,7 +4,6 @@
 #include "thread_guard.hpp"
 #include "render_thread.hpp"
 #include "context.hpp"
-#include "input.hpp"
 #include "object_allocator.hpp"
 
 using namespace types;
@@ -70,15 +69,14 @@ void triton::XSynchronization::InitRenderThread()
 
 void triton::XSynchronization::ProduceFrame(
 	EProducedFrameOp operation,
-	const SRenderCommandPack& renderCommandPack,
-	cInputWindow* window
+	const SRenderCommandPack& renderCommandPack
 )
 {
 	CThreadGuard::AssertMain();
 
 	const usize writeIndex = _writeIndex;
 	_producedFrameData[writeIndex].Clear();
-	_producedFrameData[writeIndex].Apply(operation, renderCommandPack, window);
+	_producedFrameData[writeIndex].Apply(operation, renderCommandPack);
 	_readIndex.store(writeIndex, std::memory_order_release);
 	_writeIndex = writeIndex ^ 1;
 
