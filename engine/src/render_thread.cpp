@@ -252,9 +252,9 @@ void triton::cRenderThread::ExecuteCommands(
 				memcpy(&_sync->GetResultBuffer().data[0], &resultGPUShader, sizeof(CGPUShaderResource));
 				break;
 			}
-			case ERenderCommand::BIND_STATIC_INPUT_LAYOUT:
+			case ERenderCommand::BIND_RIGID_INPUT_LAYOUT:
 			{
-				gfxBackend->BindStaticInputLayout();
+				gfxBackend->BindRigidInputLayout();
 				break;
 			}
 			case ERenderCommand::BIND_SKINNED_INPUT_LAYOUT:

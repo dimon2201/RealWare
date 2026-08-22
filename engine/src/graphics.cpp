@@ -114,8 +114,8 @@ void triton::CGraphics::CreateInputLayouts()
         gs->GetSkinnedIndexBuffer()
     };
     CInputLayoutPool* iaPool = _context->GetPool<CInputLayoutPool>();
-    _inputLayoutStatic = *iaPool->Create(staticInputs, EVertexBufferFormat::Static_52);
-    _inputLayoutSkinned = *iaPool->Create(skinnedInputs, EVertexBufferFormat::Skinned_84);
+    _inputLayoutStatic = *iaPool->Create(staticInputs, EVertexBufferFormat::Rigid_48);
+    _inputLayoutSkinned = *iaPool->Create(skinnedInputs, EVertexBufferFormat::Skinned_80);
     _inputLayoutProcessing = *iaPool->Create(std::vector<XGPUBuffer::THandle>(), EVertexBufferFormat::Unknown);
 }
 

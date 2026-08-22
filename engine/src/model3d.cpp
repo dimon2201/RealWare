@@ -14,9 +14,10 @@ using namespace types;
 triton::XModel3D::XModel3D(
     cContext* context,
     types::s32 poolIndex,
+	EVertexBufferFormat vertexDataFormat,
     EModel3DFileType fileType,
     const std::filesystem::path& filePath
-) : iObject(context, poolIndex), _fileType(fileType)
+) : iObject(context, poolIndex), _vertexDataFormat(vertexDataFormat), _fileType(fileType)
 {
     if (_fileType == EModel3DFileType::Raw)
     {
@@ -25,7 +26,8 @@ triton::XModel3D::XModel3D(
 
 		auto result = _context->GetBackend<IModel3DBackend>()->CreateModel(
 			modelFolderPath.generic_string(),
-			modelLocalPath.generic_string()
+			modelLocalPath.generic_string(),
+			vertexDataFormat
 		);
 		if (!result)
 			return;
@@ -39,7 +41,9 @@ triton::XModel3D::XModel3D(
 		_asset = CObjectAllocator::Create<asset::CModel3DAsset>(64);
 		_asset->LoadAssetFile(filePath);
 
-		_data.vertexData = (const SSkinnedVertexGPULayout*)_asset->vertexData;
+		// TODO: rewrite TAsset tools to rigid/skinned models support
+		//_data.rigidVertexData = (const SRigidVertexGPULayout*)_asset->rigidVertexData;
+		//_data.skinnedVertexData = (const SSkinnedVertexGPULayout*)_asset->skinnedVertexData;
 		_data.vertexCount = _asset->vertexCount;
 		_data.indexData = _asset->indexData;
 		_data.indexCount = _asset->indexCount;

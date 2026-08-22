@@ -95,7 +95,7 @@ namespace triton
 
         virtual void BindInputLayout(const CGPUInputLayoutResource& inputLayout) override final;
 
-        virtual void BindStaticInputLayout() override final;
+        virtual void BindRigidInputLayout() override final;
 
         virtual void BindSkinnedInputLayout() override final;
 

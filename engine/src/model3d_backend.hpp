@@ -11,6 +11,7 @@
 #include "material.hpp"
 #include "skeleton.hpp"
 #include "animation.hpp"
+#include "vertex_buffer_format.hpp"
 
 namespace triton
 {
@@ -18,7 +19,9 @@ namespace triton
 
     struct SModel3DData
     {
-        const SSkinnedVertexGPULayout* vertexData = nullptr;
+        EVertexBufferFormat vertexDataFormat = EVertexBufferFormat::Unknown;
+        const SRigidVertexGPULayout* rigidVertexData = nullptr;
+        const SSkinnedVertexGPULayout* skinnedVertexData = nullptr;
         const types::u32* indexData = nullptr;
         types::usize vertexCount = 0;
         types::usize indexCount = 0;
@@ -37,12 +40,14 @@ namespace triton
 
         virtual std::optional<SModel3DData> CreateModel(
             const std::string& modelFolderPath,
-            const std::string& modelLocalPath
+            const std::string& modelLocalPath,
+            EVertexBufferFormat vertexDataFormat
         ) = 0;
 
         virtual std::optional<SModel3DData> CreateModel(
             const types::u8* byteData,
-            types::usize byteSize
+            types::usize byteSize,
+            EVertexBufferFormat vertexDataFormat
         ) = 0;
 
         virtual void DestroyModel(SModel3DData& model) = 0;

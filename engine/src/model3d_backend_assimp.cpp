@@ -16,7 +16,11 @@
 
 using namespace types;
 
-std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(const std::string& modelFolderPath, const std::string& modelLocalPath)
+std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(
+    const std::string& modelFolderPath,
+    const std::string& modelLocalPath,
+    EVertexBufferFormat vertexDataFormat
+)
 {
     Assimp::Importer importer;
     const aiScene* scene = nullptr;
@@ -31,13 +35,15 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(c
         _context,
         importer,
         scene,
+        vertexDataFormat,
         modelFolderPath
     );
 }
 
 std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(
     const types::u8* byteData,
-    const types::usize byteSize
+    const types::usize byteSize,
+    EVertexBufferFormat vertexDataFormat
 )
 {
     Assimp::Importer importer;
@@ -53,7 +59,8 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::CreateModel(
     return ParseImportedScene(
         _context,
         importer,
-        scene
+        scene,
+        vertexDataFormat
     );
 }
 
@@ -61,6 +68,7 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
     cContext* context,
     const Assimp::Importer& importer,
     const aiScene* scene,
+    EVertexBufferFormat vertexDataFormat,
     const std::string& modelFolderPath
 )
 {
@@ -70,7 +78,8 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
     usize vertexCount = 0;
     usize indexCount = 0;
     std::vector<usize> indexOffsets = {};
-    SSkinnedVertexGPULayout* vertexData = nullptr;
+    SRigidVertexGPULayout* rigidVertexData = nullptr;
+    SSkinnedVertexGPULayout* skinnedVertexData = nullptr;
     u32* indexData = nullptr;
     cVector3* bitangents = nullptr;
     std::vector<SModel3DMaterialData> materials = {};
@@ -87,10 +96,29 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
 
     CountVerticesIndices(scene, vertexCount, indexCount, indexOffsets);
 
-    AllocateVertexIndexBuffers(vertexData, indexData, vertexCount, indexCount);
+    AllocateVertexIndexBuffers(
+        vertexDataFormat,
+        rigidVertexData,
+        skinnedVertexData,
+        indexData,
+        vertexCount,
+        indexCount
+    );
     AllocateTempBitangentBuffer(bitangents, vertexCount);
-    ParseVertexData(scene, vertexData, bitangents);
-    CalculateHandedness(vertexData, bitangents, vertexCount);
+    ParseVertexData(
+        scene,
+        vertexDataFormat,
+        rigidVertexData,
+        skinnedVertexData,
+        bitangents
+    );
+    CalculateHandedness(
+        vertexDataFormat,
+        rigidVertexData,
+        skinnedVertexData,
+        bitangents,
+        vertexCount
+    );
     DeallocateTempBitangentBuffer(bitangents);
 
     // TODO: encapsulate "is_directory()" check to proper file system backend
@@ -105,36 +133,48 @@ std::optional<triton::SModel3DData> triton::XModel3DBackendAssimp::ParseImported
             modelMaterials,
             scene
         );
-        SetAbsoluteMaterialIndices(context, vertexData, vertexCount, modelMaterials);
     }
 
     ParseIndexData(scene, indexData, indexOffsets);
 
-    CreateBones(scene, vertexData, vertexCount, boneIndices, bones, vertexWeights);
-    FinalizeBoneWeights(context, vertexData, vertexCount, vertexWeights);
-    AccumulateRootTransform(
-        scene->mRootNode,
-        boneRootNode,
-        parentRootTransform,
-        accumulatedRootTransform,
-        boneIndices
-    );
-    CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
-    CreateSkeleton(
-        context,
-        modelSkeleton,
-        bones,
-        accumulatedRootTransform
-    );
-    CreateAnimations(
-        context,
-        scene,
-        boneIndices,
+    if (vertexDataFormat == EVertexBufferFormat::Skinned_80)
+    {
+        CreateBones(scene, skinnedVertexData, vertexCount, boneIndices, bones, vertexWeights);
+        FinalizeBoneWeights(context, skinnedVertexData, vertexCount, vertexWeights);
+        AccumulateRootTransform(
+            scene->mRootNode,
+            boneRootNode,
+            parentRootTransform,
+            accumulatedRootTransform,
+            boneIndices
+        );
+        CreateBoneHierarchy(scene->mRootNode, -1, boneIndices, bones);
+        CreateSkeleton(
+            context,
+            modelSkeleton,
+            bones,
+            accumulatedRootTransform
+        );
+        CreateAnimations(
+            context,
+            scene,
+            boneIndices,
+            modelSkeleton,
+            modelAnimations
+        );
+    }
+
+    return PrepareResult(
+        vertexDataFormat,
+        rigidVertexData,
+        skinnedVertexData,
+        indexData,
+        vertexCount,
+        indexCount,
+        modelMaterials,
         modelSkeleton,
         modelAnimations
     );
-
-    return PrepareResult(vertexData, indexData, vertexCount, indexCount, modelMaterials, modelSkeleton, modelAnimations);
 }
 
 void triton::XModel3DBackendAssimp::DestroyModel(SModel3DData& model)
@@ -143,8 +183,10 @@ void triton::XModel3DBackendAssimp::DestroyModel(SModel3DData& model)
     model.indexCount = 0;
     if (model.indexData)
         CObjectAllocator::Deallocate((void*)model.indexData);
-    if (model.vertexData)
-        CObjectAllocator::Deallocate((void*)model.vertexData);
+    if (model.skinnedVertexData)
+        CObjectAllocator::Deallocate((void*)model.skinnedVertexData);
+    if (model.rigidVertexData)
+        CObjectAllocator::Deallocate((void*)model.rigidVertexData);
 }
 
 void triton::XModel3DBackendAssimp::ImportScene(
@@ -203,13 +245,24 @@ void triton::XModel3DBackendAssimp::CountVerticesIndices(const aiScene* scene, u
 }
 
 void triton::XModel3DBackendAssimp::AllocateVertexIndexBuffers(
-    SSkinnedVertexGPULayout*& vertexData,
+    EVertexBufferFormat vertexDataFormat,
+    SRigidVertexGPULayout*& rigidVertexData,
+    SSkinnedVertexGPULayout*& skinnedVertexData,
     u32*& indices,
     usize vertexCount,
     usize indexCount
 )
 {
-    vertexData = (SSkinnedVertexGPULayout*)CObjectAllocator::Allocate(vertexCount * sizeof(SSkinnedVertexGPULayout), 64);
+    if (vertexDataFormat == EVertexBufferFormat::Rigid_48)
+        rigidVertexData = (SRigidVertexGPULayout*)CObjectAllocator::Allocate(
+            vertexCount * sizeof(SRigidVertexGPULayout),
+            64
+        );
+    else if (vertexDataFormat == EVertexBufferFormat::Skinned_80)
+        skinnedVertexData = (SSkinnedVertexGPULayout*)CObjectAllocator::Allocate(
+            vertexCount * sizeof(SSkinnedVertexGPULayout),
+            64
+        );
     indices = (u32*)CObjectAllocator::Allocate(indexCount * sizeof(u32), 64);
 }
 
@@ -220,7 +273,9 @@ void triton::XModel3DBackendAssimp::AllocateTempBitangentBuffer(cVector3*& bitan
 
 void triton::XModel3DBackendAssimp::ParseVertexData(
     const aiScene* scene,
-    SSkinnedVertexGPULayout* vertexData,
+    EVertexBufferFormat vertexDataFormat,
+    SRigidVertexGPULayout*& rigidVertexData,
+    SSkinnedVertexGPULayout*& skinnedVertexData,
     cVector3* bitangents
 )
 {
@@ -237,11 +292,21 @@ void triton::XModel3DBackendAssimp::ParseVertexData(
             const aiVector3D bitangent = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[vertexIndex] : aiVector3D(0.0f);
             const s32 materialIndex = mesh->mMaterialIndex;
 
-            vertexData[globalVertexIndex].position = cVector3(position.x, position.y, position.z);
-            vertexData[globalVertexIndex].texcoord = cVector2(texcoord.x, texcoord.y);
-            vertexData[globalVertexIndex].normal = cVector3(normal.x, normal.y, normal.z);
-            vertexData[globalVertexIndex].tangent = cVector4(tangent.x, tangent.y, tangent.z, 0.0f);
-            vertexData[globalVertexIndex].materialIndex = materialIndex;
+            if (vertexDataFormat == EVertexBufferFormat::Rigid_48)
+            {
+                rigidVertexData[globalVertexIndex].position = cVector3(position.x, position.y, position.z);
+                rigidVertexData[globalVertexIndex].texcoord = cVector2(texcoord.x, texcoord.y);
+                rigidVertexData[globalVertexIndex].normal = cVector3(normal.x, normal.y, normal.z);
+                rigidVertexData[globalVertexIndex].tangent = cVector4(tangent.x, tangent.y, tangent.z, 0.0f);
+            }
+            else if (vertexDataFormat == EVertexBufferFormat::Skinned_80)
+            {
+                skinnedVertexData[globalVertexIndex].position = cVector3(position.x, position.y, position.z);
+                skinnedVertexData[globalVertexIndex].texcoord = cVector2(texcoord.x, texcoord.y);
+                skinnedVertexData[globalVertexIndex].normal = cVector3(normal.x, normal.y, normal.z);
+                skinnedVertexData[globalVertexIndex].tangent = cVector4(tangent.x, tangent.y, tangent.z, 0.0f);
+            }
+
             bitangents[globalVertexIndex] = cVector3(bitangent.x, bitangent.y, bitangent.z);
             
             globalVertexIndex += 1;
@@ -250,7 +315,9 @@ void triton::XModel3DBackendAssimp::ParseVertexData(
 }
 
 void triton::XModel3DBackendAssimp::CalculateHandedness(
-    SSkinnedVertexGPULayout* vertexData,
+    EVertexBufferFormat vertexDataFormat,
+    SRigidVertexGPULayout*& rigidVertexData,
+    SSkinnedVertexGPULayout*& skinnedVertexData,
     cVector3* bitangents,
     usize vertexCount
 )
@@ -258,11 +325,48 @@ void triton::XModel3DBackendAssimp::CalculateHandedness(
     for (usize i = 0; i < vertexCount; i++)
     {
         // TODO: encapsulate GLM code to math-related backend
-        glm::vec3 normal = glm::vec3(vertexData[i].normal.GetX(), vertexData[i].normal.GetY(), vertexData[i].normal.GetZ());
-        glm::vec3 tangent = glm::vec3(vertexData[i].tangent.GetX(), vertexData[i].tangent.GetY(), vertexData[i].tangent.GetZ());
-        glm::vec3 bitangent = glm::vec3(bitangents[i].GetX(), bitangents[i].GetY(), bitangents[i].GetZ());
-        f32 handedness = (glm::dot(glm::cross(normal, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
-        vertexData[i].tangent.SetW(handedness);
+        if (vertexDataFormat == EVertexBufferFormat::Rigid_48)
+        {
+            glm::vec3 normal = glm::vec3(
+                rigidVertexData[i].normal.GetX(),
+                rigidVertexData[i].normal.GetY(),
+                rigidVertexData[i].normal.GetZ()
+            );
+            glm::vec3 tangent = glm::vec3(
+                rigidVertexData[i].tangent.GetX(),
+                rigidVertexData[i].tangent.GetY(),
+                rigidVertexData[i].tangent.GetZ()
+            );
+            glm::vec3 bitangent = glm::vec3(
+                bitangents[i].GetX(),
+                bitangents[i].GetY(),
+                bitangents[i].GetZ()
+            );
+            f32 handedness = (glm::dot(glm::cross(normal, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
+
+            rigidVertexData[i].tangent.SetW(handedness);
+        }
+        else if (vertexDataFormat == EVertexBufferFormat::Skinned_80)
+        {
+            glm::vec3 normal = glm::vec3(
+                skinnedVertexData[i].normal.GetX(),
+                skinnedVertexData[i].normal.GetY(),
+                skinnedVertexData[i].normal.GetZ()
+            );
+            glm::vec3 tangent = glm::vec3(
+                skinnedVertexData[i].tangent.GetX(),
+                skinnedVertexData[i].tangent.GetY(),
+                skinnedVertexData[i].tangent.GetZ()
+            );
+            glm::vec3 bitangent = glm::vec3(
+                bitangents[i].GetX(),
+                bitangents[i].GetY(),
+                bitangents[i].GetZ()
+            );
+            f32 handedness = (glm::dot(glm::cross(normal, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
+
+            skinnedVertexData[i].tangent.SetW(handedness);
+        }
     }
 }
 
@@ -403,20 +507,6 @@ void triton::XModel3DBackendAssimp::CreateMaterials(
             )
         );
     }
-}
-
-void triton::XModel3DBackendAssimp::SetAbsoluteMaterialIndices(
-    cContext* context,
-    SSkinnedVertexGPULayout*& vertexData,
-    usize vertexCount,
-    const std::vector<XMaterial::THandle>& modelMaterials
-)
-{
-    for (usize i = 0; i < vertexCount; i++)
-        vertexData[i].materialIndex =
-            context->GetPool<CMaterialPool>()->GetPackedIndex(
-                modelMaterials.at(vertexData[i].materialIndex)
-           );
 }
 
 void triton::XModel3DBackendAssimp::DeallocateTempBitangentBuffer(cVector3* bitangents)
@@ -781,7 +871,9 @@ std::optional<triton::XAtlasTexture::THandle> triton::XModel3DBackendAssimp::Cre
 }
 
 triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(
-    const SSkinnedVertexGPULayout* vertexData,
+    EVertexBufferFormat vertexDataFormat,
+    const SRigidVertexGPULayout* rigidVertexData,
+    const SSkinnedVertexGPULayout* skinnedVertexData,
     const u32* indexData,
     usize vertexCount,
     usize indexCount,
@@ -791,7 +883,9 @@ triton::SModel3DData triton::XModel3DBackendAssimp::PrepareResult(
 )
 {
     SModel3DData m3dd;
-    m3dd.vertexData = vertexData;
+    m3dd.vertexDataFormat = vertexDataFormat;
+    m3dd.rigidVertexData = rigidVertexData;
+    m3dd.skinnedVertexData = skinnedVertexData;
     m3dd.indexData = indexData;
     m3dd.vertexCount = vertexCount;
     m3dd.indexCount = indexCount;

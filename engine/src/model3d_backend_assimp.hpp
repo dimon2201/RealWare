@@ -51,12 +51,14 @@ namespace triton
 
         std::optional<SModel3DData> CreateModel(
             const std::string& modelFolderPath,
-            const std::string& modelLocalPath
+            const std::string& modelLocalPath,
+            EVertexBufferFormat vertexDataFormat
         ) override final;
 
         std::optional<SModel3DData> CreateModel(
             const types::u8* byteData,
-            types::usize byteSize
+            types::usize byteSize,
+            EVertexBufferFormat vertexDataFormat
         ) override final;
 
         void DestroyModel(SModel3DData& model) override final;
@@ -79,6 +81,7 @@ namespace triton
             cContext* context,
             const Assimp::Importer& importer,
             const aiScene* scene,
+            EVertexBufferFormat vertexDataFormat,
             const std::string& modelFolderPath = ""
         );
         
@@ -90,7 +93,9 @@ namespace triton
         );
         
         void AllocateVertexIndexBuffers(
-            SSkinnedVertexGPULayout*& vertexData,
+            EVertexBufferFormat vertexDataFormat,
+            SRigidVertexGPULayout*& rigidVertexData,
+            SSkinnedVertexGPULayout*& skinnedVertexData,
             types::u32*& indices,
             types::usize vertexCount,
             types::usize indexCount
@@ -98,10 +103,18 @@ namespace triton
         
         void AllocateTempBitangentBuffer(cVector3*& bitangents, types::usize vertexCount);
         
-        void ParseVertexData(const aiScene* scene, SSkinnedVertexGPULayout* vertexData, cVector3* bitangents);
+        void ParseVertexData(
+            const aiScene* scene,
+            EVertexBufferFormat vertexDataFormat,
+            SRigidVertexGPULayout*& rigidVertexData,
+            SSkinnedVertexGPULayout*& skinnedVertexData,
+            cVector3* bitangents
+        );
         
         void CalculateHandedness(
-            SSkinnedVertexGPULayout* vertexData,
+            EVertexBufferFormat vertexDataFormat,
+            SRigidVertexGPULayout*& rigidVertexData,
+            SSkinnedVertexGPULayout*& skinnedVertexData,
             cVector3* bitangents,
             types::usize vertexCount
         );
@@ -123,18 +136,11 @@ namespace triton
             const aiScene* scene
         );
 
-        void SetAbsoluteMaterialIndices(
-            cContext* context,
-            SSkinnedVertexGPULayout*& vertexData,
-            types::usize vertexCount,
-            const std::vector<XMaterial::THandle>& modelMaterials
-        );
-        
         void DeallocateTempBitangentBuffer(cVector3* bitangents);
         
         void CreateBones(
             const aiScene* scene,
-            SSkinnedVertexGPULayout* vertexData,
+            SSkinnedVertexGPULayout* skinnedVertexData,
             types::usize vertexCount,
             std::unordered_map<std::string, types::usize>& boneIndices,
             std::vector<SSkeletonBone>& bones,
@@ -143,7 +149,7 @@ namespace triton
 
         void FinalizeBoneWeights(
             cContext* context,
-            SSkinnedVertexGPULayout* vertexData,
+            SSkinnedVertexGPULayout* skinnedVertexData,
             types::usize vertexCount,
             std::vector<std::vector<SBoneWeight>>& vertexWeights
         );
@@ -205,7 +211,9 @@ namespace triton
         );
         
         SModel3DData PrepareResult(
-            const SSkinnedVertexGPULayout* vertexData,
+            EVertexBufferFormat vertexDataFormat,
+            const SRigidVertexGPULayout* rigidVertexData,
+            const SSkinnedVertexGPULayout* skinnedVertexData,
             const types::u32* indexData,
             types::usize vertexCount,
             types::usize indexCount,

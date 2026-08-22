@@ -111,7 +111,7 @@ namespace triton
 
         virtual void BindInputLayout(const CGPUInputLayoutResource& vertexArray) = 0;
 
-        virtual void BindStaticInputLayout() = 0;
+        virtual void BindRigidInputLayout() = 0;
 
         virtual void BindSkinnedInputLayout() = 0;
 

@@ -29,6 +29,7 @@ namespace triton
 
         SModel3DData            _data;
         asset::CModel3DAsset*   _asset = nullptr;
+        EVertexBufferFormat     _vertexDataFormat = EVertexBufferFormat::Unknown;
         EModel3DFileType        _fileType = EModel3DFileType::Unknown;
 
     public:
@@ -37,19 +38,27 @@ namespace triton
         explicit XModel3D(
             cContext* context,
             types::s32 poolIndex,
+            EVertexBufferFormat vertexDataFormat,
             EModel3DFileType fileType,
             const std::filesystem::path& filePath
         );
 
         ~XModel3D() override;
 
-        inline const SSkinnedVertexGPULayout* GetVertices() const { return _data.vertexData; }
+        inline const SRigidVertexGPULayout* GetRigidVertices() const { return _data.rigidVertexData; }
+
+        inline const SSkinnedVertexGPULayout* GetSkinnedVertices() const { return _data.skinnedVertexData; }
 
         inline const types::u32* GetIndices() const { return _data.indexData; }
 
         inline types::usize GetVertexCount() const { return _data.vertexCount; }
 
         inline types::usize GetIndexCount() const { return _data.indexCount; }
+
+        inline XMaterial::THandle GetMaterial() const
+        {
+            return _data.materials.size() > 0 ? _data.materials.at(0) : XMaterial::THandle();
+        }
 
         struct THandle : public SHandle {};
 

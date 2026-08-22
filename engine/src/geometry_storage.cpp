@@ -97,9 +97,9 @@ std::optional<triton::SGeometryView> triton::CGeometryStorage::Create(
     usize inputIndexCount
 )
 {
-    if (format == EVertexBufferFormat::Static_52)
+    if (format == EVertexBufferFormat::Rigid_48)
     {
-        const usize verticesByteSize = sizeof(SStaticVertexGPULayout) * inputVertexCount;
+        const usize verticesByteSize = sizeof(SRigidVertexGPULayout) * inputVertexCount;
         const usize indicesByteSize = sizeof(u32) * inputIndexCount;
 
         usize vertexBufferByteSize = _staticVertexBufferPointer;
@@ -107,7 +107,7 @@ std::optional<triton::SGeometryView> triton::CGeometryStorage::Create(
         _staticVertexBufferPointer += verticesByteSize;
         _staticIndexBufferPointer += indicesByteSize;
 
-        const usize cVertexByteSize = sizeof(SStaticVertexGPULayout);
+        const usize cVertexByteSize = sizeof(SRigidVertexGPULayout);
         const usize cIndexByteSize = sizeof(u32);
         usize vertexCount = verticesByteSize / cVertexByteSize;
         usize indexCount = indicesByteSize / cIndexByteSize;
@@ -148,7 +148,7 @@ std::optional<triton::SGeometryView> triton::CGeometryStorage::Create(
 
         return geometry;
     }
-    else if (format == EVertexBufferFormat::Skinned_84)
+    else if (format == EVertexBufferFormat::Skinned_80)
     {
         const usize verticesByteSize = sizeof(SSkinnedVertexGPULayout) * inputVertexCount;
         const usize indicesByteSize = sizeof(u32) * inputIndexCount;

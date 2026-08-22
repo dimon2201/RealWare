@@ -34,11 +34,11 @@ triton::XInputLayout::XInputLayout(
 		));
 	}
 
-	if (vertexFormat == EVertexBufferFormat::Static_52)
+	if (vertexFormat == EVertexBufferFormat::Rigid_48)
 		_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-			ERenderCommand::BIND_STATIC_INPUT_LAYOUT
+			ERenderCommand::BIND_RIGID_INPUT_LAYOUT
 		));
-	else if (vertexFormat == EVertexBufferFormat::Skinned_84)
+	else if (vertexFormat == EVertexBufferFormat::Skinned_80)
 		_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 			ERenderCommand::BIND_SKINNED_INPUT_LAYOUT
 		));
