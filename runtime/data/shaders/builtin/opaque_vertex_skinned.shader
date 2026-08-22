@@ -90,14 +90,11 @@ void main()
 	vsOutputMaterial.metallicAtlasTexcoord = CalculateAtlasTexcoord(material.metallicTexture);
 
 	int skinnedBoneBufferOffset = instance.skinnedBoneBufferOffset;
-	mat4 skinMatrix = mat4(1.0f);
-	if (skinnedBoneBufferOffset > -1)
-	{
+	mat4 skinMatrix = 
 		inBoneWeights.x * skinning[skinnedBoneBufferOffset + inBoneIndices.x].modelMatrix
 		+ inBoneWeights.y * skinning[skinnedBoneBufferOffset + inBoneIndices.y].modelMatrix
 		+ inBoneWeights.z * skinning[skinnedBoneBufferOffset + inBoneIndices.z].modelMatrix
 		+ inBoneWeights.w * skinning[skinnedBoneBufferOffset + inBoneIndices.w].modelMatrix;
-	}
 
 	pixelPositionWorldSpace = vec3(instance.worldMatrix * skinMatrix * vec4(inPositionLocal, 1.0));
 
