@@ -53,6 +53,8 @@ namespace triton
         
         void LoadShaderFiles(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc);
         
+        void SetShadingModel(EShadingModel shadingModel);
+
         const XRenderPassGeometry::THandle& GetOpaqueStaticRenderPass() const { return _opaqueStatic; }
 
         const XRenderPassGeometry::THandle& GetOpaqueSkinnedRenderPass() const { return _opaqueSkinned; }

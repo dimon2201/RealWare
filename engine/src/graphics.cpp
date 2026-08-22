@@ -104,6 +104,22 @@ void triton::CGraphics::LoadShaderFiles(
     fileSystem->DestroyDataFile(fragmentFuncFile);
 }
 
+void triton::CGraphics::SetShadingModel(EShadingModel shadingModel)
+{
+    XRenderPassGeometry& rpStatic = *_context->GetPool<CRenderPassGeometryPool>()->Get(_opaqueStatic);
+    XRenderPassGeometry& rpSkinned = *_context->GetPool<CRenderPassGeometryPool>()->Get(_opaqueSkinned);
+    if (shadingModel == EShadingModel::BlinnPhong)
+    {
+        rpStatic.SetShader(_opaqueRigidPhongShader);
+        rpSkinned.SetShader(_opaqueSkinnedPhongShader);
+    }
+    else if (shadingModel == EShadingModel::PBR)
+    {
+        rpStatic.SetShader(_opaqueRigidPBRShader);
+        rpSkinned.SetShader(_opaqueSkinnedPBRShader);
+    }
+}
+
 void triton::CGraphics::CreateInputLayouts()
 {
     CGeometryStorage* gs = _context->GetSubsystem<CGeometryStorage>();
