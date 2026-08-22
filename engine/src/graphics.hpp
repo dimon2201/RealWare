@@ -57,6 +57,14 @@ namespace triton
 
         const XRenderPassGeometry::THandle& GetOpaqueSkinnedRenderPass() const { return _opaqueSkinned; }
 
+        inline const XShader::THandle& GetOpaqueRigidPBRShader() const { return _opaqueRigidPBRShader; }
+
+        inline const XShader::THandle& GetOpaqueSkinnedPBRShader() const { return _opaqueSkinnedPBRShader; }
+
+        inline const XShader::THandle& GetOpaqueRigidPhongShader() const { return _opaqueRigidPhongShader; }
+
+        inline const XShader::THandle& GetOpaqueSkinnedPhongShader() const { return _opaqueSkinnedPhongShader; }
+
     private:
         void CreateInputLayouts();
 
