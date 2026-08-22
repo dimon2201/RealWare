@@ -43,9 +43,8 @@ vec3 F_Schlick(vec3 V, vec3 H, vec3 F0)
 	return fresnel;
 }
 
-vec3 PBR(
+vec3 PBR_BRDF(
 	in vec3 diffuseColor,
-	in float lightRadiance,
 	in float roughness,
 	in float metallic,
 	in vec3 normalWorldSpace,
@@ -66,13 +65,12 @@ vec3 PBR(
 	const float NdotL = max(dot(normalWorldSpace, lightDirWorldSpace),0.0);
 	const float NdotV = max(dot(normalWorldSpace, viewDirWorldSpace),0.0);
 	const float BRDF_a = max(4.0 * NdotL * NdotV, kEpsilon);
-	const vec3 BRDF = DGF / BRDF_a;
+	const vec3 specularBRDF = DGF / BRDF_a;
 
 	const vec3 kD = (1.0f - F) * (1.0f - metallic);
-	const vec3 PBR_a = kD * (diffuseColor / kPi);
-	const vec3 PBR = PBR_a + BRDF;
+	const vec3 diffuseBRDF = kD * (diffuseColor / kPi);
 
-	const vec3 color = PBR * lightRadiance * NdotL;
+	const vec3 BRDF = diffuseBRDF + specularBRDF;
 
-	return color;
+	return BRDF;
 }

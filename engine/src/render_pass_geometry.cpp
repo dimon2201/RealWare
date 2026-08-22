@@ -77,8 +77,8 @@ void triton::XRenderPassGeometry::Draw()
     static u32 time = 0;
     time += 1;
 
-    gfxBackend->SetShaderUniform(shader.GetGPUResource(), "UniformTime", (u32)time);
-    gfxBackend->SetShaderUniform(shader.GetGPUResource(), "CameraPosWorldSpace", 1, (f32*)&cameraWorldPos);
+    gfxBackend->SetShaderUniform(shader.GetGPUResource(), "time", (u32)time);
+    gfxBackend->SetShaderUniform(shader.GetGPUResource(), "cameraPositionWorldSpace", 1, (f32*)&cameraWorldPos);
 
     for (usize i = 0; i < _renderInstancePacks.size(); i++)
     {
@@ -89,8 +89,8 @@ void triton::XRenderPassGeometry::Draw()
 
         const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
 
-        gfxBackend->SetShaderUniform(shader.GetGPUResource(), "InstanceBatchType", (u32)instancePack.GetMotionType());
-        gfxBackend->SetShaderUniform(shader.GetGPUResource(), "InstanceOffset", (u32)instancePack.GetBufferOffset());
+        gfxBackend->SetShaderUniform(shader.GetGPUResource(), "instanceBatchType", (u32)instancePack.GetMotionType());
+        gfxBackend->SetShaderUniform(shader.GetGPUResource(), "instanceOffset", (u32)instancePack.GetBufferOffset());
         gfxBackend->Draw(
             sharedGeometry._indexCount,
             sharedGeometry._vertexElementOffset,

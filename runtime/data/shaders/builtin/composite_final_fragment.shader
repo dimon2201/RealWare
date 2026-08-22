@@ -1,21 +1,13 @@
-layout(location = 0) out vec4 FragColor;
+layout(location = 0) out vec4 outPixelColor;
 
-in vec3 TexcoordAtlas;
-in vec2 TexcoordOrig;
-flat in vec4 DiffuseColor;
+in vec2 texcoord;
 
-struct TextureAtlasTexture
-{
-	vec4 TextureInfo;
-	float TextureLayerInfo;
-};
-layout(std430, binding = 3) buffer TextureAtlasTexturesBuffer { TextureAtlasTexture textureAtlasTextures[1024]; };
-
-uniform sampler2D ColorTexture;
+uniform sampler2D colorTexture;
 
 void main()
 {
-	vec2 size = vec2(textureSize(ColorTexture, 0));
-	vec4 mainColor = texelFetch(ColorTexture, ivec2(TexcoordAtlas.xy * size), 0);
-	FragColor = mainColor;
+	vec2 texSize = vec2(textureSize(colorTexture, 0));
+	vec4 color = texelFetch(colorTexture, ivec2(texcoord * texSize), 0);
+	
+	outPixelColor = color;
 }

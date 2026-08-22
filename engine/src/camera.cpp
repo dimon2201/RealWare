@@ -19,7 +19,7 @@ void triton::XCamera::Bind(XRenderPassGeometry* pass)
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(shaderHandle);
 
     IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
-    gfxBackend->SetShaderUniform(shader.GetGPUResource(), "ViewProjection", _viewProjectionMatrix.Get());
+    gfxBackend->SetShaderUniform(shader.GetGPUResource(), "viewProjectionMatrix", _viewProjectionMatrix.Get());
 }
 
 void triton::XCamera::Update(const cVector2& mouseDelta, usize screenWidth, usize screenHeight, f32 fov, f32 zNear, f32 zFar, f32 mouseSensitivity)

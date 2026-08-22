@@ -1,50 +1,34 @@
-layout(location = 0) in vec3 InPositionLocal;
-layout(location = 1) in vec2 InTexcoord;
-layout(location = 2) in vec3 InNormal;
-layout(location = 3) in vec4 InTangent;
-layout(location = 4) in int InMaterialIndex;
-layout(location = 5) in uvec4 InBoneIndices;
-layout(location = 6) in vec4 InBoneWeights;
-
-out vec3 DiffuseTexcoordAtlas;
-out vec3 NormalTexcoordAtlas;
-out vec3 RoughnessTexcoordAtlas;
-out vec3 MetallicTexcoordAtlas;
-out vec2 TexcoordOrig;
-out vec3 Normal;
-out vec3 FragPosWorldSpace;
-flat out vec4 DiffuseColor;
-flat out mat3 TBNMatrix;
-out mat3 TangentToWorld;
-flat out uint Out666;
-
-uniform mat4 ViewProjection;
-uniform uint InstanceBatchType;
-uniform uint InstanceOffset;
+layout(location = 0) in vec3 inPositionLocal;
+layout(location = 1) in vec2 inTexcoord;
+layout(location = 2) in vec3 inNormal;
+layout(location = 3) in vec4 inTangent;
+layout(location = 4) in int inMaterialIndex;
+layout(location = 5) in uvec4 inBoneIndices;
+layout(location = 6) in vec4 inBoneWeights;
 
 struct Instance
 {
-	float Use2D;
-	int MaterialIndex;
-	int SkinnedBoneBufferOffset;
-	uint PropertyBits;
-	mat4 World;
+	float use2D;
+	int materialIndex;
+	int skinnedBoneBufferOffset;
+	uint propertyBits;
+	mat4 worldMatrix;
 };
 
 struct Texture
 {
-	uint AtlasLayer;
-	vec2 AtlasNormOffset;
-	vec2 AtlasNormSize;
+	uint atlasLayer;
+	vec2 atlasNormOffset;
+	vec2 atlasNormSize;
 };
 
 struct Material
 {
-	Texture Diffuse;
-	Texture Normal;
-	Texture Roughness;
-	Texture Metallic;
-	vec4 DiffuseColor;
+	Texture diffuseTexture;
+	Texture normalTexture;
+	Texture roughnessTexture;
+	Texture metallicTexture;
+	vec4 diffuseColor;
 };
 
 struct Skinning
@@ -52,75 +36,80 @@ struct Skinning
 	mat4 modelMatrix;
 };
 
+struct OutputMaterial
+{
+	vec4 diffuseColor;
+	vec3 diffuseAtlasTexcoord;
+	vec3 normalAtlasTexcoord;
+	vec3 roughnessAtlasTexcoord;
+	vec3 metallicAtlasTexcoord;
+};
+
 layout(std430, binding = 0) buffer StaticInstanceBuffer { Instance staticInstances[]; };
 layout(std430, binding = 1) buffer DynamicInstanceBuffer { Instance dynamicInstances[]; };
 layout(std430, binding = 2) buffer MaterialBuffer { Material materials[]; };
 layout(std430, binding = 3) buffer SkinningBuffer { Skinning skinning[]; };
 
-void Vertex_Transform(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
+out OutputMaterial vsOutputMaterial;
+out vec3 pixelPositionWorldSpace;
+out mat3 tangentToWorldMatrix;
+
+uniform mat4 viewProjectionMatrix;
+uniform uint instanceBatchType;
+uniform uint instanceOffset;
+
+vec3 CalculateAtlasTexcoord(in Texture atlasTexture)
 {
-	if (_use2D == 0) {
-		_glPosition = ViewProjection * _instance.World * vec4(_positionLocal, 1.0);
-	} else {
-		_glPosition = _instance.World * vec4(_positionLocal, 1.0);
-	}
+	vec3 atlasTexcoord = vec3(0.0f);
+	atlasTexcoord = vec3(inTexcoord.x, 1.0 - inTexcoord.y, atlasTexture.atlasLayer);
+	atlasTexcoord.xy *= vec2(atlasTexture.atlasNormSize);
+	atlasTexcoord.xy += atlasTexture.atlasNormOffset;
+
+	return atlasTexcoord;
 }
 
-void Vertex_Passthrough(in vec3 _positionLocal, in Instance _instance, in float _use2D, out vec4 _glPosition)
+void VertexTransform(in mat4 worldMatrix, in mat4 skinMatrix)
 {
-	Vertex_Transform(_positionLocal, _instance, _use2D, _glPosition);
+	gl_Position = viewProjectionMatrix * worldMatrix * skinMatrix * vec4(inPositionLocal, 1.0);
 }
-
-void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}
 
 void main()
 {
 	Instance instance;
-	if (InstanceBatchType == 1)
-		instance = staticInstances[gl_InstanceID + InstanceOffset];
-	else if (InstanceBatchType == 2)
-		instance = dynamicInstances[gl_InstanceID + InstanceOffset];
-	Material material;
-	if (InMaterialIndex == -1)
-		material = materials[instance.MaterialIndex];
-	else
-		material = materials[InMaterialIndex];
+	if (instanceBatchType == 1)
+		instance = staticInstances[gl_InstanceID + instanceOffset];
+	else if (instanceBatchType == 2)
+		instance = dynamicInstances[gl_InstanceID + instanceOffset];
 	
-	int skBoneOffset = instance.SkinnedBoneBufferOffset;
+	Material material;
+	material = materials[instance.materialIndex];
+	
+	vsOutputMaterial.diffuseColor = material.diffuseColor;
+	vsOutputMaterial.diffuseAtlasTexcoord = CalculateAtlasTexcoord(material.diffuseTexture);
+	vsOutputMaterial.normalAtlasTexcoord = CalculateAtlasTexcoord(material.normalTexture);
+	vsOutputMaterial.roughnessAtlasTexcoord = CalculateAtlasTexcoord(material.roughnessTexture);
+	vsOutputMaterial.metallicAtlasTexcoord = CalculateAtlasTexcoord(material.metallicTexture);
+
+	int skinnedBoneBufferOffset = instance.skinnedBoneBufferOffset;
 	mat4 skinMatrix = mat4(1.0f);
-	if (skBoneOffset > -1)
+	if (skinnedBoneBufferOffset > -1)
 	{
-		skinMatrix = 
-			InBoneWeights.x * skinning[skBoneOffset + InBoneIndices.x].modelMatrix
-			+ InBoneWeights.y * skinning[skBoneOffset + InBoneIndices.y].modelMatrix
-			+ InBoneWeights.z * skinning[skBoneOffset + InBoneIndices.z].modelMatrix
-			+ InBoneWeights.w * skinning[skBoneOffset + InBoneIndices.w].modelMatrix;
+		inBoneWeights.x * skinning[skinnedBoneBufferOffset + inBoneIndices.x].modelMatrix
+		+ inBoneWeights.y * skinning[skinnedBoneBufferOffset + inBoneIndices.y].modelMatrix
+		+ inBoneWeights.z * skinning[skinnedBoneBufferOffset + inBoneIndices.z].modelMatrix
+		+ inBoneWeights.w * skinning[skinnedBoneBufferOffset + inBoneIndices.w].modelMatrix;
 	}
 
-	DiffuseTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Diffuse.AtlasLayer);
-	DiffuseTexcoordAtlas.xy *= vec2(material.Diffuse.AtlasNormSize);
-	DiffuseTexcoordAtlas.xy += material.Diffuse.AtlasNormOffset;
-	NormalTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Normal.AtlasLayer);
-	NormalTexcoordAtlas.xy *= vec2(material.Normal.AtlasNormSize);
-	NormalTexcoordAtlas.xy += material.Normal.AtlasNormOffset;
-	RoughnessTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Roughness.AtlasLayer);
-	RoughnessTexcoordAtlas.xy *= vec2(material.Roughness.AtlasNormSize);
-	RoughnessTexcoordAtlas.xy += material.Roughness.AtlasNormOffset;
-	MetallicTexcoordAtlas = vec3(InTexcoord.x, 1.0 - InTexcoord.y, material.Metallic.AtlasLayer);
-	MetallicTexcoordAtlas.xy *= vec2(material.Metallic.AtlasNormSize);
-	MetallicTexcoordAtlas.xy += material.Metallic.AtlasNormOffset;
-	TexcoordOrig = InTexcoord;
-	Normal = mat3(skinMatrix) * InNormal;
-	vec4 posLocal = skinMatrix * vec4(InPositionLocal, 1.0);
-	FragPosWorldSpace = vec3(instance.World * posLocal);
-	DiffuseColor = material.DiffuseColor;
+	pixelPositionWorldSpace = vec3(instance.worldMatrix * skinMatrix * vec4(inPositionLocal, 1.0));
 
-	mat3 normalMatrix = transpose(inverse(mat3(instance.World)));
-	vec3 N = normalize(normalMatrix * Normal);
-	vec3 T = normalize(normalMatrix * InTangent.xyz);
-	vec3 B = normalize(cross(N, T)) * InTangent.w;
-	TangentToWorld = mat3(T, B, N);
+	vec3 skinnedNormal = normalize(mat3(skinMatrix) * inNormal);
+	vec3 skinnedTangent = normalize(mat3(skinMatrix) * inTangent.xyz);
 
-	Vertex_Passthrough(posLocal.xyz, instance, 0, gl_Position);
-	Vertex_Func(posLocal.xyz, vec2(DiffuseTexcoordAtlas.xy), Normal, gl_InstanceID, instance, material, 0, gl_Position);
+	mat3 normalMatrix = transpose(inverse(mat3(instance.worldMatrix)));
+	vec3 N = normalize(normalMatrix * skinnedNormal);
+	vec3 T = normalize(normalMatrix * skinnedTangent.xyz);
+	vec3 B = normalize(cross(N, T)) * inTangent.w;
+	tangentToWorldMatrix = mat3(T, B, N);
+
+	VertexTransform(instance.worldMatrix, skinMatrix);
 }
