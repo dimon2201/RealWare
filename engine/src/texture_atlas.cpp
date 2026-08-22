@@ -295,10 +295,6 @@ std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::CreateTextureO
         {
             ddsChannels = 4;
         }
-        else if (fmt == tinyddsloader::DDSFile::DXGIFormat::B8G8R8A8_UNorm_SRGB)
-        {
-            ddsChannels = 4;
-        }
         else if (fmt == tinyddsloader::DDSFile::DXGIFormat::B8G8R8A8_UNorm)
         {
             ddsChannels = 4;
