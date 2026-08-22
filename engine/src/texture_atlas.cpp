@@ -316,12 +316,6 @@ std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::CreateTextureO
             Print("Error: requested DDS texture has RGBA8_SRGB format");
             return std::nullopt;
         }
-        if (fmt == tinyddsloader::DDSFile::DXGIFormat::B8G8R8A8_UNorm_SRGB &&
-            dataFormat != ETextureFormat::RGBA8_SRGB_Mips)
-        {
-            Print("Error: requested DDS texture has RGBA8_SRGB format");
-            return std::nullopt;
-        }
         if (fmt == tinyddsloader::DDSFile::DXGIFormat::B8G8R8A8_UNorm &&
             dataFormat != ETextureFormat::RGBA8)
         {
