@@ -11,6 +11,7 @@ Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 - Memory allocator (UE4-like)
 - Multithreading (separate thread for rendering with double buffering, work queue)
 - Skeletal animations
+- Blinn-Phong and PBR shading models
 - Event subscription/sending
 - PhysX 5.3 physics
 - OpenGL 4.3 rendering
