@@ -291,6 +291,10 @@ std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::CreateTextureO
         {
             ddsChannels = 1;
         }
+        else if (fmt == tinyddsloader::DDSFile::DXGIFormat::R8G8B8A8_UNorm_SRGB)
+        {
+            ddsChannels = 4;
+        }
         else if (fmt == tinyddsloader::DDSFile::DXGIFormat::B8G8R8A8_UNorm_SRGB)
         {
             ddsChannels = 4;
@@ -310,8 +314,14 @@ std::optional<triton::STextureAtlasRegion> triton::CTextureAtlas::CreateTextureO
             Print("Error: requested DDS texture has R8 format");
             return std::nullopt;
         }
+        if (fmt == tinyddsloader::DDSFile::DXGIFormat::R8G8B8A8_UNorm_SRGB &&
+            dataFormat != ETextureFormat::RGBA8_SRGB_Mips)
+        {
+            Print("Error: requested DDS texture has RGBA8_SRGB format");
+            return std::nullopt;
+        }
         if (fmt == tinyddsloader::DDSFile::DXGIFormat::B8G8R8A8_UNorm_SRGB &&
-            dataFormat != ETextureFormat::RGBA8)
+            dataFormat != ETextureFormat::RGBA8_SRGB_Mips)
         {
             Print("Error: requested DDS texture has RGBA8_SRGB format");
             return std::nullopt;
