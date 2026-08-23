@@ -45,16 +45,6 @@ uniform mat4 viewProjectionMatrix;
 uniform uint instanceBatchType;
 uniform uint instanceOffset;
 
-vec3 CalculateAtlasTexcoord(in Texture atlasTexture)
-{
-	vec3 atlasTexcoord = vec3(0.0f);
-	atlasTexcoord = vec3(inTexcoord.x, 1.0 - inTexcoord.y, atlasTexture.atlasLayer);
-	atlasTexcoord.xy *= vec2(atlasTexture.atlasNormSize);
-	atlasTexcoord.xy += atlasTexture.atlasNormOffset;
-
-	return atlasTexcoord;
-}
-
 void VertexTransform(in mat4 worldMatrix)
 {
 	gl_Position = viewProjectionMatrix * worldMatrix * vec4(inPositionLocal, 1.0);

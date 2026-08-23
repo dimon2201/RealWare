@@ -16,7 +16,6 @@ struct Instance
 
 struct Material
 {
-	vec2 texcoord;
 	vec4 diffuseColor;
 	vec4 specularColor;
 	float shininess;
@@ -29,10 +28,7 @@ struct Skinning
 
 struct OutputMaterial
 {
-	vec3 diffuseAtlasTexcoord;
-	vec3 normalAtlasTexcoord;
-	vec3 roughnessAtlasTexcoord;
-	vec3 metallicAtlasTexcoord;
+	vec2 texcoord;
 	vec4 diffuseColor;
 	vec4 specularColor;
 	float shininess;
@@ -50,16 +46,6 @@ out mat3 tangentToWorldMatrix;
 uniform mat4 viewProjectionMatrix;
 uniform uint instanceBatchType;
 uniform uint instanceOffset;
-
-vec3 CalculateAtlasTexcoord(in Texture atlasTexture)
-{
-	vec3 atlasTexcoord = vec3(0.0f);
-	atlasTexcoord = vec3(inTexcoord.x, 1.0 - inTexcoord.y, atlasTexture.atlasLayer);
-	atlasTexcoord.xy *= vec2(atlasTexture.atlasNormSize);
-	atlasTexcoord.xy += atlasTexture.atlasNormOffset;
-
-	return atlasTexcoord;
-}
 
 void VertexTransform(in mat4 worldMatrix, in mat4 skinMatrix)
 {
