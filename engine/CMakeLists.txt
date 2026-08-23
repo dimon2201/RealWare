@@ -1,5 +1,11 @@
 project(TritonEngine)
 
+if (NOT DEFINED ENV{VULKAN_SDK})
+    message(FATAL_ERROR "VULKAN_SDK environment variable is not set")
+endif()
+
+find_package(Vulkan REQUIRED)
+
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.hpp)
 add_library(TritonEngine STATIC ${SOURCE_FILES})
 target_include_directories(
@@ -17,6 +23,7 @@ target_link_libraries(
 	SDL3-static
     glbinding
     Jolt
+    Vulkan::Vulkan
     TracyClient
     TritonThirdpartySTBLib
     TritonThirdpartyTinyDDSLoaderLib
