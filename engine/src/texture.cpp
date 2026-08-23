@@ -75,6 +75,34 @@ triton::XTexture::XTexture(
 		WaitForRenderCommandResult<CGPUTextureResource>();
 }
 
+triton::XTexture::XTexture(
+	cContext* context,
+	s32 poolIndex,
+	ETextureFormat textureFormat,
+	ETextureDimension textureDimension,
+	s32 textureSlot,
+	EImageFormat expectedDataFormat,
+	const u8* data,
+	const cVector3& size
+)
+{
+	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+		ERenderCommand::CREATE_TEXTURE,
+		(cpuword)size.GetX(),
+		(cpuword)size.GetY(),
+		(cpuword)size.GetZ(),
+		(cpuword)textureDimension,
+		(cpuword)textureFormat,
+		(cpuword)data,
+		(cpuword)textureSlot
+	));
+
+	_gpuTexture =
+		_context->GetSubsystem<CEngine>()->
+		GetSynchronization()->
+		WaitForRenderCommandResult<CGPUTextureResource>();
+}
+
 triton::XTexture::~XTexture()
 {
 	if (_gpuTexture.GetFormat() == ETextureFormat::Unknown)

@@ -45,6 +45,17 @@ namespace triton
 			types::usize dataByteSize
 		);
 
+		explicit XTexture(
+			cContext* context,
+			types::s32 poolIndex,
+			ETextureFormat textureFormat,
+			ETextureDimension textureDimension,
+			types::s32 textureSlot,
+			EImageFormat expectedDataFormat,
+			const types::u8* data,
+			const cVector3& size
+		);
+
 		~XTexture() override;
 
 		inline const CGPUTextureResource& GetGPUResource() const { return _gpuTexture; }
