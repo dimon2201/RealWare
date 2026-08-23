@@ -91,6 +91,61 @@ void triton::XRenderPassGeometry::Draw()
 
         gfxBackend->SetShaderUniform(shader.GetGPUResource(), "instanceBatchType", (u32)instancePack.GetMotionType());
         gfxBackend->SetShaderUniform(shader.GetGPUResource(), "instanceOffset", (u32)instancePack.GetBufferOffset());
+        
+        const XMaterial::THandle& sharedMaterialHandle = instancePack.GetSharedMaterial();
+        const XMaterial& sharedMaterial = *_context->GetPool<CMaterialPool>()->Get(sharedMaterialHandle);
+        
+        if (_shadingModel == EShadingModel::PBR)
+        {
+            const XTexture& sharedMaterialDiffuseTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
+            const XTexture& sharedMaterialNormalTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
+            const XTexture& sharedMaterialRoughnessTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
+            const XTexture& sharedMaterialMetallicTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
+
+            gfxBackend->BindTextureNamed(
+                shader.GetGPUResource(),
+                sharedMaterialDiffuseTex.GetGPUResource(),
+                "inDiffuseTexture",
+                0
+            );
+            gfxBackend->BindTextureNamed(
+                shader.GetGPUResource(),
+                sharedMaterialNormalTex.GetGPUResource(),
+                "inNormalTexture",
+                1
+            );
+            gfxBackend->BindTextureNamed(
+                shader.GetGPUResource(),
+                sharedMaterialRoughnessTex.GetGPUResource(),
+                "inRoughnessTexture",
+                2
+            );
+            gfxBackend->BindTextureNamed(
+                shader.GetGPUResource(),
+                sharedMaterialMetallicTex.GetGPUResource(),
+                "inMetallicTexture",
+                3
+            );
+        }
+        else if (_shadingModel == EShadingModel::PBR)
+        {
+            const XTexture& sharedMaterialDiffuseTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
+            const XTexture& sharedMaterialNormalTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
+
+            gfxBackend->BindTextureNamed(
+                shader.GetGPUResource(),
+                sharedMaterialDiffuseTex.GetGPUResource(),
+                "inDiffuseTexture",
+                0
+            );
+            gfxBackend->BindTextureNamed(
+                shader.GetGPUResource(),
+                sharedMaterialNormalTex.GetGPUResource(),
+                "inNormalTexture",
+                1
+            );
+        }
+
         gfxBackend->Draw(
             sharedGeometry._indexCount,
             sharedGeometry._vertexElementOffset,

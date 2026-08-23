@@ -16,6 +16,7 @@ struct Instance
 
 struct Material
 {
+	vec2 texcoord;
 	vec4 diffuseColor;
 	vec4 specularColor;
 	float shininess;
@@ -76,6 +77,7 @@ void main()
 	Material material;
 	material = materials[instance.materialIndex];
 	
+	vsOutputMaterial.texcoord = inTexcoord;
 	vsOutputMaterial.diffuseColor = material.diffuseColor;
 	vsOutputMaterial.specularColor = material.specularColor;
 	vsOutputMaterial.shininess = material.shininess;

@@ -2,10 +2,7 @@ layout(location = 0) out vec4 outPixelColor;
 
 struct InputMaterial
 {
-	vec3 diffuseAtlasTexcoord;
-	vec3 normalAtlasTexcoord;
-	vec3 roughnessAtlasTexcoord;
-	vec3 metallicAtlasTexcoord;
+	vec2 texcoord;
 	vec4 diffuseColor;
 	vec4 specularColor;
 	float shininess;
@@ -15,9 +12,10 @@ in InputMaterial vsOutputMaterial;
 in vec3 pixelPositionWorldSpace;
 in mat3 tangentToWorldMatrix;
 
-layout(binding = 0) uniform sampler2DArray textureAtlasRGBA8SRGB;
-layout(binding = 1) uniform sampler2DArray textureAtlasRGBA8;
-layout(binding = 2) uniform sampler2DArray textureAtlasR8;
+layout(binding = 0) uniform sampler2D inDiffuseTexture;
+layout(binding = 1) uniform sampler2D inNormalTexture;
+layout(binding = 2) uniform sampler2D inRoughnessTexture;
+layout(binding = 3) uniform sampler2D inMetallicTexture;
 uniform uint time;
 uniform vec4 cameraPositionWorldSpace;
 
@@ -25,10 +23,10 @@ void main()
 {
 	const vec4 diffuseColor = 
 		vsOutputMaterial.diffuseColor *
-		texture(textureAtlasRGBA8SRGB, vsOutputMaterial.diffuseAtlasTexcoord);
-	vec3 normal = texture(textureAtlasRGBA8, vsOutputMaterial.normalAtlasTexcoord).xyz;
-	const float roughness = texture(textureAtlasR8, vsOutputMaterial.roughnessAtlasTexcoord).x;
-	const float metallic = texture(textureAtlasR8, vsOutputMaterial.metallicAtlasTexcoord).x;
+		texture(inDiffuseTexture, vsOutputMaterial.texcoord);
+	vec3 normal = texture(inNormalTexture, vsOutputMaterial.texcoord).xyz;
+	const float roughness = texture(inRoughnessTexture, vsOutputMaterial.texcoord).x;
+	const float metallic = texture(inMetallicTexture, vsOutputMaterial.texcoord).x;
 
 	normal = normal * 2.0 - 1.0;
 	normal = normalize(tangentToWorldMatrix * normal);
