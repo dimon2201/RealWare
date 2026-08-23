@@ -34,7 +34,8 @@ void triton::IApplication::CreateWindow()
         _context,
         _caps.window.title,
         _caps.window.size,
-        _caps.window.fullscreen
+        _caps.window.fullscreen,
+        _caps.graphicsBackend
     );
 }
 

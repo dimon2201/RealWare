@@ -1,7 +1,10 @@
+// capabilities.hpp
+
 #pragma once
 
 #include <string>
 #include "math.hpp"
+#include "graphics_available_backends_enum.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -51,5 +54,6 @@ namespace triton
         types::usize maxRenderBatchCount = 4 * 1024;
         types::usize maxRenderInstanceCount = 4 * 1024;
         types::usize maxBoneCountPerVertex = 4;
+        EAvailableGraphicsBackend graphicsBackend = EAvailableGraphicsBackend::Unknown;
     };
 }

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstring>
 #include <SDL3/SDL_vulkan.h>
 #include "input_backend_sdl.hpp"
 #include "context.hpp"
@@ -32,7 +33,8 @@ triton::CInputBackendSDL::CInputBackendSDL(cContext* context) : IInputBackend(co
 triton::SWindowBackend triton::CInputBackendSDL::CreateBackendWindow(
     const std::string& title,
     const cVector2& size,
-    boolean fullscreen
+    boolean fullscreen,
+    EAvailableGraphicsBackend graphicsBackend
 )
 {
     SWindowBackend wb = {};
@@ -42,11 +44,17 @@ triton::SWindowBackend triton::CInputBackendSDL::CreateBackendWindow(
 
     if (fullscreen == False)
     {
+        u64 backendIdentifier = 0;
+        if (graphicsBackend == EAvailableGraphicsBackend::OpenGL)
+            backendIdentifier = SDL_WINDOW_OPENGL;
+        else if (graphicsBackend == EAvailableGraphicsBackend::Vulkan)
+            backendIdentifier = SDL_WINDOW_VULKAN;
+
         wb.instance = (qword)SDL_CreateWindow(
             wb.title.c_str(),
             wb.size.GetX(),
             wb.size.GetY(),
-            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+            backendIdentifier | SDL_WINDOW_RESIZABLE
         );
 
         SDL_SetWindowRelativeMouseMode((SDL_Window*)wb.instance, true);
@@ -91,6 +99,43 @@ std::vector<const char*> triton::CInputBackendSDL::GetBackendWindowVulkanExtensi
         extensionsVector.push_back(extensions[i]);
 
     return extensionsVector;
+}
+
+void* triton::CInputBackendSDL::CreateBackendWindowVulkanSurface(SWindowBackend& window, void* instance)
+{
+    VkInstance sdlInstance = {};
+    std::memcpy(&sdlInstance, instance, sizeof(VkInstance));
+
+    VkSurfaceKHR sdlSurface = {};
+
+    SDL_Vulkan_CreateSurface(
+        (SDL_Window*)window.instance,
+        sdlInstance,
+        nullptr,
+        &sdlSurface
+    );
+
+    VkSurfaceKHR* heapSurface = new VkSurfaceKHR;
+    std::memcpy(heapSurface, &sdlSurface, sizeof(VkSurfaceKHR));
+
+    return heapSurface;
+}
+
+void triton::CInputBackendSDL::DestroyBackendWindowVulkanSurface(void* instance, void* surface)
+{
+    VkInstance sdlInstance = {};
+    std::memcpy(&sdlInstance, instance, sizeof(VkInstance));
+
+    VkSurfaceKHR sdlSurface = {};
+    std::memcpy(&sdlSurface, surface, sizeof(VkSurfaceKHR));
+
+    SDL_Vulkan_DestroySurface(
+        sdlInstance,
+        sdlSurface,
+        nullptr
+    );
+
+    delete surface;
 }
 
 void triton::CInputBackendSDL::PreparePollEvent()

@@ -5,6 +5,7 @@
 #include <string>
 #include "math.hpp"
 #include "input_window_backend.hpp"
+#include "graphics_available_backends_enum.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -21,7 +22,8 @@ namespace triton
             cContext* context,
             const std::string& title,
             const cVector2& size,
-            types::boolean fullscreen
+            types::boolean fullscreen,
+            EAvailableGraphicsBackend graphicsBackend
         );
         ~CWindow();
 

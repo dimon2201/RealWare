@@ -28,7 +28,8 @@ namespace triton
         virtual SWindowBackend CreateBackendWindow(
             const std::string& title,
             const cVector2& size,
-            types::boolean fullscreen
+            types::boolean fullscreen,
+            EAvailableGraphicsBackend graphicsBackend
         ) override final;
 
         virtual void DestroyBackendWindow(SWindowBackend& window) override final;
@@ -36,6 +37,10 @@ namespace triton
         virtual void ResizeWindow(SWindowBackend& window, const cVector2& size) override final;
 
         std::vector<const char*> GetBackendWindowVulkanExtensions() override final;
+
+        void* CreateBackendWindowVulkanSurface(SWindowBackend& window, void* instance) override final;
+
+        void DestroyBackendWindowVulkanSurface(void* instance, void* surface) override final;
 
         virtual void PreparePollEvent() override final;
 

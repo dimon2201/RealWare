@@ -11,6 +11,7 @@
 #include "input_window_event.hpp"
 #include "input_key_code_enum.hpp"
 #include "input_key_state_enum.hpp"
+#include "graphics_available_backends_enum.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -28,7 +29,8 @@ namespace triton
         virtual SWindowBackend CreateBackendWindow(
             const ::std::string& title,
             const cVector2& size,
-            types::boolean fullscreen
+            types::boolean fullscreen,
+            EAvailableGraphicsBackend graphicsBackend
         ) = 0;
 
         virtual void DestroyBackendWindow(SWindowBackend& window) = 0;
@@ -36,6 +38,10 @@ namespace triton
         virtual void ResizeWindow(SWindowBackend& window, const cVector2& size) = 0;
 
         virtual std::vector<const char*> GetBackendWindowVulkanExtensions() = 0;
+
+        virtual void* CreateBackendWindowVulkanSurface(SWindowBackend& window, void* instance) = 0;
+
+        virtual void DestroyBackendWindowVulkanSurface(void* instance, void* surface) = 0;
 
         virtual void PreparePollEvent() = 0;
 

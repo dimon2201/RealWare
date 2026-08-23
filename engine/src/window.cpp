@@ -10,13 +10,15 @@ triton::CWindow::CWindow(
 	cContext* context,
 	const std::string& title,
 	const cVector2& size,
-	boolean fullscreen
+	boolean fullscreen,
+	EAvailableGraphicsBackend graphicsBackend
 ) : _context(context)
 {
 	_backendWindow = _context->GetBackend<IInputBackend>()->CreateBackendWindow(
 		title,
 		size,
-		fullscreen
+		fullscreen,
+		graphicsBackend
 	);
 }
 
