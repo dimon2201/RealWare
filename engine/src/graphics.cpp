@@ -9,7 +9,6 @@
 #include "filesystem_manager.hpp"
 #include "geometry_storage.hpp"
 #include "skinned_bones_pool.hpp"
-#include "texture_atlas.hpp"
 #include "shader_pool.hpp"
 #include "render_instance_static_pool.hpp"
 #include "render_instance_dynamic_pool.hpp"
@@ -329,7 +328,6 @@ void triton::CGraphics::CreateRenderTargets()
 void triton::CGraphics::CreateRenderPasses()
 {
     cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
-    CTextureAtlas* textureAtlas = _context->GetSubsystem<CTextureAtlas>();
     CFileSystem* fs = _context->GetSubsystem<CFileSystem>();
 
     SViewport viewport;
@@ -352,11 +350,6 @@ void triton::CGraphics::CreateRenderPasses()
     XRenderPassGeometry& opaqueStaticData = *geometryRPPool->Get(_opaqueStatic);
     opaqueStaticData.SetClearState(SClearState(cVector4(0.055f, 0.075f, 0.090f, 1.0f) * 2.0f, 1.0f));
     opaqueStaticData.SetInputLayout(_inputLayoutStatic);
-    opaqueStaticData.SetInputTextures({
-        SShaderTextureBinding("textureAtlasRGBA8SRGB", textureAtlas->GetAtlasRGBA8SRGB()),
-        SShaderTextureBinding("textureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
-        SShaderTextureBinding("textureAtlasR8", textureAtlas->GetAtlasR8())
-    });
     opaqueStaticData.SetShader(_opaqueRigidPBRShader);
     opaqueStaticData.SetViewport(viewport);
     opaqueStaticData.SetDepthState(SDepthState(K_TRUE, K_TRUE));
@@ -368,11 +361,6 @@ void triton::CGraphics::CreateRenderPasses()
     XRenderPassGeometry& opaqueSkinnedData = *geometryRPPool->Get(_opaqueSkinned);
     opaqueSkinnedData.SetClearState(std::nullopt);
     opaqueSkinnedData.SetInputLayout(_inputLayoutSkinned);
-    opaqueSkinnedData.SetInputTextures({
-        SShaderTextureBinding("textureAtlasRGBA8SRGB", textureAtlas->GetAtlasRGBA8SRGB()),
-        SShaderTextureBinding("textureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
-        SShaderTextureBinding("textureAtlasR8", textureAtlas->GetAtlasR8())
-    });
     opaqueSkinnedData.SetShader(_opaqueSkinnedPBRShader);
     opaqueSkinnedData.SetViewport(viewport);
     opaqueSkinnedData.SetDepthState(SDepthState(K_TRUE, K_TRUE));
@@ -390,11 +378,6 @@ void triton::CGraphics::CreateRenderPasses()
     _transparent = *geometryRPPool->Create();
     XRenderPassGeometry& transparentData = *geometryRPPool->Get(_transparent);
     transparentData.SetInputLayout(_inputLayoutStatic);
-    transparentData.SetInputTextures({
-        SShaderTextureBinding("textureAtlasRGBA8SRGB", textureAtlas->GetAtlasRGBA8SRGB()),
-        SShaderTextureBinding("textureAtlasRGBA8", textureAtlas->GetAtlasRGBA8()),
-        SShaderTextureBinding("textureAtlasR8", textureAtlas->GetAtlasR8())
-    });
     transparentData.SetShader(_transparentShader);
     transparentData.SetViewport(viewport);
     transparentData.SetDepthState(SDepthState(K_TRUE, K_FALSE));
