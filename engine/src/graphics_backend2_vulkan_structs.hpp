@@ -11,4 +11,9 @@ namespace triton
 		VkInstance instance = VK_NULL_HANDLE;
 		VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
 	};
+
+	struct SSurface
+	{
+		VkSurfaceKHR surface = VK_NULL_HANDLE;
+	};
 }

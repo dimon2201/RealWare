@@ -13,6 +13,7 @@ namespace triton
 		TRITON_CLASS_NAME(BGraphicsBackend2Vulkan)
 
 		SInstance _instance;
+		SSurface _surface;
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -20,6 +21,7 @@ namespace triton
 
 		// Initialization/Shutdown
 		void Initialize(
+			SWindowBackend& window,
 			types::boolean bEnableDebugging,
 			const std::vector<const char*> extensions
 		) override final;
@@ -31,5 +33,7 @@ namespace triton
 		void DestroyInstance();
 		void CreateDebugMessenger();
 		void DestroyDebugMessenger();
+		void CreateSurface(SWindowBackend& window);
+		void DestroySurface();
 	};
 }

@@ -20,6 +20,7 @@ namespace triton
 
 		// Initialization/Shutdown
 		virtual void Initialize(
+			SWindowBackend& window,
 			types::boolean bEnableDebugging,
 			const std::vector<const char*> extensions
 		) = 0;

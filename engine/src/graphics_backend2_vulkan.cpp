@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include "graphics_backend2_vulkan.hpp"
+#include "input_backend.hpp"
+#include "context.hpp"
 #include "log.hpp"
 
 using namespace types;
@@ -67,11 +69,13 @@ boolean IsZeroTerminated(const char* str, usize maxLength)
 }
 
 void triton::BGraphicsBackend2Vulkan::Initialize(
+	SWindowBackend& window,
 	boolean bEnableDebugging,
 	const std::vector<const char*> extensions
 )
 {
 	CreateInstance(bEnableDebugging, extensions);
+	CreateSurface(window);
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
@@ -192,4 +196,28 @@ void triton::BGraphicsBackend2Vulkan::DestroyDebugMessenger()
 			nullptr
 		);
 	}
+}
+
+void triton::BGraphicsBackend2Vulkan::CreateSurface(SWindowBackend& window)
+{
+	void* surfaceRaw = _context->GetBackend<IInputBackend>()->CreateBackendWindowVulkanSurface(
+		window,
+		(void*)&_instance.instance
+	);
+
+	if (!surfaceRaw)
+	{
+		Print("Error: failed to create Vulkan surface");
+		return;
+	}
+
+	_surface.surface = *((VkSurfaceKHR*)surfaceRaw);
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroySurface()
+{
+	_context->GetBackend<IInputBackend>()->DestroyBackendWindowVulkanSurface(
+		(void*)&_instance.instance,
+		(void*)&_surface.surface
+	);
 }
