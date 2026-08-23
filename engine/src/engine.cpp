@@ -40,6 +40,7 @@
 #include "gpu_buffer_pool.hpp"
 #include "render_instance_static_pool.hpp"
 #include "render_instance_dynamic_pool.hpp"
+#include "texture_pool.hpp"
 #include "window.hpp"
 
 using namespace types;
@@ -83,7 +84,7 @@ void triton::CEngine::Initialize()
 	// Register subsystems and pools (order matters)
 	_context->RegisterPool(new CCameraPool(_context, K_TRUE));
 
-	_context->RegisterPool(new CAtlasTexturePool(_context, K_TRUE));
+	_context->RegisterPool(new PTexturePool(_context, K_TRUE));
 
 	_context->RegisterPool(new CShaderPool(_context, K_TRUE));
 
