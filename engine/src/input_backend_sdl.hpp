@@ -35,6 +35,8 @@ namespace triton
 
         virtual void ResizeWindow(SWindowBackend& window, const cVector2& size) override final;
 
+        std::vector<const char*> GetBackendWindowVulkanExtensions() override final;
+
         virtual void PreparePollEvent() override final;
 
         virtual SWindowEvent PollEvent() override final;

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <SDL3/SDL_vulkan.h>
 #include "input_backend_sdl.hpp"
 #include "context.hpp"
 #include "types.hpp"
@@ -78,6 +79,18 @@ void triton::CInputBackendSDL::ResizeWindow(SWindowBackend& window, const cVecto
         return;
 
     window.size = cVector2(newSize.GetX(), newSize.GetY());
+}
+
+std::vector<const char*> triton::CInputBackendSDL::GetBackendWindowVulkanExtensions()
+{
+    uint32_t extensionCount = 0;
+    const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
+
+    std::vector<const char*> extensionsVector(extensionCount);
+    for (usize i = 0; i < extensionCount; i++)
+        extensionsVector.push_back(extensions[i]);
+
+    return extensionsVector;
 }
 
 void triton::CInputBackendSDL::PreparePollEvent()

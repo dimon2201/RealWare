@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <vector>
 #include <string>
 #include "math.hpp"
 #include "object.hpp"
@@ -33,6 +34,8 @@ namespace triton
         virtual void DestroyBackendWindow(SWindowBackend& window) = 0;
 
         virtual void ResizeWindow(SWindowBackend& window, const cVector2& size) = 0;
+
+        virtual std::vector<const char*> GetBackendWindowVulkanExtensions() = 0;
 
         virtual void PreparePollEvent() = 0;
 
