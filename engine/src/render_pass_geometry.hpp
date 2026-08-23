@@ -30,6 +30,7 @@ namespace triton
         XRenderTarget::THandle                      _renderTarget;
         XShader::THandle                            _shader;
         XCamera::THandle                            _camera;
+        EShadingModel                               _shadingModel = EShadingModel::PBR;
 
     public:
         explicit XRenderPassGeometry(
@@ -41,6 +42,8 @@ namespace triton
         void Render() override;
 
         XShader::THandle GetShader() { return _shader; }
+
+        inline EShadingModel GetShadingModel() const { return _shadingModel; }
 
         void SetClearState(const std::optional<SClearState>& clearState) { _clearState = clearState; }
 
@@ -63,6 +66,8 @@ namespace triton
         void SetShader(const XShader::THandle& shader) { _shader = shader; }
 
         void SetCamera(const XCamera::THandle& camera) { _camera = camera; }
+
+        void SetShadingModel(EShadingModel shadingModel) { _shadingModel = shadingModel; }
 
         struct THandle : public SHandle {};
 
