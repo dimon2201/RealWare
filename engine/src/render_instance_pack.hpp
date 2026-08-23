@@ -22,6 +22,7 @@ namespace triton
 
 		ERenderInstanceMotionType				_motionType = ERenderInstanceMotionType::Unknown;
 		SGeometryView							_sharedGeometry = {};
+		XMaterial::THandle						_sharedMaterial;
 		types::usize							_bufferOffset = 0;
 		types::usize							_instanceCount = 0;
 		types::usize							_maxInstanceCount = 0;
