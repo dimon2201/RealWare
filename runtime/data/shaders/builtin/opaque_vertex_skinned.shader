@@ -14,19 +14,8 @@ struct Instance
 	mat4 worldMatrix;
 };
 
-struct Texture
-{
-	uint atlasLayer;
-	vec2 atlasNormOffset;
-	vec2 atlasNormSize;
-};
-
 struct Material
 {
-	Texture diffuseTexture;
-	Texture normalTexture;
-	Texture roughnessTexture;
-	Texture metallicTexture;
 	vec4 diffuseColor;
 	vec4 specularColor;
 	float shininess;
@@ -87,10 +76,6 @@ void main()
 	Material material;
 	material = materials[instance.materialIndex];
 	
-	vsOutputMaterial.diffuseAtlasTexcoord = CalculateAtlasTexcoord(material.diffuseTexture);
-	vsOutputMaterial.normalAtlasTexcoord = CalculateAtlasTexcoord(material.normalTexture);
-	vsOutputMaterial.roughnessAtlasTexcoord = CalculateAtlasTexcoord(material.roughnessTexture);
-	vsOutputMaterial.metallicAtlasTexcoord = CalculateAtlasTexcoord(material.metallicTexture);
 	vsOutputMaterial.diffuseColor = material.diffuseColor;
 	vsOutputMaterial.specularColor = material.specularColor;
 	vsOutputMaterial.shininess = material.shininess;

@@ -8,14 +8,6 @@
 
 namespace triton
 {
-    struct STextureLayout final
-    {
-        types::u32 layer = 0;
-        types::u32 _pad = 0;
-        cVector2 normOffset = cVector2(0.0f);
-        cVector2 normSize = cVector2(0.0f);
-    };
-
     class XMaterial : public iObject
     {
         TRITON_OBJECT(XMaterial)
@@ -65,10 +57,6 @@ namespace triton
 
         struct TGPULayout
         {
-            STextureLayout diffuseTextureLayout;
-            STextureLayout normalTextureLayout;
-            STextureLayout roughnessTextureLayout;
-            STextureLayout metallicTextureLayout;
             cVector4 diffuseColor = cVector4(0.0f);
             cVector4 specularColor = cVector4(0.0f);
             types::f32 shininess = 0.0f;
