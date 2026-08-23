@@ -126,7 +126,7 @@ triton::EImageFormat triton::BImageDecoderMulti::TextureFormatToImageFormat(ETex
 		return EImageFormat::R8;
 	else if (textureFormat == ETextureFormat::RGBA8)
 		return EImageFormat::RGBA8;
-	else if (textureFormat == ETextureFormat::RGBA8_SRGB)
+	else if (textureFormat == ETextureFormat::RGBA8_SRGB_Mips)
 		return EImageFormat::RGBA8_SRGB;
 
 	return EImageFormat::Unknown;
