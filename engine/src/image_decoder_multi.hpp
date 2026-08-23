@@ -30,6 +30,8 @@ namespace triton
 			types::usize dataByteSize
 		) override final;
 
+		EImageFormat TextureFormatToImageFormat(ETextureFormat textureFormat) override final;
+
 	private:
 		types::usize DetermineChannelCount(EImageFormat format);
 

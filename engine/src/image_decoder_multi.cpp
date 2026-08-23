@@ -120,6 +120,18 @@ triton::SImageBackend triton::BImageDecoderMulti::Decode(
 	}
 }
 
+triton::EImageFormat triton::BImageDecoderMulti::TextureFormatToImageFormat(ETextureFormat textureFormat)
+{
+	if (textureFormat == ETextureFormat::R8)
+		return EImageFormat::R8;
+	else if (textureFormat == ETextureFormat::RGBA8)
+		return EImageFormat::RGBA8;
+	else if (textureFormat == ETextureFormat::RGBA8_SRGB)
+		return EImageFormat::RGBA8_SRGB;
+
+	return EImageFormat::Unknown;
+}
+
 usize triton::BImageDecoderMulti::DetermineChannelCount(EImageFormat format)
 {
 	if (format == EImageFormat::R8)

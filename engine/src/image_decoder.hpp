@@ -6,6 +6,7 @@
 #include "backend.hpp"
 #include "image_backend_data.hpp"
 #include "image_file_format_enum.hpp"
+#include "texture_formats.hpp"
 #include "object.hpp"
 
 namespace triton
@@ -30,5 +31,7 @@ namespace triton
 			const types::u8* data,
 			types::usize dataByteSize
 		) = 0;
+
+		virtual EImageFormat TextureFormatToImageFormat(ETextureFormat textureFormat) = 0;
 	};
 }
