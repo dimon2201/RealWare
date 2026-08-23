@@ -6,10 +6,10 @@
 triton::XMaterial::XMaterial(
     cContext* context,
     types::s32 poolIndex,
-    const XAtlasTexture::THandle& diffuseTexture,
-    const XAtlasTexture::THandle& normalTexture,
-    const XAtlasTexture::THandle& roughnessTexture,
-    const XAtlasTexture::THandle& metallicTexture,
+    const XTexture::THandle& diffuseTexture,
+    const XTexture::THandle& normalTexture,
+    const XTexture::THandle& roughnessTexture,
+    const XTexture::THandle& metallicTexture,
     const cVector4& diffuseColor,
     const cVector4& specularColor,
     types::f32 shininess
