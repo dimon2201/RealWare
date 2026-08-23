@@ -5,7 +5,6 @@
 #include "application.hpp"
 #include "context.hpp"
 #include "graphics.hpp"
-#include "texture_atlas.hpp"
 #include "filesystem_manager.hpp"
 #include "font_manager.hpp"
 #include "physics_manager.hpp"
@@ -35,13 +34,13 @@
 #include "input_layout_pool.hpp"
 #include "render_target_pool.hpp"
 #include "render_pass_pools.hpp"
-#include "atlas_texture_pool.hpp"
 #include "shader_pool.hpp"
 #include "gpu_buffer_pool.hpp"
 #include "render_instance_static_pool.hpp"
 #include "render_instance_dynamic_pool.hpp"
 #include "texture_pool.hpp"
 #include "window.hpp"
+#include "image_decoder_multi.hpp"
 
 using namespace types;
 
@@ -72,6 +71,7 @@ void triton::CEngine::Initialize()
 	_context->RegisterBackend<IGraphicsBackend>(new XGraphicsBackendOGL(_context));
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 	_context->RegisterBackend<IModel3DBackend>(new XModel3DBackendAssimp(_context));
+	_context->RegisterBackend<IImageDecoder>(new BImageDecoderMulti(_context));
 
 	// Create application window
 	_app->CreateWindow();
@@ -141,8 +141,6 @@ void triton::CEngine::Initialize()
 	));
 
 	_context->RegisterPool(new CSkinPool(_context, K_TRUE));
-
-	_context->RegisterSubsystem(new CTextureAtlas(_context, cVector3(8193, 8193, 4)));
 
 	_context->RegisterSubsystem(new CGeometryStorage(_context));
 
