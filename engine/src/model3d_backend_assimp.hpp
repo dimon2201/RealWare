@@ -19,7 +19,6 @@ namespace triton
 {
     class cContext;
     class cVector3;
-    class CTextureAtlas;
     struct SSkeletonBone;
     struct SAnimation;
     struct SSkeletonData;
@@ -130,7 +129,6 @@ namespace triton
         void CreateMaterials(
             cContext* context,
             const std::string& modelFolderPath,
-            CTextureAtlas* textureAtlas,
             const std::vector<SModel3DMaterialData>& materials,
             std::vector<XMaterial::THandle>& modelMaterials,
             const aiScene* scene
@@ -184,29 +182,26 @@ namespace triton
             std::vector<XAnimation::THandle>& modelAnimations
         );
         
-        std::optional<XAtlasTexture::THandle> CreateTexture(
+        std::optional<XTexture::THandle> CreateTexture(
             cContext* context,
             ETextureFormat dataFormat,
             const std::string& modelFolderPath,
-            CTextureAtlas* textureAtlas,
             const std::string& textureFilePath,
             types::boolean bIsEmbedded,
             const aiTexture* texture
         );
         
-        std::optional<XAtlasTexture::THandle> CreateTextureFromModelData(
+        std::optional<XTexture::THandle> CreateTextureFromModelData(
             cContext* context,
             ETextureFormat dataFormat,
-            CTextureAtlas* textureAtlas,
             const std::string& textureFilePath,
             const aiTexture* texture
         );
         
-        std::optional<XAtlasTexture::THandle> CreateTextureFromFile(
+        std::optional<XTexture::THandle> CreateTextureFromFile(
             cContext* context,
             ETextureFormat dataFormat,
             const std::string& modelFolderPath,
-            CTextureAtlas* textureAtlas,
             const std::string& textureFilePath
         );
         
