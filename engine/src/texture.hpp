@@ -69,5 +69,8 @@ namespace triton
 		struct THandle : public SHandle {};
 
 		struct TGPULayout {};
+		
+	private:
+		void GenerateMips();
 	};
 }

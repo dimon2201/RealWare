@@ -37,6 +37,8 @@ triton::XTexture::XTexture(
 		_context->GetSubsystem<CEngine>()->
 		GetSynchronization()->
 		WaitForRenderCommandResult<CGPUTextureResource>();
+
+	GenerateMips();
 }
 
 triton::XTexture::XTexture(
@@ -73,6 +75,8 @@ triton::XTexture::XTexture(
 		_context->GetSubsystem<CEngine>()->
 		GetSynchronization()->
 		WaitForRenderCommandResult<CGPUTextureResource>();
+
+	GenerateMips();
 }
 
 triton::XTexture::XTexture(
@@ -101,6 +105,8 @@ triton::XTexture::XTexture(
 		_context->GetSubsystem<CEngine>()->
 		GetSynchronization()->
 		WaitForRenderCommandResult<CGPUTextureResource>();
+
+	GenerateMips();
 }
 
 triton::XTexture::~XTexture()
@@ -116,4 +122,19 @@ triton::XTexture::~XTexture()
 	_context->GetSubsystem<CEngine>()->
 		GetSynchronization()->
 		WaitForRenderCommandResult<void*>();
+}
+
+void triton::XTexture::GenerateMips()
+{
+	if (_gpuTexture.GetFormat() == ETextureFormat::RGBA8_SRGB_Mips)
+	{
+		_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+			ERenderCommand::GENERATE_TEXTURE_MIPS,
+			(cpuword)&_gpuTexture
+		));
+
+		_context->GetSubsystem<CEngine>()->
+			GetSynchronization()->
+			WaitForRenderCommandResult<void*>();
+	}
 }
