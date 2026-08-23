@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <vector>
 #include "backend.hpp"
 #include "input_window_backend.hpp"
 
@@ -20,7 +21,7 @@ namespace triton
 		// Initialization/Shutdown
 		virtual void Initialize(
 			types::boolean bEnableDebugging,
-			void* data
+			const std::vector<const char*> extensions
 		) = 0;
 
 		virtual void Shutdown() = 0;

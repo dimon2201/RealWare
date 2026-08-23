@@ -54,64 +54,24 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 	return VK_FALSE;
 }
 
-VkResult CreateDebugMessenger(
-	VkInstance instance,
-	const VkDebugUtilsMessengerCreateInfoEXT* createInfo,
-	const VkAllocationCallbacks* allocator,
-	VkDebugUtilsMessengerEXT* debugMessenger
-)
+boolean IsZeroTerminated(const char* str, usize maxLength)
 {
-	auto function =
-		(PFN_vkCreateDebugUtilsMessengerEXT)(
-			vkGetInstanceProcAddr(
-				instance,
-				"vkCreateDebugUtilsMessengerEXT"
-			)
-		);
+	if (!str)
+		return False;
 
-	if (function != nullptr)
-	{
-		return function(
-			instance,
-			createInfo,
-			allocator,
-			debugMessenger
-		);
-	}
+	for (usize i = 0; i < maxLength; ++i)
+		if (str[i] == '\0')
+			return True;
 
-	return VK_ERROR_EXTENSION_NOT_PRESENT;
-}
-
-void DestroyDebugMessenger(
-	VkInstance instance,
-	VkDebugUtilsMessengerEXT debugMessenger,
-	const VkAllocationCallbacks* allocator
-)
-{
-	auto function =
-		(PFN_vkDestroyDebugUtilsMessengerEXT)(
-			vkGetInstanceProcAddr(
-				instance,
-				"vkDestroyDebugUtilsMessengerEXT"
-			)
-		);
-
-	if (function != nullptr)
-	{
-		function(
-			instance,
-			debugMessenger,
-			allocator
-		);
-	}
+	return False;
 }
 
 void triton::BGraphicsBackend2Vulkan::Initialize(
 	boolean bEnableDebugging,
-	void* data
+	const std::vector<const char*> extensions
 )
 {
-	CreateInstance(bEnableDebugging);
+	CreateInstance(bEnableDebugging, extensions);
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
@@ -119,7 +79,10 @@ void triton::BGraphicsBackend2Vulkan::Shutdown()
 	DestroyInstance();
 }
 
-void triton::BGraphicsBackend2Vulkan::CreateInstance(boolean bEnableDebugging)
+void triton::BGraphicsBackend2Vulkan::CreateInstance(
+	boolean bEnableDebugging,
+	const std::vector<const char*> extensions
+)
 {
 	if (bEnableDebugging == True &&
 		!CheckValidationLayerSupport())
@@ -128,10 +91,12 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(boolean bEnableDebugging)
 		return;
 	}
 
-	std::vector<const char*> extensions;
-	extensions.push_back(
-		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
-	);
+	std::vector<const char*> validExtensions;
+	for (usize i = 0; i < extensions.size(); i++)
+		if (IsZeroTerminated(extensions[i], 1024))
+			validExtensions.push_back(extensions[i]);
+
+	validExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -144,31 +109,10 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(boolean bEnableDebugging)
 	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
-	createInfo.enabledExtensionCount = (uint32_t)(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
-
-	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
-	if (bEnableDebugging == True)
-	{
-		debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-		debugCreateInfo.messageSeverity =
-			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-			VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-			VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-		debugCreateInfo.messageType =
-			VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-			VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-			VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-		debugCreateInfo.pfnUserCallback =
-			DebugCallback;
-
-		createInfo.enabledLayerCount = 1;
-		createInfo.ppEnabledLayerNames =
-			&kValidationLayer;
-		createInfo.pNext =
-			&debugCreateInfo;
-	}
+	createInfo.enabledExtensionCount = (uint32_t)(validExtensions.size());
+	createInfo.ppEnabledExtensionNames = validExtensions.data();
+	createInfo.enabledLayerCount = 1;
+	createInfo.ppEnabledLayerNames = &kValidationLayer;
 
 	VkResult result = vkCreateInstance(
 		&createInfo,
@@ -182,38 +126,69 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(boolean bEnableDebugging)
 		return;
 	}
 
-	if (bEnableDebugging == True)
-	{
-		result = CreateDebugMessenger(
-			_instance.instance,
-			&debugCreateInfo,
-			nullptr,
-			&_instance.debugMessenger
-		);
-
-		if (result != VK_SUCCESS)
-		{
-			Print("Error: failed to create Vulkan debug messenger");
-			return;
-		}
-	}
+	if (bEnableDebugging)
+		CreateDebugMessenger();
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroyInstance()
 {
-	if (_instance.debugMessenger != VK_NULL_HANDLE)
-	{
-		DestroyDebugMessenger(
-			_instance.instance,
-			_instance.debugMessenger,
-			nullptr
-		);
-	}
-
+	DestroyDebugMessenger();
+	
 	if (_instance.instance != VK_NULL_HANDLE)
 	{
 		vkDestroyInstance(
 			_instance.instance,
+			nullptr
+		);
+	}
+}
+
+void triton::BGraphicsBackend2Vulkan::CreateDebugMessenger()
+{
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
+	debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	debugCreateInfo.messageSeverity =
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	debugCreateInfo.messageType =
+		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	debugCreateInfo.pfnUserCallback =
+		DebugCallback;
+
+	PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessenger = VK_NULL_HANDLE;
+	vkCreateDebugUtilsMessenger = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+		_instance.instance,
+		"vkCreateDebugUtilsMessengerEXT"
+	);
+
+	VkResult result = vkCreateDebugUtilsMessenger(
+		_instance.instance,
+		&debugCreateInfo,
+		nullptr,
+		&_instance.debugMessenger
+	);
+
+	if (result != VK_SUCCESS)
+		Print("Error: failed to create Vulkan debug messenger");
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroyDebugMessenger()
+{
+	if (_instance.debugMessenger != VK_NULL_HANDLE)
+	{
+		PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessenger = VK_NULL_HANDLE;
+		vkDestroyDebugUtilsMessenger = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+			_instance.instance,
+			"vkDestroyDebugUtilsMessengerEXT"
+		);
+
+		vkDestroyDebugUtilsMessenger(
+			_instance.instance,
+			_instance.debugMessenger,
 			nullptr
 		);
 	}
