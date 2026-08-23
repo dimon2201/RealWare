@@ -4,7 +4,7 @@
 
 #include "object.hpp"
 #include "math.hpp"
-#include "atlas_texture.hpp"
+#include "texture.hpp"
 
 namespace triton
 {
@@ -20,13 +20,13 @@ namespace triton
     {
         TRITON_OBJECT(XMaterial)
 
-        XAtlasTexture::THandle  _diffuseTexture;
-        XAtlasTexture::THandle  _normalTexture;
-        XAtlasTexture::THandle  _roughnessTexture;
-        XAtlasTexture::THandle  _metallicTexture;
-        cVector4                _diffuseColor = cVector4(1.0f);
-        cVector4                _specularColor = cVector4(1.0f);
-        types::f32              _shininess = 0.0f;
+        XTexture::THandle   _diffuseTexture;
+        XTexture::THandle   _normalTexture;
+        XTexture::THandle   _roughnessTexture;
+        XTexture::THandle   _metallicTexture;
+        cVector4            _diffuseColor = cVector4(1.0f);
+        cVector4            _specularColor = cVector4(1.0f);
+        types::f32          _shininess = 0.0f;
 
     public:
         explicit XMaterial(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
@@ -34,10 +34,10 @@ namespace triton
         explicit XMaterial(
             cContext* context,
             types::s32 poolIndex,
-            const XAtlasTexture::THandle& diffuseTexture,
-            const XAtlasTexture::THandle& normalTexture,
-            const XAtlasTexture::THandle& roughnessTexture,
-            const XAtlasTexture::THandle& metallicTexture,
+            const XTexture::THandle& diffuseTexture,
+            const XTexture::THandle& normalTexture,
+            const XTexture::THandle& roughnessTexture,
+            const XTexture::THandle& metallicTexture,
             const cVector4& diffuseColor,
             const cVector4& specularColor,
             types::f32 shininess
@@ -45,13 +45,13 @@ namespace triton
 
         ~XMaterial() override = default;
 
-        inline const XAtlasTexture::THandle& GetDiffuseTexture() const { return _diffuseTexture; }
+        inline const XTexture::THandle& GetDiffuseTexture() const { return _diffuseTexture; }
 
-        inline const XAtlasTexture::THandle& GetNormalTexture() const { return _normalTexture; }
+        inline const XTexture::THandle& GetNormalTexture() const { return _normalTexture; }
 
-        inline const XAtlasTexture::THandle& GetRoughnessTexture() const { return _roughnessTexture; }
+        inline const XTexture::THandle& GetRoughnessTexture() const { return _roughnessTexture; }
 
-        inline const XAtlasTexture::THandle& GetMetallicTexture() const { return _metallicTexture; }
+        inline const XTexture::THandle& GetMetallicTexture() const { return _metallicTexture; }
 
         inline const cVector4& GetDiffuseColor() const { return _diffuseColor; }
 
