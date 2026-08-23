@@ -36,6 +36,7 @@ namespace triton
 			types::s32 poolIndex,
 			ERenderInstanceMotionType motionType,
 			const SGeometryView& sharedGeometry,
+			const XMaterial::THandle& sharedMaterial,
 			types::usize maxInstanceCount
 		);
 
@@ -48,6 +49,8 @@ namespace triton
 		inline ERenderInstanceMotionType GetMotionType() const { return _motionType; }
 
 		inline const SGeometryView& GetSharedGeometry() const { return _sharedGeometry; }
+
+		inline const XMaterial::THandle& GetSharedMaterial() const { return _sharedMaterial; }
 
 		inline types::usize GetBufferOffset() const { return _bufferOffset; }
 

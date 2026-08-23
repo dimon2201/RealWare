@@ -14,13 +14,15 @@ triton::XRenderInstancePack::XRenderInstancePack(
 	s32 poolIndex,
 	ERenderInstanceMotionType motionType,
 	const SGeometryView& sharedGeometry,
+	const XMaterial::THandle& sharedMaterial,
 	types::usize maxInstanceCount
 ) :
 	iObject(context, poolIndex),
 	_bufferOffset(0),
 	_instanceCount(0),
 	_motionType(motionType),
-	_sharedGeometry(sharedGeometry)
+	_sharedGeometry(sharedGeometry),
+	_sharedMaterial(sharedMaterial)
 {
 	CRenderInstancePool* renderInstancePool = nullptr;
 	if (_motionType == ERenderInstanceMotionType::Static)
