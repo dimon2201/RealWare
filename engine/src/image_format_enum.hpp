@@ -10,6 +10,7 @@ namespace triton
 	{
 		Unknown,
 		R8,
-		RGBA8
+		RGBA8,
+		RGBA8_SRGB
 	};
 }
