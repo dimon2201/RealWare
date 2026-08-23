@@ -41,6 +41,7 @@
 #include "texture_pool.hpp"
 #include "window.hpp"
 #include "image_decoder_multi.hpp"
+#include "graphics_backend2_vulkan.hpp"
 
 using namespace types;
 
@@ -72,6 +73,12 @@ void triton::CEngine::Initialize()
 	_context->RegisterBackend<iAudioBackend>(new cAudioBackendOAL(_context));
 	_context->RegisterBackend<IModel3DBackend>(new XModel3DBackendAssimp(_context));
 	_context->RegisterBackend<IImageDecoder>(new BImageDecoderMulti(_context));
+
+	_context->RegisterBackend<IGraphicsBackend2>(new BGraphicsBackend2Vulkan(_context));
+	_context->GetBackend<IGraphicsBackend2>()->Initialize(
+		True,
+		_context->GetBackend<IInputBackend>()->GetBackendWindowVulkanExtensions()
+	);
 
 	// Create application window
 	_app->CreateWindow();
