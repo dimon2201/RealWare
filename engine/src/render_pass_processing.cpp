@@ -33,7 +33,10 @@ void triton::XRenderPassProcessing::Render()
 {
     CThreadGuard::AssertRender();
 
-    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    // TODO: [Vulkan backend] This must be done using render command queue on main thread
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    /*IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
 
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
     gfxBackend->BindShader(shader.GetGPUResource());
@@ -65,5 +68,5 @@ void triton::XRenderPassProcessing::Render()
         gfxBackend->UnbindRenderTarget();
 
     for (auto& tex : _inputTextures)
-        gfxBackend->UnbindTexture(tex.texture);
+        gfxBackend->UnbindTexture(tex.texture);*/
 }

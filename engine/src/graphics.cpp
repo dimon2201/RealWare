@@ -37,9 +37,12 @@ void triton::CGraphics::ExecutePasses()
 {
     CThreadGuard::AssertRender();
 
-    BindBuffers();
-    ExecuteBuiltinPasses();
-    UnbindBuffers();
+    // TODO: [Vulkan backend] This must be done using render command queue on main thread
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    //BindBuffers();
+    //ExecuteBuiltinPasses();
+    //UnbindBuffers();
 }
 
 void triton::CGraphics::ResizeRenderTargets(const cVector2& size)
@@ -514,11 +517,14 @@ void triton::CGraphics::DestroyRenderPasses()
 
 void triton::CGraphics::BindBuffers()
 {
-    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
-
-    gfxBackend->BindBuffer(_context->GetPool<CRenderInstanceStaticPool>()->GetGPUBuffer());
-    gfxBackend->BindBuffer(_context->GetPool<CRenderInstanceDynamicPool>()->GetGPUBuffer());
-    gfxBackend->BindBuffer(_context->GetPool<CMaterialPool>()->GetGPUBuffer());
+    // TODO: [Vulkan backend] This must be done using render command queue on main thread
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    //IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    //
+    //gfxBackend->BindBuffer(_context->GetPool<CRenderInstanceStaticPool>()->GetGPUBuffer());
+    //gfxBackend->BindBuffer(_context->GetPool<CRenderInstanceDynamicPool>()->GetGPUBuffer());
+    //gfxBackend->BindBuffer(_context->GetPool<CMaterialPool>()->GetGPUBuffer());
 }
 
 void triton::CGraphics::UnbindBuffers()
@@ -531,16 +537,19 @@ void triton::CGraphics::UnbindBuffers()
 
 void triton::CGraphics::ExecuteBuiltinPasses()
 {
-    CRenderPassGeometryPool* geometryRPPool = _context->GetPool<CRenderPassGeometryPool>();
-    CRenderPassProcessingPool* processingRPPool = _context->GetPool<CRenderPassProcessingPool>();
-
-    XRenderPassGeometry& opaqueStatic = *geometryRPPool->Get(_opaqueStatic);
-    XRenderPassGeometry& opaqueSkinned = *geometryRPPool->Get(_opaqueSkinned);
-    XRenderPassProcessing& compositeFinal = *processingRPPool->Get(_compositeFinal);
-
-    opaqueStatic.Render();
-    opaqueSkinned.Render();
-    compositeFinal.Render();
+    // TODO: [Vulkan backend] This must be done using render command queue on main thread
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    //CRenderPassGeometryPool* geometryRPPool = _context->GetPool<CRenderPassGeometryPool>();
+    //CRenderPassProcessingPool* processingRPPool = _context->GetPool<CRenderPassProcessingPool>();
+    //
+    //XRenderPassGeometry& opaqueStatic = *geometryRPPool->Get(_opaqueStatic);
+    //XRenderPassGeometry& opaqueSkinned = *geometryRPPool->Get(_opaqueSkinned);
+    //XRenderPassProcessing& compositeFinal = *processingRPPool->Get(_compositeFinal);
+    //
+    //opaqueStatic.Render();
+    //opaqueSkinned.Render();
+    //compositeFinal.Render();
 }
 
 // TODO: Implement new text drawing approach

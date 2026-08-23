@@ -13,7 +13,7 @@
 namespace triton
 {
 	class cContext;
-	class IGraphicsBackend;
+	class IGraphicsBackend2;
 	class CGraphics;
 	class XSynchronization;
 	class CWindow;
@@ -39,10 +39,9 @@ namespace triton
 	private:
 		void ExecuteCommands(
 			const SRenderCommandPack& renderCommandPack,
-			IGraphicsBackend* gfxBackend,
-			CGraphics* gfx
+			IGraphicsBackend2* gfxBackend
 		);
 
-		void Present(IGraphicsBackend* gfxBackend);
+		void Present(IGraphicsBackend2* gfxBackend);
 	};
 }

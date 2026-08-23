@@ -76,6 +76,8 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 {
 	CreateInstance(bEnableDebugging, extensions);
 	CreateSurface(window);
+
+	std::cout << "Vulkan initialized\n";
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()

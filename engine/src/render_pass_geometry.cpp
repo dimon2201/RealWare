@@ -25,7 +25,10 @@ void triton::XRenderPassGeometry::Render()
 
 void triton::XRenderPassGeometry::Bind()
 {
-    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    // TODO: [Vulkan backend] This must be done using render command queue on main thread
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    /*IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
 
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
     gfxBackend->BindShader(shader.GetGPUResource());
@@ -52,12 +55,15 @@ void triton::XRenderPassGeometry::Bind()
         SClearState cs = *_clearState;
         gfxBackend->ClearColor(cs.color);
         gfxBackend->ClearDepth(cs.depth);
-    }
+    }*/
 }
 
 void triton::XRenderPassGeometry::Draw()
 {
-    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    // TODO: [Vulkan backend] This must be done using render command queue on main thread
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    /*IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
 
     auto cameraResult = _context->GetPool<CCameraPool>()->Get(_camera);
     if (!cameraResult.has_value())
@@ -152,17 +158,20 @@ void triton::XRenderPassGeometry::Draw()
             sharedGeometry._indexElementOffset,
             instancePack.GetInstanceCount()
         );
-    }
+    }*/
 }
 
 void triton::XRenderPassGeometry::Unbind()
 {
-    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    // TODO: [Vulkan backend] This must be done using render command queue on main thread
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    /*IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
 
     gfxBackend->UnbindInputLayout();
 
     for (auto& tex : _inputTextures)
         gfxBackend->UnbindTexture(tex.texture);
 
-    gfxBackend->UnbindRenderTarget();
+    gfxBackend->UnbindRenderTarget();*/
 }

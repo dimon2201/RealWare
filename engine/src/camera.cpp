@@ -18,8 +18,11 @@ void triton::XCamera::Bind(XRenderPassGeometry* pass)
     XShader::THandle shaderHandle = pass->GetShader();
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(shaderHandle);
 
-    IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
-    gfxBackend->SetShaderUniform(shader.GetGPUResource(), "viewProjectionMatrix", _viewProjectionMatrix.Get());
+    // TODO: [Vulkan backend] This must be done using render command queue on main thread
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    //IGraphicsBackend* gfxBackend = _context->GetBackend<IGraphicsBackend>();
+    //gfxBackend->SetShaderUniform(shader.GetGPUResource(), "viewProjectionMatrix", _viewProjectionMatrix.Get());
 }
 
 void triton::XCamera::Update(const cVector2& mouseDelta, usize screenWidth, usize screenHeight, f32 fov, f32 zNear, f32 zFar, f32 mouseSensitivity)
