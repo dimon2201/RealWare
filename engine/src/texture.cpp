@@ -18,11 +18,10 @@ triton::XTexture::XTexture(
 triton::XTexture::XTexture(
 	cContext* context,
 	s32 poolIndex,
-	ETextureFileFormat containerFormat,
+	EImageFileFormat containerFormat,
 	ETextureFormat expectedDataFormat,
 	const u8* byteData,
-	usize byteDataByteSize,
-	const cVector2& textureSize
+	usize byteDataByteSize
 ) : iObject(context, poolIndex)
 {
 }

@@ -6,7 +6,7 @@
 #include "object.hpp"
 #include "math.hpp"
 #include "gpu_texture_resource.hpp"
-#include "texture_file_formats.hpp"
+#include "image_file_format_enum.hpp"
 #include "handle.hpp"
 
 namespace triton
@@ -30,11 +30,10 @@ namespace triton
 		explicit XTexture(
 			cContext* context,
 			types::s32 poolIndex,
-			ETextureFileFormat containerFormat,
+			EImageFileFormat containerFormat,
 			ETextureFormat expectedDataFormat,
 			const types::u8* byteData,
-			types::usize byteDataByteSize,
-			const cVector2& textureSize
+			types::usize byteDataByteSize
 		);
 
 		~XTexture() override;
