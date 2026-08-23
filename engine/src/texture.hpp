@@ -6,6 +6,9 @@
 #include "object.hpp"
 #include "math.hpp"
 #include "gpu_texture_resource.hpp"
+#include "texture_formats.hpp"
+#include "texture_dimensions.hpp"
+#include "image_format_enum.hpp"
 #include "image_file_format_enum.hpp"
 #include "handle.hpp"
 
@@ -23,17 +26,23 @@ namespace triton
 		explicit XTexture(
 			cContext* context,
 			types::s32 poolIndex,
-			ETextureFormat expectedDataFormat,
+			ETextureFormat textureFormat,
+			ETextureDimension textureDimension,
+			types::s32 textureSlot,
+			EImageFormat expectedDataFormat,
 			const std::filesystem::path& filePath
 		);
 
 		explicit XTexture(
 			cContext* context,
 			types::s32 poolIndex,
+			ETextureFormat textureFormat,
+			ETextureDimension textureDimension,
+			types::s32 textureSlot,
 			EImageFileFormat containerFormat,
-			ETextureFormat expectedDataFormat,
-			const types::u8* byteData,
-			types::usize byteDataByteSize
+			EImageFormat expectedDataFormat,
+			const types::u8* data,
+			types::usize dataByteSize
 		);
 
 		~XTexture() override;
