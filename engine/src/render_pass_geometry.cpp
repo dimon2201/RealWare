@@ -98,9 +98,9 @@ void triton::XRenderPassGeometry::Draw()
         if (_shadingModel == EShadingModel::PBR)
         {
             const XTexture& sharedMaterialDiffuseTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
-            const XTexture& sharedMaterialNormalTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
-            const XTexture& sharedMaterialRoughnessTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
-            const XTexture& sharedMaterialMetallicTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
+            const XTexture& sharedMaterialNormalTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetNormalTexture());
+            const XTexture& sharedMaterialRoughnessTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetRoughnessTexture());
+            const XTexture& sharedMaterialMetallicTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetMetallicTexture());
 
             gfxBackend->BindTextureNamed(
                 shader.GetGPUResource(),
@@ -130,7 +130,7 @@ void triton::XRenderPassGeometry::Draw()
         else if (_shadingModel == EShadingModel::PBR)
         {
             const XTexture& sharedMaterialDiffuseTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
-            const XTexture& sharedMaterialNormalTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetDiffuseTexture());
+            const XTexture& sharedMaterialNormalTex = *_context->GetPool<PTexturePool>()->Get(sharedMaterial.GetNormalTexture());
 
             gfxBackend->BindTextureNamed(
                 shader.GetGPUResource(),
