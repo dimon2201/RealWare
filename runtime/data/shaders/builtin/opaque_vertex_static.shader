@@ -61,7 +61,7 @@ void main()
 	Material material;
 	material = materials[instance.materialIndex];
 	
-	vsOutputMaterial.texcoord = inTexcoord;
+	vsOutputMaterial.texcoord = vec2(inTexcoord.x, 1.0 - inTexcoord.y);
 	vsOutputMaterial.diffuseColor = material.diffuseColor;
 	vsOutputMaterial.specularColor = material.specularColor;
 	vsOutputMaterial.shininess = material.shininess;
