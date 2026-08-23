@@ -114,6 +114,11 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 	CreateInstance(bEnableDebugging);
 }
 
+void triton::BGraphicsBackend2Vulkan::Shutdown()
+{
+	DestroyInstance();
+}
+
 void triton::BGraphicsBackend2Vulkan::CreateInstance(boolean bEnableDebugging)
 {
 	if (bEnableDebugging == True &&
@@ -191,5 +196,25 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(boolean bEnableDebugging)
 			Print("Error: failed to create Vulkan debug messenger");
 			return;
 		}
+	}
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroyInstance()
+{
+	if (_instance.debugMessenger != VK_NULL_HANDLE)
+	{
+		DestroyDebugMessenger(
+			_instance.instance,
+			_instance.debugMessenger,
+			nullptr
+		);
+	}
+
+	if (_instance.instance != VK_NULL_HANDLE)
+	{
+		vkDestroyInstance(
+			_instance.instance,
+			nullptr
+		);
 	}
 }

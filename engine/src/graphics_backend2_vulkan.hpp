@@ -25,5 +25,6 @@ namespace triton
 		
 	private:
 		void CreateInstance(types::boolean bEnableDebugging);
+		void DestroyInstance();
 	};
 }
