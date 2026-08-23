@@ -3,11 +3,12 @@
 #include "model3d.hpp"
 #include "context.hpp"
 #include "tasset.hpp"
-#include "atlas_texture_pool.hpp"
 #include "material_pool.hpp"
 #include "skeleton_pool.hpp"
 #include "animation_pool.hpp"
 #include "object_allocator.hpp"
+#include "texture.hpp"
+#include "image_decoder.hpp"
 
 using namespace types;
 
@@ -57,32 +58,34 @@ triton::XModel3D::XModel3D(
 				const std::filesystem::path& assetTexturePath,
 				const asset::STextureData& assetTextureData,
 				ETextureFormat textureFormat,
-				XAtlasTexture::THandle& outHandle
+				XTexture::THandle& outHandle
 				) {
 					std::filesystem::path texturePath = assetTexturePath;
 					if (!assetTexturePath.is_absolute())
 						texturePath = assetFolderPath / assetTexturePath;
 					if (std::filesystem::exists(texturePath))
-						outHandle = *_context->GetPool<CAtlasTexturePool>()->Create(
-							texturePath.generic_string(),
-							textureFormat
+						outHandle = *_context->GetPool<PTexturePool>()->Create(
+							textureFormat,
+							ETextureDimension::Texture2D,
+							0,
+							_context->GetBackend<IImageDecoder>()->TextureFormatToImageFormat(textureFormat),
+							texturePath.generic_string()
 						);
 					else
-						outHandle = *_context->GetPool<CAtlasTexturePool>()->Create(
+						outHandle = *_context->GetPool<PTexturePool>()->Create(
+							textureFormat,
+							ETextureDimension::Texture2D,
+							0,
+							_context->GetBackend<IImageDecoder>()->TextureFormatToImageFormat(textureFormat),
 							assetTextureData.pixelByteData,
-							assetTextureData.width * assetTextureData.height * assetTextureData.channelCount,
-							assetTextureData.width,
-							assetTextureData.height,
-							assetTextureData.channelCount,
-							ETextureFileFormat::Raw,
-							textureFormat
+							cVector3(assetTextureData.width, assetTextureData.height, 0)
 						);
 				};
 
-			XAtlasTexture::THandle diffuseTexture;
-			XAtlasTexture::THandle normalTexture;
-			XAtlasTexture::THandle roughnessTexture;
-			XAtlasTexture::THandle metallicTexture;
+			XTexture::THandle diffuseTexture;
+			XTexture::THandle normalTexture;
+			XTexture::THandle roughnessTexture;
+			XTexture::THandle metallicTexture;
 
 			ProcessTexture(
 				assetFolderPath,
