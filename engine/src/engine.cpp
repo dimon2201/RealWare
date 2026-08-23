@@ -74,14 +74,15 @@ void triton::CEngine::Initialize()
 	_context->RegisterBackend<IModel3DBackend>(new XModel3DBackendAssimp(_context));
 	_context->RegisterBackend<IImageDecoder>(new BImageDecoderMulti(_context));
 
+	// Create application window
+	_app->CreateWindow();
+
 	_context->RegisterBackend<IGraphicsBackend2>(new BGraphicsBackend2Vulkan(_context));
 	_context->GetBackend<IGraphicsBackend2>()->Initialize(
+		_app->GetWindow()->GetBackendWindow(),
 		True,
 		_context->GetBackend<IInputBackend>()->GetBackendWindowVulkanExtensions()
 	);
-
-	// Create application window
-	_app->CreateWindow();
 
 	// Initialize render thread
 	InitializeRenderCommandRecorder();
