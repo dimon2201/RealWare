@@ -17,7 +17,12 @@ namespace triton
         explicit IGraphicsBackend2(cContext* context) : iBackend(context) {}
 		~IGraphicsBackend2() override = default;
 
-		// Initialization
-		virtual void Initialize(SWindowBackend& window) = 0;
+		// Initialization/Shutdown
+		virtual void Initialize(
+			types::boolean bEnableDebugging,
+			void* data
+		) = 0;
+
+		virtual void Shutdown() = 0;
 	};
 }

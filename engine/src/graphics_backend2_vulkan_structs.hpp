@@ -2,6 +2,13 @@
 
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 namespace triton
 {
+	struct SInstance
+	{
+		VkInstance instance = VK_NULL_HANDLE;
+		VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
+	};
 }
