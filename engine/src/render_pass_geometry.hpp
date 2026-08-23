@@ -8,6 +8,7 @@
 #include "render_target.hpp"
 #include "shader_texture_binding.hpp"
 #include "render_instance_pack.hpp"
+#include "render_shading_model_enum.hpp"
 #include "input_layout.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
