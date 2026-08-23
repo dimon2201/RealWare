@@ -5,6 +5,7 @@
 #include <vector>
 #include "backend.hpp"
 #include "input_window_backend.hpp"
+#include "graphics_device_type_enum.hpp"
 
 namespace triton
 {
@@ -22,7 +23,8 @@ namespace triton
 		virtual void Initialize(
 			SWindowBackend& window,
 			types::boolean bEnableDebugging,
-			const std::vector<const char*> extensions
+			const std::vector<const char*> extensions,
+			EGraphicsDeviceType deviceType
 		) = 0;
 
 		virtual void Shutdown() = 0;

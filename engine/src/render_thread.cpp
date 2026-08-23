@@ -25,10 +25,15 @@ void triton::cRenderThread::ThreadFunction()
 	CWindow* window = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow();
 	//gfxBackend->CreateGraphicsContext(window->GetBackendWindow());
 	//gfxBackend->MakeWindowGraphicsContextCurrent(window->GetBackendWindow());
+	EGraphicsDeviceType deviceType =
+		_context->GetSubsystem<CEngine>()->
+		GetApplication()->
+		GetCapabilities().preferredGraphicsDevice;
 	gfxBackend->Initialize(
 		window->GetBackendWindow(),
 		True,
-		_context->GetBackend<IInputBackend>()->GetBackendWindowVulkanExtensions()
+		_context->GetBackend<IInputBackend>()->GetBackendWindowVulkanExtensions(),
+		deviceType
 	);
 
 	_sync->InitRenderThread();

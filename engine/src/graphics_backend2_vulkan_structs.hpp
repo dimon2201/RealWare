@@ -3,6 +3,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include "graphics_device_type_enum.hpp"
 
 namespace triton
 {
@@ -15,5 +16,36 @@ namespace triton
 	struct SSurface
 	{
 		VkSurfaceKHR surface = VK_NULL_HANDLE;
+	};
+
+	struct SPhysicalDevice
+	{
+		SPhysicalDevice(
+			EGraphicsDeviceType type,
+			VkPhysicalDevice device,
+			VkPhysicalDeviceProperties properties,
+			VkPhysicalDeviceFeatures features,
+			VkPhysicalDeviceFeatures2 features2,
+			VkPhysicalDeviceVulkan13Features featuresVulkan13,
+			const std::vector<VkQueueFamilyProperties>& queueFamilyProperties,
+			VkSurfaceCapabilitiesKHR surfaceCapabilities
+		) :
+			type(type),
+			device(device),
+			properties(properties),
+			features(features),
+			features2(features2),
+			featuresVulkan13(featuresVulkan13),
+			queueFamilyProperties(queueFamilyProperties),
+			surfaceCapabilities(surfaceCapabilities) {}
+
+		EGraphicsDeviceType type;
+		VkPhysicalDevice device;
+		VkPhysicalDeviceProperties properties;
+		VkPhysicalDeviceFeatures features;
+		VkPhysicalDeviceFeatures2 features2;
+		VkPhysicalDeviceVulkan13Features featuresVulkan13;
+		std::vector<VkQueueFamilyProperties> queueFamilyProperties;
+		VkSurfaceCapabilitiesKHR surfaceCapabilities;
 	};
 }

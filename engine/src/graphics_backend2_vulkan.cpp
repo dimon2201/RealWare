@@ -71,17 +71,18 @@ boolean IsZeroTerminated(const char* str, usize maxLength)
 void triton::BGraphicsBackend2Vulkan::Initialize(
 	SWindowBackend& window,
 	boolean bEnableDebugging,
-	const std::vector<const char*> extensions
+	const std::vector<const char*> extensions,
+	EGraphicsDeviceType deviceType
 )
 {
 	CreateInstance(bEnableDebugging, extensions);
 	CreateSurface(window);
-
-	std::cout << "Vulkan initialized\n";
+	PickPhysicalDevice(deviceType);
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
 {
+	DestroySurface();
 	DestroyInstance();
 }
 
@@ -222,4 +223,152 @@ void triton::BGraphicsBackend2Vulkan::DestroySurface()
 		(void*)&_instance.instance,
 		(void*)&_surface.surface
 	);
+}
+
+void triton::BGraphicsBackend2Vulkan::PickPhysicalDevice(EGraphicsDeviceType deviceType)
+{
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+
+	uint32_t deviceCount = 0;
+	VkResult result = vkEnumeratePhysicalDevices(
+		_instance.instance,
+		&deviceCount,
+		nullptr
+	);
+
+	if (result != VK_SUCCESS || deviceCount == 0)
+	{
+		Print("Error: no Vulkan physical devices found");
+		return;
+	}
+
+	std::vector<VkPhysicalDevice> devices(deviceCount);
+	result = vkEnumeratePhysicalDevices(
+		_instance.instance,
+		&deviceCount,
+		devices.data()
+	);
+
+	if (result != VK_SUCCESS)
+	{
+		Print("Error: failed to enumerate Vulkan physical devices");
+		return;
+	}
+
+	for (VkPhysicalDevice device : devices)
+	{
+		VkPhysicalDeviceProperties properties = {};
+		vkGetPhysicalDeviceProperties(
+			device,
+			&properties
+		);
+
+		if (deviceType == EGraphicsDeviceType::Discrete &&
+			properties.deviceType ==
+			VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+		{
+			physicalDevice = device;
+			break;
+		}
+		else if (deviceType == EGraphicsDeviceType::Integrated &&
+			properties.deviceType ==
+			VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+		{
+			physicalDevice = device;
+			break;
+		}
+	}
+
+	if (physicalDevice == VK_NULL_HANDLE)
+		physicalDevice = devices[0];
+
+	VkPhysicalDeviceProperties properties = {};
+	vkGetPhysicalDeviceProperties(
+		physicalDevice,
+		&properties
+	);
+
+	Print("[Vulkan] Picked device: " + std::string(properties.deviceName));
+
+	uint32_t version = properties.apiVersion;
+	uint32_t major = VK_VERSION_MAJOR(version);
+	uint32_t minor = VK_VERSION_MINOR(version);
+	uint32_t patch = VK_VERSION_PATCH(version);
+	Print(
+		"[Vulkan] API version: " +
+		std::to_string(major) + "." +
+		std::to_string(minor) + "." +
+		std::to_string(patch)
+	);
+
+	EGraphicsDeviceType finalDeviceType = EGraphicsDeviceType::Unknown;
+
+	if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+		finalDeviceType = EGraphicsDeviceType::Discrete;
+	else if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+		finalDeviceType = EGraphicsDeviceType::Integrated;
+	
+	VkPhysicalDeviceFeatures features = {};
+	vkGetPhysicalDeviceFeatures(
+		physicalDevice,
+		&features
+	);
+
+	VkPhysicalDeviceFeatures2 features2 = {};
+	features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	VkPhysicalDeviceVulkan13Features featuresVulkan13 = {};
+	featuresVulkan13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+	features2.pNext = &featuresVulkan13;
+	vkGetPhysicalDeviceFeatures2(
+		physicalDevice,
+		&features2
+	);
+
+	uint32_t queueCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(
+		physicalDevice,
+		&queueCount,
+		nullptr
+	);
+	std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(
+		physicalDevice,
+		&queueCount,
+		queueFamilyProperties.data()
+	);
+
+	VkSurfaceCapabilitiesKHR surfaceCapabilities = {};
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+		physicalDevice,
+		_surface.surface,
+		&surfaceCapabilities
+	);
+
+	_physicalDevice = SPhysicalDevice(
+		finalDeviceType,
+		physicalDevice,
+		properties,
+		features,
+		features2,
+		featuresVulkan13,
+		queueFamilyProperties,
+		surfaceCapabilities
+	);
+
+	CheckPhysicalDeviceFeatures();
+	CheckPhysicalDeviceFeaturesVulkan13();
+}
+
+void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceFeatures()
+{
+	if (_physicalDevice.features.multiDrawIndirect == VK_FALSE)
+		Print("Error: Vulkan multi draw indirect is not supported");
+}
+
+void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceFeaturesVulkan13()
+{
+	if (_physicalDevice.featuresVulkan13.synchronization2 == VK_FALSE)
+		Print("Error: Vulkan synchronization2 is not supported");
+	if (_physicalDevice.featuresVulkan13.dynamicRendering == VK_FALSE)
+		Print("Error: Vulkan dynamicRendering is not supported");
 }

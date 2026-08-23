@@ -5,6 +5,7 @@
 #include <string>
 #include "math.hpp"
 #include "graphics_available_backends_enum.hpp"
+#include "graphics_device_type_enum.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -55,5 +56,6 @@ namespace triton
         types::usize maxRenderInstanceCount = 4 * 1024;
         types::usize maxBoneCountPerVertex = 4;
         EAvailableGraphicsBackend graphicsBackend = EAvailableGraphicsBackend::Unknown;
+        EGraphicsDeviceType preferredGraphicsDevice = EGraphicsDeviceType::Unknown;
     };
 }

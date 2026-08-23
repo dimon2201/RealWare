@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <vector>
+#include <vulkan/vulkan.h>
 #include "object.hpp"
 #include "graphics_backend2.hpp"
 #include "graphics_backend2_vulkan_structs.hpp"
@@ -12,8 +14,18 @@ namespace triton
 	{
 		TRITON_CLASS_NAME(BGraphicsBackend2Vulkan)
 
-		SInstance _instance;
-		SSurface _surface;
+		SInstance			_instance;
+		SSurface			_surface;
+		SPhysicalDevice		_physicalDevice = SPhysicalDevice(
+			EGraphicsDeviceType::Unknown,
+			VK_NULL_HANDLE,
+			{},
+			{},
+			{},
+			{},
+			std::vector<VkQueueFamilyProperties>(),
+			{}
+		);
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -23,7 +35,8 @@ namespace triton
 		void Initialize(
 			SWindowBackend& window,
 			types::boolean bEnableDebugging,
-			const std::vector<const char*> extensions
+			const std::vector<const char*> extensions,
+			EGraphicsDeviceType deviceType
 		) override final;
 
 		void Shutdown() override final;
@@ -35,5 +48,8 @@ namespace triton
 		void DestroyDebugMessenger();
 		void CreateSurface(SWindowBackend& window);
 		void DestroySurface();
+		void PickPhysicalDevice(EGraphicsDeviceType deviceType);
+		void CheckPhysicalDeviceFeatures();
+		void CheckPhysicalDeviceFeaturesVulkan13();
 	};
 }
