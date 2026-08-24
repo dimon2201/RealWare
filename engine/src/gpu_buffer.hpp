@@ -14,7 +14,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XGPUBuffer)
 
-		CGPUBufferResource _gpuBuffer;
+		CGPUBufferResource _gpuBuffer = CGPUBufferResource(0, 0, EGPUBufferType::Unknown, 0, 0);
 
 	public:
 		explicit XGPUBuffer(

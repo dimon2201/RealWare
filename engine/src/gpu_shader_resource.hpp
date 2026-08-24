@@ -7,14 +7,20 @@
 
 namespace triton
 {
-    class CGPUShaderResource : public cGPUResource
+    class CGPUShaderResource : public CGPUResource
     {
     public:
-        explicit CGPUShaderResource() = default;
         explicit CGPUShaderResource(
             types::qword instance,
             types::qword viewInstance
-        ) : cGPUResource(instance, viewInstance) {}
+        ) : CGPUResource(instance, viewInstance) {}
         ~CGPUShaderResource() override = default;
+
+        static CGPUShaderResource Invalid()
+        {
+            return CGPUShaderResource(
+                0, 0
+            );
+        }
     };
 }

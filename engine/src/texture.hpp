@@ -20,7 +20,7 @@ namespace triton
 	{
 		TRITON_CLASS_NAME(XTexture)
 
-		CGPUTextureResource _gpuTexture;
+		CGPUTextureResource _gpuTexture = CGPUTextureResource::Invalid();
 
 	public:
 		explicit XTexture(

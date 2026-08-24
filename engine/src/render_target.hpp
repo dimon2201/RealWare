@@ -15,7 +15,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XRenderTarget)
 
-		CGPURenderTargetResource _gpuRenderTarget;
+		CGPURenderTargetResource _gpuRenderTarget = CGPURenderTargetResource::Invalid();
 
 	public:
 		explicit XRenderTarget(

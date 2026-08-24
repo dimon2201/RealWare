@@ -7,6 +7,9 @@
 #include "math.hpp"
 #include "input_window_backend.hpp"
 #include "graphics_device_type_enum.hpp"
+#include "gpu_texture_resource.hpp"
+#include "gpu_render_target_resource.hpp"
+#include "gpu_render_pass_resource.hpp"
 
 namespace triton
 {
@@ -30,5 +33,22 @@ namespace triton
 		) = 0;
 
 		virtual void Shutdown() = 0;
+
+		virtual CGPUTextureResource CreateTexture() = 0;
+
+		virtual void DestroyTexture(CGPUTextureResource& renderTarget) = 0;
+
+		virtual CGPURenderTargetResource CreateRenderTarget(
+			const std::vector<CGPUTextureResource>& colorAttachments,
+			const CGPUTextureResource& depthAttachment
+		) = 0;
+
+		virtual void DestroyRenderTarget(CGPURenderTargetResource& renderTarget) = 0;
+
+		virtual CGPURenderPassResource CreateRenderPass(
+			const CGPURenderTargetResource& renderTarget
+		) = 0;
+
+		virtual void DestroyRenderPass(CGPURenderPassResource& renderPass) = 0;
 	};
 }

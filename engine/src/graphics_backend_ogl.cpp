@@ -387,7 +387,7 @@ void triton::XGraphicsBackendOGL::DestroyInputLayout(const CGPUInputLayoutResour
 
 triton::CGPURenderPassResource triton::XGraphicsBackendOGL::CreateRenderPass()
 {
-    return CGPURenderPassResource(0, 0);
+    return CGPURenderPassResource(0, 0, 0);
 }
 
 void triton::XGraphicsBackendOGL::BindRenderPass(const CGPURenderPassResource& renderPass)
@@ -480,7 +480,7 @@ triton::CGPURenderTargetResource triton::XGraphicsBackendOGL::CreateRenderTarget
     if (status != GL_FRAMEBUFFER_COMPLETE)
         Print("Error: incomplete framebuffer!");
 
-    return CGPURenderTargetResource(instance, 0, colorAttachments.size(), colorAttachments.data(), depthAttachment);
+    return CGPURenderTargetResource(instance, 0, colorAttachments, depthAttachment);
 }
 
 void triton::XGraphicsBackendOGL::ResizeRenderTargetColors(
@@ -503,7 +503,7 @@ void triton::XGraphicsBackendOGL::ResizeRenderTargetColors(
         );
         DestroyTexture(attachment);
     }
-    renderTarget.SetColorAttachments(newColorAttachments.size(), newColorAttachments.data());
+    renderTarget.SetColorAttachments(newColorAttachments);
 
     GLenum buffs[16] = {};
     glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)renderTarget.GetInstance());

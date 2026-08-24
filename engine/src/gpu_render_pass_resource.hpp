@@ -7,14 +7,16 @@
 
 namespace triton
 {
-    class CGPURenderPassResource : public cGPUResource
+    class CGPURenderPassResource : public CGPUResource
     {
+        types::qword _framebuffer = 0;
+
     public:
-        explicit CGPURenderPassResource() = default;
         explicit CGPURenderPassResource(
             types::qword instance,
-            types::qword viewInstance
-        ) : cGPUResource(instance, viewInstance) {}
+            types::qword viewInstance,
+            types::qword framebuffer
+        ) : CGPUResource(instance, viewInstance), _framebuffer(framebuffer) {}
         ~CGPURenderPassResource() override = default;
     };
 }

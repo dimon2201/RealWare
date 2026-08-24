@@ -19,18 +19,24 @@ using namespace types;
 
 triton::CGraphics::CGraphics(cContext* context) : CSubsystem(context)
 {
-    CreateInputLayouts();
-    CreateShaders();
-    CreateRenderTargets();
-    CreateRenderPasses();
+    // TODO Vulkan backend: uncomment and rewrite when Vulkan backend will be ready
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    //CreateInputLayouts();
+    //CreateShaders();
+    //CreateRenderTargets();
+    //CreateRenderPasses();
 }
 
 triton::CGraphics::~CGraphics()
 {
-    DestroyRenderPasses();
-    DestroyRenderTargets();
-    DestroyShaders();
-    DestroyInputLayouts();
+    // TODO Vulkan backend: uncomment and rewrite when Vulkan backend will be ready
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    //DestroyRenderPasses();
+    //DestroyRenderTargets();
+    //DestroyShaders();
+    //DestroyInputLayouts();
 }
 
 void triton::CGraphics::ExecutePasses()
@@ -108,7 +114,10 @@ void triton::CGraphics::LoadShaderFiles(
 
 void triton::CGraphics::SetShadingModel(EShadingModel shadingModel)
 {
-    XRenderPassGeometry& rpStatic = *_context->GetPool<CRenderPassGeometryPool>()->Get(_opaqueStatic);
+    // TODO: [Vulkan backend] rewrite when Vulkan backend will be ready
+    // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+    /*XRenderPassGeometry& rpStatic = *_context->GetPool<CRenderPassGeometryPool>()->Get(_opaqueStatic);
     XRenderPassGeometry& rpSkinned = *_context->GetPool<CRenderPassGeometryPool>()->Get(_opaqueSkinned);
     if (shadingModel == EShadingModel::BlinnPhong)
     {
@@ -119,7 +128,7 @@ void triton::CGraphics::SetShadingModel(EShadingModel shadingModel)
     {
         rpStatic.SetShader(_opaqueRigidPBRShader);
         rpSkinned.SetShader(_opaqueSkinnedPBRShader);
-    }
+    }*/
 }
 
 void triton::CGraphics::CreateInputLayouts()

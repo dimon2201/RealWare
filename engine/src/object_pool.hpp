@@ -45,7 +45,7 @@ namespace triton
         types::usize				    _lastObjectCursor = 0;
         std::queue<types::usize>	    _freeSlots = {};
         types::boolean				    _bDirtyBit = types::K_FALSE;
-        CGPUBufferResource              _gpuBuffer;
+        CGPUBufferResource              _gpuBuffer = CGPUBufferResource::Invalid();
         types::s32                      _gpuBufferSlot = -1;
         EGPUBufferType                  _gpuBufferType = EGPUBufferType::Unknown;
 

@@ -10,6 +10,16 @@ namespace triton
 {
 	struct SImageWithView
 	{
+		SImageWithView(
+			VkFormat format,
+			VkImage image,
+			VkImageView view
+		) :
+			format(format),
+			image(image),
+			view(view) {}
+
+		VkFormat format = VK_FORMAT_UNDEFINED;
 		VkImage image = VK_NULL_HANDLE;
 		VkImageView view = VK_NULL_HANDLE;
 	};
@@ -84,6 +94,6 @@ namespace triton
 		cVector2 size = cVector2(0.0f);
 		VkFormat format = VK_FORMAT_UNDEFINED;
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
-		std::vector<SImageWithView> images = {};
+		std::vector<SImageWithView> images;
 	};
 }

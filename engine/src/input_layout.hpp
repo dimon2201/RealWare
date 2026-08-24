@@ -16,7 +16,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XInputLayout)
 
-		CGPUInputLayoutResource _gpuInputLayout;
+		CGPUInputLayoutResource _gpuInputLayout = CGPUInputLayoutResource::Invalid();
 
 	public:
 		explicit XInputLayout(

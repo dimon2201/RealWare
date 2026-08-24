@@ -9,7 +9,7 @@
 
 namespace triton
 {
-    class CGPUTextureResource : public cGPUResource
+    class CGPUTextureResource : public CGPUResource
     {
         cVector3 _size = cVector3(0.0f);
         ETextureDimension _dimension = ETextureDimension::Unknown;
@@ -17,7 +17,6 @@ namespace triton
         types::s32 _slot = -1;
 
     public:
-        explicit CGPUTextureResource() = default;
         explicit CGPUTextureResource(
             types::qword instance,
             types::qword viewInstance,
@@ -25,13 +24,24 @@ namespace triton
             ETextureDimension dimension,
             ETextureFormat format,
             types::s32 slot
-        ) : cGPUResource(instance, viewInstance),
+        ) : CGPUResource(instance, viewInstance),
             _size(size),
             _dimension(dimension),
             _format(format),
-            _slot(slot) {
-        }
+            _slot(slot) {}
         ~CGPUTextureResource() override = default;
+
+        static CGPUTextureResource Invalid()
+        {
+            return CGPUTextureResource(
+                0,
+                0,
+                cVector3(0.0f),
+                ETextureDimension::Unknown,
+                ETextureFormat::Unknown,
+                0
+            );
+        }
 
         inline types::usize GetWidth() const { return _size.GetX(); }
 

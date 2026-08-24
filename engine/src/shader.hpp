@@ -16,7 +16,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XShader)
 
-		CGPUShaderResource _gpuShader;
+		CGPUShaderResource _gpuShader = CGPUShaderResource::Invalid();
 
 	public:
 		explicit XShader(
