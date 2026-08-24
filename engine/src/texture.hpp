@@ -27,6 +27,7 @@ namespace triton
 			cContext* context,
 			types::s32 poolIndex,
 			ETextureFormat textureFormat,
+			types::dword usageMask,
 			ETextureDimension textureDimension,
 			types::s32 textureSlot,
 			EImageFormat expectedDataFormat,
@@ -37,6 +38,7 @@ namespace triton
 			cContext* context,
 			types::s32 poolIndex,
 			ETextureFormat textureFormat,
+			types::dword usageMask,
 			ETextureDimension textureDimension,
 			types::s32 textureSlot,
 			EImageFileFormat containerFormat,
@@ -49,11 +51,11 @@ namespace triton
 			cContext* context,
 			types::s32 poolIndex,
 			ETextureFormat textureFormat,
+			types::dword usageMask,
 			ETextureDimension textureDimension,
-			types::s32 textureSlot,
-			EImageFormat expectedDataFormat,
+			const cVector3& size,
 			const types::u8* data,
-			const cVector3& size
+			types::s32 textureSlot
 		);
 
 		~XTexture() override;
@@ -71,6 +73,15 @@ namespace triton
 		struct TGPULayout {};
 		
 	private:
+		void CreateOnGpu(
+			ETextureFormat format,
+			types::dword usageMask,
+			ETextureDimension dimension,
+			const cVector3& size,
+			const types::u8* data,
+			types::s32 slot
+		);
+
 		void GenerateMips();
 	};
 }

@@ -97,13 +97,103 @@ void triton::BGraphicsBackend2Vulkan::Shutdown()
 	DestroyInstance();
 }
 
-triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture()
+triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
+	ETextureFormat format,
+	dword usageMask,
+	ETextureDimension dimension,
+	const cVector3& size
+)
 {
-	return CGPUTextureResource(0, 0, cVector3(0.0f), ETextureDimension::Unknown, ETextureFormat::Unknown, 0);
+	const VkFormat nativeFormat = TextureFormatToNative(format);
+
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.imageType = TextureDimensionToNative(dimension);
+	imageCreateInfo.format = nativeFormat;
+	imageCreateInfo.extent = {
+		(uint32_t)size.GetX(),
+		(uint32_t)size.GetY(),
+		1
+	};
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageCreateInfo.usage = TextureUsageToNative(usageMask);
+	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+	VkImage image = VK_NULL_HANDLE;
+	
+	VkResult result = vkCreateImage(
+		_logicalDevice.device,
+		&imageCreateInfo,
+		nullptr,
+		&image
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create image");
+
+	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_NONE;
+
+	if (usageMask & (dword)ETextureUsageBit::Sampled ||
+		usageMask & (dword)ETextureUsageBit::ColorAttachment)
+		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	if (usageMask & (dword)ETextureUsageBit::DepthStencilAttachment)
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+
+	VkImageViewCreateInfo imageViewCreateInfo = {};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.image = image;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = nativeFormat;
+	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+	VkImageView imageView = VK_NULL_HANDLE;
+
+	vkCreateImageView(
+		_logicalDevice.device,
+		&imageViewCreateInfo,
+		nullptr,
+		&imageView
+	);
+
+	return CGPUTextureResource(
+		(qword)image,
+		(qword)imageView,
+		format,
+		usageMask,
+		dimension,
+		size,
+		0
+	);
 }
 
-void triton::BGraphicsBackend2Vulkan::DestroyTexture(CGPUTextureResource& renderTarget)
+void triton::BGraphicsBackend2Vulkan::DestroyTexture(CGPUTextureResource& texture)
 {
+	if (texture.IsValid())
+	{
+		vkDestroyImageView(
+			_logicalDevice.device,
+			(VkImageView)texture.GetView(),
+			nullptr
+		);
+
+		vkDestroyImage(
+			_logicalDevice.device,
+			(VkImage)texture.GetInstance(),
+			nullptr
+		);
+	}
 }
 
 triton::CGPURenderTargetResource triton::BGraphicsBackend2Vulkan::CreateRenderTarget(
@@ -1232,11 +1322,12 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderTargets()
 	for (usize i = 0; i < renderTargetCount; i++)
 	{
 		CGPUTextureResource colorAttachment = CGPUTextureResource(
-			(cpuword)_swapchain.images[i].image,
-			(cpuword)_swapchain.images[i].view,
-			cVector3(_swapchain.size.GetX(), _swapchain.size.GetY(), 0.0f),
-			ETextureDimension::Texture2D,
+			(qword)_swapchain.images[i].image,
+			(qword)_swapchain.images[i].view,
 			ETextureFormat::BGRA8_SRGB,
+			(dword)ETextureUsageBit::ColorAttachment,
+			ETextureDimension::Texture2D,
+			cVector3(_swapchain.size.GetX(), _swapchain.size.GetY(), 0.0f),
 			0
 		);
 
@@ -1352,12 +1443,36 @@ VkFormat triton::BGraphicsBackend2Vulkan::TextureFormatToNative(ETextureFormat t
 		return VK_FORMAT_R8_UNORM;
 	else if (textureFormat == ETextureFormat::RGBA8)
 		return VK_FORMAT_R8G8B8A8_UNORM;
-	else if (textureFormat == ETextureFormat::RGBA8_SRGB)
+	else if (textureFormat == ETextureFormat::RGBA8_SRGB ||
+		textureFormat == ETextureFormat::RGBA8_SRGB_Mips)
 		return VK_FORMAT_R8G8B8A8_SRGB;
 	else if (textureFormat == ETextureFormat::BGRA8_SRGB)
 		return VK_FORMAT_B8G8R8A8_SRGB;
+	else if (textureFormat == ETextureFormat::DepthStencil)
+		return VK_FORMAT_D24_UNORM_S8_UINT;
 
 	return VK_FORMAT_UNDEFINED;
+}
+
+VkImageUsageFlags triton::BGraphicsBackend2Vulkan::TextureUsageToNative(dword textureUsageMask)
+{
+	VkImageUsageFlags flags = 0;
+
+	if (textureUsageMask & (dword)ETextureUsageBit::Sampled)
+		flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+	if (textureUsageMask & (dword)ETextureUsageBit::ColorAttachment)
+		flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	if (textureUsageMask & (dword)ETextureUsageBit::DepthStencilAttachment)
+		flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+	return flags;
+}
+
+VkImageType triton::BGraphicsBackend2Vulkan::TextureDimensionToNative(ETextureDimension textureDimension)
+{
+	VkImageType type = VK_IMAGE_TYPE_2D;
+
+	return type;
 }
 
 VkImageLayout triton::BGraphicsBackend2Vulkan::AttachmentLayoutToNative(EGraphicsImageLayout attachmentLayout)

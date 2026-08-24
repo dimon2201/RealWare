@@ -11,6 +11,7 @@ triton::XTexture::XTexture(
 	cContext* context,
 	s32 poolIndex,
 	ETextureFormat textureFormat,
+	dword usageMask,
 	ETextureDimension textureDimension,
 	s32 textureSlot,
 	EImageFormat expectedDataFormat,
@@ -22,21 +23,14 @@ triton::XTexture::XTexture(
 		filePath
 	);
 
-	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-		ERenderCommand::CREATE_TEXTURE,
-		(cpuword)tex.size.GetX(),
-		(cpuword)tex.size.GetY(),
-		(cpuword)tex.size.GetZ(),
-		(cpuword)textureDimension,
-		(cpuword)textureFormat,
-		(cpuword)tex.data,
-		(cpuword)textureSlot
-	));
-
-	_gpuTexture =
-		_context->GetSubsystem<CEngine>()->
-		GetSynchronization()->
-		WaitForRenderCommandResult<CGPUTextureResource>();
+	CreateOnGpu(
+		textureFormat,
+		usageMask,
+		textureDimension,
+		tex.size,
+		tex.data,
+		textureSlot
+	);
 
 	GenerateMips();
 }
@@ -45,6 +39,7 @@ triton::XTexture::XTexture(
 	cContext* context,
 	s32 poolIndex,
 	ETextureFormat textureFormat,
+	dword usageMask,
 	ETextureDimension textureDimension,
 	s32 textureSlot,
 	EImageFileFormat containerFormat,
@@ -60,21 +55,14 @@ triton::XTexture::XTexture(
 		dataByteSize
 	);
 
-	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-		ERenderCommand::CREATE_TEXTURE,
-		(cpuword)tex.size.GetX(),
-		(cpuword)tex.size.GetY(),
-		(cpuword)tex.size.GetZ(),
-		(cpuword)textureDimension,
-		(cpuword)textureFormat,
-		(cpuword)tex.data,
-		(cpuword)textureSlot
-	));
-
-	_gpuTexture =
-		_context->GetSubsystem<CEngine>()->
-		GetSynchronization()->
-		WaitForRenderCommandResult<CGPUTextureResource>();
+	CreateOnGpu(
+		textureFormat,
+		usageMask,
+		textureDimension,
+		tex.size,
+		tex.data,
+		textureSlot
+	);
 
 	GenerateMips();
 }
@@ -83,28 +71,21 @@ triton::XTexture::XTexture(
 	cContext* context,
 	s32 poolIndex,
 	ETextureFormat textureFormat,
+	dword usageMask,
 	ETextureDimension textureDimension,
-	s32 textureSlot,
-	EImageFormat expectedDataFormat,
-	const u8* data,
-	const cVector3& size
-)
+	const cVector3& size,
+	const types::u8* data,
+	s32 textureSlot
+) : iObject(context, poolIndex)
 {
-	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-		ERenderCommand::CREATE_TEXTURE,
-		(cpuword)size.GetX(),
-		(cpuword)size.GetY(),
-		(cpuword)size.GetZ(),
-		(cpuword)textureDimension,
-		(cpuword)textureFormat,
-		(cpuword)data,
-		(cpuword)textureSlot
-	));
-
-	_gpuTexture =
-		_context->GetSubsystem<CEngine>()->
-		GetSynchronization()->
-		WaitForRenderCommandResult<CGPUTextureResource>();
+	CreateOnGpu(
+		textureFormat,
+		usageMask,
+		textureDimension,
+		size,
+		data,
+		textureSlot
+	);
 
 	GenerateMips();
 }
@@ -122,6 +103,33 @@ triton::XTexture::~XTexture()
 	_context->GetSubsystem<CEngine>()->
 		GetSynchronization()->
 		WaitForRenderCommandResult<void*>();
+}
+
+void triton::XTexture::CreateOnGpu(
+	ETextureFormat format,
+	dword usageMask,
+	ETextureDimension dimension,
+	const cVector3& size,
+	const u8* data,
+	s32 slot
+)
+{
+	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+		ERenderCommand::CREATE_TEXTURE,
+		(cpuword)format,
+		(cpuword)usageMask,
+		(cpuword)dimension,
+		(cpuword)size.GetX(),
+		(cpuword)size.GetY(),
+		(cpuword)size.GetZ(),
+		(cpuword)data,
+		(cpuword)slot
+	));
+
+	_gpuTexture =
+		_context->GetSubsystem<CEngine>()->
+		GetSynchronization()->
+		WaitForRenderCommandResult<CGPUTextureResource>();
 }
 
 void triton::XTexture::GenerateMips()

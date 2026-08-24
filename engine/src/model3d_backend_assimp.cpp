@@ -12,6 +12,7 @@
 #include "object_allocator.hpp"
 #include "skeleton_pool.hpp"
 #include "animation_pool.hpp"
+#include "graphics_texture_usage_enum.hpp"
 
 using namespace types;
 
@@ -793,6 +794,7 @@ std::optional<triton::XTexture::THandle> triton::XModel3DBackendAssimp::CreateTe
         {
             return context->GetPool<PTexturePool>()->Create(
                 dataFormat,
+                (dword)ETextureUsageBit::Sampled,
                 ETextureDimension::Texture2D,
                 0,
                 EImageFileFormat::PNG,
@@ -805,6 +807,7 @@ std::optional<triton::XTexture::THandle> triton::XModel3DBackendAssimp::CreateTe
         {
             return context->GetPool<PTexturePool>()->Create(
                 dataFormat,
+                (dword)ETextureUsageBit::Sampled,
                 ETextureDimension::Texture2D,
                 0,
                 EImageFileFormat::DDS,
@@ -861,6 +864,7 @@ std::optional<triton::XTexture::THandle> triton::XModel3DBackendAssimp::CreateTe
     
     return context->GetPool<PTexturePool>()->Create(
         dataFormat,
+        (dword)ETextureUsageBit::Sampled,
         ETextureDimension::Texture2D,
         0,
         _context->GetBackend<IImageDecoder>()->TextureFormatToImageFormat(dataFormat),

@@ -198,14 +198,13 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::CREATE_TEXTURE:
 			{
-				/*CGPUTextureResource resultTexture = gfxBackend->CreateTexture(
-					cVector3(cmd._args._argA, cmd._args._argB, cmd._args._argC),
-					(ETextureDimension)cmd._args._argD,
-					(ETextureFormat)cmd._args._argE,
-					(u8*)cmd._args._argF,
-					cmd._args._argG
+				CGPUTextureResource resultTexture = gfxBackend->CreateTexture(
+					(ETextureFormat)cmd._args._argA,
+					(dword)cmd._args._argB,
+					(ETextureDimension)cmd._args._argC,
+					cVector3(cmd._args._argD, cmd._args._argE, cmd._args._argF)
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultTexture, sizeof(CGPUTextureResource));*/
+				memcpy(&_sync->GetResultBuffer().data[0], &resultTexture, sizeof(CGPUTextureResource));
 				break;
 			}
 			case ERenderCommand::WRITE_TEXTURE:
@@ -225,9 +224,16 @@ void triton::cRenderThread::ExecuteCommands(
 				);*/
 				break;
 			}
+			case ERenderCommand::DESTROY_TEXTURE:
+			{
+				gfxBackend->DestroyTexture(
+					*((CGPUTextureResource*)cmd._args._argA)
+				);
+				break;
+			}
 			case ERenderCommand::CREATE_RENDER_TARGET:
 			{
-				/*usize attachmentCount = cmd._args._argA;
+				usize attachmentCount = cmd._args._argA;
 				CGPUTextureResource* attachments = (CGPUTextureResource*)cmd._args._argB;
 				std::vector<CGPUTextureResource> attachmentsVec;
 				for (usize i = 0; i < attachmentCount; i++)
@@ -236,7 +242,7 @@ void triton::cRenderThread::ExecuteCommands(
 					attachmentsVec,
 					*((CGPUTextureResource*)cmd._args._argC)
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultRT, sizeof(CGPURenderTargetResource));*/
+				memcpy(&_sync->GetResultBuffer().data[0], &resultRT, sizeof(CGPURenderTargetResource));
 				break;
 			}
 			case ERenderCommand::CREATE_SHADER:

@@ -9,6 +9,7 @@
 #include "object_allocator.hpp"
 #include "texture.hpp"
 #include "image_decoder.hpp"
+#include "graphics_texture_usage_enum.hpp"
 
 using namespace types;
 
@@ -66,6 +67,7 @@ triton::XModel3D::XModel3D(
 					if (std::filesystem::exists(texturePath))
 						outHandle = *_context->GetPool<PTexturePool>()->Create(
 							textureFormat,
+							(dword)ETextureUsageBit::Sampled,
 							ETextureDimension::Texture2D,
 							0,
 							_context->GetBackend<IImageDecoder>()->TextureFormatToImageFormat(textureFormat),
@@ -74,11 +76,11 @@ triton::XModel3D::XModel3D(
 					else
 						outHandle = *_context->GetPool<PTexturePool>()->Create(
 							textureFormat,
+							(dword)ETextureUsageBit::Sampled,
 							ETextureDimension::Texture2D,
-							0,
-							_context->GetBackend<IImageDecoder>()->TextureFormatToImageFormat(textureFormat),
+							cVector3(assetTextureData.width, assetTextureData.height, 0),
 							assetTextureData.pixelByteData,
-							cVector3(assetTextureData.width, assetTextureData.height, 0)
+							0
 						);
 				};
 

@@ -39,9 +39,7 @@ namespace triton
         types::usize _offsetSpace = 0;
         types::usize _offsetTab = 0;
         mutable std::unordered_map<types::u8, sGlyph> _alphabet = {};
-        CGPUTextureResource _atlas = CGPUTextureResource(
-            0, 0, cVector3(0.0f), ETextureDimension::Unknown, ETextureFormat::Unknown, 0
-        );
+        CGPUTextureResource _atlas = CGPUTextureResource::Invalid();
 
     public:
         explicit cFontFace(cContext* context);

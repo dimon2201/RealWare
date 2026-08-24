@@ -818,7 +818,7 @@ triton::CGPUTextureResource triton::XGraphicsBackendOGL::CreateTexture(
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
-    return CGPUTextureResource(instance, 0, size, dimension, format, slot);
+    return CGPUTextureResource::Invalid();
 }
 
 triton::CGPUTextureResource triton::XGraphicsBackendOGL::ResizeTexture(const CGPUTextureResource& texture, const cVector2& size)

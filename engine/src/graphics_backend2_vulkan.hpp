@@ -47,9 +47,14 @@ namespace triton
 
 		void Shutdown() override final;
 
-		CGPUTextureResource CreateTexture() override final;
+		CGPUTextureResource CreateTexture(
+			ETextureFormat format,
+			types::dword usageMask,
+			ETextureDimension dimension,
+			const cVector3& size
+		) override final;
 
-		void DestroyTexture(CGPUTextureResource& renderTarget) override final;
+		void DestroyTexture(CGPUTextureResource& texture) override final;
 
 		CGPURenderTargetResource CreateRenderTarget(
 			const std::vector<CGPUTextureResource>& colorAttachments,
@@ -125,6 +130,10 @@ namespace triton
 		void DestroySwapchainSemaphoresAndFence();
 
 		VkFormat TextureFormatToNative(ETextureFormat textureFormat);
+
+		VkImageUsageFlags TextureUsageToNative(types::dword textureUsageMask);
+
+		VkImageType TextureDimensionToNative(ETextureDimension textureDimension);
 
 		VkImageLayout AttachmentLayoutToNative(EGraphicsImageLayout attachmentLayout);
 	};

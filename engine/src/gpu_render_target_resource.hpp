@@ -13,9 +13,7 @@ namespace triton
     class CGPURenderTargetResource : public CGPUResource
     {
         std::vector<CGPUTextureResource> _colorAttachments;
-        CGPUTextureResource _depthAttachment = CGPUTextureResource(
-            0, 0,cVector3(0.0f), ETextureDimension::Unknown, ETextureFormat::Unknown, 0
-        );
+        CGPUTextureResource _depthAttachment = CGPUTextureResource::Invalid();
         EGraphicsImageLayout _colorAttachmentSrcLayouts[8];
         EGraphicsImageLayout _colorAttachmentDstLayouts[8];
         EGraphicsImageLayout _depthAttachmentSrcLayout;

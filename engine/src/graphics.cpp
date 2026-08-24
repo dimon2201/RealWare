@@ -12,7 +12,9 @@
 #include "shader_pool.hpp"
 #include "render_instance_static_pool.hpp"
 #include "render_instance_dynamic_pool.hpp"
+#include "graphics_texture_usage_enum.hpp"
 #include "material_pool.hpp"
+#include "texture.hpp"
 #include "window.hpp"
 
 using namespace types;
@@ -282,7 +284,7 @@ void triton::CGraphics::CreateShaders()
 
 void triton::CGraphics::CreateRenderTargets()
 {
-    cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
+    /*cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
         windowSize.GetX(),
@@ -334,7 +336,38 @@ void triton::CGraphics::CreateRenderTargets()
     _opaqueRenderTarget = *rtPool->Create(opaqueColorAttachments, depth);
 
     std::vector<CGPUTextureResource> transparentColorAttachments = { accumulation, revealage };
-    _transparentRenderTarget = *rtPool->Create(transparentColorAttachments, depth);
+    _transparentRenderTarget = *rtPool->Create(transparentColorAttachments, depth);*/
+
+    cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
+
+    PTexturePool* texturePool = _context->GetPool<PTexturePool>();
+    CRenderTargetPool* renderTargetPool = _context->GetPool<CRenderTargetPool>();
+
+    XTexture::THandle colorHandle = *texturePool->Create(
+        ETextureFormat::RGBA8,
+        (dword)ETextureUsageBit::Sampled | (dword)ETextureUsageBit::ColorAttachment,
+        ETextureDimension::Texture2D,
+        cVector3(windowSize.GetX(), windowSize.GetY(), 1.0f),
+        nullptr,
+        0
+    );
+
+    XTexture::THandle depthHandle = *texturePool->Create(
+        ETextureFormat::DepthStencil,
+        (dword)(dword)ETextureUsageBit::DepthStencilAttachment,
+        ETextureDimension::Texture2D,
+        cVector3(windowSize.GetX(), windowSize.GetY(), 1.0f),
+        nullptr,
+        0
+    );
+
+    const std::vector<XTexture::THandle> colorAttachments = { colorHandle };
+    XTexture::THandle depthAttachment = depthHandle;
+
+    _opaqueRenderTarget = *renderTargetPool->Create(
+        colorAttachments,
+        depthAttachment
+    );
 }
 
 void triton::CGraphics::CreateRenderPasses()
@@ -485,30 +518,19 @@ void triton::CGraphics::DestroyShaders()
 
 void triton::CGraphics::DestroyRenderTargets()
 {
-    CRenderTargetPool* rtPool = _context->GetPool<CRenderTargetPool>();
+    PTexturePool* texturePool = _context->GetPool<PTexturePool>();
+    CRenderTargetPool* renderTargetPool = _context->GetPool<CRenderTargetPool>();
 
-    XRenderTarget& opaqueRT = *rtPool->Get(_opaqueRenderTarget);
-    XRenderTarget& transparentRT = *rtPool->Get(_transparentRenderTarget);
+    XRenderTarget& opaqueRT = *renderTargetPool->Get(_opaqueRenderTarget);
+    //XRenderTarget& transparentRT = *renderTargetPool->Get(_transparentRenderTarget);
 
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)&opaqueRT.GetGPUResource().GetColorAttachments()[0]
-    ));
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)&transparentRT.GetGPUResource().GetColorAttachments()[0]
-    ));
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)&transparentRT.GetGPUResource().GetColorAttachments()[1]
-    ));
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_TEXTURE,
-        (cpuword)&opaqueRT.GetGPUResource().GetDepthAttachment()
-    ));
+    for (auto& attachment : opaqueRT.GetColorAttachments())
+        texturePool->Destroy(attachment);
 
-    rtPool->Destroy(_transparentRenderTarget);
-    rtPool->Destroy(_opaqueRenderTarget);
+    texturePool->Destroy(opaqueRT.GetDepthAttachment());
+
+    //renderTargetPool->Destroy(_transparentRenderTarget);
+    renderTargetPool->Destroy(_opaqueRenderTarget);
 };
 
 void triton::CGraphics::DestroyRenderPasses()
