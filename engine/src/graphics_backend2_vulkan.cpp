@@ -282,10 +282,8 @@ void triton::BGraphicsBackend2Vulkan::DestroyRenderPass(CGPURenderPassResource& 
 	}
 }
 
-void triton::BGraphicsBackend2Vulkan::Present()
+void triton::BGraphicsBackend2Vulkan::BeginFrame()
 {
-	VkResult result;
-
 	vkWaitForFences(
 		_logicalDevice.device,
 		1,
@@ -304,6 +302,11 @@ void triton::BGraphicsBackend2Vulkan::Present()
 		_graphicsQueue.commandBuffer,
 		0
 	);
+}
+
+void triton::BGraphicsBackend2Vulkan::EndFrame()
+{
+	VkResult result;
 
 	uint32_t imageIndex = 0;
 

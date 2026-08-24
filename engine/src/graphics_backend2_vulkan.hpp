@@ -64,7 +64,9 @@ namespace triton
 
 		void DestroyRenderPass(CGPURenderPassResource& renderPass) override final;
 
-		void Present() override final;
+		void BeginFrame() override final;
+
+		void EndFrame() override final;
 		
 	private:
 		void CreateInstance(types::boolean bEnableDebugging, const std::vector<const char*> extensions);

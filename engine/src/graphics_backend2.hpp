@@ -51,6 +51,8 @@ namespace triton
 
 		virtual void DestroyRenderPass(CGPURenderPassResource& renderPass) = 0;
 
-		virtual void Present() = 0;
+		virtual void BeginFrame() = 0;
+
+		virtual void EndFrame() = 0;
 	};
 }

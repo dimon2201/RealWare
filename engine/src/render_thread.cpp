@@ -273,5 +273,6 @@ void triton::cRenderThread::ExecuteCommands(
 void triton::cRenderThread::Present(IGraphicsBackend2* gfxBackend)
 {
 	//gfxBackend->SwapWindowBuffers(_window->GetBackendWindow());
-	gfxBackend->Present();
+	gfxBackend->BeginFrame();
+	gfxBackend->EndFrame();
 }
