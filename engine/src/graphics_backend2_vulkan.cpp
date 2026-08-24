@@ -945,12 +945,16 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size)
 
 	GetSwapchainImages();
 
-	CreateSwapchainRenderTarget();
+	CreateSwapchainRenderTargets();
+
+	CreateSwapchainRenderPasses();
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroySwapchain()
 {
-	DestroySwapchainRenderTarget();
+	DestroySwapchainRenderTargets();
+
+	DestroySwapchainRenderPasses();
 
 	for (auto& image : _swapchain.images)
 		if (image.view != VK_NULL_HANDLE)
@@ -1093,7 +1097,7 @@ void triton::BGraphicsBackend2Vulkan::GetSwapchainImages()
 	}
 }
 
-void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderTarget()
+void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderTargets()
 {
 	const usize renderTargetCount = _swapchain.images.size();
 
@@ -1121,9 +1125,16 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderTarget()
 			CGPUTextureResource::Invalid()
 		));
 	}
+
+	for (usize i = 0; i < renderTargetCount; i++)
+		_swapchainRenderTargets[i].SetColorAttachmentLayout(
+			0,
+			EGraphicsImageLayout::Undefined,
+			EGraphicsImageLayout::Present
+		);
 }
 
-void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderTarget()
+void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderTargets()
 {
 	for (auto& renderTarget : _swapchainRenderTargets)
 	{
@@ -1133,12 +1144,17 @@ void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderTarget()
 	}
 }
 
-void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderPass()
+void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderPasses()
 {
+	_swapchainRenderPasses.reserve(_swapchainRenderTargets.size());
+	for (auto& renderTarget : _swapchainRenderTargets)
+		_swapchainRenderPasses.push_back(CreateRenderPass(renderTarget));
 }
 
-void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderPass()
+void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderPasses()
 {
+	for (auto& renderPass : _swapchainRenderPasses)
+		DestroyRenderPass(renderPass);
 }
 
 VkFormat triton::BGraphicsBackend2Vulkan::TextureFormatToNative(ETextureFormat textureFormat)

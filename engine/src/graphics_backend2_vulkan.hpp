@@ -27,9 +27,7 @@ namespace triton
 		SLogicalDevice							_logicalDevice;
 		SSwapchain								_swapchain;
 		std::vector<CGPURenderTargetResource>	_swapchainRenderTargets;
-		CGPURenderPassResource					_swapchainRenderPass = CGPURenderPassResource(
-			0, 0, 0
-		);
+		std::vector<CGPURenderPassResource>		_swapchainRenderPasses;
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -107,13 +105,13 @@ namespace triton
 
 		void GetSwapchainImages();
 
-		void CreateSwapchainRenderTarget();
+		void CreateSwapchainRenderTargets();
 
-		void DestroySwapchainRenderTarget();
+		void DestroySwapchainRenderTargets();
 
-		void CreateSwapchainRenderPass();
+		void CreateSwapchainRenderPasses();
 
-		void DestroySwapchainRenderPass();
+		void DestroySwapchainRenderPasses();
 
 		VkFormat TextureFormatToNative(ETextureFormat textureFormat);
 
