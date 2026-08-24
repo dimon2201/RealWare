@@ -3,10 +3,17 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include "math.hpp"
 #include "graphics_device_type_enum.hpp"
 
 namespace triton
 {
+	struct SImageWithView
+	{
+		VkImage image = VK_NULL_HANDLE;
+		VkImageView view = VK_NULL_HANDLE;
+	};
+	
 	struct SInstance
 	{
 		VkInstance instance = VK_NULL_HANDLE;
@@ -74,6 +81,9 @@ namespace triton
 
 	struct SSwapchain
 	{
+		cVector2 size = cVector2(0.0f);
+		VkFormat format = VK_FORMAT_UNDEFINED;
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+		std::vector<SImageWithView> images = {};
 	};
 }

@@ -751,10 +751,23 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size)
 		&_swapchain.swapchain
 	) != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to create swapchain");
+
+	_swapchain.size = size;
+	_swapchain.format = swapchainSurfaceFormat.format;
+
+	GetSwapchainImages();
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroySwapchain()
 {
+	for (auto& image : _swapchain.images)
+		if (image.view != VK_NULL_HANDLE)
+			vkDestroyImageView(
+				_logicalDevice.device,
+				image.view,
+				nullptr
+			);
+
 	vkDestroySwapchainKHR(
 		_logicalDevice.device,
 		_swapchain.swapchain,
@@ -813,5 +826,71 @@ VkExtent2D triton::BGraphicsBackend2Vulkan::ChooseSwapchainExtent(
 		);
 
 		return actualExtent;
+	}
+}
+
+void triton::BGraphicsBackend2Vulkan::GetSwapchainImages()
+{
+	VkResult result;
+
+	uint32_t imageCount = 0;
+
+	result = vkGetSwapchainImagesKHR(
+		_logicalDevice.device,
+		_swapchain.swapchain,
+		&imageCount,
+		nullptr
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to query swapchain image count");
+
+	_swapchain.images.resize(imageCount);
+
+	std::vector<VkImage> images(imageCount);
+
+	result = vkGetSwapchainImagesKHR(
+		_logicalDevice.device,
+		_swapchain.swapchain,
+		&imageCount,
+		images.data()
+	);
+
+	for (usize i = 0; i < imageCount; i++)
+		_swapchain.images[i].image = images[i];
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to query swapchain images");
+
+	for (auto& image : _swapchain.images)
+	{
+		VkImageViewCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+
+		createInfo.image = image.image;
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = _swapchain.format;
+
+		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.levelCount = 1;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.layerCount = 1;
+
+		VkResult result = vkCreateImageView(
+			_logicalDevice.device,
+			&createInfo,
+			nullptr,
+			&image.view
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to create swapchain image views");
 	}
 }

@@ -89,5 +89,7 @@ namespace triton
 			VkSurfaceCapabilitiesKHR capabilities,
 			const cVector2& size
 		);
+
+		void GetSwapchainImages();
 	};
 }
