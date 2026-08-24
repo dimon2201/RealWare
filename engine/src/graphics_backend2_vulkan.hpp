@@ -26,6 +26,11 @@ namespace triton
 			std::vector<VkQueueFamilyProperties>(),
 			{}
 		);
+		SQueue				_graphicsQueue = SQueue(0, 0, {});
+		SQueue				_transferQueue = SQueue(0, 0, {});
+		SQueue				_computeQueue = SQueue(0, 0, {});
+		SQueue				_presentQueue = SQueue(0, 0, {});
+		SLogicalDevice		_logicalDevice;
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -51,5 +56,8 @@ namespace triton
 		void PickPhysicalDevice(EGraphicsDeviceType deviceType);
 		void CheckPhysicalDeviceFeatures();
 		void CheckPhysicalDeviceFeaturesVulkan13();
+		void FindQueueFamilies();
+		void CreateLogicalDevice();
+		void DestroyLogicalDevice();
 	};
 }

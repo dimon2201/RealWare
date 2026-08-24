@@ -1,6 +1,7 @@
 // graphics_backend2_vulkan.cpp
 
 #include <cstring>
+#include <set>
 #include "graphics_backend2_vulkan.hpp"
 #include "input_backend.hpp"
 #include "context.hpp"
@@ -78,10 +79,12 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 	CreateInstance(bEnableDebugging, extensions);
 	CreateSurface(window);
 	PickPhysicalDevice(deviceType);
+	CreateLogicalDevice();
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
 {
+	DestroyLogicalDevice();
 	DestroySurface();
 	DestroyInstance();
 }
@@ -357,6 +360,7 @@ void triton::BGraphicsBackend2Vulkan::PickPhysicalDevice(EGraphicsDeviceType dev
 
 	CheckPhysicalDeviceFeatures();
 	CheckPhysicalDeviceFeaturesVulkan13();
+	FindQueueFamilies();
 }
 
 void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceFeatures()
@@ -371,4 +375,75 @@ void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceFeaturesVulkan13()
 		Print("Error: Vulkan synchronization2 is not supported");
 	if (_physicalDevice.featuresVulkan13.dynamicRendering == VK_FALSE)
 		Print("Error: Vulkan dynamicRendering is not supported");
+}
+
+void triton::BGraphicsBackend2Vulkan::FindQueueFamilies()
+{
+	for (usize i = 0; i < _physicalDevice.queueFamilyProperties.size(); i++)
+	{
+		VkQueueFamilyProperties queueFamilyProperties = _physicalDevice.queueFamilyProperties.at(i);
+		if (queueFamilyProperties.queueCount > 0 &&
+			queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
+			_graphicsQueue = SQueue(i, 0, {});
+		if (queueFamilyProperties.queueCount > 0 &&
+			queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT)
+			_transferQueue = SQueue(i, 0, {});
+		if (queueFamilyProperties.queueCount > 0 &&
+			queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
+			_computeQueue = SQueue(i, 0, {});
+
+		VkBool32 presentSupported = VK_FALSE;
+		vkGetPhysicalDeviceSurfaceSupportKHR(
+			_physicalDevice.device,
+			(uint32_t)(i),
+			_surface.surface,
+			&presentSupported
+		);
+		if (presentSupported == VK_TRUE)
+			_presentQueue = SQueue(i, 0, {});
+	}
+}
+
+void triton::BGraphicsBackend2Vulkan::CreateLogicalDevice()
+{
+	std::set<usize> uniqueQueueFamilyIndices = {
+		_graphicsQueue.familyIndex,
+		_transferQueue.familyIndex,
+		_computeQueue.familyIndex,
+		_presentQueue.familyIndex
+	};
+
+	const float priority = 1.0f;
+
+	usize counter = 0;
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilyIndices.size());
+	for (auto queueFamilyIndex : uniqueQueueFamilyIndices)
+	{
+		queueCreateInfos[counter].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfos[counter].queueCount = 1;
+		queueCreateInfos[counter].queueFamilyIndex = (uint32_t)queueFamilyIndex;
+		queueCreateInfos[counter].pQueuePriorities = &priority;
+		++counter;
+	}
+
+	VkDeviceCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
+
+	VkResult result = vkCreateDevice(
+		_physicalDevice.device,
+		&createInfo,
+		nullptr,
+		&_logicalDevice.device
+	);
+
+	if (result != VK_SUCCESS)
+		Print("Error: failed to create Vulkan logical device");
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroyLogicalDevice()
+{
+	if (_logicalDevice.device != VK_NULL_HANDLE)
+		vkDestroyDevice(_logicalDevice.device, nullptr);
 }
