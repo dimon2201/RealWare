@@ -80,10 +80,12 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 	CreateSurface(window);
 	PickPhysicalDevice(deviceType);
 	CreateLogicalDevice();
+	CreateCommandPoolsAndCommandBuffers();
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
 {
+	DestroyCommandPoolsAndCommandBuffers();
 	DestroyLogicalDevice();
 	DestroySurface();
 	DestroyInstance();
@@ -474,4 +476,141 @@ void triton::BGraphicsBackend2Vulkan::DestroyLogicalDevice()
 {
 	if (_logicalDevice.device != VK_NULL_HANDLE)
 		vkDestroyDevice(_logicalDevice.device, nullptr);
+}
+
+void triton::BGraphicsBackend2Vulkan::CreateCommandPoolsAndCommandBuffers()
+{
+	VkResult result;
+
+	VkCommandPoolCreateInfo graphicsCreateInfo = {};
+	graphicsCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	graphicsCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	graphicsCreateInfo.queueFamilyIndex = _graphicsQueue.familyIndex;
+
+	result = vkCreateCommandPool(
+		_logicalDevice.device,
+		&graphicsCreateInfo,
+		nullptr,
+		&_graphicsQueue.commandPool
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create graphics command pool");
+
+	VkCommandPoolCreateInfo transferCreateInfo = {};
+	transferCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	transferCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	transferCreateInfo.queueFamilyIndex = _transferQueue.familyIndex;
+
+	result = vkCreateCommandPool(
+		_logicalDevice.device,
+		&transferCreateInfo,
+		nullptr,
+		&_transferQueue.commandPool
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create transfer command pool");
+
+	VkCommandPoolCreateInfo computeCreateInfo = {};
+	computeCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	computeCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	computeCreateInfo.queueFamilyIndex = _computeQueue.familyIndex;
+
+	result = vkCreateCommandPool(
+		_logicalDevice.device,
+		&computeCreateInfo,
+		nullptr,
+		&_computeQueue.commandPool
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create compute command pool");
+
+	VkCommandBufferAllocateInfo graphicsAllocInfo = {};
+	graphicsAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	graphicsAllocInfo.commandPool = _graphicsQueue.commandPool;
+	graphicsAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	graphicsAllocInfo.commandBufferCount = 1;
+
+	result = vkAllocateCommandBuffers(
+		_logicalDevice.device,
+		&graphicsAllocInfo,
+		&_graphicsQueue.commandBuffer
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create graphics command buffer");
+
+	VkCommandBufferAllocateInfo transferAllocInfo = {};
+	transferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	transferAllocInfo.commandPool = _transferQueue.commandPool;
+	transferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	transferAllocInfo.commandBufferCount = 1;
+
+	result = vkAllocateCommandBuffers(
+		_logicalDevice.device,
+		&transferAllocInfo,
+		&_transferQueue.commandBuffer
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create transfer command buffer");
+
+	VkCommandBufferAllocateInfo computeAllocInfo = {};
+	computeAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	computeAllocInfo.commandPool = _computeQueue.commandPool;
+	computeAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	computeAllocInfo.commandBufferCount = 1;
+
+	result = vkAllocateCommandBuffers(
+		_logicalDevice.device,
+		&computeAllocInfo,
+		&_computeQueue.commandBuffer
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create compute command buffer");
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroyCommandPoolsAndCommandBuffers()
+{
+	vkFreeCommandBuffers(
+		_logicalDevice.device,
+		_computeQueue.commandPool,
+		1,
+		&_computeQueue.commandBuffer
+	);
+
+	vkFreeCommandBuffers(
+		_logicalDevice.device,
+		_transferQueue.commandPool,
+		1,
+		&_transferQueue.commandBuffer
+	);
+
+	vkFreeCommandBuffers(
+		_logicalDevice.device,
+		_graphicsQueue.commandPool,
+		1,
+		&_graphicsQueue.commandBuffer
+	);
+
+	vkDestroyCommandPool(
+		_logicalDevice.device,
+		_computeQueue.commandPool,
+		nullptr
+	);
+
+	vkDestroyCommandPool(
+		_logicalDevice.device,
+		_transferQueue.commandPool,
+		nullptr
+	);
+
+	vkDestroyCommandPool(
+		_logicalDevice.device,
+		_graphicsQueue.commandPool,
+		nullptr
+	);
 }

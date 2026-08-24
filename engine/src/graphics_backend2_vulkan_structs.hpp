@@ -7,22 +7,6 @@
 
 namespace triton
 {
-	struct SQueue
-	{
-		SQueue(
-			types::usize familyIndex,
-			types::usize queueIndex,
-			VkQueue queue
-		) :
-			familyIndex(familyIndex),
-			queueIndex(queueIndex),
-			queue(queue) {}
-
-		types::usize familyIndex;
-		types::usize queueIndex;
-		VkQueue queue;
-	};
-
 	struct SInstance
 	{
 		VkInstance instance = VK_NULL_HANDLE;
@@ -63,6 +47,24 @@ namespace triton
 		VkPhysicalDeviceVulkan13Features featuresVulkan13;
 		std::vector<VkQueueFamilyProperties> queueFamilyProperties;
 		VkSurfaceCapabilitiesKHR surfaceCapabilities;
+	};
+
+	struct SQueue
+	{
+		SQueue(
+			types::usize familyIndex,
+			types::usize queueIndex,
+			VkQueue queue
+		) :
+			familyIndex(familyIndex),
+			queueIndex(queueIndex),
+			queue(queue) {}
+
+		types::usize familyIndex;
+		types::usize queueIndex;
+		VkQueue queue;
+		VkCommandPool commandPool;
+		VkCommandBuffer commandBuffer;
 	};
 
 	struct SLogicalDevice

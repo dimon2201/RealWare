@@ -59,5 +59,7 @@ namespace triton
 		void FindQueueFamilies();
 		void CreateLogicalDevice();
 		void DestroyLogicalDevice();
+		void CreateCommandPoolsAndCommandBuffers();
+		void DestroyCommandPoolsAndCommandBuffers();
 	};
 }
