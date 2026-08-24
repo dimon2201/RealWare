@@ -33,7 +33,8 @@ void triton::cRenderThread::ThreadFunction()
 		window->GetBackendWindow(),
 		True,
 		_context->GetBackend<IInputBackend>()->GetBackendWindowVulkanExtensions(),
-		deviceType
+		deviceType,
+		window->GetSize()
 	);
 
 	_sync->InitRenderThread();

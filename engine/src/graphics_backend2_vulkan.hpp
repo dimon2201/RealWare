@@ -31,6 +31,7 @@ namespace triton
 		SQueue				_computeQueue = SQueue(0, 0, {});
 		SQueue				_presentQueue = SQueue(0, 0, {});
 		SLogicalDevice		_logicalDevice;
+		SSwapchain			_swapchain;
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -41,25 +42,52 @@ namespace triton
 			SWindowBackend& window,
 			types::boolean bEnableDebugging,
 			const std::vector<const char*> extensions,
-			EGraphicsDeviceType deviceType
+			EGraphicsDeviceType deviceType,
+			const cVector2& swapchainSize
 		) override final;
 
 		void Shutdown() override final;
 		
 	private:
 		void CreateInstance(types::boolean bEnableDebugging, const std::vector<const char*> extensions);
+
 		void DestroyInstance();
+
 		void CreateDebugMessenger();
+
 		void DestroyDebugMessenger();
+
 		void CreateSurface(SWindowBackend& window);
+
 		void DestroySurface();
+
 		void PickPhysicalDevice(EGraphicsDeviceType deviceType);
+
 		void CheckPhysicalDeviceFeatures();
+
 		void CheckPhysicalDeviceFeaturesVulkan13();
+
 		void FindQueueFamilies();
+
 		void CreateLogicalDevice();
+
 		void DestroyLogicalDevice();
+
 		void CreateCommandPoolsAndCommandBuffers();
+
 		void DestroyCommandPoolsAndCommandBuffers();
+
+		void CreateSwapchain(const cVector2& size);
+
+		void DestroySwapchain();
+
+		VkSurfaceFormatKHR ChooseSwapchainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats);
+
+		VkPresentModeKHR ChooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& presentModes);
+
+		VkExtent2D ChooseSwapchainExtent(
+			VkSurfaceCapabilitiesKHR capabilities,
+			const cVector2& size
+		);
 	};
 }

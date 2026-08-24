@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "backend.hpp"
+#include "math.hpp"
 #include "input_window_backend.hpp"
 #include "graphics_device_type_enum.hpp"
 
@@ -24,7 +25,8 @@ namespace triton
 			SWindowBackend& window,
 			types::boolean bEnableDebugging,
 			const std::vector<const char*> extensions,
-			EGraphicsDeviceType deviceType
+			EGraphicsDeviceType deviceType,
+			const cVector2& swapchainSize
 		) = 0;
 
 		virtual void Shutdown() = 0;

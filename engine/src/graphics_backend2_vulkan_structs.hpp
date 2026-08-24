@@ -40,7 +40,7 @@ namespace triton
 			surfaceCapabilities(surfaceCapabilities) {}
 
 		EGraphicsDeviceType type;
-		VkPhysicalDevice device;
+		VkPhysicalDevice device = VK_NULL_HANDLE;
 		VkPhysicalDeviceProperties properties;
 		VkPhysicalDeviceFeatures features;
 		VkPhysicalDeviceFeatures2 features2;
@@ -62,13 +62,18 @@ namespace triton
 
 		types::usize familyIndex;
 		types::usize queueIndex;
-		VkQueue queue;
-		VkCommandPool commandPool;
-		VkCommandBuffer commandBuffer;
+		VkQueue queue = VK_NULL_HANDLE;
+		VkCommandPool commandPool = VK_NULL_HANDLE;
+		VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 	};
 
 	struct SLogicalDevice
 	{
-		VkDevice device;
+		VkDevice device = VK_NULL_HANDLE;
+	};
+
+	struct SSwapchain
+	{
+		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 	};
 }

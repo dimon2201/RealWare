@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <set>
+#include <algorithm>
+#include <cstdint>
 #include "graphics_backend2_vulkan.hpp"
 #include "input_backend.hpp"
 #include "context.hpp"
@@ -73,7 +75,8 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 	SWindowBackend& window,
 	boolean bEnableDebugging,
 	const std::vector<const char*> extensions,
-	EGraphicsDeviceType deviceType
+	EGraphicsDeviceType deviceType,
+	const cVector2& swapchainSize
 )
 {
 	CreateInstance(bEnableDebugging, extensions);
@@ -81,10 +84,12 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 	PickPhysicalDevice(deviceType);
 	CreateLogicalDevice();
 	CreateCommandPoolsAndCommandBuffers();
+	CreateSwapchain(swapchainSize);
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
 {
+	DestroySwapchain();
 	DestroyCommandPoolsAndCommandBuffers();
 	DestroyLogicalDevice();
 	DestroySurface();
@@ -428,10 +433,15 @@ void triton::BGraphicsBackend2Vulkan::CreateLogicalDevice()
 		++counter;
 	}
 
+	std::vector<const char*> extensions = {};
+	extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
+	createInfo.enabledExtensionCount = extensions.size();
+	createInfo.ppEnabledExtensionNames = extensions.data();
 
 	VkResult result = vkCreateDevice(
 		_physicalDevice.device,
@@ -613,4 +623,195 @@ void triton::BGraphicsBackend2Vulkan::DestroyCommandPoolsAndCommandBuffers()
 		_graphicsQueue.commandPool,
 		nullptr
 	);
+}
+
+void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size)
+{
+	VkResult result;
+
+	VkSurfaceCapabilitiesKHR surfaceCapabilities = {};
+	result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+		_physicalDevice.device,
+		_surface.surface,
+		&surfaceCapabilities
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to query surface capabilities");
+
+	uint32_t formatCount = 0;
+	std::vector<VkSurfaceFormatKHR> formats = {};
+
+	result = vkGetPhysicalDeviceSurfaceFormatsKHR(
+		_physicalDevice.device,
+		_surface.surface,
+		&formatCount,
+		nullptr
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to query surface format count");
+
+	if (formatCount != 0)
+	{
+		formats.resize(formatCount);
+
+		result = vkGetPhysicalDeviceSurfaceFormatsKHR(
+			_physicalDevice.device,
+			_surface.surface,
+			&formatCount,
+			formats.data()
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to query surface formats");
+	}
+
+	uint32_t presentModeCount = 0;
+	std::vector<VkPresentModeKHR> presentModes = {};
+
+	result = vkGetPhysicalDeviceSurfacePresentModesKHR(
+		_physicalDevice.device,
+		_surface.surface,
+		&presentModeCount,
+		nullptr
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to query surface present mode count");
+
+	if (presentModeCount != 0)
+	{
+		presentModes.resize(presentModeCount);
+
+		result = vkGetPhysicalDeviceSurfacePresentModesKHR(
+			_physicalDevice.device,
+			_surface.surface,
+			&presentModeCount,
+			presentModes.data()
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to query surface present modes");
+	}
+
+	if (formats.empty() || presentModes.empty())
+		Print("[Vulkan]: Error: inadequate swapchain support");
+
+	VkSurfaceFormatKHR swapchainSurfaceFormat = ChooseSwapchainSurfaceFormat(formats);
+
+	VkPresentModeKHR swapchainPresentMode = ChooseSwapchainPresentMode(presentModes);
+
+	VkExtent2D swapchainExtent = ChooseSwapchainExtent(surfaceCapabilities, size);
+
+	uint32_t swapchainImageCount = surfaceCapabilities.minImageCount + 1;
+
+	if (surfaceCapabilities.maxImageCount > 0 &&
+		swapchainImageCount > surfaceCapabilities.maxImageCount)
+		swapchainImageCount = surfaceCapabilities.maxImageCount;
+
+	VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
+	swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	swapchainCreateInfo.surface = _surface.surface;
+	swapchainCreateInfo.minImageCount = swapchainImageCount;
+	swapchainCreateInfo.imageFormat = swapchainSurfaceFormat.format;
+	swapchainCreateInfo.imageColorSpace = swapchainSurfaceFormat.colorSpace;
+	swapchainCreateInfo.imageExtent = swapchainExtent;
+	swapchainCreateInfo.imageArrayLayers = 1;
+	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+	const uint32_t queueFamilyIndices[] = {
+		_graphicsQueue.familyIndex,
+		_presentQueue.familyIndex
+	};
+
+	if (_graphicsQueue.familyIndex != _presentQueue.familyIndex)
+	{
+		swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+		swapchainCreateInfo.queueFamilyIndexCount = 2;
+		swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+	}
+	else
+	{
+		swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		swapchainCreateInfo.queueFamilyIndexCount = 0;
+		swapchainCreateInfo.pQueueFamilyIndices = nullptr;
+	}
+
+	swapchainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
+	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	swapchainCreateInfo.presentMode = swapchainPresentMode;
+	swapchainCreateInfo.clipped = VK_TRUE;
+	swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
+
+	if (vkCreateSwapchainKHR(
+		_logicalDevice.device,
+		&swapchainCreateInfo,
+		nullptr,
+		&_swapchain.swapchain
+	) != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create swapchain");
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroySwapchain()
+{
+	vkDestroySwapchainKHR(
+		_logicalDevice.device,
+		_swapchain.swapchain,
+		nullptr
+	);
+}
+
+VkSurfaceFormatKHR triton::BGraphicsBackend2Vulkan::ChooseSwapchainSurfaceFormat(
+	const std::vector<VkSurfaceFormatKHR>& formats
+)
+{
+	for (const auto& availableFormat : formats)
+		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+			availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			return availableFormat;
+
+	return formats[0];
+}
+
+VkPresentModeKHR triton::BGraphicsBackend2Vulkan::ChooseSwapchainPresentMode(
+	const std::vector<VkPresentModeKHR>& presentModes
+)
+{
+	for (const auto& availablePresentMode : presentModes)
+		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+			return availablePresentMode;
+
+	return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+VkExtent2D triton::BGraphicsBackend2Vulkan::ChooseSwapchainExtent(
+	VkSurfaceCapabilitiesKHR capabilities,
+	const cVector2& size
+)
+{
+	if (capabilities.currentExtent.width != UINT32_MAX)
+	{
+		return capabilities.currentExtent;
+	}
+	else
+	{
+		VkExtent2D actualExtent = {
+			(uint32_t)size.GetX(),
+			(uint32_t)size.GetY(),
+		};
+
+		actualExtent.width = std::clamp(
+			actualExtent.width,
+			capabilities.minImageExtent.width,
+			capabilities.maxImageExtent.width
+		);
+		actualExtent.height = std::clamp(
+			actualExtent.height,
+			capabilities.minImageExtent.height,
+			capabilities.maxImageExtent.height
+		);
+
+		return actualExtent;
+	}
 }
