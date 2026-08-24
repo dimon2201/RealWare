@@ -96,4 +96,14 @@ namespace triton
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 		std::vector<SImageWithView> images;
 	};
+
+	struct SSemaphore
+	{
+		VkSemaphore semaphore = VK_NULL_HANDLE;
+	};
+
+	struct SFence
+	{
+		VkFence fence = VK_NULL_HANDLE;
+	};
 }

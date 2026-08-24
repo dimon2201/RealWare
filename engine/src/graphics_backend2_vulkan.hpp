@@ -28,6 +28,9 @@ namespace triton
 		SSwapchain								_swapchain;
 		std::vector<CGPURenderTargetResource>	_swapchainRenderTargets;
 		std::vector<CGPURenderPassResource>		_swapchainRenderPasses;
+		SSemaphore								_swapchainImageAvailableSemaphore;
+		std::vector<SSemaphore>					_swapchainRenderFinishedSemaphores;
+		SFence									_swapchainFence;
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -60,6 +63,8 @@ namespace triton
 		) override final;
 
 		void DestroyRenderPass(CGPURenderPassResource& renderPass) override final;
+
+		void Present() override final;
 		
 	private:
 		void CreateInstance(types::boolean bEnableDebugging, const std::vector<const char*> extensions);
@@ -112,6 +117,10 @@ namespace triton
 		void CreateSwapchainRenderPasses();
 
 		void DestroySwapchainRenderPasses();
+
+		void CreateSwapchainSemaphoresAndFence();
+
+		void DestroySwapchainSemaphoresAndFence();
 
 		VkFormat TextureFormatToNative(ETextureFormat textureFormat);
 

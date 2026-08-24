@@ -282,6 +282,125 @@ void triton::BGraphicsBackend2Vulkan::DestroyRenderPass(CGPURenderPassResource& 
 	}
 }
 
+void triton::BGraphicsBackend2Vulkan::Present()
+{
+	VkResult result;
+
+	vkWaitForFences(
+		_logicalDevice.device,
+		1,
+		&_swapchainFence.fence,
+		VK_TRUE,
+		UINT64_MAX
+	);
+
+	vkResetFences(
+		_logicalDevice.device,
+		1,
+		&_swapchainFence.fence
+	);
+
+	vkResetCommandBuffer(
+		_graphicsQueue.commandBuffer,
+		0
+	);
+
+	uint32_t imageIndex = 0;
+
+	result = vkAcquireNextImageKHR(
+		_logicalDevice.device,
+		_swapchain.swapchain,
+		UINT64_MAX,
+		_swapchainImageAvailableSemaphore.semaphore,
+		VK_NULL_HANDLE,
+		&imageIndex
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to acquire swapchain image");
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	result = vkBeginCommandBuffer(
+		_graphicsQueue.commandBuffer,
+		&beginInfo
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to begin command buffer");
+
+	VkClearValue clearValue = {};
+	clearValue.color = {
+		1.0f,
+		0.0f,
+		0.0f,
+		1.0f
+	};
+
+	VkRenderPassBeginInfo renderPassBeginInfo = {};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.renderPass = (VkRenderPass)_swapchainRenderPasses[imageIndex].GetInstance();
+	renderPassBeginInfo.framebuffer = (VkFramebuffer)_swapchainRenderPasses[imageIndex].GetFramebuffer();
+	renderPassBeginInfo.renderArea.offset = { 0, 0 };
+	renderPassBeginInfo.renderArea.extent.width = _swapchain.size.GetX();
+	renderPassBeginInfo.renderArea.extent.height = _swapchain.size.GetY();
+	renderPassBeginInfo.clearValueCount = 1;
+	renderPassBeginInfo.pClearValues = &clearValue;
+
+	vkCmdBeginRenderPass(
+		_graphicsQueue.commandBuffer,
+		&renderPassBeginInfo,
+		VK_SUBPASS_CONTENTS_INLINE
+	);
+
+	vkCmdEndRenderPass(
+		_graphicsQueue.commandBuffer
+	);
+
+	vkEndCommandBuffer(
+		_graphicsQueue.commandBuffer
+	);
+
+	VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &_swapchainImageAvailableSemaphore.semaphore;
+	submitInfo.pWaitDstStageMask = &waitStage;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &_graphicsQueue.commandBuffer;
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = &_swapchainRenderFinishedSemaphores[imageIndex].semaphore;
+
+	result = vkQueueSubmit(
+		_graphicsQueue.queue,
+		1,
+		&submitInfo,
+		_swapchainFence.fence
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to submit commands to the graphics queue");
+
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = &_swapchainRenderFinishedSemaphores[imageIndex].semaphore;
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &_swapchain.swapchain;
+	presentInfo.pImageIndices = &imageIndex;
+
+	result = vkQueuePresentKHR(
+		_presentQueue.queue,
+		&presentInfo
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to present frame");
+}
+
 void triton::BGraphicsBackend2Vulkan::CreateInstance(
 	boolean bEnableDebugging,
 	const std::vector<const char*> extensions
@@ -948,10 +1067,14 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size)
 	CreateSwapchainRenderTargets();
 
 	CreateSwapchainRenderPasses();
+
+	CreateSwapchainSemaphoresAndFence();
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroySwapchain()
 {
+	DestroySwapchainSemaphoresAndFence();
+
 	DestroySwapchainRenderTargets();
 
 	DestroySwapchainRenderPasses();
@@ -1155,6 +1278,69 @@ void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderPasses()
 {
 	for (auto& renderPass : _swapchainRenderPasses)
 		DestroyRenderPass(renderPass);
+}
+
+void triton::BGraphicsBackend2Vulkan::CreateSwapchainSemaphoresAndFence()
+{
+	VkResult result;
+
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	result = vkCreateSemaphore(
+		_logicalDevice.device,
+		&semaphoreCreateInfo,
+		nullptr,
+		&_swapchainImageAvailableSemaphore.semaphore
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create swapchain semaphore");
+
+	const usize renderFinishedSemaphoreCount = _swapchain.images.size();
+	_swapchainRenderFinishedSemaphores.resize(renderFinishedSemaphoreCount);
+
+	for (usize i = 0; i < renderFinishedSemaphoreCount; i++)
+	{
+		result = vkCreateSemaphore(
+			_logicalDevice.device,
+			&semaphoreCreateInfo,
+			nullptr,
+			&_swapchainRenderFinishedSemaphores[i].semaphore
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to create swapchain semaphore");
+	}
+
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+	result = vkCreateFence(
+		_logicalDevice.device,
+		&fenceCreateInfo,
+		nullptr,
+		&_swapchainFence.fence
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create swapchain fence");
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroySwapchainSemaphoresAndFence()
+{
+	for (auto& semaphore : _swapchainRenderFinishedSemaphores)
+		vkDestroySemaphore(
+			_logicalDevice.device,
+			semaphore.semaphore,
+			nullptr
+		);
+
+	vkDestroySemaphore(
+		_logicalDevice.device,
+		_swapchainImageAvailableSemaphore.semaphore,
+		nullptr
+	);
 }
 
 VkFormat triton::BGraphicsBackend2Vulkan::TextureFormatToNative(ETextureFormat textureFormat)
