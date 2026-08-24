@@ -440,6 +440,34 @@ void triton::BGraphicsBackend2Vulkan::CreateLogicalDevice()
 
 	if (result != VK_SUCCESS)
 		Print("Error: failed to create Vulkan logical device");
+
+	vkGetDeviceQueue(
+		_logicalDevice.device,
+		_graphicsQueue.familyIndex,
+		_graphicsQueue.queueIndex,
+		&_graphicsQueue.queue
+	);
+
+	vkGetDeviceQueue(
+		_logicalDevice.device,
+		_transferQueue.familyIndex,
+		_transferQueue.queueIndex,
+		&_transferQueue.queue
+	);
+
+	vkGetDeviceQueue(
+		_logicalDevice.device,
+		_computeQueue.familyIndex,
+		_computeQueue.queueIndex,
+		&_computeQueue.queue
+	);
+
+	vkGetDeviceQueue(
+		_logicalDevice.device,
+		_presentQueue.familyIndex,
+		_presentQueue.queueIndex,
+		&_presentQueue.queue
+	);
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroyLogicalDevice()
