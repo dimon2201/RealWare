@@ -16,19 +16,11 @@
 #include "gpu_render_pass_resource.hpp"
 #include "gpu_shader_resource.hpp"
 #include "shader_stage_enum.hpp"
+#include "shader_bytecode_files_struct.hpp"
 
 namespace triton
 {
-    class cContext;
-
-	struct SShaderSourceFiles final
-	{
-		std::optional<std::filesystem::path> vertexFilePath = std::nullopt;
-		std::optional<std::filesystem::path> pixelFilePath = std::nullopt;
-		std::optional<std::filesystem::path> tessellationControlFilePath = std::nullopt;
-		std::optional<std::filesystem::path> tessellationEvaluationFilePath = std::nullopt;
-		std::optional<std::filesystem::path> computeFilePath = std::nullopt;
-	};
+	class cContext;
 
 	class IGraphicsBackend2 : public iBackend
 	{
@@ -74,7 +66,7 @@ namespace triton
 
 		virtual CGPUShaderResource CreateShader(
 			types::dword stageMask,
-			const SShaderSourceFiles& sourceFiles
+			const SShaderBytecodeFiles& bytecodeFiles
 		) = 0;
 
 		virtual void DestroyShader(CGPUShaderResource& shader) = 0;

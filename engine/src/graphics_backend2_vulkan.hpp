@@ -72,7 +72,7 @@ namespace triton
 
 		CGPUShaderResource CreateShader(
 			types::dword stageMask,
-			const SShaderSourceFiles& sourceFiles
+			const SShaderBytecodeFiles& bytecodeFiles
 		) override final;
 
 		void DestroyShader(CGPUShaderResource& shader) override final;

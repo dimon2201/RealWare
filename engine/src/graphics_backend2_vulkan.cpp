@@ -381,32 +381,32 @@ void triton::BGraphicsBackend2Vulkan::DestroyRenderPass(CGPURenderPassResource& 
 
 triton::CGPUShaderResource triton::BGraphicsBackend2Vulkan::CreateShader(
 	dword stageMask,
-	const SShaderSourceFiles& sourceFiles
+	const SShaderBytecodeFiles& bytecodeFiles
 )
 {
 	if (!stageMask ||
-		(!sourceFiles.vertexFilePath.has_value() &&
-		!sourceFiles.pixelFilePath.has_value() &&
-		!sourceFiles.tessellationControlFilePath.has_value() &&
-		!sourceFiles.tessellationEvaluationFilePath.has_value() &&
-		!sourceFiles.computeFilePath.has_value()))
+		(!bytecodeFiles.vertexFilePath.has_value() &&
+		!bytecodeFiles.pixelFilePath.has_value() &&
+		!bytecodeFiles.tessellationControlFilePath.has_value() &&
+		!bytecodeFiles.tessellationEvaluationFilePath.has_value() &&
+		!bytecodeFiles.computeFilePath.has_value()))
 		return CGPUShaderResource::Invalid();
 
 	if (stageMask & (dword)EShaderStage::Vertex &&
 		stageMask & (dword)EShaderStage::Pixel &&
-		sourceFiles.vertexFilePath.has_value() &&
-		sourceFiles.pixelFilePath.has_value())
+		bytecodeFiles.vertexFilePath.has_value() &&
+		bytecodeFiles.pixelFilePath.has_value())
 	{
 		u8* vertexShaderByteCode = nullptr;
 		const usize vertexShaderByteCodeSize = _context->GetSubsystem<CFileSystem>()->BinaryFileToArray(
-			sourceFiles.vertexFilePath.value().string(),
+			bytecodeFiles.vertexFilePath.value().string(),
 			vertexShaderByteCode,
 			0
 		);
 
 		u8* pixelShaderByteCode = nullptr;
 		const usize pixelShaderByteCodeSize = _context->GetSubsystem<CFileSystem>()->BinaryFileToArray(
-			sourceFiles.pixelFilePath.value().string(),
+			bytecodeFiles.pixelFilePath.value().string(),
 			pixelShaderByteCode,
 			0
 		);
