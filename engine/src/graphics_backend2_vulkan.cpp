@@ -120,9 +120,12 @@ void triton::BGraphicsBackend2Vulkan::FinalizeSwapchain(const CGPUTextureResourc
 				viewport,
 				_swapchainRenderTargets[i],
 				_swapchainRenderPasses[i],
-				texturesToBind
+				texturesToBind,
+				EPrimitiveTopology::TriangleStrip
 			)
 		);
+
+	_swapchainPresentTexture = presentTexture;
 }
 
 void triton::BGraphicsBackend2Vulkan::ReleaseSwapchainResources()
@@ -343,7 +346,8 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	const SViewport& viewport,
 	CGPURenderTargetResource& renderTarget,
 	const CGPURenderPassResource& renderPass,
-	const std::vector<CGPUTextureResource>& texturesToBind
+	const std::vector<CGPUTextureResource>& texturesToBind,
+	EPrimitiveTopology primitiveTopology
 )
 {
 	const dword stageMask = shader.GetStageMask();
@@ -391,12 +395,16 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = {};
 		inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		inputAssemblyStateCreateInfo.topology = PrimitiveTopologyToNative(primitiveTopology);
 		inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
 
 		VkViewport nativeViewport = ViewportToNative(viewport);
 
 		VkRect2D scissor = {};
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		scissor.extent.width = viewport.rect.GetZ();
+		scissor.extent.height = viewport.rect.GetW();
 
 		VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {};
 		viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -410,7 +418,7 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 		rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 		rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 		rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-		rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
 		rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
 		rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
@@ -445,10 +453,13 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 		colorBlendStateCreateInfo.blendConstants[2] = 0.0f;
 		colorBlendStateCreateInfo.blendConstants[3] = 0.0f;
 
+		SDescriptorSet nativeDescriptorSet = CreateDescriptorSet(texturesToBind);
+		const usize nativeDescriptorSetCount = nativeDescriptorSet.set != VK_NULL_HANDLE ? 1 : 0;
+
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutCreateInfo.setLayoutCount = 0;
-		pipelineLayoutCreateInfo.pSetLayouts = nullptr;
+		pipelineLayoutCreateInfo.setLayoutCount = nativeDescriptorSetCount;
+		pipelineLayoutCreateInfo.pSetLayouts = &nativeDescriptorSet.layout;
 		pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
 		pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
@@ -509,8 +520,6 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 			&pipeline
 		);
 
-		SDescriptorSet nativeDescriptorSet = CreateDescriptorSet(texturesToBind);
-
 		std::vector<qword> descriptorSets;
 		if (nativeDescriptorSet.set != VK_NULL_HANDLE)
 			descriptorSets.push_back((qword)nativeDescriptorSet.set);
@@ -519,6 +528,7 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 			(qword)pipeline,
 			0,
 			EPipelineBindPoint::Graphics,
+			(qword)pipelineLayout,
 			descriptorSets
 		);
 	}
@@ -564,7 +574,9 @@ void triton::BGraphicsBackend2Vulkan::DestroyRenderTarget(CGPURenderTargetResour
 
 triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass(
 	CGPURenderTargetResource& renderTarget,
-	boolean bClearRenderTarget
+	boolean bClearRenderTarget,
+	const cVector4& clearColor,
+	types::f32 clearDepth
 )
 {
 	const usize colorAttachmentCount = renderTarget.GetColorAttachmentCount();
@@ -701,7 +713,9 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 		(types::qword)renderPass,
 		0,
 		(types::qword)framebuffer,
-		bClearRenderTarget
+		bClearRenderTarget,
+		clearColor,
+		clearDepth
 	);
 }
 
@@ -854,18 +868,22 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		renderPassBeginInfo.renderArea.extent.width = (uint32_t)renderTarget.GetSize().GetX();
 		renderPassBeginInfo.renderArea.extent.width = (uint32_t)renderTarget.GetSize().GetY();
 		
-		VkClearValue clearValue = {};
-		clearValue.color = {
-			1.0f,
-			0.0f,
-			0.0f,
-			1.0f
+		VkClearValue clearValues[2] = {};
+		clearValues[0].color = {
+			renderPass.GetColorClearValue().GetX(),
+			renderPass.GetColorClearValue().GetY(),
+			renderPass.GetColorClearValue().GetZ(),
+			renderPass.GetColorClearValue().GetW()
+		};
+		clearValues[1].depthStencil = {
+			renderPass.GetDepthClearValue(),
+			0
 		};
 
 		if (renderPass.IsRenderTargetClearRequired() == True)
 		{
-			renderPassBeginInfo.clearValueCount = 1;
-			renderPassBeginInfo.pClearValues = &clearValue;
+			renderPassBeginInfo.clearValueCount = 2;
+			renderPassBeginInfo.pClearValues = &clearValues[0];
 		}
 
 		vkCmdBeginRenderPass(
@@ -958,12 +976,16 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to acquire swapchain image");
 
-	VkClearValue clearValue = {};
-	clearValue.color = {
-		1.0f,
-		0.0f,
-		0.0f,
-		1.0f
+	VkClearValue clearValues[2] = {};
+	clearValues[0].color = {
+		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetX(),
+		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetY(),
+		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetZ(),
+		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetW()
+	};
+	clearValues[1].depthStencil = {
+		_swapchainRenderPasses[imageIndex].GetDepthClearValue(),
+		0
 	};
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
@@ -973,8 +995,34 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	renderPassBeginInfo.renderArea.offset = { 0, 0 };
 	renderPassBeginInfo.renderArea.extent.width = _swapchain.size.GetX();
 	renderPassBeginInfo.renderArea.extent.height = _swapchain.size.GetY();
-	renderPassBeginInfo.clearValueCount = 1;
-	renderPassBeginInfo.pClearValues = &clearValue;
+	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.pClearValues = &clearValues[0];
+
+	VkImageMemoryBarrier barrierShaderRead = {};
+	barrierShaderRead.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrierShaderRead.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	barrierShaderRead.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	barrierShaderRead.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	barrierShaderRead.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrierShaderRead.image = (VkImage)_swapchainPresentTexture.GetInstance();
+	barrierShaderRead.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrierShaderRead.subresourceRange.baseMipLevel = 0;
+	barrierShaderRead.subresourceRange.levelCount = 1;
+	barrierShaderRead.subresourceRange.baseArrayLayer = 0;
+	barrierShaderRead.subresourceRange.layerCount = 1;
+
+	/*vkCmdPipelineBarrier(
+		_graphicsQueue.commandBuffer,
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		0,
+		0,
+		nullptr,
+		0,
+		nullptr,
+		1,
+		&barrierShaderRead
+	);*/
 
 	vkCmdBeginRenderPass(
 		_graphicsQueue.commandBuffer,
@@ -982,9 +1030,63 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		VK_SUBPASS_CONTENTS_INLINE
 	);
 
+	vkCmdBindPipeline(
+		_graphicsQueue.commandBuffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		(VkPipeline)_swapchainPipelines[imageIndex].GetInstance()
+	);
+
+	VkDescriptorSet descriptorSet =
+		(VkDescriptorSet)_swapchainPipelines[imageIndex].GetDescriptorSets()[0];
+
+	vkCmdBindDescriptorSets(
+		_graphicsQueue.commandBuffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		(VkPipelineLayout)_swapchainPipelines[imageIndex].GetLayout(),
+		0,
+		1,
+		&descriptorSet,
+		0,
+		nullptr
+	);
+
+	vkCmdDraw(
+		_graphicsQueue.commandBuffer,
+		4,
+		1,
+		0,
+		0
+	);
+
 	vkCmdEndRenderPass(
 		_graphicsQueue.commandBuffer
 	);
+
+	VkImageMemoryBarrier barrierPresent = {};
+	barrierPresent.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrierPresent.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	barrierPresent.dstAccessMask = 0;
+	barrierPresent.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	barrierPresent.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	barrierPresent.image = (VkImage)_swapchainRenderTargets[imageIndex].GetColorAttachments()[0].GetInstance();
+	barrierPresent.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrierPresent.subresourceRange.baseMipLevel = 0;
+	barrierPresent.subresourceRange.levelCount = 1;
+	barrierPresent.subresourceRange.baseArrayLayer = 0;
+	barrierPresent.subresourceRange.layerCount = 1;
+
+	/*vkCmdPipelineBarrier(
+		_graphicsQueue.commandBuffer,
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+		0,
+		0,
+		nullptr,
+		0,
+		nullptr,
+		1,
+		&barrierPresent
+	);*/
 
 	vkEndCommandBuffer(
 		_graphicsQueue.commandBuffer
@@ -1056,6 +1158,19 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(
 	applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 	applicationInfo.apiVersion = VK_API_VERSION_1_3;
 
+	std::vector<VkValidationFeatureEnableEXT> featureEnables = {
+		VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+		VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
+		VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+		VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+		VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
+	};
+
+	VkValidationFeaturesEXT validationFeatures = {};
+	validationFeatures.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+	validationFeatures.enabledValidationFeatureCount = featureEnables.size();
+	validationFeatures.pEnabledValidationFeatures = featureEnables.data();
+
 	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
@@ -1063,6 +1178,7 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(
 	createInfo.ppEnabledExtensionNames = validExtensions.data();
 	createInfo.enabledLayerCount = 1;
 	createInfo.ppEnabledLayerNames = &kValidationLayer;
+	createInfo.pNext = &validationFeatures;
 
 	VkResult result = vkCreateInstance(
 		&createInfo,
@@ -1932,7 +2048,14 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderPasses()
 {
 	_swapchainRenderPasses.reserve(_swapchainRenderTargets.size());
 	for (auto& renderTarget : _swapchainRenderTargets)
-		_swapchainRenderPasses.push_back(CreateRenderPass(renderTarget, True));
+		_swapchainRenderPasses.push_back(
+			CreateRenderPass(
+				renderTarget,
+				True,
+				cVector4(0.0f, 1.0f, 0.0f, 1.0f),
+				1.0f
+			)
+		);
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderPasses()
@@ -2242,6 +2365,8 @@ VkImageLayout triton::BGraphicsBackend2Vulkan::AttachmentLayoutToNative(EGraphic
 		return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	else if (attachmentLayout == EGraphicsImageLayout::DepthStencilAttachment)
 		return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	else if (attachmentLayout == EGraphicsImageLayout::ShaderRead)
+		return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	else if (attachmentLayout == EGraphicsImageLayout::Present)
 		return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
@@ -2264,6 +2389,14 @@ VkViewport triton::BGraphicsBackend2Vulkan::ViewportToNative(const SViewport& vi
 	nativeViewport.maxDepth = 1.0f;
 
 	return nativeViewport;
+}
+
+VkPrimitiveTopology triton::BGraphicsBackend2Vulkan::PrimitiveTopologyToNative(EPrimitiveTopology primitiveTopology)
+{
+	if (primitiveTopology == EPrimitiveTopology::TriangleStrip)
+		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+	return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 }
 
 std::string triton::BGraphicsBackend2Vulkan::ShaderSourceInclude(

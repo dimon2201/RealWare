@@ -10,6 +10,7 @@
 #include "render_instance_pack.hpp"
 #include "render_shading_model_enum.hpp"
 #include "render_native_draw_command_info_struct.hpp"
+#include "render_primitive_topology_enum.hpp"
 #include "gpu_pipeline_resource.hpp"
 #include "input_layout.hpp"
 #include "shader.hpp"
@@ -29,6 +30,7 @@ namespace triton
         std::vector<SShaderTextureBinding>          _inputTextures = {};
         SDepthState                                 _depthState;
         SBlendState                                 _blendState;
+        EPrimitiveTopology                          _primitiveTopology = EPrimitiveTopology::Unknown;
         SViewport                                   _viewport = {};
         types::boolean                              _bClearRenderTarget = types::False;
         XRenderTarget::THandle                      _renderTarget;
@@ -44,11 +46,14 @@ namespace triton
             types::s32 poolIndex,
             const XRenderTarget::THandle& renderTargetHandle,
             types::boolean bClearRenderTarget,
+            const cVector4& clearColor,
+            types::f32 clearDepth,
             EGraphicsImageLayout colorAttachmentSrcLayout,
             EGraphicsImageLayout colorAttachmentDstLayout,
             EGraphicsImageLayout depthAttachmentSrcLayout,
             EGraphicsImageLayout depthAttachmentDstLayout,
             const XShader::THandle& shaderHandle,
+            EPrimitiveTopology primitiveTopology,
             const SViewport& viewport
         );
         ~XRenderPassGeometry() override;

@@ -19,6 +19,7 @@
 #include "shader_stage_bit_enum.hpp"
 #include "shader_bytecode_files_struct.hpp"
 #include "render_native_command_enum.hpp"
+#include "render_primitive_topology_enum.hpp"
 #include "rasterizer_state.hpp"
 
 namespace triton
@@ -70,14 +71,17 @@ namespace triton
 			const SViewport& viewport,
 			CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass,
-			const std::vector<CGPUTextureResource>& texturesToBind
+			const std::vector<CGPUTextureResource>& texturesToBind,
+			EPrimitiveTopology primitiveTopology
 		) = 0;
 
 		virtual void DestroyPipeline(CGPUPipelineResource& pipeline) = 0;
 
 		virtual CGPURenderPassResource CreateRenderPass(
 			CGPURenderTargetResource& renderTarget,
-			types::boolean bClearRenderTarget
+			types::boolean bClearRenderTarget,
+			const cVector4& clearColor,
+			types::f32 clearDepth
 		) = 0;
 
 		virtual void DestroyRenderPass(CGPURenderPassResource& renderPass) = 0;

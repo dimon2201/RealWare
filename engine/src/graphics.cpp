@@ -534,11 +534,14 @@ void triton::CGraphics::CreateRenderPasses()
     _opaqueRigid = *renderPassGeometryPool->Create(
         _opaqueRenderTarget,
         True,
+        cVector4(1.0f),
+        1.0f,
         EGraphicsImageLayout::Undefined,
-        EGraphicsImageLayout::ColorAttachment,
+        EGraphicsImageLayout::ShaderRead,
         EGraphicsImageLayout::Undefined,
         EGraphicsImageLayout::DepthStencilAttachment,
         _opaqueRigidPBRShader,
+        EPrimitiveTopology::TriangleList,
         viewport
     );
 }

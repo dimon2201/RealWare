@@ -19,17 +19,21 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     s32 poolIndex,
     const XRenderTarget::THandle& renderTargetHandle,
     boolean bClearRenderTarget,
+    const cVector4& clearColor,
+    f32 clearDepth,
     EGraphicsImageLayout colorAttachmentSrcLayout,
     EGraphicsImageLayout colorAttachmentDstLayout,
     EGraphicsImageLayout depthAttachmentSrcLayout,
     EGraphicsImageLayout depthAttachmentDstLayout,
     const XShader::THandle& shaderHandle,
+    EPrimitiveTopology primitiveTopology,
     const SViewport& viewport
 ) :
     IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry),
     _bClearRenderTarget(bClearRenderTarget),
     _renderTarget(renderTargetHandle),
     _shader(shaderHandle),
+    _primitiveTopology(primitiveTopology),
     _viewport(viewport)
 {
     XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
@@ -42,7 +46,9 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_PASS,
         (cpuword)&gpuRenderTarget,
-        (cpuword)bClearRenderTarget
+        (cpuword)bClearRenderTarget,
+        (cpuword)&clearColor,
+        (cpuword)&clearDepth
     ));
 
     _gpuRenderPass = _context->GetSubsystem<CEngine>()->
@@ -63,7 +69,8 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         (cpuword)&gpuRenderTarget,
         (cpuword)&_gpuRenderPass,
         (cpuword)_inputTextures.size(),
-        (cpuword)texturesToBind.data()
+        (cpuword)texturesToBind.data(),
+        (cpuword)primitiveTopology
     ));
 
     _gpuPipeline = _context->GetSubsystem<CEngine>()->

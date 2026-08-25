@@ -7,10 +7,10 @@ void main()
     const int vertexIndex = gl_VertexIndex;
 
     const vec3 positions[] = {
-        vec3(1.0, -1.0, 0.0),
         vec3(1.0, 1.0, 0.0),
-        vec3(-1.0, -1.0, 0.0),
-        vec3(-1.0, 1.0, 0.0)
+        vec3(1.0, -1.0, 0.0),
+        vec3(-1.0, 1.0, 0.0),
+        vec3(-1.0, -1.0, 0.0)
     };
 
     const vec2 texcoords[] = {

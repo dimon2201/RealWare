@@ -8,5 +8,5 @@ layout(set = 0, binding = 0) uniform sampler2D presentTexture;
 
 void main()
 {
-    outColor = texture(presentTexture, inTexcoord, 0);
+    outColor = texture(presentTexture, texcoord, 0);
 }

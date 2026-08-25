@@ -389,7 +389,7 @@ void triton::XGraphicsBackendOGL::DestroyInputLayout(const CGPUInputLayoutResour
 
 triton::CGPURenderPassResource triton::XGraphicsBackendOGL::CreateRenderPass()
 {
-    return CGPURenderPassResource(0, 0, 0, 0);
+    return CGPURenderPassResource(0, 0, 0, 0, cVector4(0.0f), 0.0f);
 }
 
 void triton::XGraphicsBackendOGL::BindRenderPass(const CGPURenderPassResource& renderPass)

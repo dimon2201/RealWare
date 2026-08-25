@@ -69,11 +69,12 @@ void triton::cRenderThread::ThreadFunction()
 			else if (frame.operation == EProducedFrameOp::ExecuteFull)
 			{
 				// Full job
+				gfxBackend->BeginFrame();
 				ExecuteCommands(
 					frame.renderCommandPack,
 					gfxBackend
 				);
-				Present(gfxBackend);
+				gfxBackend->EndFrame();
 			}
 			else if (frame.operation == EProducedFrameOp::ExecuteCommandsOnly)
 			{
@@ -278,7 +279,9 @@ void triton::cRenderThread::ExecuteCommands(
 			{
 				CGPURenderPassResource resultRenderPass = gfxBackend->CreateRenderPass(
 					*((CGPURenderTargetResource*)cmd._args._argA),
-					cmd._args._argB
+					cmd._args._argB,
+					*(cVector4*)cmd._args._argC,
+					*(f32*)cmd._args._argD
 				);
 				memcpy(&_sync->GetResultBuffer().data[0], &resultRenderPass, sizeof(CGPURenderPassResource));
 				break;
@@ -337,7 +340,8 @@ void triton::cRenderThread::ExecuteCommands(
 					*(SViewport*)cmd._args._argB,
 					*(CGPURenderTargetResource*)cmd._args._argC,
 					*(CGPURenderPassResource*)cmd._args._argD,
-					texturesToBindVector
+					texturesToBindVector,
+					(EPrimitiveTopology)cmd._args._argG
 				);
 				
 				new (_sync->GetResultBuffer().data) CGPUPipelineResource(resultPipeline);

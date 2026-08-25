@@ -34,6 +34,7 @@ namespace triton
 		SSemaphore								_swapchainImageAvailableSemaphore;
 		std::vector<SSemaphore>					_swapchainRenderFinishedSemaphores;
 		SFence									_swapchainFence;
+		CGPUTextureResource						_swapchainPresentTexture = CGPUTextureResource::Invalid();
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -76,14 +77,17 @@ namespace triton
 			const SViewport& viewport,
 			CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass,
-			const std::vector<CGPUTextureResource>& texturesToBind
+			const std::vector<CGPUTextureResource>& texturesToBind,
+			EPrimitiveTopology primitiveTopology
 		) override final;
 
 		void DestroyPipeline(CGPUPipelineResource& pipeline) override final;
 
 		CGPURenderPassResource CreateRenderPass(
 			CGPURenderTargetResource& renderTarget,
-			types::boolean bClearRenderTarget
+			types::boolean bClearRenderTarget,
+			const cVector4& clearColor,
+			types::f32 clearDepth
 		) override final;
 
 		void DestroyRenderPass(CGPURenderPassResource& renderPass) override final;
@@ -191,6 +195,8 @@ namespace triton
 		VkPipelineBindPoint PipelineBindPointToNative(EPipelineBindPoint bindPoint);
 
 		VkViewport ViewportToNative(const SViewport& viewport);
+
+		VkPrimitiveTopology PrimitiveTopologyToNative(EPrimitiveTopology primitiveTopology);
 
 		std::string ShaderSourceInclude(const std::string& shaderSource, const std::string& includeStr);
 	};

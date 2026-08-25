@@ -11,6 +11,7 @@ namespace triton
 		Undefined,
 		ColorAttachment,
 		DepthStencilAttachment,
+		ShaderRead,
 		Present
 	};
 }
