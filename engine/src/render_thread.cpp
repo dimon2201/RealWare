@@ -247,19 +247,18 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::CREATE_SHADER:
 			{
-				/*CGPUShaderResource resultGPUShader = gfxBackend->CreateShader(
-					(const char*)cmd._args._argA,
-					(const char*)cmd._args._argB,
-					(const char*)cmd._args._argC,
-					(const char*)cmd._args._argD,
-					cmd._args._argE,
-					(const SShaderDefine*)cmd._args._argF,
-					cmd._args._argG,
-					(const char**)cmd._args._argH,
-					cmd._args._argI,
-					(const char**)cmd._args._argJ
+				CGPUShaderResource resultGPUShader = gfxBackend->CreateShader(
+					(dword)cmd._args._argA,
+					*((SShaderBytecodeFiles*)cmd._args._argB)
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultGPUShader, sizeof(CGPUShaderResource));*/
+				memcpy(&_sync->GetResultBuffer().data[0], &resultGPUShader, sizeof(CGPUShaderResource));
+				break;
+			}
+			case ERenderCommand::DESTROY_SHADER:
+			{
+				gfxBackend->DestroyShader(
+					*((CGPUShaderResource*)cmd._args._argA)
+				);
 				break;
 			}
 			case ERenderCommand::BIND_RIGID_INPUT_LAYOUT:
