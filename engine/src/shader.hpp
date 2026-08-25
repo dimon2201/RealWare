@@ -8,6 +8,7 @@
 #include "handle.hpp"
 #include "gpu_shader_resource.hpp"
 #include "shader_define.hpp"
+#include "shader_bytecode_files_struct.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -22,13 +23,8 @@ namespace triton
 		explicit XShader(
 			cContext* context,
 			types::s32 poolIndex,
-			const std::string& vertexStr,
-			const std::string& fragmentStr,
-			const std::string& vertexCustomFuncStr,
-			const std::string& fragmentCustomFuncStr,
-			const std::vector<SShaderDefine>& defines,
-			const std::vector<const char*>& vertexIncludePaths,
-			const std::vector<const char*>& fragmentIncludePaths
+			types::dword stageMask,
+			const SShaderBytecodeFiles& bytecodeFiles
 		);
 
 		~XShader() override;

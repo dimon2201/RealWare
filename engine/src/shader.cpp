@@ -12,30 +12,18 @@ using namespace types;
 triton::XShader::XShader(
 	cContext* context,
 	s32 poolIndex,
-	const std::string& vertexStr,
-	const std::string& fragmentStr,
-	const std::string& vertexCustomFuncStr,
-	const std::string& fragmentCustomFuncStr,
-	const std::vector<SShaderDefine>& defines,
-	const std::vector<const char*>& vertexIncludePaths,
-	const std::vector<const char*>& fragmentIncludePaths
+	types::dword stageMask,
+	const SShaderBytecodeFiles& bytecodeFiles
 ) : iObject(context, poolIndex)
 {
 	CThreadGuard::AssertMain();
 
 	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::CREATE_SHADER,
-		(cpuword)vertexStr.c_str(),
-		(cpuword)fragmentStr.c_str(),
-		(cpuword)vertexCustomFuncStr.c_str(),
-		(cpuword)fragmentCustomFuncStr.c_str(),
-		defines.size(),
-		(cpuword)defines.data(),
-		vertexIncludePaths.size(),
-		(cpuword)vertexIncludePaths.data(),
-		fragmentIncludePaths.size(),
-		(cpuword)fragmentIncludePaths.data()
+		(cpuword)stageMask,
+		(cpuword)&bytecodeFiles
 	));
+
 	_gpuShader = _context->GetSubsystem<CEngine>()->
 		GetSynchronization()->
 		WaitForRenderCommandResult<CGPUShaderResource>();
@@ -49,6 +37,7 @@ triton::XShader::~XShader()
 		ERenderCommand::DESTROY_SHADER,
 		(cpuword)&_gpuShader
 	));
+
 	_context->GetSubsystem<CEngine>()->
 		GetSynchronization()->
 		WaitForRenderCommandResult<void*>();
