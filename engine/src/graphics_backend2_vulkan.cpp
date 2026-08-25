@@ -8,7 +8,9 @@
 #include "input_backend.hpp"
 #include "context.hpp"
 #include "object_allocator.hpp"
+#include "filesystem_manager.hpp"
 #include "log.hpp"
+#include "memory_units.hpp"
 
 using namespace types;
 
@@ -374,6 +376,102 @@ void triton::BGraphicsBackend2Vulkan::DestroyRenderPass(CGPURenderPassResource& 
 		);
 
 		renderPass.Invalidate();
+	}
+}
+
+triton::CGPUShaderResource triton::BGraphicsBackend2Vulkan::CreateShader(
+	dword stageMask,
+	const SShaderSourceFiles& sourceFiles
+)
+{
+	if (!stageMask ||
+		(!sourceFiles.vertexFilePath.has_value() &&
+		!sourceFiles.pixelFilePath.has_value() &&
+		!sourceFiles.tessellationControlFilePath.has_value() &&
+		!sourceFiles.tessellationEvaluationFilePath.has_value() &&
+		!sourceFiles.computeFilePath.has_value()))
+		return CGPUShaderResource::Invalid();
+
+	if (stageMask & (dword)EShaderStage::Vertex &&
+		stageMask & (dword)EShaderStage::Pixel &&
+		sourceFiles.vertexFilePath.has_value() &&
+		sourceFiles.pixelFilePath.has_value())
+	{
+		u8* vertexShaderByteCode = nullptr;
+		const usize vertexShaderByteCodeSize = _context->GetSubsystem<CFileSystem>()->BinaryFileToArray(
+			sourceFiles.vertexFilePath.value().string(),
+			vertexShaderByteCode,
+			0
+		);
+
+		u8* pixelShaderByteCode = nullptr;
+		const usize pixelShaderByteCodeSize = _context->GetSubsystem<CFileSystem>()->BinaryFileToArray(
+			sourceFiles.pixelFilePath.value().string(),
+			pixelShaderByteCode,
+			0
+		);
+
+		VkResult result;
+
+		VkShaderModuleCreateInfo vertexShaderModuleCreateInfo = {};
+		vertexShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		vertexShaderModuleCreateInfo.codeSize = vertexShaderByteCodeSize;
+		vertexShaderModuleCreateInfo.pCode = (uint32_t*)vertexShaderByteCode;
+
+		VkShaderModule vertexShaderModule = VK_NULL_HANDLE;
+
+		result = vkCreateShaderModule(
+			_logicalDevice.device,
+			&vertexShaderModuleCreateInfo,
+			nullptr,
+			&vertexShaderModule
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to create vertex shader");
+
+		VkShaderModuleCreateInfo pixelShaderModuleCreateInfo = {};
+		pixelShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		pixelShaderModuleCreateInfo.codeSize = pixelShaderByteCodeSize;
+		pixelShaderModuleCreateInfo.pCode = (uint32_t*)pixelShaderByteCode;
+
+		VkShaderModule pixelShaderModule = VK_NULL_HANDLE;
+
+		result = vkCreateShaderModule(
+			_logicalDevice.device,
+			&pixelShaderModuleCreateInfo,
+			nullptr,
+			&pixelShaderModule
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to create pixel shader");
+
+		_context->GetSubsystem<CFileSystem>()->ReleaseBinaryFileArray(vertexShaderByteCode);
+		_context->GetSubsystem<CFileSystem>()->ReleaseBinaryFileArray(pixelShaderByteCode);
+
+		return CGPUShaderResource(
+			0,
+			0,
+			{ (qword)vertexShaderModule, (qword)pixelShaderModule }
+		);
+	}
+
+	return CGPUShaderResource::Invalid();
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroyShader(CGPUShaderResource& shader)
+{
+	if (shader.IsValid())
+	{
+		for (auto& module : shader.GetModules())
+			vkDestroyShaderModule(
+				_logicalDevice.device,
+				(VkShaderModule)module,
+				nullptr
+			);
+
+		shader.Invalidate();
 	}
 }
 
@@ -1490,4 +1588,12 @@ VkImageLayout triton::BGraphicsBackend2Vulkan::AttachmentLayoutToNative(EGraphic
 		return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	return VK_IMAGE_LAYOUT_UNDEFINED;
+}
+
+std::string triton::BGraphicsBackend2Vulkan::ShaderSourceInclude(
+	const std::string& shaderSource,
+	const std::string& includeStr
+)
+{
+	return includeStr + std::string("\n\n") + shaderSource;
 }

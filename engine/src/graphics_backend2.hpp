@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <filesystem>
+#include <optional>
 #include <vector>
 #include "backend.hpp"
 #include "math.hpp"
@@ -12,10 +14,21 @@
 #include "gpu_texture_resource.hpp"
 #include "gpu_render_target_resource.hpp"
 #include "gpu_render_pass_resource.hpp"
+#include "gpu_shader_resource.hpp"
+#include "shader_stage_enum.hpp"
 
 namespace triton
 {
     class cContext;
+
+	struct SShaderSourceFiles final
+	{
+		std::optional<std::filesystem::path> vertexFilePath = std::nullopt;
+		std::optional<std::filesystem::path> pixelFilePath = std::nullopt;
+		std::optional<std::filesystem::path> tessellationControlFilePath = std::nullopt;
+		std::optional<std::filesystem::path> tessellationEvaluationFilePath = std::nullopt;
+		std::optional<std::filesystem::path> computeFilePath = std::nullopt;
+	};
 
 	class IGraphicsBackend2 : public iBackend
 	{
@@ -58,6 +71,13 @@ namespace triton
 		) = 0;
 
 		virtual void DestroyRenderPass(CGPURenderPassResource& renderPass) = 0;
+
+		virtual CGPUShaderResource CreateShader(
+			types::dword stageMask,
+			const SShaderSourceFiles& sourceFiles
+		) = 0;
+
+		virtual void DestroyShader(CGPUShaderResource& shader) = 0;
 
 		virtual void BeginFrame() = 0;
 

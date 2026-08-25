@@ -70,6 +70,13 @@ namespace triton
 
 		void DestroyRenderPass(CGPURenderPassResource& renderPass) override final;
 
+		CGPUShaderResource CreateShader(
+			types::dword stageMask,
+			const SShaderSourceFiles& sourceFiles
+		) override final;
+
+		void DestroyShader(CGPUShaderResource& shader) override final;
+
 		void BeginFrame() override final;
 
 		void EndFrame() override final;
@@ -137,5 +144,7 @@ namespace triton
 		VkImageType TextureDimensionToNative(ETextureDimension textureDimension);
 
 		VkImageLayout AttachmentLayoutToNative(EGraphicsImageLayout attachmentLayout);
+
+		std::string ShaderSourceInclude(const std::string& shaderSource, const std::string& includeStr);
 	};
 }

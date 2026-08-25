@@ -191,8 +191,9 @@ triton::CGPUShaderResource triton::XGraphicsBackendOGL::CreateShader(
             vertexIncludeBufferByteCount += fs->TellFileByteSize(vertexIncludePaths[i]);
         u8* vertexIncludeBuffer = (u8*)ma->Allocate(vertexIncludeBufferByteCount, 64);
         usize vertexIncludeBufferPtr = 0;
-        for (usize i = 0; i < vertexIncludePathCount; i++)
-            vertexIncludeBufferPtr += fs->BinFileToArray(vertexIncludePaths[i], &vertexIncludeBuffer[0], vertexIncludeBufferPtr, vertexIncludeBufferByteCount);
+        // TODO: rewrite using BinaryFileToArray()
+        //for (usize i = 0; i < vertexIncludePathCount; i++)
+        //    vertexIncludeBufferPtr += fs->BinFileToArray(vertexIncludePaths[i], &vertexIncludeBuffer[0], vertexIncludeBufferPtr, vertexIncludeBufferByteCount);
         vertexCppStrInclude = std::string((const char*)&vertexIncludeBuffer[0], vertexIncludeBufferByteCount);
         ma->Deallocate(vertexIncludeBuffer);
     }
@@ -203,8 +204,9 @@ triton::CGPUShaderResource triton::XGraphicsBackendOGL::CreateShader(
             fragmentIncludeBufferByteCount += fs->TellFileByteSize(fragmentIncludePaths[i]);
         u8* fragmentIncludeBuffer = (u8*)ma->Allocate(fragmentIncludeBufferByteCount, 64);
         usize fragmentIncludeBufferPtr = 0;
-        for (usize i = 0; i < fragmentIncludePathCount; i++)
-            fragmentIncludeBufferPtr += fs->BinFileToArray(fragmentIncludePaths[i], &fragmentIncludeBuffer[0], fragmentIncludeBufferPtr, fragmentIncludeBufferByteCount);
+        // TODO: rewrite using BinaryFileToArray()
+        //for (usize i = 0; i < fragmentIncludePathCount; i++)
+        //    fragmentIncludeBufferPtr += fs->BinFileToArray(fragmentIncludePaths[i], &fragmentIncludeBuffer[0], fragmentIncludeBufferPtr, fragmentIncludeBufferByteCount);
         fragmentCppStrInclude = std::string((const char*)&fragmentIncludeBuffer[0], fragmentIncludeBufferByteCount);
         ma->Deallocate(fragmentIncludeBuffer);
     }
@@ -250,7 +252,7 @@ triton::CGPUShaderResource triton::XGraphicsBackendOGL::CreateShader(
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    return CGPUShaderResource(instance, 0);
+    return CGPUShaderResource::Invalid();
 }
 
 void triton::XGraphicsBackendOGL::BindShader(const CGPUShaderResource& shader)
