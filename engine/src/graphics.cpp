@@ -513,15 +513,27 @@ void triton::CGraphics::CreateRenderPasses()
     );*/
 
     CRenderPassGeometryPool* renderPassGeometryPool = _context->GetPool<CRenderPassGeometryPool>();
+    CRenderTargetPool* renderTargetPool = _context->GetPool<CRenderTargetPool>();
+
+    XRenderTarget& opaqueRenderTarget = *renderTargetPool->Get(_opaqueRenderTarget);
+
+    SViewport viewport;
+    viewport.rect = cVector4(
+        0,
+        0,
+        opaqueRenderTarget.GetColorAttachmentSize(0).GetX(),
+        opaqueRenderTarget.GetColorAttachmentSize(0).GetY()
+    );
 
     _opaqueRigid = *renderPassGeometryPool->Create(
         _opaqueRenderTarget,
         True,
-        _opaqueRigidPBRShader,
         EGraphicsImageLayout::Undefined,
         EGraphicsImageLayout::ColorAttachment,
         EGraphicsImageLayout::Undefined,
-        EGraphicsImageLayout::DepthStencilAttachment
+        EGraphicsImageLayout::DepthStencilAttachment,
+        _opaqueRigidPBRShader,
+        viewport
     );
 }
 

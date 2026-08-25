@@ -42,13 +42,14 @@ namespace triton
         explicit XRenderPassGeometry(
             cContext* context,
             types::s32 poolIndex,
-            const XRenderTarget::THandle& renderTarget,
+            const XRenderTarget::THandle& renderTargetHandle,
             types::boolean bClearRenderTarget,
-            const XShader::THandle& shader,
             EGraphicsImageLayout colorAttachmentSrcLayout,
             EGraphicsImageLayout colorAttachmentDstLayout,
             EGraphicsImageLayout depthAttachmentSrcLayout,
-            EGraphicsImageLayout depthAttachmentDstLayout
+            EGraphicsImageLayout depthAttachmentDstLayout,
+            const XShader::THandle& shaderHandle,
+            const SViewport& viewport
         );
         ~XRenderPassGeometry() override;
 

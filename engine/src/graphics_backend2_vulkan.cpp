@@ -314,12 +314,14 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 
 		VkViewport nativeViewport = ViewportToNative(viewport);
 
+		VkRect2D scissor = {};
+
 		VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {};
 		viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportStateCreateInfo.viewportCount = 1;
 		viewportStateCreateInfo.pViewports = &nativeViewport;
-		viewportStateCreateInfo.scissorCount = 0;
-		viewportStateCreateInfo.pScissors = nullptr;
+		viewportStateCreateInfo.scissorCount = 1;
+		viewportStateCreateInfo.pScissors = &scissor;
 
 		VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = {};
 		rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;

@@ -19,16 +19,18 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     s32 poolIndex,
     const XRenderTarget::THandle& renderTargetHandle,
     boolean bClearRenderTarget,
-    const XShader::THandle& shaderHandle,
     EGraphicsImageLayout colorAttachmentSrcLayout,
     EGraphicsImageLayout colorAttachmentDstLayout,
     EGraphicsImageLayout depthAttachmentSrcLayout,
-    EGraphicsImageLayout depthAttachmentDstLayout
+    EGraphicsImageLayout depthAttachmentDstLayout,
+    const XShader::THandle& shaderHandle,
+    const SViewport& viewport
 ) :
     IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry),
     _bClearRenderTarget(bClearRenderTarget),
     _renderTarget(renderTargetHandle),
-    _shader(shaderHandle)
+    _shader(shaderHandle),
+    _viewport(viewport)
 {
     XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
     for (usize i = 0; i < renderTarget.GetColorAttachments().size(); i++)
