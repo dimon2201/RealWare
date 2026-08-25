@@ -5,6 +5,7 @@
 #include "context.hpp"
 #include "engine.hpp"
 #include "synchronization.hpp"
+#include "texture_pool.hpp"
 
 using namespace types;
 
@@ -17,11 +18,19 @@ triton::XRenderTarget::XRenderTarget(
 {
     CThreadGuard::AssertMain();
 
+    PTexturePool* texturePool = _context->GetPool<PTexturePool>();
+
+    std::vector<CGPUTextureResource> gpuColorAttachments;
+    for (usize i = 0; i < colorAttachments.size(); i++)
+        gpuColorAttachments.push_back(texturePool->Get(colorAttachments[i]).value().get().GetGPUResource());
+
+    const CGPUTextureResource gpuDepthAttachment = texturePool->Get(depthAttachment).value().get().GetGPUResource();
+
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_TARGET,
         1,
-        (cpuword)colorAttachments.data(),
-        (cpuword)&depthAttachment
+        (cpuword)gpuColorAttachments.data(),
+        (cpuword)&gpuDepthAttachment
     ));
 
     _gpuRenderTarget =

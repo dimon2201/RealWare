@@ -27,7 +27,7 @@ triton::CGraphics::CGraphics(cContext* context) : CSubsystem(context)
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
     //CreateInputLayouts();
     CreateShaders();
-    //CreateRenderTargets();
+    CreateRenderTargets();
     //CreateRenderPasses();
 }
 
@@ -37,8 +37,8 @@ triton::CGraphics::~CGraphics()
     // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
     //DestroyRenderPasses();
-    //DestroyRenderTargets();
-    //DestroyShaders();
+    DestroyRenderTargets();
+    DestroyShaders();
     //DestroyInputLayouts();
 }
 
