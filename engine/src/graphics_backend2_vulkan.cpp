@@ -531,7 +531,8 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 	return CGPURenderPassResource(
 		(types::qword)renderPass,
 		0,
-		(types::qword)framebuffer
+		(types::qword)framebuffer,
+		bClearRenderTarget
 	);
 }
 
@@ -660,18 +661,47 @@ void triton::BGraphicsBackend2Vulkan::ResetCommandBuffer()
 
 void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	ENativeRenderCommand command,
-	const void* commandData
+	const void* commandArgA,
+	const void* commandArgB
 )
 {
 	if (command == ENativeRenderCommand::Unknown ||
-		!commandData)
+		!commandArgA)
 		return;
 
 	if (command == ENativeRenderCommand::BeginRenderPass)
 	{
+		CGPURenderTargetResource& renderTarget = *(CGPURenderTargetResource*)commandArgA;
+		CGPURenderPassResource& renderPass = *(CGPURenderPassResource*)commandArgB;
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.renderPass = (VkRenderPass)renderPass.GetInstance();
+		renderPassBeginInfo.framebuffer = (VkFramebuffer)renderPass.GetFramebuffer();
+		renderPassBeginInfo.renderArea.offset = {
+			0,
+			0
+		};
+		renderPassBeginInfo.renderArea.extent.width = (uint32_t)renderTarget.GetSize().GetX();
+		renderPassBeginInfo.renderArea.extent.width = (uint32_t)renderTarget.GetSize().GetY();
+		
+		VkClearValue clearValue = {};
+		clearValue.color = {
+			1.0f,
+			0.0f,
+			0.0f,
+			1.0f
+		};
+
+		if (renderPass.IsRenderTargetClearRequired() == True)
+		{
+			renderPassBeginInfo.clearValueCount = 1;
+			renderPassBeginInfo.pClearValues = &clearValue;
+		}
+
 		vkCmdBeginRenderPass(
 			_graphicsQueue.commandBuffer,
-			(VkRenderPassBeginInfo*)commandData,
+			&renderPassBeginInfo,
 			VK_SUBPASS_CONTENTS_INLINE
 		);
 	}
@@ -679,18 +709,18 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	{
 		vkCmdBindPipeline(
 			_graphicsQueue.commandBuffer,
-			PipelineBindPointToNative(((CGPUPipelineResource*)commandData)->GetBindingPoint()),
-			(VkPipeline)((CGPUPipelineResource*)commandData)->GetInstance()
+			PipelineBindPointToNative(((CGPUPipelineResource*)commandArgA)->GetBindingPoint()),
+			(VkPipeline)((CGPUPipelineResource*)commandArgA)->GetInstance()
 		);
 	}
 	else if (command == ENativeRenderCommand::Draw)
 	{
 		vkCmdDraw(
 			_graphicsQueue.commandBuffer,
-			((SNativeCommandDrawInfo*)commandData)->vertexCount,
-			((SNativeCommandDrawInfo*)commandData)->instanceCount,
-			((SNativeCommandDrawInfo*)commandData)->firstVertex,
-			((SNativeCommandDrawInfo*)commandData)->firstInstance
+			((SNativeCommandDrawInfo*)commandArgA)->vertexCount,
+			((SNativeCommandDrawInfo*)commandArgA)->instanceCount,
+			((SNativeCommandDrawInfo*)commandArgA)->firstVertex,
+			((SNativeCommandDrawInfo*)commandArgA)->firstInstance
 		);
 	}
 	else if (command == ENativeRenderCommand::EndRenderPass)
@@ -703,7 +733,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	}
 	else if (command == ENativeRenderCommand::SetViewport)
 	{
-		SViewport viewport = *(SViewport*)commandData;
+		SViewport viewport = *(SViewport*)commandArgA;
 
 		VkViewport nativeViewport = ViewportToNative(viewport);
 

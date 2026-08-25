@@ -86,7 +86,8 @@ namespace triton
 
 		virtual void AddCommandToBuffer(
 			ENativeRenderCommand command,
-			const void* commandData
+			const void* commandArgA,
+			const void* commandArgB
 		) = 0;
 
 		virtual void BeginFrame() = 0;

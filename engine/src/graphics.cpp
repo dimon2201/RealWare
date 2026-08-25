@@ -50,7 +50,7 @@ void triton::CGraphics::ExecutePasses()
     // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
     //BindBuffers();
-    //ExecuteBuiltinPasses();
+    ExecuteBuiltinPasses();
     //UnbindBuffers();
 }
 
@@ -592,14 +592,14 @@ void triton::CGraphics::ExecuteBuiltinPasses()
     // TODO: [Vulkan backend] This must be done using render command queue on main thread
     // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-    //CRenderPassGeometryPool* geometryRPPool = _context->GetPool<CRenderPassGeometryPool>();
+    CRenderPassGeometryPool* renderPassGeometryPool = _context->GetPool<CRenderPassGeometryPool>();
     //CRenderPassProcessingPool* processingRPPool = _context->GetPool<CRenderPassProcessingPool>();
     //
-    //XRenderPassGeometry& opaqueStatic = *geometryRPPool->Get(_opaqueStatic);
+    XRenderPassGeometry& opaqueRigid = *renderPassGeometryPool->Get(_opaqueRigid);
     //XRenderPassGeometry& opaqueSkinned = *geometryRPPool->Get(_opaqueSkinned);
     //XRenderPassProcessing& compositeFinal = *processingRPPool->Get(_compositeFinal);
     //
-    //opaqueStatic.Render();
+    opaqueRigid.Render();
     //opaqueSkinned.Render();
     //compositeFinal.Render();
 }

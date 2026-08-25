@@ -19,7 +19,10 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     s32 poolIndex,
     const XRenderTarget::THandle& renderTargetHandle,
     boolean bClearRenderTarget
-) : IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry), _renderTarget(renderTargetHandle)
+) :
+    IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry),
+    _bClearRenderTarget(bClearRenderTarget),
+    _renderTarget(renderTargetHandle)
 {
     XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
 
@@ -213,6 +216,22 @@ void triton::XRenderPassGeometry::Draw()
             instancePack.GetInstanceCount()
         );
     }*/
+
+    XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
+
+    _nativeCommandDrawInfo.vertexCount = 3;
+    _nativeCommandDrawInfo.instanceCount = 1;
+    _nativeCommandDrawInfo.firstVertex = 0;
+    _nativeCommandDrawInfo.firstInstance = 0;
+
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::EXECUTE_RENDER_PASS,
+        (cpuword)&renderTarget.GetGPUResource(),
+        (cpuword)&_gpuRenderPass,
+        (cpuword)&_gpuPipeline,
+        (cpuword)&_viewport,
+        (cpuword)&_nativeCommandDrawInfo
+    ));
 }
 
 void triton::XRenderPassGeometry::Unbind()

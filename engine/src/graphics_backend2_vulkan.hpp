@@ -89,7 +89,8 @@ namespace triton
 
 		void AddCommandToBuffer(
 			ENativeRenderCommand command,
-			const void* commandData
+			const void* commandArgA,
+			const void* commandArgB
 		) override final;
 
 		void BeginFrame() override final;

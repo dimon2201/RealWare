@@ -280,11 +280,46 @@ void triton::cRenderThread::ExecuteCommands(
 				memcpy(&_sync->GetResultBuffer().data[0], &resultRenderPass, sizeof(CGPURenderPassResource));
 				break;
 			}
+			case ERenderCommand::EXECUTE_RENDER_PASS:
+			{
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::BeginRenderPass,
+					(CGPURenderTargetResource*)cmd._args._argA,
+					(CGPURenderPassResource*)cmd._args._argB
+				);
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::BindPipeline,
+					(CGPUPipelineResource*)cmd._args._argC,
+					nullptr
+				);
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::SetViewport,
+					(SViewport*)cmd._args._argD,
+					nullptr
+				);
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::SetScissor,
+					nullptr,
+					nullptr
+				);
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::Draw,
+					(SNativeCommandDrawInfo*)cmd._args._argE,
+					nullptr
+				);
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::EndRenderPass,
+					nullptr,
+					nullptr
+				);
+				break;
+			}
 			case ERenderCommand::DESTROY_RENDER_PASS:
 			{
 				gfxBackend->DestroyRenderPass(
 					*((CGPURenderPassResource*)cmd._args._argA)
 				);
+				break;
 			}
 			case ERenderCommand::CREATE_PIPELINE:
 			{
@@ -301,6 +336,7 @@ void triton::cRenderThread::ExecuteCommands(
 				gfxBackend->DestroyPipeline(
 					*(CGPUPipelineResource*)cmd._args._argA
 				);
+				break;
 			}
 		}
 	}

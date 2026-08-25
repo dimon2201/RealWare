@@ -9,6 +9,7 @@
 #include "shader_texture_binding.hpp"
 #include "render_instance_pack.hpp"
 #include "render_shading_model_enum.hpp"
+#include "render_native_draw_command_info_struct.hpp"
 #include "gpu_pipeline_resource.hpp"
 #include "input_layout.hpp"
 #include "shader.hpp"
@@ -29,11 +30,13 @@ namespace triton
         SDepthState                                 _depthState;
         SBlendState                                 _blendState;
         SViewport                                   _viewport = {};
+        types::boolean                              _bClearRenderTarget = types::False;
         XRenderTarget::THandle                      _renderTarget;
         XShader::THandle                            _shader;
         XCamera::THandle                            _camera;
         EShadingModel                               _shadingModel = EShadingModel::PBR;
         CGPUPipelineResource                        _gpuPipeline = CGPUPipelineResource::Invalid();
+        SNativeCommandDrawInfo                      _nativeCommandDrawInfo;
 
     public:
         explicit XRenderPassGeometry(
@@ -46,7 +49,9 @@ namespace triton
 
         void Render() override;
 
-        XShader::THandle GetShader() { return _shader; }
+        inline types::boolean IsRenderTargetClearRequired() const { return _bClearRenderTarget; }
+
+        inline XShader::THandle GetShader() { return _shader; }
 
         inline EShadingModel GetShadingModel() const { return _shadingModel; }
 
