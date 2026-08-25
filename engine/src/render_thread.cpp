@@ -271,6 +271,37 @@ void triton::cRenderThread::ExecuteCommands(
 				//gfxBackend->BindSkinnedInputLayout();
 				break;
 			}
+			case ERenderCommand::CREATE_RENDER_PASS:
+			{
+				CGPURenderPassResource resultRenderPass = gfxBackend->CreateRenderPass(
+					*((CGPURenderTargetResource*)cmd._args._argA),
+					cmd._args._argB
+				);
+				memcpy(&_sync->GetResultBuffer().data[0], &resultRenderPass, sizeof(CGPURenderPassResource));
+				break;
+			}
+			case ERenderCommand::DESTROY_RENDER_PASS:
+			{
+				gfxBackend->DestroyRenderPass(
+					*((CGPURenderPassResource*)cmd._args._argA)
+				);
+			}
+			case ERenderCommand::CREATE_PIPELINE:
+			{
+				CGPUPipelineResource resultPipeline = gfxBackend->CreatePipeline(
+					*(CGPUShaderResource*)cmd._args._argA,
+					*(SViewport*)cmd._args._argB,
+					*(CGPURenderPassResource*)cmd._args._argC
+				);
+				memcpy(&_sync->GetResultBuffer().data[0], &resultPipeline, sizeof(CGPUPipelineResource));
+				break;
+			}
+			case ERenderCommand::DESTROY_PIPELINE:
+			{
+				gfxBackend->DestroyPipeline(
+					*(CGPUPipelineResource*)cmd._args._argA
+				);
+			}
 		}
 	}
 }

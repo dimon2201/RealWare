@@ -14,6 +14,60 @@
 
 using namespace types;
 
+triton::XRenderPassGeometry::XRenderPassGeometry(
+    cContext* context,
+    s32 poolIndex,
+    const XRenderTarget::THandle& renderTargetHandle,
+    boolean bClearRenderTarget
+) : IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry), _renderTarget(renderTargetHandle)
+{
+    XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
+
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_RENDER_PASS,
+        (cpuword)&renderTarget.GetGPUResource(),
+        (cpuword)bClearRenderTarget
+    ));
+
+    _gpuRenderPass = _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<CGPURenderPassResource>();
+
+    XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
+
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::CREATE_PIPELINE,
+        (cpuword)&shader.GetGPUResource(),
+        (cpuword)&_viewport,
+        (cpuword)&_gpuRenderPass
+    ));
+
+    _gpuPipeline = _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<CGPUPipelineResource>();
+}
+
+triton::XRenderPassGeometry::~XRenderPassGeometry()
+{
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_PIPELINE,
+        (cpuword)&_gpuPipeline
+    ));
+
+    _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<void*>();
+
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::DESTROY_RENDER_PASS,
+        (cpuword)&_gpuRenderPass
+    ));
+
+    _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<void*>();
+}
+
 void triton::XRenderPassGeometry::Render()
 {
     CThreadGuard::AssertRender();

@@ -9,6 +9,7 @@
 #include "shader_texture_binding.hpp"
 #include "render_instance_pack.hpp"
 #include "render_shading_model_enum.hpp"
+#include "gpu_pipeline_resource.hpp"
 #include "input_layout.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
@@ -32,13 +33,16 @@ namespace triton
         XShader::THandle                            _shader;
         XCamera::THandle                            _camera;
         EShadingModel                               _shadingModel = EShadingModel::PBR;
+        CGPUPipelineResource                        _gpuPipeline = CGPUPipelineResource::Invalid();
 
     public:
         explicit XRenderPassGeometry(
             cContext* context,
-            types::s32 poolIndex
-        ) : IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry) {}
-        ~XRenderPassGeometry() override = default;
+            types::s32 poolIndex,
+            const XRenderTarget::THandle& renderTarget,
+            types::boolean bClearRenderTarget
+        );
+        ~XRenderPassGeometry() override;
 
         void Render() override;
 

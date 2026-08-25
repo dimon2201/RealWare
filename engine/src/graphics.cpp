@@ -386,7 +386,7 @@ void triton::CGraphics::CreateRenderTargets()
 
 void triton::CGraphics::CreateRenderPasses()
 {
-    cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
+    /*cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
     CFileSystem* fs = _context->GetSubsystem<CFileSystem>();
 
     SViewport viewport;
@@ -444,7 +444,7 @@ void triton::CGraphics::CreateRenderPasses()
     transparentData.SetRenderTarget(_transparentRenderTarget);
 
     // Text render pass
-    /*auto textVertexStr = fs->TextFileToString(textVertexShaderPath);
+    auto textVertexStr = fs->TextFileToString(textVertexShaderPath);
     auto textFragmentStr = fs->TextFileToString(textFragmentShaderPath);
     XShader::THandle textShader = *_context->GetPool<CShaderPool>()->Create(
         textVertexStr,
@@ -463,7 +463,7 @@ void triton::CGraphics::CreateRenderPasses()
     textData.SetShader(textShader);
     textData.SetViewport(viewport);
     textData.SetDepthState(SDepthState(K_FALSE, K_FALSE));
-    textData.SetRenderTarget(_opaqueRenderTarget);*/
+    textData.SetRenderTarget(_opaqueRenderTarget);
 
     // Composite transparent render pass
     SBlendState compositeTransparentBlendState = {};
@@ -508,6 +508,13 @@ void triton::CGraphics::CreateRenderPasses()
         SDepthState(False, False),
         XRenderTarget::THandle(),
         _compositeFinalShader
+    );*/
+
+    CRenderPassGeometryPool* renderPassGeometryPool = _context->GetPool<CRenderPassGeometryPool>();
+
+    _opaqueRigid = *renderPassGeometryPool->Create(
+        _opaqueRenderTarget,
+        True
     );
 }
 
@@ -550,14 +557,14 @@ void triton::CGraphics::DestroyRenderTargets()
 void triton::CGraphics::DestroyRenderPasses()
 {
     CRenderPassGeometryPool* geometryRPPool = _context->GetPool<CRenderPassGeometryPool>();
-    CRenderPassProcessingPool* processingRPPool = _context->GetPool<CRenderPassProcessingPool>();
+    //CRenderPassProcessingPool* processingRPPool = _context->GetPool<CRenderPassProcessingPool>();
 
-    processingRPPool->Destroy(_compositeFinal);
-    processingRPPool->Destroy(_compositeTransparent);
+    //processingRPPool->Destroy(_compositeFinal);
+    //processingRPPool->Destroy(_compositeTransparent);
     //rpPool->Destroy(_text);
-    geometryRPPool->Destroy(_transparent);
-    geometryRPPool->Destroy(_opaqueSkinned);
-    geometryRPPool->Destroy(_opaqueStatic);
+    //geometryRPPool->Destroy(_transparent);
+    //geometryRPPool->Destroy(_opaqueSkinned);
+    geometryRPPool->Destroy(_opaqueRigid);
 }
 
 void triton::CGraphics::BindBuffers()

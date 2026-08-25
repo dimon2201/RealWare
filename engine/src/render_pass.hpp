@@ -4,6 +4,7 @@
 
 #include "object.hpp"
 #include "render_pass_dispatch_enum.hpp"
+#include "gpu_render_pass_resource.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -14,6 +15,8 @@ namespace triton
 	{
         TRITON_CLASS_NAME(IRenderPass)
 
+    protected:
+        CGPURenderPassResource _gpuRenderPass = CGPURenderPassResource::Invalid();
         ERenderPassDispatch _dispatch = ERenderPassDispatch::None;
         
     public:

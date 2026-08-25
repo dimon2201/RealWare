@@ -19,6 +19,11 @@ namespace triton
         ) : CGPUResource(instance, viewInstance), _framebuffer(framebuffer) {}
         ~CGPURenderPassResource() override = default;
 
+        static CGPURenderPassResource Invalid()
+        {
+            return CGPURenderPassResource(0, 0, 0);
+        }
+
         inline types::qword GetFramebuffer() const { return _framebuffer; }
     };
 }

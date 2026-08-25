@@ -37,7 +37,7 @@ namespace triton
         XShader::THandle                    _compositeFinalShader;
         XRenderTarget::THandle              _opaqueRenderTarget;
         XRenderTarget::THandle              _transparentRenderTarget;
-        XRenderPassGeometry::THandle        _opaqueStatic;
+        XRenderPassGeometry::THandle        _opaqueRigid;
         XRenderPassGeometry::THandle        _opaqueSkinned;
         XRenderPassGeometry::THandle        _transparent;
         //XRenderPass::THandle _text;
@@ -56,7 +56,7 @@ namespace triton
         
         void SetShadingModel(EShadingModel shadingModel);
 
-        const XRenderPassGeometry::THandle& GetOpaqueStaticRenderPass() const { return _opaqueStatic; }
+        const XRenderPassGeometry::THandle& GetOpaqueStaticRenderPass() const { return _opaqueRigid; }
 
         const XRenderPassGeometry::THandle& GetOpaqueSkinnedRenderPass() const { return _opaqueSkinned; }
 
