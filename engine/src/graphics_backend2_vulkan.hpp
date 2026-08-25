@@ -165,6 +165,11 @@ namespace triton
 
 		void DestroyDescriptorSet(const SDescriptorSet& descriptorSet);
 
+		types::usize FindProperImageMemoryType(
+			VkPhysicalDeviceMemoryProperties memoryProperties,
+			VkMemoryRequirements requirements
+		);
+
 		VkFormat TextureFormatToNative(ETextureFormat textureFormat);
 
 		VkImageUsageFlags TextureUsageToNative(types::dword textureUsageMask);

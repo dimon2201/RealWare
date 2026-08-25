@@ -140,6 +140,51 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to create image");
 
+	VkPhysicalDeviceMemoryProperties memoryProperties = {};
+	vkGetPhysicalDeviceMemoryProperties(
+		_physicalDevice.device,
+		&memoryProperties
+	);
+
+	VkMemoryRequirements requirements = {};
+	vkGetImageMemoryRequirements(
+		_logicalDevice.device,
+		image,
+		&requirements
+	);
+
+	usize memoryTypeIndex = FindProperImageMemoryType(
+		memoryProperties,
+		requirements
+	);
+
+	VkMemoryAllocateInfo memoryAllocateInfo = {};
+	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.allocationSize = requirements.size;
+	memoryAllocateInfo.memoryTypeIndex = memoryTypeIndex;
+
+	VkDeviceMemory memory = VK_NULL_HANDLE;
+
+	result = vkAllocateMemory(
+		_logicalDevice.device,
+		&memoryAllocateInfo,
+		nullptr,
+		&memory
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to allocate image memory");
+
+	result = vkBindImageMemory(
+		_logicalDevice.device,
+		image,
+		memory,
+		(VkDeviceSize)0
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to bind image memory");
+
 	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_NONE;
 
 	if (usageMask & (dword)ETextureUsageBit::Sampled ||
@@ -208,6 +253,7 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		(qword)image,
 		(qword)imageView,
 		bCreateSampler == True ? (qword)sampler : 0,
+		(qword)memory,
 		format,
 		usageMask,
 		dimension,
@@ -236,6 +282,12 @@ void triton::BGraphicsBackend2Vulkan::DestroyTexture(CGPUTextureResource& textur
 		vkDestroyImage(
 			_logicalDevice.device,
 			(VkImage)texture.GetInstance(),
+			nullptr
+		);
+
+		vkFreeMemory(
+			_logicalDevice.device,
+			(VkDeviceMemory)texture.GetDeviceMemory(),
 			nullptr
 		);
 	}
@@ -1804,6 +1856,7 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderTargets()
 			(qword)_swapchain.images[i].image,
 			(qword)_swapchain.images[i].view,
 			0,
+			0,
 			ETextureFormat::BGRA8_SRGB,
 			(dword)ETextureUsageBit::ColorAttachment,
 			ETextureDimension::Texture2D,
@@ -2062,6 +2115,29 @@ void triton::BGraphicsBackend2Vulkan::DestroyDescriptorSet(const SDescriptorSet&
 			descriptorSet.pool,
 			nullptr
 		);
+}
+
+usize triton::BGraphicsBackend2Vulkan::FindProperImageMemoryType(
+	VkPhysicalDeviceMemoryProperties memoryProperties,
+	VkMemoryRequirements requirements
+)
+{
+	uint32_t memoryTypeIndex = UINT32_MAX;
+
+	for (usize i = 0; i < memoryProperties.memoryTypeCount; ++i)
+	{
+		const bool typeSupported = (requirements.memoryTypeBits & (1u << i)) != 0;
+
+		const bool propertiesSupported =
+			(memoryProperties.memoryTypes[i].propertyFlags &
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+			== VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+		if (typeSupported && propertiesSupported)
+			return i;
+	}
+
+	return 0;
 }
 
 VkFormat triton::BGraphicsBackend2Vulkan::TextureFormatToNative(ETextureFormat textureFormat)
