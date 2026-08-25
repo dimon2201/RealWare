@@ -46,6 +46,8 @@ namespace triton
             types::u8*& array,
             types::usize offset
         );
+
+        void ReleaseBinaryFileArray(types::u8* array);
         
         types::usize TellFileByteSize(const std::string& path);
         void DestroyDataFile(cDataFile* buffer);

@@ -88,6 +88,14 @@ usize triton::CFileSystem::BinaryFileToArray(
     return arrayByteSize;
 }
 
+void triton::CFileSystem::ReleaseBinaryFileArray(u8* array)
+{
+    if (!array)
+        return;
+
+    CObjectAllocator::Deallocate((void*)array);
+}
+
 usize triton::CFileSystem::TellFileByteSize(const std::string& path)
 {
     std::ifstream inputFile(path, std::ios::binary);
