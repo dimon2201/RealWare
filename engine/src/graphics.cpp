@@ -16,6 +16,7 @@
 #include "material_pool.hpp"
 #include "texture.hpp"
 #include "window.hpp"
+#include "shader_stage_enum.hpp"
 
 using namespace types;
 
@@ -152,7 +153,7 @@ void triton::CGraphics::CreateInputLayouts()
 
 void triton::CGraphics::CreateShaders()
 {
-    CFileSystem* fs = _context->GetSubsystem<CFileSystem>();
+    /*CFileSystem* fs = _context->GetSubsystem<CFileSystem>();
 
     const std::string pbrShaderPath =
         "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/brdf.shader";
@@ -279,6 +280,19 @@ void triton::CGraphics::CreateShaders()
         emptyShaderDefineVec,
         emptyConstCharVec,
         emptyConstCharVec
+    );*/
+
+    CShaderPool* shaderPool = _context->GetPool<CShaderPool>();
+
+    SShaderBytecodeFiles bytecodeFiles;
+    bytecodeFiles.vertexFilePath =
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough.vert";
+    bytecodeFiles.pixelFilePath = 
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough.frag";
+
+    _opaqueRigidPBRShader = *shaderPool->Create(
+        (dword)EShaderStage::Vertex | (dword)EShaderStage::Pixel,
+        bytecodeFiles
     );
 }
 
@@ -509,11 +523,11 @@ void triton::CGraphics::DestroyShaders()
 {
     CShaderPool* shaderPool = _context->GetPool<CShaderPool>();
     shaderPool->Destroy(_opaqueRigidPBRShader);
-    shaderPool->Destroy(_opaqueSkinnedPBRShader);
-    shaderPool->Destroy(_transparentShader);
-    shaderPool->Destroy(_textShader);
-    shaderPool->Destroy(_compositeTransparentShader);
-    shaderPool->Destroy(_compositeFinalShader);
+    //shaderPool->Destroy(_opaqueSkinnedPBRShader);
+    //shaderPool->Destroy(_transparentShader);
+    //shaderPool->Destroy(_textShader);
+    //shaderPool->Destroy(_compositeTransparentShader);
+    //shaderPool->Destroy(_compositeFinalShader);
 }
 
 void triton::CGraphics::DestroyRenderTargets()
