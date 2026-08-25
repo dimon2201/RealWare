@@ -64,7 +64,8 @@ namespace triton
 		void DestroyRenderTarget(CGPURenderTargetResource& renderTarget) override final;
 
 		CGPURenderPassResource CreateRenderPass(
-			const CGPURenderTargetResource& renderTarget
+			const CGPURenderTargetResource& renderTarget,
+			types::boolean bClearRenderTarget
 		) override final;
 
 		void DestroyRenderPass(CGPURenderPassResource& renderPass) override final;

@@ -222,7 +222,8 @@ void triton::BGraphicsBackend2Vulkan::DestroyRenderTarget(CGPURenderTargetResour
 }
 
 triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass(
-	const CGPURenderTargetResource& renderTarget
+	const CGPURenderTargetResource& renderTarget,
+	boolean bClearRenderTarget
 )
 {
 	const usize colorAttachmentCount = renderTarget.GetColorAttachmentCount();
@@ -233,13 +234,19 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 	std::vector<VkAttachmentReference> colorReferences(colorAttachmentCount);
 	VkAttachmentReference depthReference = {};
 
+	VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_NONE;
+	if (bClearRenderTarget == True)
+		loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	else if (bClearRenderTarget == False)
+		loadOp = VK_ATTACHMENT_LOAD_OP_NONE;
+
 	for (usize i = 0; i < colorAttachmentCount; ++i)
 	{
 		attachments[i].format = TextureFormatToNative(
 			renderTarget.GetColorAttachments()[i].GetFormat()
 		);
 		attachments[i].samples = VK_SAMPLE_COUNT_1_BIT;
-		attachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		attachments[i].loadOp = loadOp;
 		attachments[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachments[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -260,7 +267,7 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 			renderTarget.GetDepthAttachment().GetFormat()
 		);
 		attachments[colorAttachmentCount].samples = VK_SAMPLE_COUNT_1_BIT;
-		attachments[colorAttachmentCount].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		attachments[colorAttachmentCount].loadOp = loadOp;
 		attachments[colorAttachmentCount].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachments[colorAttachmentCount].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[colorAttachmentCount].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -1363,7 +1370,7 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderPasses()
 {
 	_swapchainRenderPasses.reserve(_swapchainRenderTargets.size());
 	for (auto& renderTarget : _swapchainRenderTargets)
-		_swapchainRenderPasses.push_back(CreateRenderPass(renderTarget));
+		_swapchainRenderPasses.push_back(CreateRenderPass(renderTarget, True));
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderPasses()

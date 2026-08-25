@@ -53,7 +53,8 @@ namespace triton
 		virtual void DestroyRenderTarget(CGPURenderTargetResource& renderTarget) = 0;
 
 		virtual CGPURenderPassResource CreateRenderPass(
-			const CGPURenderTargetResource& renderTarget
+			const CGPURenderTargetResource& renderTarget,
+			types::boolean bClearRenderTarget
 		) = 0;
 
 		virtual void DestroyRenderPass(CGPURenderPassResource& renderPass) = 0;
