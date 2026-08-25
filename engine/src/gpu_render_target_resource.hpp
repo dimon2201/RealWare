@@ -14,8 +14,8 @@ namespace triton
     {
         std::vector<CGPUTextureResource> _colorAttachments;
         CGPUTextureResource _depthAttachment = CGPUTextureResource::Invalid();
-        EGraphicsImageLayout _colorAttachmentSrcLayouts[8];
-        EGraphicsImageLayout _colorAttachmentDstLayouts[8];
+        std::vector<EGraphicsImageLayout> _colorAttachmentSrcLayouts;
+        std::vector<EGraphicsImageLayout> _colorAttachmentDstLayouts;
         EGraphicsImageLayout _depthAttachmentSrcLayout;
         EGraphicsImageLayout _depthAttachmentDstLayout;
 
@@ -28,7 +28,12 @@ namespace triton
         ) : CGPUResource(instance, view),
             _depthAttachment(depthAttachment)
         {
-            SetColorAttachments(colorAttachments);
+            for (types::usize i = 0; i < colorAttachments.size(); i++)
+            {
+                _colorAttachments.push_back(colorAttachments[i]);
+                _colorAttachmentSrcLayouts.push_back(EGraphicsImageLayout::Undefined);
+                _colorAttachmentDstLayouts.push_back(EGraphicsImageLayout::Undefined);
+            }
         }
         ~CGPURenderTargetResource() override = default;
 
@@ -41,13 +46,13 @@ namespace triton
 
         inline types::usize GetColorAttachmentCount() const { return _colorAttachments.size(); }
 
-        inline const std::vector<CGPUTextureResource> GetColorAttachments() const { return _colorAttachments; }
+        inline std::vector<CGPUTextureResource>& GetColorAttachments() { return _colorAttachments; }
 
-        inline const CGPUTextureResource& GetDepthAttachment() const { return _depthAttachment; }
+        inline CGPUTextureResource& GetDepthAttachment() { return _depthAttachment; }
 
-        inline const EGraphicsImageLayout* GetColorAttachmentSrcLayouts() const { return _colorAttachmentSrcLayouts; }
+        inline const std::vector<EGraphicsImageLayout>& GetColorAttachmentSrcLayouts() const { return _colorAttachmentSrcLayouts; }
 
-        inline const EGraphicsImageLayout* GetColorAttachmentDstLayouts() const { return _colorAttachmentDstLayouts; }
+        inline const std::vector<EGraphicsImageLayout>& GetColorAttachmentDstLayouts() const { return _colorAttachmentDstLayouts; }
 
         inline const EGraphicsImageLayout GetDepthAttachmentSrcLayout() const { return _depthAttachmentSrcLayout; }
 
@@ -56,14 +61,6 @@ namespace triton
         inline const cVector2& GetSize() const
         {
             return cVector2(_colorAttachments[0].GetWidth(), _colorAttachments[0].GetHeight());
-        }
-
-        inline void SetColorAttachments(const std::vector<CGPUTextureResource>& colorAttachments)
-        {
-            const types::usize attachmentCount = colorAttachments.size();
-            _colorAttachments.reserve(attachmentCount);
-            for (types::usize i = 0; i < attachmentCount; i++)
-                _colorAttachments.push_back(colorAttachments[i]);
         }
 
         inline void SetColorAttachmentLayout(
@@ -82,7 +79,7 @@ namespace triton
         )
         {
             _depthAttachmentSrcLayout = srcLayout;
-            _depthAttachmentSrcLayout = dstLayout;
+            _depthAttachmentDstLayout = dstLayout;
         }
 
         inline void SetDepthAttachment(const CGPUTextureResource& depthAttachment) { _depthAttachment = depthAttachment; }

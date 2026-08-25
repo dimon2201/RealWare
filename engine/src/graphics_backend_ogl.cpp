@@ -505,7 +505,7 @@ void triton::XGraphicsBackendOGL::ResizeRenderTargetColors(
         );
         DestroyTexture(attachment);
     }
-    renderTarget.SetColorAttachments(newColorAttachments);
+    //renderTarget.SetColorAttachments(newColorAttachments);
 
     GLenum buffs[16] = {};
     glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)renderTarget.GetInstance());

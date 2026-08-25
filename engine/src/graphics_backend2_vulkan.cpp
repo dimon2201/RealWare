@@ -259,7 +259,7 @@ triton::CGPURenderTargetResource triton::BGraphicsBackend2Vulkan::CreateRenderTa
 triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	const CGPUShaderResource& shader,
 	const SViewport& viewport,
-	const CGPURenderTargetResource& renderTarget,
+	CGPURenderTargetResource& renderTarget,
 	const CGPURenderPassResource& renderPass,
 	const std::vector<CGPUTextureResource>& texturesToBind
 )
@@ -479,7 +479,7 @@ void triton::BGraphicsBackend2Vulkan::DestroyRenderTarget(CGPURenderTargetResour
 }
 
 triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass(
-	const CGPURenderTargetResource& renderTarget,
+	CGPURenderTargetResource& renderTarget,
 	boolean bClearRenderTarget
 )
 {

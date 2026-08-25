@@ -43,7 +43,12 @@ namespace triton
             cContext* context,
             types::s32 poolIndex,
             const XRenderTarget::THandle& renderTarget,
-            types::boolean bClearRenderTarget
+            types::boolean bClearRenderTarget,
+            const XShader::THandle& shader,
+            EGraphicsImageLayout colorAttachmentSrcLayout,
+            EGraphicsImageLayout colorAttachmentDstLayout,
+            EGraphicsImageLayout depthAttachmentSrcLayout,
+            EGraphicsImageLayout depthAttachmentDstLayout
         );
         ~XRenderPassGeometry() override;
 

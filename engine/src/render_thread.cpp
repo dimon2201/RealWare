@@ -339,7 +339,9 @@ void triton::cRenderThread::ExecuteCommands(
 					*(CGPURenderPassResource*)cmd._args._argD,
 					texturesToBindVector
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultPipeline, sizeof(CGPUPipelineResource));
+				
+				new (_sync->GetResultBuffer().data) CGPUPipelineResource(resultPipeline);
+
 				break;
 			}
 			case ERenderCommand::DESTROY_PIPELINE:

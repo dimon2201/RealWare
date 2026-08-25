@@ -68,7 +68,7 @@ namespace triton
 		CGPUPipelineResource CreatePipeline(
 			const CGPUShaderResource& shader,
 			const SViewport& viewport,
-			const CGPURenderTargetResource& renderTarget,
+			CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass,
 			const std::vector<CGPUTextureResource>& texturesToBind
 		) override final;
@@ -76,7 +76,7 @@ namespace triton
 		void DestroyPipeline(CGPUPipelineResource& pipeline) override final;
 
 		CGPURenderPassResource CreateRenderPass(
-			const CGPURenderTargetResource& renderTarget,
+			CGPURenderTargetResource& renderTarget,
 			types::boolean bClearRenderTarget
 		) override final;
 

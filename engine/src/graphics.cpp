@@ -28,7 +28,7 @@ triton::CGraphics::CGraphics(cContext* context) : CSubsystem(context)
     //CreateInputLayouts();
     CreateShaders();
     CreateRenderTargets();
-    //CreateRenderPasses();
+    CreateRenderPasses();
 }
 
 triton::CGraphics::~CGraphics()
@@ -39,7 +39,7 @@ triton::CGraphics::~CGraphics()
     //DestroyRenderPasses();
     DestroyRenderTargets();
     DestroyShaders();
-    //DestroyInputLayouts();
+    DestroyInputLayouts();
 }
 
 void triton::CGraphics::ExecutePasses()
@@ -516,7 +516,12 @@ void triton::CGraphics::CreateRenderPasses()
 
     _opaqueRigid = *renderPassGeometryPool->Create(
         _opaqueRenderTarget,
-        True
+        True,
+        _opaqueRigidPBRShader,
+        EGraphicsImageLayout::Undefined,
+        EGraphicsImageLayout::ColorAttachment,
+        EGraphicsImageLayout::Undefined,
+        EGraphicsImageLayout::DepthStencilAttachment
     );
 }
 

@@ -18,13 +18,23 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     cContext* context,
     s32 poolIndex,
     const XRenderTarget::THandle& renderTargetHandle,
-    boolean bClearRenderTarget
+    boolean bClearRenderTarget,
+    const XShader::THandle& shaderHandle,
+    EGraphicsImageLayout colorAttachmentSrcLayout,
+    EGraphicsImageLayout colorAttachmentDstLayout,
+    EGraphicsImageLayout depthAttachmentSrcLayout,
+    EGraphicsImageLayout depthAttachmentDstLayout
 ) :
     IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry),
     _bClearRenderTarget(bClearRenderTarget),
-    _renderTarget(renderTargetHandle)
+    _renderTarget(renderTargetHandle),
+    _shader(shaderHandle)
 {
     XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
+    for (usize i = 0; i < renderTarget.GetColorAttachments().size(); i++)
+        renderTarget.SetColorAttachmentLayout(i, colorAttachmentSrcLayout, colorAttachmentDstLayout);
+    renderTarget.SetDepthAttachmentLayout(depthAttachmentSrcLayout, depthAttachmentDstLayout);
+
     const CGPURenderTargetResource& gpuRenderTarget = renderTarget.GetGPUResource();
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
