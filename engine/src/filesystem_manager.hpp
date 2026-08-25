@@ -40,7 +40,13 @@ namespace triton
 
         cDataFile* CreateDataFile(const std::string& path, types::boolean isText);
         std::string TextFileToString(const std::string& path);
-        types::usize BinFileToArray(const std::string& path, types::u8* array, types::usize offset, types::usize maxByteSize);
+
+        types::usize BinaryFileToArray(
+            const std::string& path,
+            types::u8*& array,
+            types::usize offset
+        );
+        
         types::usize TellFileByteSize(const std::string& path);
         void DestroyDataFile(cDataFile* buffer);
     };

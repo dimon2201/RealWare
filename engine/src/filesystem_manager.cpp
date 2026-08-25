@@ -69,20 +69,23 @@ std::string triton::CFileSystem::TextFileToString(const std::string& path)
     return str;
 }
 
-usize triton::CFileSystem::BinFileToArray(const std::string& path, types::u8* array, usize offset, usize maxByteSize)
+usize triton::CFileSystem::BinaryFileToArray(
+    const std::string& path,
+    u8*& array,
+    usize offset
+)
 {
     cDataFile* file = _context->Create<cDataFile>(_context, path, K_FALSE);
-    if (offset + file->GetBuffer()->GetByteSize() > maxByteSize)
-    {
-        Print("Error: binary file size exceeds array size");
-        return 0;
-    }
     usize fileByteSize = file->GetBuffer()->GetByteSize();
-    for (usize i = 0; i < fileByteSize; i++)
-        array[offset + i] = file->GetBuffer()->GetData()[i];
+    if (offset > fileByteSize)
+        return 0;
+    usize arrayByteSize = fileByteSize - offset;
+    array = (u8*)CObjectAllocator::Allocate(arrayByteSize, 64);
+    for (usize i = offset; i < fileByteSize; i++)
+        array[i - offset] = file->GetBuffer()->GetData()[i];
     _context->Destroy<cDataFile>(file);
 
-    return fileByteSize;
+    return arrayByteSize;
 }
 
 usize triton::CFileSystem::TellFileByteSize(const std::string& path)
