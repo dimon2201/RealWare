@@ -218,6 +218,7 @@ triton::CGPURenderTargetResource triton::BGraphicsBackend2Vulkan::CreateRenderTa
 triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	const CGPUShaderResource& shader,
 	const SViewport& viewport,
+	const CGPURenderTargetResource& renderTarget,
 	const CGPURenderPassResource& renderPass
 )
 {
@@ -226,6 +227,8 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	const boolean bIsVertexPixel =
 		(stageMask & (dword)EShaderStage::Vertex &&
 			stageMask & (dword)EShaderStage::Pixel) ? True : False;
+
+	const boolean bHasDepth = renderTarget.GetDepthAttachment().IsValid();
 
 	usize stageCount = 0;
 	std::vector<VkPipelineShaderStageCreateInfo> stageCreateInfos;
@@ -345,7 +348,24 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 		graphicsPipelineCreateInfo.pViewportState = &viewportStateCreateInfo;
 		graphicsPipelineCreateInfo.pRasterizationState = &rasterizationStateCreateInfo;
 		graphicsPipelineCreateInfo.pMultisampleState = &multisampleStateCreateInfo;
-		graphicsPipelineCreateInfo.pDepthStencilState = nullptr;
+
+		VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = {};
+		if (bHasDepth == True)
+		{
+			depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+			depthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+			depthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+			depthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+			depthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+			depthStencilStateCreateInfo.minDepthBounds = 0.0f;
+			depthStencilStateCreateInfo.maxDepthBounds = 1.0f;
+			depthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+			depthStencilStateCreateInfo.front = {};
+			depthStencilStateCreateInfo.back = {};
+
+			graphicsPipelineCreateInfo.pDepthStencilState = &depthStencilStateCreateInfo;
+		}
+
 		graphicsPipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
 		graphicsPipelineCreateInfo.pDynamicState = nullptr;
 		graphicsPipelineCreateInfo.layout = pipelineLayout;

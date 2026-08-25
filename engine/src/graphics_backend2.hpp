@@ -63,6 +63,7 @@ namespace triton
 		virtual CGPUPipelineResource CreatePipeline(
 			const CGPUShaderResource& shader,
 			const SViewport& viewport,
+			const CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass
 		) = 0;
 

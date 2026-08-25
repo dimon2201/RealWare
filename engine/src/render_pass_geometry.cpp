@@ -25,10 +25,11 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     _renderTarget(renderTargetHandle)
 {
     XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
+    const CGPURenderTargetResource& gpuRenderTarget = renderTarget.GetGPUResource();
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_RENDER_PASS,
-        (cpuword)&renderTarget.GetGPUResource(),
+        (cpuword)&gpuRenderTarget,
         (cpuword)bClearRenderTarget
     ));
 
@@ -42,6 +43,7 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         ERenderCommand::CREATE_PIPELINE,
         (cpuword)&shader.GetGPUResource(),
         (cpuword)&_viewport,
+        (cpuword)&gpuRenderTarget,
         (cpuword)&_gpuRenderPass
     ));
 

@@ -326,7 +326,8 @@ void triton::cRenderThread::ExecuteCommands(
 				CGPUPipelineResource resultPipeline = gfxBackend->CreatePipeline(
 					*(CGPUShaderResource*)cmd._args._argA,
 					*(SViewport*)cmd._args._argB,
-					*(CGPURenderPassResource*)cmd._args._argC
+					*(CGPURenderTargetResource*)cmd._args._argC,
+					*(CGPURenderPassResource*)cmd._args._argD
 				);
 				memcpy(&_sync->GetResultBuffer().data[0], &resultPipeline, sizeof(CGPUPipelineResource));
 				break;
