@@ -26,7 +26,7 @@ triton::CGraphics::CGraphics(cContext* context) : CSubsystem(context)
     // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
     //CreateInputLayouts();
-    //CreateShaders();
+    CreateShaders();
     //CreateRenderTargets();
     //CreateRenderPasses();
 }
@@ -286,9 +286,9 @@ void triton::CGraphics::CreateShaders()
 
     SShaderBytecodeFiles bytecodeFiles;
     bytecodeFiles.vertexFilePath =
-        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough.vert";
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough.vert.spv";
     bytecodeFiles.pixelFilePath = 
-        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough.frag";
+        "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough.frag.spv";
 
     _opaqueRigidPBRShader = *shaderPool->Create(
         (dword)EShaderStage::Vertex | (dword)EShaderStage::Pixel,

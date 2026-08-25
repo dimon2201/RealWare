@@ -233,7 +233,11 @@ namespace triton
 			_cmdRecorder->Clear();
 			WaitForRenderJobFinish();
 
+			// TODO: add result buffer locking/unlocking
+			// |||||||||||||||||||||||||||||||||||||||||
+			// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 			TResult result = *(TResult*)&_resultBuffer.data[0];
+			((TResult*)&_resultBuffer.data[0])->~TResult();
 
 			return result;
 		}

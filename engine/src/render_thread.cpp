@@ -1,5 +1,6 @@
 // render_thread.cpp
 
+#include <cstring>
 #include <tracy/Tracy.hpp>
 #include "render_thread.hpp"
 #include "context.hpp"
@@ -158,6 +159,7 @@ void triton::cRenderThread::ExecuteCommands(
 					cmd._args._argD
 				);
 				memcpy(&_sync->GetResultBuffer().data[0], &resultBuffer, sizeof(CGPUBufferResource));*/
+				new (_sync->GetResultBuffer().data) CGPUBufferResource(0, 0, EGPUBufferType::Unknown, 0, 0);
 				break;
 			}
 			case ERenderCommand::BIND_BUFFER:
@@ -252,7 +254,7 @@ void triton::cRenderThread::ExecuteCommands(
 					(dword)cmd._args._argA,
 					*((SShaderBytecodeFiles*)cmd._args._argB)
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultGPUShader, sizeof(CGPUShaderResource));
+				new (_sync->GetResultBuffer().data) CGPUShaderResource(resultGPUShader);
 				break;
 			}
 			case ERenderCommand::DESTROY_SHADER:
