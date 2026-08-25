@@ -16,7 +16,7 @@
 #include "gpu_render_pass_resource.hpp"
 #include "gpu_shader_resource.hpp"
 #include "gpu_pipeline_resource.hpp"
-#include "shader_stage_enum.hpp"
+#include "shader_stage_bit_enum.hpp"
 #include "shader_bytecode_files_struct.hpp"
 #include "render_native_command_enum.hpp"
 #include "rasterizer_state.hpp"
@@ -43,6 +43,10 @@ namespace triton
 		) = 0;
 
 		virtual void Shutdown() = 0;
+
+		virtual void FinalizeSwapchain(const CGPUTextureResource& presentTexture) = 0;
+
+		virtual void ReleaseSwapchainResources() = 0;
 
 		virtual CGPUTextureResource CreateTexture(
 			types::boolean bCreateSampler,

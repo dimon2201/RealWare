@@ -351,6 +351,18 @@ void triton::cRenderThread::ExecuteCommands(
 				);
 				break;
 			}
+			case ERenderCommand::FinalizeSwapchain:
+			{
+				gfxBackend->FinalizeSwapchain(
+					*(CGPUTextureResource*)cmd._args._argA
+				);
+				break;
+			}
+			case ERenderCommand::ReleaseSwapchainResources:
+			{
+				gfxBackend->ReleaseSwapchainResources();
+				break;
+			}
 		}
 	}
 }

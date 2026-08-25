@@ -16,7 +16,7 @@
 #include "material_pool.hpp"
 #include "texture.hpp"
 #include "window.hpp"
-#include "shader_stage_enum.hpp"
+#include "shader_stage_bit_enum.hpp"
 
 using namespace types;
 
@@ -27,8 +27,9 @@ triton::CGraphics::CGraphics(cContext* context) : CSubsystem(context)
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
     //CreateInputLayouts();
     CreateShaders();
-    CreateRenderTargets();
+    CGPUTextureResource presentTexture = CreateRenderTargets();
     CreateRenderPasses();
+    FinalizeSwapchain(presentTexture);
 }
 
 triton::CGraphics::~CGraphics()
@@ -37,6 +38,7 @@ triton::CGraphics::~CGraphics()
     // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
     //DestroyRenderPasses();
+    ReleaseSwapchainResources();
     DestroyRenderTargets();
     DestroyShaders();
     DestroyInputLayouts();
@@ -291,12 +293,12 @@ void triton::CGraphics::CreateShaders()
         "C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough.frag.spv";
 
     _opaqueRigidPBRShader = *shaderPool->Create(
-        (dword)EShaderStage::Vertex | (dword)EShaderStage::Pixel,
+        (dword)EShaderStageBit::Vertex | (dword)EShaderStageBit::Pixel,
         bytecodeFiles
     );
 }
 
-void triton::CGraphics::CreateRenderTargets()
+triton::CGPUTextureResource triton::CGraphics::CreateRenderTargets()
 {
     /*cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
@@ -384,6 +386,10 @@ void triton::CGraphics::CreateRenderTargets()
         colorAttachments,
         depthAttachment
     );
+
+    CGPUTextureResource presentTexture = texturePool->Get(colorHandle)->get().GetGPUResource();
+
+    return presentTexture;
 }
 
 void triton::CGraphics::CreateRenderPasses()
@@ -537,6 +543,18 @@ void triton::CGraphics::CreateRenderPasses()
     );
 }
 
+void triton::CGraphics::FinalizeSwapchain(const CGPUTextureResource& presentTexture)
+{
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::FinalizeSwapchain,
+        (cpuword)&presentTexture
+    ));
+
+    _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<void*>();
+}
+
 void triton::CGraphics::DestroyInputLayouts()
 {
     CInputLayoutPool* iaPool = _context->GetPool<CInputLayoutPool>();
@@ -584,6 +602,17 @@ void triton::CGraphics::DestroyRenderPasses()
     //geometryRPPool->Destroy(_transparent);
     //geometryRPPool->Destroy(_opaqueSkinned);
     geometryRPPool->Destroy(_opaqueRigid);
+}
+
+void triton::CGraphics::ReleaseSwapchainResources()
+{
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::ReleaseSwapchainResources
+    ));
+
+    _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<void*>();
 }
 
 void triton::CGraphics::BindBuffers()

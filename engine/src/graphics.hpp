@@ -73,9 +73,11 @@ namespace triton
 
         void CreateShaders();
 
-        void CreateRenderTargets();
+        CGPUTextureResource CreateRenderTargets();
 
         void CreateRenderPasses();
+
+        void FinalizeSwapchain(const CGPUTextureResource& presentTexture);
 
         void DestroyInputLayouts();
 
@@ -84,6 +86,8 @@ namespace triton
         void DestroyRenderTargets();
 
         void DestroyRenderPasses();
+
+        void ReleaseSwapchainResources();
 
         void BindBuffers();
 

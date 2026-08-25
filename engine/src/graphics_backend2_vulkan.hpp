@@ -29,6 +29,8 @@ namespace triton
 		SSwapchain								_swapchain;
 		std::vector<CGPURenderTargetResource>	_swapchainRenderTargets;
 		std::vector<CGPURenderPassResource>		_swapchainRenderPasses;
+		CGPUShaderResource						_swapchainShader = CGPUShaderResource::Invalid();
+		std::vector<CGPUPipelineResource>		_swapchainPipelines;
 		SSemaphore								_swapchainImageAvailableSemaphore;
 		std::vector<SSemaphore>					_swapchainRenderFinishedSemaphores;
 		SFence									_swapchainFence;
@@ -47,6 +49,10 @@ namespace triton
 		) override final;
 
 		void Shutdown() override final;
+
+		void FinalizeSwapchain(const CGPUTextureResource& presentTexture) override final;
+
+		void ReleaseSwapchainResources() override final;
 
 		CGPUTextureResource CreateTexture(
 			types::boolean bCreateSampler,
@@ -154,6 +160,10 @@ namespace triton
 		void CreateSwapchainRenderPasses();
 
 		void DestroySwapchainRenderPasses();
+
+		void CreateSwapchainShader();
+
+		void DestroySwapchainShader();
 
 		void CreateSwapchainSemaphoresAndFence();
 

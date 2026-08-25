@@ -48,7 +48,9 @@ namespace triton
 		EXECUTE_RENDER_PASS,
 		DESTROY_RENDER_PASS,
 		CREATE_PIPELINE,
-		DESTROY_PIPELINE
+		DESTROY_PIPELINE,
+		FinalizeSwapchain,
+		ReleaseSwapchainResources
 	};
 
 	struct SRenderCommandArgs

@@ -101,6 +101,36 @@ void triton::BGraphicsBackend2Vulkan::Shutdown()
 	DestroyInstance();
 }
 
+void triton::BGraphicsBackend2Vulkan::FinalizeSwapchain(const CGPUTextureResource& presentTexture)
+{
+	SViewport viewport;
+	viewport.rect = cVector4(
+		0,
+		0,
+		_swapchainRenderTargets[0].GetSize().GetX(),
+		_swapchainRenderTargets[0].GetSize().GetY()
+	);
+
+	const std::vector<CGPUTextureResource> texturesToBind = { presentTexture };
+
+	for (usize i = 0; i < _swapchainRenderPasses.size(); i++)
+		_swapchainPipelines.push_back(
+			CreatePipeline(
+				_swapchainShader,
+				viewport,
+				_swapchainRenderTargets[i],
+				_swapchainRenderPasses[i],
+				texturesToBind
+			)
+		);
+}
+
+void triton::BGraphicsBackend2Vulkan::ReleaseSwapchainResources()
+{
+	for (auto& pipeline : _swapchainPipelines)
+		DestroyPipeline(pipeline);
+}
+
 triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 	boolean bCreateSampler,
 	ETextureFormat format,
@@ -319,8 +349,8 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	const dword stageMask = shader.GetStageMask();
 
 	const boolean bIsVertexPixel =
-		(stageMask & (dword)EShaderStage::Vertex &&
-			stageMask & (dword)EShaderStage::Pixel) ? True : False;
+		(stageMask & (dword)EShaderStageBit::Vertex &&
+			stageMask & (dword)EShaderStageBit::Pixel) ? True : False;
 
 	const boolean bHasDepth = renderTarget.GetDepthAttachment().IsValid();
 
@@ -702,8 +732,8 @@ triton::CGPUShaderResource triton::BGraphicsBackend2Vulkan::CreateShader(
 		!bytecodeFiles.computeFilePath.has_value()))
 		return CGPUShaderResource::Invalid();
 
-	if (stageMask & (dword)EShaderStage::Vertex &&
-		stageMask & (dword)EShaderStage::Pixel &&
+	if (stageMask & (dword)EShaderStageBit::Vertex &&
+		stageMask & (dword)EShaderStageBit::Pixel &&
 		bytecodeFiles.vertexFilePath.has_value() &&
 		bytecodeFiles.pixelFilePath.has_value())
 	{
@@ -1692,12 +1722,16 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size)
 
 	CreateSwapchainRenderPasses();
 
+	CreateSwapchainShader();
+
 	CreateSwapchainSemaphoresAndFence();
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroySwapchain()
 {
 	DestroySwapchainSemaphoresAndFence();
+
+	DestroySwapchainShader();
 
 	DestroySwapchainRenderTargets();
 
@@ -1905,6 +1939,30 @@ void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderPasses()
 {
 	for (auto& renderPass : _swapchainRenderPasses)
 		DestroyRenderPass(renderPass);
+}
+
+void triton::BGraphicsBackend2Vulkan::CreateSwapchainShader()
+{
+	SShaderBytecodeFiles bytecodeFiles;
+	bytecodeFiles.vertexFilePath =
+		"C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough_final.vert.spv";
+	bytecodeFiles.pixelFilePath =
+		"C:/My/My_Projects_Programming/TritonEngine/runtime/data/shaders/builtin/passthrough_final.frag.spv";
+	
+	_swapchainShader = CreateShader(
+		(dword)EShaderStageBit::Vertex | (dword)EShaderStageBit::Pixel,
+		bytecodeFiles
+	);
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroySwapchainShader()
+{
+	if (_swapchainShader.IsValid() == True)
+	{
+		DestroyShader(_swapchainShader);
+		
+		_swapchainShader.Invalidate();
+	}
 }
 
 void triton::BGraphicsBackend2Vulkan::CreateSwapchainSemaphoresAndFence()
