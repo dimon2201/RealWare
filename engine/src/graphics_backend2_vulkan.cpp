@@ -1216,6 +1216,7 @@ void triton::BGraphicsBackend2Vulkan::PickPhysicalDevice(EGraphicsDeviceType dev
 
 	CheckPhysicalDeviceFeatures();
 	CheckPhysicalDeviceFeaturesVulkan13();
+	CheckPhysicalDeviceFormats();
 	FindQueueFamilies();
 }
 
@@ -1231,6 +1232,31 @@ void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceFeaturesVulkan13()
 		Print("Error: Vulkan synchronization2 is not supported");
 	if (_physicalDevice.featuresVulkan13.dynamicRendering == VK_FALSE)
 		Print("Error: Vulkan dynamicRendering is not supported");
+}
+
+void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceFormats()
+{
+	const VkFormat candidates[] =
+	{
+		VK_FORMAT_D32_SFLOAT,
+		VK_FORMAT_D32_SFLOAT_S8_UINT,
+		VK_FORMAT_D24_UNORM_S8_UINT
+	};
+
+	for (VkFormat format : candidates)
+	{
+		VkFormatProperties properties{};
+
+		vkGetPhysicalDeviceFormatProperties(
+			_physicalDevice.device,
+			format,
+			&properties
+		);
+
+		if (properties.optimalTilingFeatures &
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			_physicalDeviceDepthBufferFormat = format;
+	}
 }
 
 void triton::BGraphicsBackend2Vulkan::FindQueueFamilies()
@@ -2048,7 +2074,7 @@ VkFormat triton::BGraphicsBackend2Vulkan::TextureFormatToNative(ETextureFormat t
 	else if (textureFormat == ETextureFormat::BGRA8_SRGB)
 		return VK_FORMAT_B8G8R8A8_SRGB;
 	else if (textureFormat == ETextureFormat::DepthStencil)
-		return VK_FORMAT_D24_UNORM_S8_UINT;
+		return _physicalDeviceDepthBufferFormat;
 
 	return VK_FORMAT_UNDEFINED;
 }

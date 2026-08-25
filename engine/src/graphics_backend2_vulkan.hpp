@@ -20,6 +20,7 @@ namespace triton
 		SPhysicalDevice							_physicalDevice = SPhysicalDevice(
 			EGraphicsDeviceType::Unknown, VK_NULL_HANDLE, {}, {}, {}, {}, std::vector<VkQueueFamilyProperties>(), {}
 		);
+		VkFormat								_physicalDeviceDepthBufferFormat = VK_FORMAT_UNDEFINED;
 		SQueue									_graphicsQueue = SQueue(0, 0, {});
 		SQueue									_transferQueue = SQueue(0, 0, {});
 		SQueue									_computeQueue = SQueue(0, 0, {});
@@ -118,6 +119,8 @@ namespace triton
 		void CheckPhysicalDeviceFeatures();
 
 		void CheckPhysicalDeviceFeaturesVulkan13();
+
+		void CheckPhysicalDeviceFormats();
 
 		void FindQueueFamilies();
 
