@@ -1,0 +1,4 @@
+@echo off
+
+glslc --target-env=vulkan1.2 passthrough.vert -o passthrough.vert.spv
+glslc --target-env=vulkan1.2 passthrough.frag -o passthrough.frag.spv
