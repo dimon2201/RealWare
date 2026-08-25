@@ -215,6 +215,174 @@ triton::CGPURenderTargetResource triton::BGraphicsBackend2Vulkan::CreateRenderTa
 	);
 }
 
+triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
+	const CGPUShaderResource& shader,
+	const SViewport& viewport,
+	const CGPURenderPassResource& renderPass
+)
+{
+	const dword stageMask = shader.GetStageMask();
+
+	const boolean bIsVertexPixel =
+		(stageMask & (dword)EShaderStage::Vertex &&
+			stageMask & (dword)EShaderStage::Pixel) ? True : False;
+
+	usize stageCount = 0;
+	std::vector<VkPipelineShaderStageCreateInfo> stageCreateInfos;
+
+	if (bIsVertexPixel == True)
+	{
+		stageCount = 2;
+		
+		VkPipelineShaderStageCreateInfo vertexStageCreateInfo = {};
+		vertexStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vertexStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+		vertexStageCreateInfo.module = (VkShaderModule)shader.GetModules()[0];
+		vertexStageCreateInfo.pName = "main";
+
+		stageCreateInfos.push_back(vertexStageCreateInfo);
+
+		VkPipelineShaderStageCreateInfo pixelStageCreateInfo = {};
+		pixelStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pixelStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		pixelStageCreateInfo.module = (VkShaderModule)shader.GetModules()[1];
+		pixelStageCreateInfo.pName = "main";
+
+		stageCreateInfos.push_back(pixelStageCreateInfo);
+	}
+
+	VkPipeline pipeline = VK_NULL_HANDLE;
+
+	if (bIsVertexPixel == True)
+	{
+		VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = {};
+		vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputStateCreateInfo.vertexBindingDescriptionCount = 0;
+		vertexInputStateCreateInfo.pVertexBindingDescriptions = nullptr;
+		vertexInputStateCreateInfo.vertexAttributeDescriptionCount = 0;
+		vertexInputStateCreateInfo.pVertexAttributeDescriptions = nullptr;
+
+		VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = {};
+		inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		inputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
+
+		VkViewport nativeViewport = ViewportToNative(viewport);
+
+		VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {};
+		viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		viewportStateCreateInfo.viewportCount = 1;
+		viewportStateCreateInfo.pViewports = &nativeViewport;
+		viewportStateCreateInfo.scissorCount = 0;
+		viewportStateCreateInfo.pScissors = nullptr;
+
+		VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = {};
+		rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+		rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
+		rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+		rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+		rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
+		rasterizationStateCreateInfo.depthBiasClamp = 0.0f;
+		rasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
+		rasterizationStateCreateInfo.lineWidth = 1.0f;
+
+		VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo = {};
+		multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		multisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
+		multisampleStateCreateInfo.minSampleShading = 1.0f;
+		multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
+		multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
+
+		VkPipelineColorBlendAttachmentState colorBlendAttachmentState = {};
+		colorBlendAttachmentState.blendEnable = VK_FALSE;
+		colorBlendAttachmentState.colorWriteMask =
+			VK_COLOR_COMPONENT_R_BIT |
+			VK_COLOR_COMPONENT_G_BIT |
+			VK_COLOR_COMPONENT_B_BIT |
+			VK_COLOR_COMPONENT_A_BIT;
+
+		VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = {};
+		colorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		colorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+		colorBlendStateCreateInfo.logicOp = VK_LOGIC_OP_COPY;
+		colorBlendStateCreateInfo.attachmentCount = 1;
+		colorBlendStateCreateInfo.pAttachments = &colorBlendAttachmentState;
+		colorBlendStateCreateInfo.blendConstants[0] = 0.0f;
+		colorBlendStateCreateInfo.blendConstants[1] = 0.0f;
+		colorBlendStateCreateInfo.blendConstants[2] = 0.0f;
+		colorBlendStateCreateInfo.blendConstants[3] = 0.0f;
+
+		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutCreateInfo.setLayoutCount = 0;
+		pipelineLayoutCreateInfo.pSetLayouts = nullptr;
+		pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
+		pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
+
+		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+
+		VkResult result = vkCreatePipelineLayout(
+			_logicalDevice.device,
+			&pipelineLayoutCreateInfo,
+			nullptr,
+			&pipelineLayout
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to create pipeline layout");
+
+		VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
+		graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		graphicsPipelineCreateInfo.stageCount = stageCount;
+		graphicsPipelineCreateInfo.pStages = stageCreateInfos.data();
+		graphicsPipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
+		graphicsPipelineCreateInfo.pInputAssemblyState = &inputAssemblyStateCreateInfo;
+		graphicsPipelineCreateInfo.pTessellationState = nullptr;
+		graphicsPipelineCreateInfo.pViewportState = &viewportStateCreateInfo;
+		graphicsPipelineCreateInfo.pRasterizationState = &rasterizationStateCreateInfo;
+		graphicsPipelineCreateInfo.pMultisampleState = &multisampleStateCreateInfo;
+		graphicsPipelineCreateInfo.pDepthStencilState = nullptr;
+		graphicsPipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
+		graphicsPipelineCreateInfo.pDynamicState = nullptr;
+		graphicsPipelineCreateInfo.layout = pipelineLayout;
+		graphicsPipelineCreateInfo.renderPass = (VkRenderPass)renderPass.GetInstance();
+		graphicsPipelineCreateInfo.subpass = 0;
+		graphicsPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
+		graphicsPipelineCreateInfo.basePipelineIndex = -1;
+
+		vkCreateGraphicsPipelines(
+			_logicalDevice.device,
+			VK_NULL_HANDLE,
+			1,
+			&graphicsPipelineCreateInfo,
+			nullptr,
+			&pipeline
+		);
+
+		return CGPUPipelineResource((qword)pipeline, 0, EPipelineBindPoint::Graphics);
+	}
+
+	return CGPUPipelineResource::Invalid();
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroyPipeline(CGPUPipelineResource& pipeline)
+{
+	if (pipeline.IsValid())
+	{
+		vkDestroyPipeline(
+			_logicalDevice.device,
+			(VkPipeline)pipeline.GetInstance(),
+			nullptr
+		);
+
+		pipeline.Invalidate();
+	}
+}
+
 void triton::BGraphicsBackend2Vulkan::DestroyRenderTarget(CGPURenderTargetResource& renderTarget)
 {
 	if (renderTarget.IsValid())
@@ -452,10 +620,15 @@ triton::CGPUShaderResource triton::BGraphicsBackend2Vulkan::CreateShader(
 		_context->GetSubsystem<CFileSystem>()->ReleaseBinaryFileArray(vertexShaderByteCode);
 		_context->GetSubsystem<CFileSystem>()->ReleaseBinaryFileArray(pixelShaderByteCode);
 
+		std::vector<qword> modules(2);
+		modules[0] = (qword)vertexShaderModule;
+		modules[1] = (qword)pixelShaderModule;
+
 		return CGPUShaderResource(
 			0,
 			0,
-			{ (qword)vertexShaderModule, (qword)pixelShaderModule }
+			stageMask,
+			modules
 		);
 	}
 
@@ -532,13 +705,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	{
 		SViewport viewport = *(SViewport*)commandData;
 
-		VkViewport nativeViewport;
-		nativeViewport.x = viewport.rect.GetX();
-		nativeViewport.y = viewport.rect.GetY();
-		nativeViewport.width = viewport.rect.GetZ();
-		nativeViewport.height = viewport.rect.GetW();
-		nativeViewport.minDepth = 0.0f;
-		nativeViewport.maxDepth = 1.0f;
+		VkViewport nativeViewport = ViewportToNative(viewport);
 
 		vkCmdSetViewport(_graphicsQueue.commandBuffer, 0, 1, &nativeViewport);
 	}
@@ -1659,6 +1826,19 @@ VkImageLayout triton::BGraphicsBackend2Vulkan::AttachmentLayoutToNative(EGraphic
 VkPipelineBindPoint triton::BGraphicsBackend2Vulkan::PipelineBindPointToNative(EPipelineBindPoint bindPoint)
 {
 	return VK_PIPELINE_BIND_POINT_GRAPHICS;
+}
+
+VkViewport triton::BGraphicsBackend2Vulkan::ViewportToNative(const SViewport& viewport)
+{
+	VkViewport nativeViewport = {};
+	nativeViewport.x = viewport.rect.GetX();
+	nativeViewport.y = viewport.rect.GetY();
+	nativeViewport.width = viewport.rect.GetZ();
+	nativeViewport.height = viewport.rect.GetW();
+	nativeViewport.minDepth = 0.0f;
+	nativeViewport.maxDepth = 1.0f;
+
+	return nativeViewport;
 }
 
 std::string triton::BGraphicsBackend2Vulkan::ShaderSourceInclude(

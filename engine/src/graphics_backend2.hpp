@@ -19,6 +19,7 @@
 #include "shader_stage_enum.hpp"
 #include "shader_bytecode_files_struct.hpp"
 #include "render_native_command_enum.hpp"
+#include "rasterizer_state.hpp"
 
 namespace triton
 {
@@ -58,6 +59,14 @@ namespace triton
 		) = 0;
 
 		virtual void DestroyRenderTarget(CGPURenderTargetResource& renderTarget) = 0;
+
+		virtual CGPUPipelineResource CreatePipeline(
+			const CGPUShaderResource& shader,
+			const SViewport& viewport,
+			const CGPURenderPassResource& renderPass
+		) = 0;
+
+		virtual void DestroyPipeline(CGPUPipelineResource& pipeline) = 0;
 
 		virtual CGPURenderPassResource CreateRenderPass(
 			const CGPURenderTargetResource& renderTarget,

@@ -63,6 +63,14 @@ namespace triton
 
 		void DestroyRenderTarget(CGPURenderTargetResource& renderTarget) override final;
 
+		CGPUPipelineResource CreatePipeline(
+			const CGPUShaderResource& shader,
+			const SViewport& viewport,
+			const CGPURenderPassResource& renderPass
+		) override final;
+
+		void DestroyPipeline(CGPUPipelineResource& pipeline) override final;
+
 		CGPURenderPassResource CreateRenderPass(
 			const CGPURenderTargetResource& renderTarget,
 			types::boolean bClearRenderTarget
@@ -153,6 +161,8 @@ namespace triton
 		VkImageLayout AttachmentLayoutToNative(EGraphicsImageLayout attachmentLayout);
 
 		VkPipelineBindPoint PipelineBindPointToNative(EPipelineBindPoint bindPoint);
+
+		VkViewport ViewportToNative(const SViewport& viewport);
 
 		std::string ShaderSourceInclude(const std::string& shaderSource, const std::string& includeStr);
 	};
