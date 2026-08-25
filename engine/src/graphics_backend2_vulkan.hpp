@@ -77,6 +77,13 @@ namespace triton
 
 		void DestroyShader(CGPUShaderResource& shader) override final;
 
+		void ResetCommandBuffer() override final;
+
+		void AddCommandToBuffer(
+			ENativeRenderCommand command,
+			const void* commandData
+		) override final;
+
 		void BeginFrame() override final;
 
 		void EndFrame() override final;
@@ -144,6 +151,8 @@ namespace triton
 		VkImageType TextureDimensionToNative(ETextureDimension textureDimension);
 
 		VkImageLayout AttachmentLayoutToNative(EGraphicsImageLayout attachmentLayout);
+
+		VkPipelineBindPoint PipelineBindPointToNative(EPipelineBindPoint bindPoint);
 
 		std::string ShaderSourceInclude(const std::string& shaderSource, const std::string& includeStr);
 	};

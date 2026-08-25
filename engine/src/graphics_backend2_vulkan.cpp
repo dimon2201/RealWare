@@ -11,6 +11,8 @@
 #include "filesystem_manager.hpp"
 #include "log.hpp"
 #include "memory_units.hpp"
+#include "render_native_draw_command_info_struct.hpp"
+#include "rasterizer_state.hpp"
 
 using namespace types;
 
@@ -475,6 +477,73 @@ void triton::BGraphicsBackend2Vulkan::DestroyShader(CGPUShaderResource& shader)
 	}
 }
 
+void triton::BGraphicsBackend2Vulkan::ResetCommandBuffer()
+{
+	vkResetCommandBuffer(
+		_graphicsQueue.commandBuffer,
+		0
+	);
+}
+
+void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
+	ENativeRenderCommand command,
+	const void* commandData
+)
+{
+	if (command == ENativeRenderCommand::Unknown ||
+		!commandData)
+		return;
+
+	if (command == ENativeRenderCommand::BeginRenderPass)
+	{
+		vkCmdBeginRenderPass(
+			_graphicsQueue.commandBuffer,
+			(VkRenderPassBeginInfo*)commandData,
+			VK_SUBPASS_CONTENTS_INLINE
+		);
+	}
+	else if (command == ENativeRenderCommand::BindPipeline)
+	{
+		vkCmdBindPipeline(
+			_graphicsQueue.commandBuffer,
+			PipelineBindPointToNative(((CGPUPipelineResource*)commandData)->GetBindingPoint()),
+			(VkPipeline)((CGPUPipelineResource*)commandData)->GetInstance()
+		);
+	}
+	else if (command == ENativeRenderCommand::Draw)
+	{
+		vkCmdDraw(
+			_graphicsQueue.commandBuffer,
+			((SNativeCommandDrawInfo*)commandData)->vertexCount,
+			((SNativeCommandDrawInfo*)commandData)->instanceCount,
+			((SNativeCommandDrawInfo*)commandData)->firstVertex,
+			((SNativeCommandDrawInfo*)commandData)->firstInstance
+		);
+	}
+	else if (command == ENativeRenderCommand::EndRenderPass)
+	{
+		vkCmdEndRenderPass(_graphicsQueue.commandBuffer);
+	}
+	else if (command == ENativeRenderCommand::SetScissor)
+	{
+		vkCmdSetScissor(_graphicsQueue.commandBuffer, 0, 0, nullptr);
+	}
+	else if (command == ENativeRenderCommand::SetViewport)
+	{
+		SViewport viewport = *(SViewport*)commandData;
+
+		VkViewport nativeViewport;
+		nativeViewport.x = viewport.rect.GetX();
+		nativeViewport.y = viewport.rect.GetY();
+		nativeViewport.width = viewport.rect.GetZ();
+		nativeViewport.height = viewport.rect.GetW();
+		nativeViewport.minDepth = 0.0f;
+		nativeViewport.maxDepth = 1.0f;
+
+		vkCmdSetViewport(_graphicsQueue.commandBuffer, 0, 1, &nativeViewport);
+	}
+}
+
 void triton::BGraphicsBackend2Vulkan::BeginFrame()
 {
 	vkWaitForFences(
@@ -491,10 +560,18 @@ void triton::BGraphicsBackend2Vulkan::BeginFrame()
 		&_swapchainFence.fence
 	);
 
-	vkResetCommandBuffer(
+	ResetCommandBuffer();
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	VkResult result = vkBeginCommandBuffer(
 		_graphicsQueue.commandBuffer,
-		0
+		&beginInfo
 	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to begin command buffer");
 }
 
 void triton::BGraphicsBackend2Vulkan::EndFrame()
@@ -514,17 +591,6 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to acquire swapchain image");
-
-	VkCommandBufferBeginInfo beginInfo = {};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-	result = vkBeginCommandBuffer(
-		_graphicsQueue.commandBuffer,
-		&beginInfo
-	);
-
-	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to begin command buffer");
 
 	VkClearValue clearValue = {};
 	clearValue.color = {
@@ -1588,6 +1654,11 @@ VkImageLayout triton::BGraphicsBackend2Vulkan::AttachmentLayoutToNative(EGraphic
 		return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	return VK_IMAGE_LAYOUT_UNDEFINED;
+}
+
+VkPipelineBindPoint triton::BGraphicsBackend2Vulkan::PipelineBindPointToNative(EPipelineBindPoint bindPoint)
+{
+	return VK_PIPELINE_BIND_POINT_GRAPHICS;
 }
 
 std::string triton::BGraphicsBackend2Vulkan::ShaderSourceInclude(

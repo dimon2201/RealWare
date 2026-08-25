@@ -15,8 +15,10 @@
 #include "gpu_render_target_resource.hpp"
 #include "gpu_render_pass_resource.hpp"
 #include "gpu_shader_resource.hpp"
+#include "gpu_pipeline_resource.hpp"
 #include "shader_stage_enum.hpp"
 #include "shader_bytecode_files_struct.hpp"
+#include "render_native_command_enum.hpp"
 
 namespace triton
 {
@@ -70,6 +72,13 @@ namespace triton
 		) = 0;
 
 		virtual void DestroyShader(CGPUShaderResource& shader) = 0;
+
+		virtual void ResetCommandBuffer() = 0;
+
+		virtual void AddCommandToBuffer(
+			ENativeRenderCommand command,
+			const void* commandData
+		) = 0;
 
 		virtual void BeginFrame() = 0;
 
