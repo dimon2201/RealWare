@@ -10,6 +10,7 @@ using namespace types;
 triton::XTexture::XTexture(
 	cContext* context,
 	s32 poolIndex,
+	types::boolean bCreateSampler,
 	ETextureFormat textureFormat,
 	dword usageMask,
 	ETextureDimension textureDimension,
@@ -24,6 +25,7 @@ triton::XTexture::XTexture(
 	);
 
 	CreateOnGpu(
+		bCreateSampler,
 		textureFormat,
 		usageMask,
 		textureDimension,
@@ -38,6 +40,7 @@ triton::XTexture::XTexture(
 triton::XTexture::XTexture(
 	cContext* context,
 	s32 poolIndex,
+	types::boolean bCreateSampler,
 	ETextureFormat textureFormat,
 	dword usageMask,
 	ETextureDimension textureDimension,
@@ -56,6 +59,7 @@ triton::XTexture::XTexture(
 	);
 
 	CreateOnGpu(
+		bCreateSampler,
 		textureFormat,
 		usageMask,
 		textureDimension,
@@ -70,6 +74,7 @@ triton::XTexture::XTexture(
 triton::XTexture::XTexture(
 	cContext* context,
 	s32 poolIndex,
+	types::boolean bCreateSampler,
 	ETextureFormat textureFormat,
 	dword usageMask,
 	ETextureDimension textureDimension,
@@ -79,6 +84,7 @@ triton::XTexture::XTexture(
 ) : iObject(context, poolIndex)
 {
 	CreateOnGpu(
+		bCreateSampler,
 		textureFormat,
 		usageMask,
 		textureDimension,
@@ -106,6 +112,7 @@ triton::XTexture::~XTexture()
 }
 
 void triton::XTexture::CreateOnGpu(
+	boolean bCreateSampler,
 	ETextureFormat format,
 	dword usageMask,
 	ETextureDimension dimension,
@@ -116,6 +123,7 @@ void triton::XTexture::CreateOnGpu(
 {
 	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::CREATE_TEXTURE,
+		(cpuword)bCreateSampler,
 		(cpuword)format,
 		(cpuword)usageMask,
 		(cpuword)dimension,

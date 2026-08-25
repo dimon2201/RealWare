@@ -793,6 +793,7 @@ std::optional<triton::XTexture::THandle> triton::XModel3DBackendAssimp::CreateTe
         if (fmtHint[0] == 'p' && fmtHint[1] == 'n' && fmtHint[2] == 'g')
         {
             return context->GetPool<PTexturePool>()->Create(
+                types::K_TRUE,
                 dataFormat,
                 (dword)ETextureUsageBit::Sampled,
                 ETextureDimension::Texture2D,
@@ -806,6 +807,7 @@ std::optional<triton::XTexture::THandle> triton::XModel3DBackendAssimp::CreateTe
         else if (fmtHint[0] == 'd' && fmtHint[1] == 'd' && fmtHint[2] == 's')
         {
             return context->GetPool<PTexturePool>()->Create(
+                types::K_TRUE,
                 dataFormat,
                 (dword)ETextureUsageBit::Sampled,
                 ETextureDimension::Texture2D,
@@ -863,6 +865,7 @@ std::optional<triton::XTexture::THandle> triton::XModel3DBackendAssimp::CreateTe
     }
     
     return context->GetPool<PTexturePool>()->Create(
+        types::K_TRUE,
         dataFormat,
         (dword)ETextureUsageBit::Sampled,
         ETextureDimension::Texture2D,

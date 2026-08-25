@@ -48,6 +48,7 @@ namespace triton
 		void Shutdown() override final;
 
 		CGPUTextureResource CreateTexture(
+			types::boolean bCreateSampler,
 			ETextureFormat format,
 			types::dword usageMask,
 			ETextureDimension dimension,
@@ -67,7 +68,8 @@ namespace triton
 			const CGPUShaderResource& shader,
 			const SViewport& viewport,
 			const CGPURenderTargetResource& renderTarget,
-			const CGPURenderPassResource& renderPass
+			const CGPURenderPassResource& renderPass,
+			const std::vector<CGPUTextureResource>& texturesToBind
 		) override final;
 
 		void DestroyPipeline(CGPUPipelineResource& pipeline) override final;
@@ -153,6 +155,12 @@ namespace triton
 		void CreateSwapchainSemaphoresAndFence();
 
 		void DestroySwapchainSemaphoresAndFence();
+
+		SDescriptorSet CreateDescriptorSet(
+			const std::vector<CGPUTextureResource>& texturesToBind
+		);
+
+		void DestroyDescriptorSet(const SDescriptorSet& descriptorSet);
 
 		VkFormat TextureFormatToNative(ETextureFormat textureFormat);
 

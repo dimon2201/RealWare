@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <vector>
 #include <vulkan/vulkan.h>
 #include "math.hpp"
 #include "graphics_device_type_enum.hpp"
@@ -105,5 +106,12 @@ namespace triton
 	struct SFence
 	{
 		VkFence fence = VK_NULL_HANDLE;
+	};
+
+	struct SDescriptorSet
+	{
+		VkDescriptorPool pool = VK_NULL_HANDLE;
+		VkDescriptorSetLayout layout = VK_NULL_HANDLE;
+		VkDescriptorSet set = VK_NULL_HANDLE;
 	};
 }

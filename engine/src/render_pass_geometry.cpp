@@ -39,12 +39,19 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
 
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
+    const usize texturesToBindCount = _inputTextures.size();
+    std::vector<CGPUTextureResource> texturesToBind;
+    for (usize i = 0; i < texturesToBindCount; i++)
+        texturesToBind.push_back(_inputTextures[i].texture);
+
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_PIPELINE,
         (cpuword)&shader.GetGPUResource(),
         (cpuword)&_viewport,
         (cpuword)&gpuRenderTarget,
-        (cpuword)&_gpuRenderPass
+        (cpuword)&_gpuRenderPass,
+        (cpuword)_inputTextures.size(),
+        (cpuword)texturesToBind.data()
     ));
 
     _gpuPipeline = _context->GetSubsystem<CEngine>()->

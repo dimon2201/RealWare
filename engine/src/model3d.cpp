@@ -66,6 +66,7 @@ triton::XModel3D::XModel3D(
 						texturePath = assetFolderPath / assetTexturePath;
 					if (std::filesystem::exists(texturePath))
 						outHandle = *_context->GetPool<PTexturePool>()->Create(
+							types::K_FALSE,
 							textureFormat,
 							(dword)ETextureUsageBit::Sampled,
 							ETextureDimension::Texture2D,
@@ -75,6 +76,7 @@ triton::XModel3D::XModel3D(
 						);
 					else
 						outHandle = *_context->GetPool<PTexturePool>()->Create(
+							types::K_FALSE,
 							textureFormat,
 							(dword)ETextureUsageBit::Sampled,
 							ETextureDimension::Texture2D,

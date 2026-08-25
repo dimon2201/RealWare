@@ -45,6 +45,7 @@ namespace triton
 		virtual void Shutdown() = 0;
 
 		virtual CGPUTextureResource CreateTexture(
+			types::boolean bCreateSampler,
 			ETextureFormat format,
 			types::dword usageMask,
 			ETextureDimension dimension,
@@ -64,7 +65,8 @@ namespace triton
 			const CGPUShaderResource& shader,
 			const SViewport& viewport,
 			const CGPURenderTargetResource& renderTarget,
-			const CGPURenderPassResource& renderPass
+			const CGPURenderPassResource& renderPass,
+			const std::vector<CGPUTextureResource>& texturesToBind
 		) = 0;
 
 		virtual void DestroyPipeline(CGPUPipelineResource& pipeline) = 0;

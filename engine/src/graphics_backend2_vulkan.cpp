@@ -102,6 +102,7 @@ void triton::BGraphicsBackend2Vulkan::Shutdown()
 }
 
 triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
+	boolean bCreateSampler,
 	ETextureFormat format,
 	dword usageMask,
 	ETextureDimension dimension,
@@ -171,9 +172,42 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		&imageView
 	);
 
+	VkSampler sampler = VK_NULL_HANDLE;
+	if (bCreateSampler == True)
+	{
+		VkSamplerCreateInfo samplerCreateInfo = {};
+		samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+		samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+		samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerCreateInfo.mipLodBias = 0.0f;
+		samplerCreateInfo.anisotropyEnable = VK_FALSE;
+		samplerCreateInfo.maxAnisotropy = 1.0f;
+		samplerCreateInfo.compareEnable = VK_FALSE;
+		samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		samplerCreateInfo.minLod = 0.0f;
+		samplerCreateInfo.maxLod = 1.0f;
+		samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+
+		result = vkCreateSampler(
+			_logicalDevice.device,
+			&samplerCreateInfo,
+			nullptr,
+			&sampler
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to create sampler");
+	}
+
 	return CGPUTextureResource(
 		(qword)image,
 		(qword)imageView,
+		bCreateSampler == True ? (qword)sampler : 0,
 		format,
 		usageMask,
 		dimension,
@@ -186,6 +220,13 @@ void triton::BGraphicsBackend2Vulkan::DestroyTexture(CGPUTextureResource& textur
 {
 	if (texture.IsValid())
 	{
+		if (texture.GetSampler())
+			vkDestroySampler(
+				_logicalDevice.device,
+				(VkSampler)texture.GetSampler(),
+				nullptr
+			);
+
 		vkDestroyImageView(
 			_logicalDevice.device,
 			(VkImageView)texture.GetView(),
@@ -219,7 +260,8 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	const CGPUShaderResource& shader,
 	const SViewport& viewport,
 	const CGPURenderTargetResource& renderTarget,
-	const CGPURenderPassResource& renderPass
+	const CGPURenderPassResource& renderPass,
+	const std::vector<CGPUTextureResource>& texturesToBind
 )
 {
 	const dword stageMask = shader.GetStageMask();
@@ -383,7 +425,18 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 			&pipeline
 		);
 
-		return CGPUPipelineResource((qword)pipeline, 0, EPipelineBindPoint::Graphics);
+		SDescriptorSet nativeDescriptorSet = CreateDescriptorSet(texturesToBind);
+
+		std::vector<qword> descriptorSets;
+		if (nativeDescriptorSet.set != VK_NULL_HANDLE)
+			descriptorSets.push_back((qword)nativeDescriptorSet.set);
+
+		return CGPUPipelineResource(
+			(qword)pipeline,
+			0,
+			EPipelineBindPoint::Graphics,
+			descriptorSets
+		);
 	}
 
 	return CGPUPipelineResource::Invalid();
@@ -398,6 +451,18 @@ void triton::BGraphicsBackend2Vulkan::DestroyPipeline(CGPUPipelineResource& pipe
 			(VkPipeline)pipeline.GetInstance(),
 			nullptr
 		);
+
+		std::vector<SDescriptorSet> nativeDescriptorSets;
+		for (auto& descriptorSet : pipeline.GetDescriptorSets())
+		{
+			SDescriptorSet nativeDescriptorSet;
+			nativeDescriptorSet.set = (VkDescriptorSet)descriptorSet;
+
+			nativeDescriptorSets.push_back(nativeDescriptorSet);
+		}
+
+		for (auto& descriptorSet: nativeDescriptorSets)
+			DestroyDescriptorSet(descriptorSet);
 
 		pipeline.Invalidate();
 	}
@@ -1710,6 +1775,7 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderTargets()
 		CGPUTextureResource colorAttachment = CGPUTextureResource(
 			(qword)_swapchain.images[i].image,
 			(qword)_swapchain.images[i].view,
+			0,
 			ETextureFormat::BGRA8_SRGB,
 			(dword)ETextureUsageBit::ColorAttachment,
 			ETextureDimension::Texture2D,
@@ -1821,6 +1887,153 @@ void triton::BGraphicsBackend2Vulkan::DestroySwapchainSemaphoresAndFence()
 		_swapchainImageAvailableSemaphore.semaphore,
 		nullptr
 	);
+}
+
+triton::SDescriptorSet triton::BGraphicsBackend2Vulkan::CreateDescriptorSet(
+	const std::vector<CGPUTextureResource>& texturesToBind
+)
+{
+	const usize textureToBindCount = texturesToBind.size();
+
+	const usize bindingCount = textureToBindCount;
+
+	if (!bindingCount)
+		return {};
+
+	std::vector<VkDescriptorSetLayoutBinding> bindings(bindingCount);
+	std::vector<VkDescriptorImageInfo> bindingImageInfos(bindingCount);
+
+	usize bindingCounter = 0;
+
+	for (usize i = 0; i < textureToBindCount; ++i, ++bindingCounter)
+	{
+		const CGPUTextureResource& textureToBind = texturesToBind[i];
+
+		bindings[i].binding = bindingCounter;
+		bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		bindings[i].descriptorCount = 1;
+		bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+		VkDescriptorImageInfo descriptorImageInfo = {};
+		descriptorImageInfo.sampler = (VkSampler)textureToBind.GetSampler();
+		descriptorImageInfo.imageView = (VkImageView)textureToBind.GetView();
+		descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		bindingImageInfos[i] = descriptorImageInfo;
+	}
+
+	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {};
+	descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorSetLayoutInfo.bindingCount = bindingCount;
+	descriptorSetLayoutInfo.pBindings = bindings.data();
+
+	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+
+	VkResult result;
+
+	result = vkCreateDescriptorSetLayout(
+		_logicalDevice.device,
+		&descriptorSetLayoutInfo,
+		nullptr,
+		&descriptorSetLayout
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create descriptor set layout");
+
+	VkDescriptorPoolSize poolSize = {};
+	poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSize.descriptorCount = bindingCount;
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = 1;
+	poolInfo.pPoolSizes = &poolSize;
+	poolInfo.maxSets = 1;
+
+	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+
+	result = vkCreateDescriptorPool(
+		_logicalDevice.device,
+		&poolInfo,
+		nullptr,
+		&descriptorPool
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create descriptor pool");
+
+	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = {};
+	descriptorSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	descriptorSetAllocInfo.descriptorPool = descriptorPool;
+	descriptorSetAllocInfo.descriptorSetCount = 1;
+	descriptorSetAllocInfo.pSetLayouts = &descriptorSetLayout;
+
+	VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+
+	result = vkAllocateDescriptorSets(
+		_logicalDevice.device,
+		&descriptorSetAllocInfo,
+		&descriptorSet
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to allocate descriptor set");
+
+	std::vector<VkWriteDescriptorSet> writeDescriptorSetElements(bindingCount);
+	for (usize i = 0; i < bindingCount; i++)
+	{
+		VkWriteDescriptorSet writeDescriptorSet = {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = descriptorSet;
+		writeDescriptorSet.dstBinding = i;
+		writeDescriptorSet.dstArrayElement = 0;
+		writeDescriptorSet.descriptorType = bindings[i].descriptorType;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.pImageInfo = &bindingImageInfos[i];
+
+		writeDescriptorSetElements[i] = writeDescriptorSet;
+	}
+
+	vkUpdateDescriptorSets(
+		_logicalDevice.device,
+		bindingCount,
+		writeDescriptorSetElements.data(),
+		0,
+		nullptr
+	);
+
+	SDescriptorSet finalDescriptorSet;
+	finalDescriptorSet.pool = descriptorPool;
+	finalDescriptorSet.layout = descriptorSetLayout;
+	finalDescriptorSet.set = descriptorSet;
+
+	return finalDescriptorSet;
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroyDescriptorSet(const SDescriptorSet& descriptorSet)
+{
+	if (descriptorSet.set != VK_NULL_HANDLE)
+		vkFreeDescriptorSets(
+			_logicalDevice.device,
+			descriptorSet.pool,
+			1,
+			&descriptorSet.set
+		);
+
+	if (descriptorSet.layout != VK_NULL_HANDLE)
+		vkDestroyDescriptorSetLayout(
+			_logicalDevice.device,
+			descriptorSet.layout,
+			nullptr
+		);
+
+	if (descriptorSet.pool != VK_NULL_HANDLE)
+		vkDestroyDescriptorPool(
+			_logicalDevice.device,
+			descriptorSet.pool,
+			nullptr
+		);
 }
 
 VkFormat triton::BGraphicsBackend2Vulkan::TextureFormatToNative(ETextureFormat textureFormat)

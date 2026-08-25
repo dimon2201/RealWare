@@ -199,10 +199,11 @@ void triton::cRenderThread::ExecuteCommands(
 			case ERenderCommand::CREATE_TEXTURE:
 			{
 				CGPUTextureResource resultTexture = gfxBackend->CreateTexture(
-					(ETextureFormat)cmd._args._argA,
-					(dword)cmd._args._argB,
-					(ETextureDimension)cmd._args._argC,
-					cVector3(cmd._args._argD, cmd._args._argE, cmd._args._argF)
+					cmd._args._argA,
+					(ETextureFormat)cmd._args._argB,
+					(dword)cmd._args._argC,
+					(ETextureDimension)cmd._args._argD,
+					cVector3(cmd._args._argE, cmd._args._argF, cmd._args._argG)
 				);
 				memcpy(&_sync->GetResultBuffer().data[0], &resultTexture, sizeof(CGPUTextureResource));
 				break;
@@ -323,11 +324,18 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::CREATE_PIPELINE:
 			{
+				const usize texturesToBindCount = cmd._args._argE;
+				const CGPUTextureResource* texturesToBindPtr = (const CGPUTextureResource*)cmd._args._argF;
+				std::vector<CGPUTextureResource> texturesToBindVector;
+				for (usize i = 0; i < texturesToBindCount; i++)
+					texturesToBindVector.push_back(texturesToBindPtr[i]);
+
 				CGPUPipelineResource resultPipeline = gfxBackend->CreatePipeline(
 					*(CGPUShaderResource*)cmd._args._argA,
 					*(SViewport*)cmd._args._argB,
 					*(CGPURenderTargetResource*)cmd._args._argC,
-					*(CGPURenderPassResource*)cmd._args._argD
+					*(CGPURenderPassResource*)cmd._args._argD,
+					texturesToBindVector
 				);
 				memcpy(&_sync->GetResultBuffer().data[0], &resultPipeline, sizeof(CGPUPipelineResource));
 				break;

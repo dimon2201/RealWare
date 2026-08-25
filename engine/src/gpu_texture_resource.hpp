@@ -11,6 +11,7 @@ namespace triton
 {
     class CGPUTextureResource : public CGPUResource
     {
+        types::qword _sampler = 0;
         cVector3 _size = cVector3(0.0f);
         ETextureFormat _format = ETextureFormat::Unknown;
         types::dword _usageMask = 0;
@@ -21,12 +22,14 @@ namespace triton
         explicit CGPUTextureResource(
             types::qword instance,
             types::qword viewInstance,
+            types::qword sampler,
             ETextureFormat format,
             types::dword usageMask,
             ETextureDimension dimension,
             const cVector3& size,
             types::s32 slot
         ) : CGPUResource(instance, viewInstance),
+            _sampler(sampler),
             _format(format),
             _usageMask(usageMask),
             _dimension(dimension),
@@ -39,6 +42,7 @@ namespace triton
             return CGPUTextureResource(
                 0,
                 0,
+                0,
                 ETextureFormat::Unknown,
                 0,
                 ETextureDimension::Unknown,
@@ -46,6 +50,8 @@ namespace triton
                 0
             );
         }
+
+        inline types::qword GetSampler() const { return _sampler; }
 
         inline types::usize GetWidth() const { return _size.GetX(); }
 

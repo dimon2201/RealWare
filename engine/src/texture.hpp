@@ -26,6 +26,7 @@ namespace triton
 		explicit XTexture(
 			cContext* context,
 			types::s32 poolIndex,
+			types::boolean bCreateSampler,
 			ETextureFormat textureFormat,
 			types::dword usageMask,
 			ETextureDimension textureDimension,
@@ -37,6 +38,7 @@ namespace triton
 		explicit XTexture(
 			cContext* context,
 			types::s32 poolIndex,
+			types::boolean bCreateSampler,
 			ETextureFormat textureFormat,
 			types::dword usageMask,
 			ETextureDimension textureDimension,
@@ -50,6 +52,7 @@ namespace triton
 		explicit XTexture(
 			cContext* context,
 			types::s32 poolIndex,
+			types::boolean bCreateSampler,
 			ETextureFormat textureFormat,
 			types::dword usageMask,
 			ETextureDimension textureDimension,
@@ -74,6 +77,7 @@ namespace triton
 		
 	private:
 		void CreateOnGpu(
+			types::boolean bCreateSampler,
 			ETextureFormat format,
 			types::dword usageMask,
 			ETextureDimension dimension,

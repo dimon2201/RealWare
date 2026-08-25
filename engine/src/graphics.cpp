@@ -358,6 +358,7 @@ void triton::CGraphics::CreateRenderTargets()
     CRenderTargetPool* renderTargetPool = _context->GetPool<CRenderTargetPool>();
 
     XTexture::THandle colorHandle = *texturePool->Create(
+        True,
         ETextureFormat::RGBA8,
         (dword)ETextureUsageBit::Sampled | (dword)ETextureUsageBit::ColorAttachment,
         ETextureDimension::Texture2D,
@@ -367,6 +368,7 @@ void triton::CGraphics::CreateRenderTargets()
     );
 
     XTexture::THandle depthHandle = *texturePool->Create(
+        True,
         ETextureFormat::DepthStencil,
         (dword)(dword)ETextureUsageBit::DepthStencilAttachment,
         ETextureDimension::Texture2D,
