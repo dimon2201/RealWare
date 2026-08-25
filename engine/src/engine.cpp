@@ -59,6 +59,8 @@ void triton::CEngine::Initialize()
 {
 	CThreadGuard::CaptureMainThreadId();
 
+	// NOTE: The order of the objects registered below matters
+
 	// Register Engine as subsystem
 	_context->RegisterSubsystem(this);
 
@@ -77,6 +79,10 @@ void triton::CEngine::Initialize()
 	// Create application window
 	_app->CreateWindow();
 
+	// Register file system subsystem before graphics backend
+	_context->RegisterSubsystem(new CFileSystem(_context));
+
+	// Register graphics backend
 	_context->RegisterBackend<IGraphicsBackend2>(new BGraphicsBackend2Vulkan(_context));
 
 	// Initialize render thread
@@ -84,7 +90,7 @@ void triton::CEngine::Initialize()
 	InitializeSynchronization();
 	InitializeRenderThread();
 
-	// Register subsystems and pools (order matters)
+	// Register subsystems and pools
 	_context->RegisterPool(new CCameraPool(_context, K_TRUE));
 
 	_context->RegisterPool(new PTexturePool(_context, K_TRUE));
@@ -146,8 +152,6 @@ void triton::CEngine::Initialize()
 	_context->RegisterPool(new CSkinPool(_context, K_TRUE));
 
 	_context->RegisterSubsystem(new CGeometryStorage(_context));
-
-	_context->RegisterSubsystem(new CFileSystem(_context));
 
 	_context->RegisterSubsystem(new CGraphics(_context));
 }
