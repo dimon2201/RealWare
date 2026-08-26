@@ -224,7 +224,7 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		usageMask & (dword)ETextureUsageBit::ColorAttachment)
 		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	if (usageMask & (dword)ETextureUsageBit::DepthStencilAttachment)
-		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -353,8 +353,8 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	const dword stageMask = shader.GetStageMask();
 
 	const boolean bIsVertexPixel =
-		(stageMask & (dword)EShaderStageBit::Vertex &&
-			stageMask & (dword)EShaderStageBit::Pixel) ? True : False;
+		((stageMask & (dword)EShaderStageBit::Vertex) &&
+		(stageMask & (dword)EShaderStageBit::Pixel)) ? True : False;
 
 	const boolean bHasDepth = renderTarget.GetDepthAttachment().IsValid();
 
@@ -459,7 +459,7 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutCreateInfo.setLayoutCount = nativeDescriptorSetCount;
-		pipelineLayoutCreateInfo.pSetLayouts = &nativeDescriptorSet.layout;
+		pipelineLayoutCreateInfo.pSetLayouts = nativeDescriptorSetCount > 0 ? &nativeDescriptorSet.layout : nullptr;
 		pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
 		pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
@@ -576,14 +576,19 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 	CGPURenderTargetResource& renderTarget,
 	boolean bClearRenderTarget,
 	const cVector4& clearColor,
-	types::f32 clearDepth
+	types::f32 clearDepth,
+	const std::vector<EResourceUsage>& srcAttachmentsUsage,
+	const std::vector<EResourceUsage>& dstAttachmentsUsage
 )
 {
 	const usize colorAttachmentCount = renderTarget.GetColorAttachmentCount();
 	const boolean hasDepth = renderTarget.GetDepthAttachment().IsValid();
 	const usize depthAttachmentCount = hasDepth == True ? 1 : 0;
 
-	std::vector<VkAttachmentDescription> attachments(colorAttachmentCount + depthAttachmentCount);
+	const usize attachmentCount =  colorAttachmentCount + depthAttachmentCount;
+
+	std::vector<VkAttachmentDescription> attachments(attachmentCount);
+
 	std::vector<VkAttachmentReference> colorReferences(colorAttachmentCount);
 	VkAttachmentReference depthReference = {};
 
@@ -591,7 +596,7 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 	if (bClearRenderTarget == True)
 		loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	else if (bClearRenderTarget == False)
-		loadOp = VK_ATTACHMENT_LOAD_OP_NONE;
+		loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 
 	for (usize i = 0; i < colorAttachmentCount; ++i)
 	{
@@ -603,11 +608,11 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 		attachments[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachments[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		attachments[i].initialLayout = AttachmentLayoutToNative(
-			renderTarget.GetColorAttachmentSrcLayouts()[i]
+		attachments[i].initialLayout = AttachmentUsageToNativeLayout(
+			srcAttachmentsUsage[i]
 		);
-		attachments[i].finalLayout = AttachmentLayoutToNative(
-			renderTarget.GetColorAttachmentDstLayouts()[i]
+		attachments[i].finalLayout = AttachmentUsageToNativeLayout(
+			dstAttachmentsUsage[i]
 		);
 
 		colorReferences[i].attachment = i;
@@ -624,11 +629,11 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 		attachments[colorAttachmentCount].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachments[colorAttachmentCount].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[colorAttachmentCount].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		attachments[colorAttachmentCount].initialLayout = AttachmentLayoutToNative(
-			renderTarget.GetDepthAttachmentSrcLayout()
+		attachments[colorAttachmentCount].initialLayout = AttachmentUsageToNativeLayout(
+			srcAttachmentsUsage[colorAttachmentCount]
 		);
-		attachments[colorAttachmentCount].finalLayout = AttachmentLayoutToNative(
-			renderTarget.GetDepthAttachmentDstLayout()
+		attachments[colorAttachmentCount].finalLayout = AttachmentUsageToNativeLayout(
+			dstAttachmentsUsage[colorAttachmentCount]
 		);
 
 		depthReference.attachment = colorAttachmentCount;
@@ -636,28 +641,151 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 	}
 
 	VkSubpassDescription subpass = {};
+
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = (uint32_t)colorReferences.size();
 	subpass.pColorAttachments = colorReferences.data();
+
 	if (hasDepth)
 		subpass.pDepthStencilAttachment = &depthReference;
 
-	VkSubpassDependency dependency = {};
-	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.srcStageMask =
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.srcAccessMask = 0;
-	dependency.dstStageMask =
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.dstAccessMask =
-		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	std::vector<VkSubpassDependency> dependencies(2);
 
-	if (hasDepth)
+	/*for (usize i = 0; i < attachmentCount; ++i)
 	{
-		dependency.dstStageMask |=
-			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.dstAccessMask |=
+		const usize inDependencyIndex = i * 2;
+		const usize outDependencyIndex = i * 2 + 1;
+
+		dependencies[inDependencyIndex].srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[inDependencyIndex].dstSubpass = 0;
+
+		if (srcAttachmentsUsage[i] == EResourceUsage::Unknown)
+		{
+			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_NONE;
+		}
+		else if (srcAttachmentsUsage[i] == EResourceUsage::ColorAttachment)
+		{
+			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		}
+		else if (srcAttachmentsUsage[i] == EResourceUsage::DepthAttachment)
+		{
+			dependencies[inDependencyIndex].srcStageMask =
+				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+				VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		}
+		else if (srcAttachmentsUsage[i] == EResourceUsage::VertexShaderRead)
+		{
+			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		}
+		else if (srcAttachmentsUsage[i] == EResourceUsage::PixelShaderRead)
+		{
+			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		}
+		else if (srcAttachmentsUsage[i] == EResourceUsage::Present)
+		{
+			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[inDependencyIndex].srcAccessMask = 0;
+		}
+
+		if (dstAttachmentsUsage[i] == EResourceUsage::Unknown)
+		{
+			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_NONE;
+		}
+		else if (dstAttachmentsUsage[i] == EResourceUsage::ColorAttachment)
+		{
+			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		}
+		else if (dstAttachmentsUsage[i] == EResourceUsage::DepthAttachment)
+		{
+			dependencies[inDependencyIndex].dstStageMask =
+				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+				VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		}
+		else if (dstAttachmentsUsage[i] == EResourceUsage::VertexShaderRead)
+		{
+			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		}
+		else if (dstAttachmentsUsage[i] == EResourceUsage::PixelShaderRead)
+		{
+			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		}
+		else if (dstAttachmentsUsage[i] == EResourceUsage::Present)
+		{
+			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_NONE;
+		}
+
+		dependencies[outDependencyIndex].srcSubpass = 0;
+		dependencies[outDependencyIndex].dstSubpass = VK_SUBPASS_EXTERNAL;
+
+		dependencies[outDependencyIndex].srcStageMask =
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		dependencies[outDependencyIndex].srcAccessMask =
+			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+		if (dstAttachmentsUsage[i] == EResourceUsage::PixelShaderRead)
+			dependencies[outDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		else if (dstAttachmentsUsage[i] == EResourceUsage::Present)
+			dependencies[outDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		dependencies[outDependencyIndex].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	}*/
+
+	if (dstAttachmentsUsage[0] == EResourceUsage::PixelShaderRead)
+	{
+		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[0].dstSubpass = 0;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].srcAccessMask = VK_ACCESS_NONE;
+		dependencies[0].dstStageMask =
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		dependencies[0].dstAccessMask =
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+		dependencies[1].srcSubpass = 0;
+		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[1].srcStageMask =
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		dependencies[1].srcAccessMask =
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	}
+	else if (dstAttachmentsUsage[0] == EResourceUsage::Present)
+	{
+		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[0].dstSubpass = 0;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].srcAccessMask = VK_ACCESS_NONE;
+		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		dependencies[1].srcSubpass = 0;
+		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		dependencies[1].dstAccessMask = VK_ACCESS_NONE;
 	}
 
 	VkRenderPassCreateInfo createInfo = {};
@@ -666,8 +794,8 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 	createInfo.pAttachments = attachments.data();
 	createInfo.subpassCount = 1;
 	createInfo.pSubpasses = &subpass;
-	createInfo.dependencyCount = 1;
-	createInfo.pDependencies = &dependency;
+	createInfo.dependencyCount = dependencies.size();
+	createInfo.pDependencies = dependencies.data();
 
 	VkRenderPass renderPass = VK_NULL_HANDLE;
 
@@ -848,8 +976,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	const void* commandArgB
 )
 {
-	if (command == ENativeRenderCommand::Unknown ||
-		!commandArgA)
+	if (command == ENativeRenderCommand::Unknown)
 		return;
 
 	if (command == ENativeRenderCommand::BeginRenderPass)
@@ -861,12 +988,10 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.renderPass = (VkRenderPass)renderPass.GetInstance();
 		renderPassBeginInfo.framebuffer = (VkFramebuffer)renderPass.GetFramebuffer();
-		renderPassBeginInfo.renderArea.offset = {
-			0,
-			0
-		};
+		renderPassBeginInfo.renderArea.offset.x = 0;
+		renderPassBeginInfo.renderArea.offset.y = 0;
 		renderPassBeginInfo.renderArea.extent.width = (uint32_t)renderTarget.GetSize().GetX();
-		renderPassBeginInfo.renderArea.extent.width = (uint32_t)renderTarget.GetSize().GetY();
+		renderPassBeginInfo.renderArea.extent.height = (uint32_t)renderTarget.GetSize().GetY();
 		
 		VkClearValue clearValues[2] = {};
 		clearValues[0].color = {
@@ -882,7 +1007,10 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 
 		if (renderPass.IsRenderTargetClearRequired() == True)
 		{
-			renderPassBeginInfo.clearValueCount = 2;
+			if (renderTarget.GetDepthAttachment().IsValid() == True)
+				renderPassBeginInfo.clearValueCount = 2;
+			else
+				renderPassBeginInfo.clearValueCount = 1;
 			renderPassBeginInfo.pClearValues = &clearValues[0];
 		}
 
@@ -916,7 +1044,13 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	}
 	else if (command == ENativeRenderCommand::SetScissor)
 	{
-		vkCmdSetScissor(_graphicsQueue.commandBuffer, 0, 0, nullptr);
+		SViewport viewport = *(SViewport*)commandArgA;
+
+		VkRect2D nativeScissor;
+		nativeScissor.extent.width = viewport.rect.GetZ();
+		nativeScissor.extent.height = viewport.rect.GetW();
+
+		vkCmdSetScissor(_graphicsQueue.commandBuffer, 0, 1, &nativeScissor);
 	}
 	else if (command == ENativeRenderCommand::SetViewport)
 	{
@@ -976,16 +1110,12 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to acquire swapchain image");
 
-	VkClearValue clearValues[2] = {};
-	clearValues[0].color = {
+	VkClearValue clearValue;
+	clearValue.color = {
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetX(),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetY(),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetZ(),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetW()
-	};
-	clearValues[1].depthStencil = {
-		_swapchainRenderPasses[imageIndex].GetDepthClearValue(),
-		0
 	};
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
@@ -995,34 +1125,8 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	renderPassBeginInfo.renderArea.offset = { 0, 0 };
 	renderPassBeginInfo.renderArea.extent.width = _swapchain.size.GetX();
 	renderPassBeginInfo.renderArea.extent.height = _swapchain.size.GetY();
-	renderPassBeginInfo.clearValueCount = 2;
-	renderPassBeginInfo.pClearValues = &clearValues[0];
-
-	VkImageMemoryBarrier barrierShaderRead = {};
-	barrierShaderRead.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrierShaderRead.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	barrierShaderRead.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	barrierShaderRead.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	barrierShaderRead.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	barrierShaderRead.image = (VkImage)_swapchainPresentTexture.GetInstance();
-	barrierShaderRead.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrierShaderRead.subresourceRange.baseMipLevel = 0;
-	barrierShaderRead.subresourceRange.levelCount = 1;
-	barrierShaderRead.subresourceRange.baseArrayLayer = 0;
-	barrierShaderRead.subresourceRange.layerCount = 1;
-
-	/*vkCmdPipelineBarrier(
-		_graphicsQueue.commandBuffer,
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0,
-		0,
-		nullptr,
-		0,
-		nullptr,
-		1,
-		&barrierShaderRead
-	);*/
+	renderPassBeginInfo.clearValueCount = 1;
+	renderPassBeginInfo.pClearValues = &clearValue;
 
 	vkCmdBeginRenderPass(
 		_graphicsQueue.commandBuffer,
@@ -1061,32 +1165,6 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	vkCmdEndRenderPass(
 		_graphicsQueue.commandBuffer
 	);
-
-	VkImageMemoryBarrier barrierPresent = {};
-	barrierPresent.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrierPresent.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	barrierPresent.dstAccessMask = 0;
-	barrierPresent.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	barrierPresent.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	barrierPresent.image = (VkImage)_swapchainRenderTargets[imageIndex].GetColorAttachments()[0].GetInstance();
-	barrierPresent.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrierPresent.subresourceRange.baseMipLevel = 0;
-	barrierPresent.subresourceRange.levelCount = 1;
-	barrierPresent.subresourceRange.baseArrayLayer = 0;
-	barrierPresent.subresourceRange.layerCount = 1;
-
-	/*vkCmdPipelineBarrier(
-		_graphicsQueue.commandBuffer,
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-		0,
-		0,
-		nullptr,
-		0,
-		nullptr,
-		1,
-		&barrierPresent
-	);*/
 
 	vkEndCommandBuffer(
 		_graphicsQueue.commandBuffer
@@ -1438,9 +1516,7 @@ void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceFormats()
 {
 	const VkFormat candidates[] =
 	{
-		VK_FORMAT_D32_SFLOAT,
-		VK_FORMAT_D32_SFLOAT_S8_UINT,
-		VK_FORMAT_D24_UNORM_S8_UINT
+		VK_FORMAT_D32_SFLOAT
 	};
 
 	for (VkFormat format : candidates)
@@ -2025,13 +2101,6 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderTargets()
 			CGPUTextureResource::Invalid()
 		));
 	}
-
-	for (usize i = 0; i < renderTargetCount; i++)
-		_swapchainRenderTargets[i].SetColorAttachmentLayout(
-			0,
-			EGraphicsImageLayout::Undefined,
-			EGraphicsImageLayout::Present
-		);
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroySwapchainRenderTargets()
@@ -2052,8 +2121,10 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderPasses()
 			CreateRenderPass(
 				renderTarget,
 				True,
-				cVector4(0.0f, 1.0f, 0.0f, 1.0f),
-				1.0f
+				cVector4(1.0f),
+				1.0f,
+				{ EResourceUsage::Unknown },
+				{ EResourceUsage::Present }
 			)
 		);
 }
@@ -2359,15 +2430,19 @@ VkImageType triton::BGraphicsBackend2Vulkan::TextureDimensionToNative(ETextureDi
 	return type;
 }
 
-VkImageLayout triton::BGraphicsBackend2Vulkan::AttachmentLayoutToNative(EGraphicsImageLayout attachmentLayout)
+VkImageLayout triton::BGraphicsBackend2Vulkan::AttachmentUsageToNativeLayout(EResourceUsage attachmentUsage)
 {
-	if (attachmentLayout == EGraphicsImageLayout::ColorAttachment)
+	if (attachmentUsage == EResourceUsage::Unknown)
+		return VK_IMAGE_LAYOUT_UNDEFINED;
+	else if (attachmentUsage == EResourceUsage::ColorAttachment)
 		return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	else if (attachmentLayout == EGraphicsImageLayout::DepthStencilAttachment)
+	else if (attachmentUsage == EResourceUsage::DepthAttachment)
 		return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	else if (attachmentLayout == EGraphicsImageLayout::ShaderRead)
+	else if (attachmentUsage == EResourceUsage::VertexShaderRead)
 		return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	else if (attachmentLayout == EGraphicsImageLayout::Present)
+	else if (attachmentUsage == EResourceUsage::PixelShaderRead)
+		return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	else if (attachmentUsage == EResourceUsage::Present)
 		return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	return VK_IMAGE_LAYOUT_UNDEFINED;

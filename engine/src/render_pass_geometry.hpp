@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <vector>
 #include <optional>
 #include "render_pass.hpp"
 #include "math.hpp"
@@ -11,6 +12,7 @@
 #include "render_shading_model_enum.hpp"
 #include "render_native_draw_command_info_struct.hpp"
 #include "render_primitive_topology_enum.hpp"
+#include "render_resource_usage_enum.hpp"
 #include "gpu_pipeline_resource.hpp"
 #include "input_layout.hpp"
 #include "shader.hpp"
@@ -48,10 +50,8 @@ namespace triton
             types::boolean bClearRenderTarget,
             const cVector4& clearColor,
             types::f32 clearDepth,
-            EGraphicsImageLayout colorAttachmentSrcLayout,
-            EGraphicsImageLayout colorAttachmentDstLayout,
-            EGraphicsImageLayout depthAttachmentSrcLayout,
-            EGraphicsImageLayout depthAttachmentDstLayout,
+            const std::vector<EResourceUsage>& srcAttachmentsUsage,
+            const std::vector<EResourceUsage>& dstAttachmentsUsage,
             const XShader::THandle& shaderHandle,
             EPrimitiveTopology primitiveTopology,
             const SViewport& viewport

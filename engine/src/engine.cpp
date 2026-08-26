@@ -259,6 +259,8 @@ void triton::CEngine::MainThreadFunction()
 			_context->GetPool<CRenderInstanceDynamicPool>()->Update();
 			_context->GetPool<CMaterialPool>()->Update();
 			_context->GetPool<CSkinnedBonesPool>()->Update();
+
+			_context->GetSubsystem<CGraphics>()->ExecutePasses();
 		}
 		
 		{

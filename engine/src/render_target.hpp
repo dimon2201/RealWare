@@ -45,23 +45,6 @@ namespace triton
 			return attachment.GetSize();
 		}
 
-		inline void SetColorAttachmentLayout(
-			types::usize attachmentIndex,
-			EGraphicsImageLayout srcLayout,
-			EGraphicsImageLayout dstLayout
-		)
-		{
-			_gpuRenderTarget.SetColorAttachmentLayout(attachmentIndex, srcLayout, dstLayout);
-		}
-
-		inline void SetDepthAttachmentLayout(
-			EGraphicsImageLayout srcLayout,
-			EGraphicsImageLayout dstLayout
-		)
-		{
-			_gpuRenderTarget.SetDepthAttachmentLayout(srcLayout, dstLayout);
-		}
-
 		struct THandle : public SHandle {};
 
 		struct TGPULayout {};

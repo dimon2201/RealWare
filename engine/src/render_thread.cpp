@@ -281,7 +281,9 @@ void triton::cRenderThread::ExecuteCommands(
 					*((CGPURenderTargetResource*)cmd._args._argA),
 					cmd._args._argB,
 					*(cVector4*)cmd._args._argC,
-					*(f32*)cmd._args._argD
+					*(f32*)cmd._args._argD,
+					*(std::vector<EResourceUsage>*)cmd._args._argE,
+					*(std::vector<EResourceUsage>*)cmd._args._argF
 				);
 				memcpy(&_sync->GetResultBuffer().data[0], &resultRenderPass, sizeof(CGPURenderPassResource));
 				break;
@@ -298,16 +300,16 @@ void triton::cRenderThread::ExecuteCommands(
 					(CGPUPipelineResource*)cmd._args._argC,
 					nullptr
 				);
-				gfxBackend->AddCommandToBuffer(
+				/*gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::SetViewport,
 					(SViewport*)cmd._args._argD,
 					nullptr
 				);
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::SetScissor,
-					nullptr,
+					(SViewport*)cmd._args._argD,
 					nullptr
-				);
+				);*/
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::Draw,
 					(SNativeCommandDrawInfo*)cmd._args._argE,

@@ -20,6 +20,7 @@
 #include "shader_bytecode_files_struct.hpp"
 #include "render_native_command_enum.hpp"
 #include "render_primitive_topology_enum.hpp"
+#include "render_resource_usage_enum.hpp"
 #include "rasterizer_state.hpp"
 
 namespace triton
@@ -81,7 +82,9 @@ namespace triton
 			CGPURenderTargetResource& renderTarget,
 			types::boolean bClearRenderTarget,
 			const cVector4& clearColor,
-			types::f32 clearDepth
+			types::f32 clearDepth,
+			const std::vector<EResourceUsage>& srcAttachmentsUsage,
+			const std::vector<EResourceUsage>& dstAttachmentsUsage
 		) = 0;
 
 		virtual void DestroyRenderPass(CGPURenderPassResource& renderPass) = 0;

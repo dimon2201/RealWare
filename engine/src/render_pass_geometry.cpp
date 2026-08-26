@@ -21,10 +21,8 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     boolean bClearRenderTarget,
     const cVector4& clearColor,
     f32 clearDepth,
-    EGraphicsImageLayout colorAttachmentSrcLayout,
-    EGraphicsImageLayout colorAttachmentDstLayout,
-    EGraphicsImageLayout depthAttachmentSrcLayout,
-    EGraphicsImageLayout depthAttachmentDstLayout,
+    const std::vector<EResourceUsage>& srcAttachmentsUsage,
+    const std::vector<EResourceUsage>& dstAttachmentsUsage,
     const XShader::THandle& shaderHandle,
     EPrimitiveTopology primitiveTopology,
     const SViewport& viewport
@@ -37,10 +35,7 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     _viewport(viewport)
 {
     XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
-    for (usize i = 0; i < renderTarget.GetColorAttachments().size(); i++)
-        renderTarget.SetColorAttachmentLayout(i, colorAttachmentSrcLayout, colorAttachmentDstLayout);
-    renderTarget.SetDepthAttachmentLayout(depthAttachmentSrcLayout, depthAttachmentDstLayout);
-
+    
     const CGPURenderTargetResource& gpuRenderTarget = renderTarget.GetGPUResource();
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
@@ -48,7 +43,9 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         (cpuword)&gpuRenderTarget,
         (cpuword)bClearRenderTarget,
         (cpuword)&clearColor,
-        (cpuword)&clearDepth
+        (cpuword)&clearDepth,
+        (cpuword)&srcAttachmentsUsage,
+        (cpuword)&dstAttachmentsUsage
     ));
 
     _gpuRenderPass = _context->GetSubsystem<CEngine>()->
@@ -68,7 +65,7 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         (cpuword)&_viewport,
         (cpuword)&gpuRenderTarget,
         (cpuword)&_gpuRenderPass,
-        (cpuword)_inputTextures.size(),
+        (cpuword)texturesToBindCount,
         (cpuword)texturesToBind.data(),
         (cpuword)primitiveTopology
     ));
@@ -101,8 +98,6 @@ triton::XRenderPassGeometry::~XRenderPassGeometry()
 
 void triton::XRenderPassGeometry::Render()
 {
-    CThreadGuard::AssertRender();
-
     Bind();
     Draw();
     Unbind();

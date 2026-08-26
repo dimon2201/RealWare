@@ -46,8 +46,6 @@ triton::CGraphics::~CGraphics()
 
 void triton::CGraphics::ExecutePasses()
 {
-    CThreadGuard::AssertRender();
-
     // TODO: [Vulkan backend] This must be done using render command queue on main thread
     // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
@@ -531,15 +529,18 @@ void triton::CGraphics::CreateRenderPasses()
         opaqueRenderTarget.GetColorAttachmentSize(0).GetY()
     );
 
+    const std::vector<EResourceUsage> srcAttachmentsUsage =
+        { EResourceUsage::Unknown, EResourceUsage::Unknown };
+    const std::vector<EResourceUsage> dstAttachmentsUsage =
+        { EResourceUsage::PixelShaderRead, EResourceUsage::DepthAttachment };
+    
     _opaqueRigid = *renderPassGeometryPool->Create(
         _opaqueRenderTarget,
         True,
-        cVector4(1.0f),
+        cVector4(0.45f, 0.45f, 0.45f, 1.0f),
         1.0f,
-        EGraphicsImageLayout::Undefined,
-        EGraphicsImageLayout::ShaderRead,
-        EGraphicsImageLayout::Undefined,
-        EGraphicsImageLayout::DepthStencilAttachment,
+        srcAttachmentsUsage,
+        dstAttachmentsUsage,
         _opaqueRigidPBRShader,
         EPrimitiveTopology::TriangleList,
         viewport

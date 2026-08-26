@@ -14,10 +14,6 @@ namespace triton
     {
         std::vector<CGPUTextureResource> _colorAttachments;
         CGPUTextureResource _depthAttachment = CGPUTextureResource::Invalid();
-        std::vector<EGraphicsImageLayout> _colorAttachmentSrcLayouts;
-        std::vector<EGraphicsImageLayout> _colorAttachmentDstLayouts;
-        EGraphicsImageLayout _depthAttachmentSrcLayout;
-        EGraphicsImageLayout _depthAttachmentDstLayout;
 
     public:
         explicit CGPURenderTargetResource(
@@ -29,11 +25,7 @@ namespace triton
             _depthAttachment(depthAttachment)
         {
             for (types::usize i = 0; i < colorAttachments.size(); i++)
-            {
                 _colorAttachments.push_back(colorAttachments[i]);
-                _colorAttachmentSrcLayouts.push_back(EGraphicsImageLayout::Undefined);
-                _colorAttachmentDstLayouts.push_back(EGraphicsImageLayout::Undefined);
-            }
         }
         ~CGPURenderTargetResource() override = default;
 
@@ -50,36 +42,9 @@ namespace triton
 
         inline CGPUTextureResource& GetDepthAttachment() { return _depthAttachment; }
 
-        inline const std::vector<EGraphicsImageLayout>& GetColorAttachmentSrcLayouts() const { return _colorAttachmentSrcLayouts; }
-
-        inline const std::vector<EGraphicsImageLayout>& GetColorAttachmentDstLayouts() const { return _colorAttachmentDstLayouts; }
-
-        inline const EGraphicsImageLayout GetDepthAttachmentSrcLayout() const { return _depthAttachmentSrcLayout; }
-
-        inline const EGraphicsImageLayout GetDepthAttachmentDstLayout() const { return _depthAttachmentDstLayout; }
-
         inline const cVector2& GetSize() const
         {
             return cVector2(_colorAttachments[0].GetWidth(), _colorAttachments[0].GetHeight());
-        }
-
-        inline void SetColorAttachmentLayout(
-            types::usize attachmentIndex,
-            EGraphicsImageLayout srcLayout,
-            EGraphicsImageLayout dstLayout
-        )
-        {
-            _colorAttachmentSrcLayouts[attachmentIndex] = srcLayout;
-            _colorAttachmentDstLayouts[attachmentIndex] = dstLayout;
-        }
-
-        inline void SetDepthAttachmentLayout(
-            EGraphicsImageLayout srcLayout,
-            EGraphicsImageLayout dstLayout
-        )
-        {
-            _depthAttachmentSrcLayout = srcLayout;
-            _depthAttachmentDstLayout = dstLayout;
         }
 
         inline void SetDepthAttachment(const CGPUTextureResource& depthAttachment) { _depthAttachment = depthAttachment; }

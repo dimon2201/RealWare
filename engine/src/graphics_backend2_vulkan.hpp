@@ -87,7 +87,9 @@ namespace triton
 			CGPURenderTargetResource& renderTarget,
 			types::boolean bClearRenderTarget,
 			const cVector4& clearColor,
-			types::f32 clearDepth
+			types::f32 clearDepth,
+			const std::vector<EResourceUsage>& srcAttachmentsUsage,
+			const std::vector<EResourceUsage>& dstAttachmentsUsage
 		) override final;
 
 		void DestroyRenderPass(CGPURenderPassResource& renderPass) override final;
@@ -190,7 +192,7 @@ namespace triton
 
 		VkImageType TextureDimensionToNative(ETextureDimension textureDimension);
 
-		VkImageLayout AttachmentLayoutToNative(EGraphicsImageLayout attachmentLayout);
+		VkImageLayout AttachmentUsageToNativeLayout(EResourceUsage attachmentUsage);
 
 		VkPipelineBindPoint PipelineBindPointToNative(EPipelineBindPoint bindPoint);
 
