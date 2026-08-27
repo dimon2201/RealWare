@@ -340,7 +340,8 @@ void triton::cRenderThread::ExecuteCommands(
 					*(CGPURenderTargetResource*)cmd._args._argC,
 					*(CGPURenderPassResource*)cmd._args._argD,
 					texturesToBindVector,
-					(EPrimitiveTopology)cmd._args._argG
+					(EPrimitiveTopology)cmd._args._argG,
+					(EVertexBufferFormat)cmd._args._argH
 				);
 				
 				new (_sync->GetResultBuffer().data) CGPUPipelineResource(resultPipeline);

@@ -92,7 +92,8 @@ namespace triton
 			CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass,
 			const std::vector<CGPUTextureResource>& texturesToBind,
-			EPrimitiveTopology primitiveTopology
+			EPrimitiveTopology primitiveTopology,
+			EVertexBufferFormat vertexBufferFormat
 		) override final;
 
 		void DestroyPipeline(CGPUPipelineResource& pipeline) override final;

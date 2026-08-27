@@ -4,6 +4,7 @@
 #include <set>
 #include <algorithm>
 #include <cstdint>
+#include <cstddef>
 #include "graphics_backend2_vulkan.hpp"
 #include "input_backend.hpp"
 #include "context.hpp"
@@ -13,6 +14,7 @@
 #include "memory_units.hpp"
 #include "render_native_draw_command_info_struct.hpp"
 #include "rasterizer_state.hpp"
+#include "vertex.hpp"
 
 using namespace types;
 
@@ -121,7 +123,8 @@ void triton::BGraphicsBackend2Vulkan::FinalizeSwapchain(const CGPUTextureResourc
 				_swapchainRenderTargets[i],
 				_swapchainRenderPasses[i],
 				texturesToBind,
-				EPrimitiveTopology::TriangleStrip
+				EPrimitiveTopology::TriangleStrip,
+				EVertexBufferFormat::Unknown
 			)
 		);
 
@@ -433,7 +436,8 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	CGPURenderTargetResource& renderTarget,
 	const CGPURenderPassResource& renderPass,
 	const std::vector<CGPUTextureResource>& texturesToBind,
-	EPrimitiveTopology primitiveTopology
+	EPrimitiveTopology primitiveTopology,
+	EVertexBufferFormat vertexBufferFormat
 )
 {
 	const dword stageMask = shader.GetStageMask();
@@ -472,12 +476,52 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 
 	if (bIsVertexPixel == True)
 	{
+		VkVertexInputBindingDescription vertexInputBinding = {};
+		vertexInputBinding.binding = 0;
+		vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		if (vertexBufferFormat == EVertexBufferFormat::Rigid_48)
+			vertexInputBinding.stride = sizeof(SRigidVertexGPULayout);
+		else if (vertexBufferFormat == EVertexBufferFormat::Skinned_80)
+			vertexInputBinding.stride = sizeof(SSkinnedVertexGPULayout);
+
+		std::vector<VkVertexInputAttributeDescription> vertexInputAttributes;
+
+		if (vertexBufferFormat == EVertexBufferFormat::Rigid_48)
+		{
+			vertexInputAttributes.resize(4);
+			
+			vertexInputAttributes[0].binding = 0;
+			vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributes[0].location = 0;
+			vertexInputAttributes[0].offset = offsetof(SRigidVertexGPULayout, position);
+
+			vertexInputAttributes[1].binding = 0;
+			vertexInputAttributes[1].format = VK_FORMAT_R32G32_SFLOAT;
+			vertexInputAttributes[1].location = 1;
+			vertexInputAttributes[0].offset = offsetof(SRigidVertexGPULayout, texcoord);
+
+			vertexInputAttributes[2].binding = 0;
+			vertexInputAttributes[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributes[2].location = 2;
+			vertexInputAttributes[2].offset = offsetof(SRigidVertexGPULayout, normal);
+
+			vertexInputAttributes[3].binding = 0;
+			vertexInputAttributes[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+			vertexInputAttributes[3].location = 3;
+			vertexInputAttributes[3].offset = offsetof(SRigidVertexGPULayout, tangent);
+		}
+
 		VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = {};
 		vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputStateCreateInfo.vertexBindingDescriptionCount = 0;
-		vertexInputStateCreateInfo.pVertexBindingDescriptions = nullptr;
-		vertexInputStateCreateInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputStateCreateInfo.pVertexAttributeDescriptions = nullptr;
+		
+		if (vertexBufferFormat != EVertexBufferFormat::Unknown)
+		{
+			vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
+			vertexInputStateCreateInfo.pVertexBindingDescriptions = &vertexInputBinding;
+			vertexInputStateCreateInfo.vertexAttributeDescriptionCount = vertexInputAttributes.size();
+			vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexInputAttributes.data();
+		}
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = {};
 		inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

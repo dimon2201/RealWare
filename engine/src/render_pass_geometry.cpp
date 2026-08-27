@@ -70,7 +70,8 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         (cpuword)&_gpuRenderPass,
         (cpuword)texturesToBindCount,
         (cpuword)texturesToBind.data(),
-        (cpuword)primitiveTopology
+        (cpuword)primitiveTopology,
+        (cpuword)EVertexBufferFormat::Rigid_48
     ));
 
     _gpuPipeline = _context->GetSubsystem<CEngine>()->

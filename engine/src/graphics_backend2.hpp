@@ -24,6 +24,7 @@
 #include "render_primitive_topology_enum.hpp"
 #include "render_resource_usage_enum.hpp"
 #include "rasterizer_state.hpp"
+#include "vertex_buffer_format.hpp"
 
 namespace triton
 {
@@ -89,7 +90,8 @@ namespace triton
 			CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass,
 			const std::vector<CGPUTextureResource>& texturesToBind,
-			EPrimitiveTopology primitiveTopology
+			EPrimitiveTopology primitiveTopology,
+			EVertexBufferFormat vertexBufferFormat
 		) = 0;
 
 		virtual void DestroyPipeline(CGPUPipelineResource& pipeline) = 0;
