@@ -1,6 +1,6 @@
 # Triton Engine
 
-Lightweight game engine written in C++20.
+Game engine written in C++20.
 
 Inspired by Urho3D, Wicked Engine, HPL1 Engine, UE4.
 
