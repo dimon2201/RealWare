@@ -297,19 +297,19 @@ void triton::cRenderThread::ExecuteCommands(
 					(CGPUPipelineResource*)cmd._args._argC,
 					nullptr
 				);
-				/*gfxBackend->AddCommandToBuffer(
-					ENativeRenderCommand::SetViewport,
-					(SViewport*)cmd._args._argD,
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::BindVertexBuffer,
+					(CGPUPipelineResource*)cmd._args._argD,
 					nullptr
 				);
 				gfxBackend->AddCommandToBuffer(
-					ENativeRenderCommand::SetScissor,
-					(SViewport*)cmd._args._argD,
+					ENativeRenderCommand::BindIndexBuffer,
+					(CGPUPipelineResource*)cmd._args._argE,
 					nullptr
-				);*/
+				);
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::Draw,
-					(SNativeCommandDrawInfo*)cmd._args._argE,
+					(SNativeCommandDrawInfo*)cmd._args._argF,
 					nullptr
 				);
 				gfxBackend->AddCommandToBuffer(
@@ -364,6 +364,24 @@ void triton::cRenderThread::ExecuteCommands(
 			case ERenderCommand::ReleaseSwapchainResources:
 			{
 				gfxBackend->ReleaseSwapchainResources();
+				break;
+			}
+			case ERenderCommand::BindVertexBuffer:
+			{
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::BindVertexBuffer,
+					(const void*)cmd._args._argA,
+					nullptr
+				);
+				break;
+			}
+			case ERenderCommand::BindIndexBuffer:
+			{
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::BindIndexBuffer,
+					(const void*)cmd._args._argA,
+					nullptr
+				);
 				break;
 			}
 		}

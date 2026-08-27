@@ -50,7 +50,9 @@ namespace triton
 		CREATE_PIPELINE,
 		DESTROY_PIPELINE,
 		FinalizeSwapchain,
-		ReleaseSwapchainResources
+		ReleaseSwapchainResources,
+		BindVertexBuffer,
+		BindIndexBuffer
 	};
 
 	struct SRenderCommandArgs

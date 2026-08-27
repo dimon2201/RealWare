@@ -45,7 +45,7 @@ namespace triton
             types::usize inputIndexCount
         );
 
-        inline const XGPUBuffer::THandle& GetStaticVertexBuffer() const
+        inline const XGPUBuffer::THandle& GetRigidVertexBuffer() const
         {
             return _staticVertexBuffer;
         }
@@ -55,7 +55,7 @@ namespace triton
             return _skinnedVertexBuffer;
         }
 
-        inline const XGPUBuffer::THandle& GetStaticIndexBuffer() const
+        inline const XGPUBuffer::THandle& GetRigidIndexBuffer() const
         {
             return _staticIndexBuffer;
         }

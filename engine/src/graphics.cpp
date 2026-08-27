@@ -138,8 +138,8 @@ void triton::CGraphics::CreateInputLayouts()
 {
     CGeometryStorage* gs = _context->GetSubsystem<CGeometryStorage>();
     const std::vector<XGPUBuffer::THandle> staticInputs = {
-        gs->GetStaticVertexBuffer(),
-        gs->GetStaticIndexBuffer()
+        gs->GetRigidVertexBuffer(),
+        gs->GetRigidIndexBuffer()
     };
     const std::vector<XGPUBuffer::THandle> skinnedInputs = {
         gs->GetSkinnedVertexBuffer(),

@@ -1146,6 +1146,34 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 
 		vkCmdSetViewport(_graphicsQueue.commandBuffer, 0, 1, &nativeViewport);
 	}
+	else if (command == ENativeRenderCommand::BindVertexBuffer)
+	{
+		const CGPUBufferResource& vertexBuffer = *(CGPUBufferResource*)commandArgA;
+
+		VkBuffer nativeVertexBuffer = (VkBuffer)vertexBuffer.GetInstance();
+		VkDeviceSize offset = 0;
+
+		vkCmdBindVertexBuffers(
+			_graphicsQueue.commandBuffer,
+			0,
+			1,
+			&nativeVertexBuffer,
+			&offset
+		);
+	}
+	else if (command == ENativeRenderCommand::BindIndexBuffer)
+	{
+		CGPUBufferResource& indexBuffer = *(CGPUBufferResource*)commandArgA;
+
+		VkBuffer nativeIndexBuffer = (VkBuffer)indexBuffer.GetInstance();
+
+		vkCmdBindIndexBuffer(
+			_graphicsQueue.commandBuffer,
+			nativeIndexBuffer,
+			0,
+			VK_INDEX_TYPE_UINT32
+		);
+	}
 }
 
 void triton::BGraphicsBackend2Vulkan::BeginFrame()

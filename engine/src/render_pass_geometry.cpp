@@ -10,7 +10,10 @@
 #include "camera_pool.hpp"
 #include "render_target_pool.hpp"
 #include "render_instance_pack_pool.hpp"
+#include "gpu_buffer_pool.hpp"
 #include "input_backend.hpp"
+#include "geometry_storage.hpp"
+#include "gpu_buffer.hpp"
 
 using namespace types;
 
@@ -247,12 +250,20 @@ void triton::XRenderPassGeometry::Draw()
     _nativeCommandDrawInfo.firstVertex = 0;
     _nativeCommandDrawInfo.firstInstance = 0;
 
+    XGPUBuffer::THandle vertexBufferHandle = _context->GetSubsystem<CGeometryStorage>()->GetRigidVertexBuffer();
+    XGPUBuffer::THandle indexBufferHandle = _context->GetSubsystem<CGeometryStorage>()->GetRigidIndexBuffer();
+    XGPUBuffer& vertexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(vertexBufferHandle);
+    XGPUBuffer& indexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(indexBufferHandle);
+    const CGPUBufferResource& gpuVertexBuffer = vertexBuffer.GetGPUResource();
+    const CGPUBufferResource& gpuIndexBuffer = indexBuffer.GetGPUResource();
+
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::EXECUTE_RENDER_PASS,
         (cpuword)&renderTarget.GetGPUResource(),
         (cpuword)&_gpuRenderPass,
         (cpuword)&_gpuPipeline,
-        (cpuword)&_viewport,
+        (cpuword)&gpuVertexBuffer,
+        (cpuword)&gpuIndexBuffer,
         (cpuword)&_nativeCommandDrawInfo
     ));
 }

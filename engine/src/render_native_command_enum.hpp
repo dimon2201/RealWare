@@ -14,6 +14,8 @@ namespace triton
 		SetViewport,
 		SetScissor,
 		Draw,
-		EndRenderPass
+		EndRenderPass,
+		BindVertexBuffer,
+		BindIndexBuffer
 	};
 }
