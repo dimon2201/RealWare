@@ -173,50 +173,24 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to create image");
 
-	VkPhysicalDeviceMemoryProperties memoryProperties = {};
-	vkGetPhysicalDeviceMemoryProperties(
-		_physicalDevice.device,
-		&memoryProperties
-	);
-
-	VkMemoryRequirements requirements = {};
+	VkMemoryRequirements memoryRequirements = {};
 	vkGetImageMemoryRequirements(
 		_logicalDevice.device,
 		image,
-		&requirements
+		&memoryRequirements
 	);
 
-	usize memoryTypeIndex = FindProperImageMemoryType(
-		memoryProperties,
-		requirements
-	);
-
-	VkMemoryAllocateInfo memoryAllocateInfo = {};
-	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memoryAllocateInfo.allocationSize = requirements.size;
-	memoryAllocateInfo.memoryTypeIndex = memoryTypeIndex;
-
-	VkDeviceMemory memory = VK_NULL_HANDLE;
-
-	result = vkAllocateMemory(
-		_logicalDevice.device,
-		&memoryAllocateInfo,
-		nullptr,
-		&memory
-	);
-
-	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to allocate image memory");
+	VkDeviceMemory memory = AllocateDeviceMemory(memoryRequirements);
 
 	result = vkBindImageMemory(
 		_logicalDevice.device,
 		image,
 		memory,
-		(VkDeviceSize)0
+		0
 	);
 
 	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to bind image memory");
+		Print("[Vulkan]: Error: failed to bind memory to image");
 
 	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_NONE;
 
@@ -323,6 +297,118 @@ void triton::BGraphicsBackend2Vulkan::DestroyTexture(CGPUTextureResource& textur
 			(VkDeviceMemory)texture.GetDeviceMemory(),
 			nullptr
 		);
+	}
+}
+
+triton::CGPUBufferResource triton::BGraphicsBackend2Vulkan::CreateBuffer(
+	EGPUBufferType type,
+	const usize byteSize
+)
+{
+	VkResult result;
+
+	VkBufferCreateInfo bufferCreateInfo = {};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.size = byteSize;
+	bufferCreateInfo.usage = BufferTypeToNative(type);
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	VkBuffer buffer = VK_NULL_HANDLE;
+
+	result = vkCreateBuffer(
+		_logicalDevice.device,
+		&bufferCreateInfo,
+		nullptr,
+		&buffer
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create buffer");
+
+	VkMemoryRequirements memoryRequirements = {};
+	vkGetBufferMemoryRequirements(
+		_logicalDevice.device,
+		buffer,
+		&memoryRequirements
+	);
+
+	VkDeviceMemory memory = AllocateDeviceMemory(memoryRequirements);
+
+	result = vkBindBufferMemory(
+		_logicalDevice.device,
+		buffer,
+		memory,
+		0
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to bind memory to buffer");
+
+	return CGPUBufferResource(
+		(qword)buffer,
+		0,
+		(qword)memory,
+		type,
+		byteSize,
+		0
+	);
+}
+
+void triton::BGraphicsBackend2Vulkan::WriteBuffer(
+	const CGPUBufferResource& buffer,
+	usize offset,
+	const u8* data,
+	usize byteSize
+)
+{
+	if (buffer.IsValid() == False)
+		return;
+
+	if (offset + byteSize > buffer.GetByteSize())
+		return;
+
+	VkDeviceMemory memory = (VkDeviceMemory)buffer.GetDeviceMemory();
+
+	void* mappedData = nullptr;
+
+	VkResult result = vkMapMemory(
+		_logicalDevice.device,
+		(VkDeviceMemory)memory,
+		offset,
+		byteSize,
+		0,
+		&mappedData
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to map buffer memory");
+
+	memcpy(
+		mappedData,
+		&data[0],
+		byteSize
+	);
+
+	vkUnmapMemory(_logicalDevice.device, memory);
+}
+
+void triton::BGraphicsBackend2Vulkan::DestroyBuffer(CGPUBufferResource& buffer)
+{
+	if (buffer.IsValid() == True)
+	{
+		vkDestroyBuffer(
+			_logicalDevice.device,
+			(VkBuffer)buffer.GetInstance(),
+			nullptr
+		);
+
+		vkFreeMemory(
+			_logicalDevice.device,
+			(VkDeviceMemory)buffer.GetDeviceMemory(),
+			nullptr
+		);
+
+		buffer.Invalidate();
 	}
 }
 
@@ -2369,7 +2455,7 @@ void triton::BGraphicsBackend2Vulkan::DestroyDescriptorSet(const SDescriptorSet&
 		);
 }
 
-usize triton::BGraphicsBackend2Vulkan::FindProperImageMemoryType(
+usize triton::BGraphicsBackend2Vulkan::FindProperMemoryTypeIndex(
 	VkPhysicalDeviceMemoryProperties memoryProperties,
 	VkMemoryRequirements requirements
 )
@@ -2380,16 +2466,55 @@ usize triton::BGraphicsBackend2Vulkan::FindProperImageMemoryType(
 	{
 		const bool typeSupported = (requirements.memoryTypeBits & (1u << i)) != 0;
 
+		const dword requiredMemoryPropertyBits =
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT |
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
 		const bool propertiesSupported =
-			(memoryProperties.memoryTypes[i].propertyFlags &
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-			== VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+			(memoryProperties.memoryTypes[i].propertyFlags & requiredMemoryPropertyBits)
+			== requiredMemoryPropertyBits;
 
 		if (typeSupported && propertiesSupported)
 			return i;
 	}
 
+	Print("[Vulkan]: Info: Selected memory type index: 0");
+
 	return 0;
+}
+
+VkDeviceMemory triton::BGraphicsBackend2Vulkan::AllocateDeviceMemory(VkMemoryRequirements requirements)
+{
+	VkPhysicalDeviceMemoryProperties memoryProperties = {};
+	vkGetPhysicalDeviceMemoryProperties(
+		_physicalDevice.device,
+		&memoryProperties
+	);
+
+	usize memoryTypeIndex = FindProperMemoryTypeIndex(
+		memoryProperties,
+		requirements
+	);
+
+	VkMemoryAllocateInfo memoryAllocateInfo = {};
+	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.allocationSize = requirements.size;
+	memoryAllocateInfo.memoryTypeIndex = memoryTypeIndex;
+
+	VkDeviceMemory memory = VK_NULL_HANDLE;
+
+	VkResult result = vkAllocateMemory(
+		_logicalDevice.device,
+		&memoryAllocateInfo,
+		nullptr,
+		&memory
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to allocate device memory");
+
+	return memory;
 }
 
 VkFormat triton::BGraphicsBackend2Vulkan::TextureFormatToNative(ETextureFormat textureFormat)
@@ -2472,6 +2597,20 @@ VkPrimitiveTopology triton::BGraphicsBackend2Vulkan::PrimitiveTopologyToNative(E
 		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 
 	return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+}
+
+VkBufferUsageFlags triton::BGraphicsBackend2Vulkan::BufferTypeToNative(EGPUBufferType bufferType)
+{
+	if (bufferType == EGPUBufferType::Vertex)
+		return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	else if (bufferType == EGPUBufferType::Index)
+		return VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	else if (bufferType == EGPUBufferType::Uniform)
+		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	else if (bufferType == EGPUBufferType::Storage)
+		return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+	return 0;
 }
 
 std::string triton::BGraphicsBackend2Vulkan::ShaderSourceInclude(

@@ -65,6 +65,20 @@ namespace triton
 
 		void DestroyTexture(CGPUTextureResource& texture) override final;
 
+		CGPUBufferResource CreateBuffer(
+			EGPUBufferType type,
+			const types::usize byteSize
+		) override final;
+
+		void WriteBuffer(
+			const CGPUBufferResource& buffer,
+			types::usize offset,
+			const types::u8* data,
+			types::usize byteSize
+		) override final;
+
+		void DestroyBuffer(CGPUBufferResource& buffer) override final;
+
 		CGPURenderTargetResource CreateRenderTarget(
 			const std::vector<CGPUTextureResource>& colorAttachments,
 			const CGPUTextureResource& depthAttachment
@@ -181,10 +195,12 @@ namespace triton
 
 		void DestroyDescriptorSet(const SDescriptorSet& descriptorSet);
 
-		types::usize FindProperImageMemoryType(
+		types::usize FindProperMemoryTypeIndex(
 			VkPhysicalDeviceMemoryProperties memoryProperties,
 			VkMemoryRequirements requirements
 		);
+
+		VkDeviceMemory AllocateDeviceMemory(VkMemoryRequirements requirements);
 
 		VkFormat TextureFormatToNative(ETextureFormat textureFormat);
 
@@ -199,6 +215,8 @@ namespace triton
 		VkViewport ViewportToNative(const SViewport& viewport);
 
 		VkPrimitiveTopology PrimitiveTopologyToNative(EPrimitiveTopology primitiveTopology);
+
+		VkBufferUsageFlags BufferTypeToNative(EGPUBufferType bufferType);
 
 		std::string ShaderSourceInclude(const std::string& shaderSource, const std::string& includeStr);
 	};

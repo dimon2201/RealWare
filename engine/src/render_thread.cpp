@@ -141,26 +141,13 @@ void triton::cRenderThread::ExecuteCommands(
 				);*/
 				break;
 			}
-			case ERenderCommand::WRITE_BUFFER:
-			{
-				/*gfxBackend->WriteBuffer(
-					*((CGPUBufferResource*)cmd._args._argA),
-					cmd._args._argB,
-					cmd._args._argC,
-					(const u8*)cmd._args._argD
-				);*/
-				break;
-			}
 			case ERenderCommand::CREATE_BUFFER:
 			{
-				/*CGPUBufferResource resultBuffer = gfxBackend->CreateBuffer(
+				CGPUBufferResource resultBuffer = gfxBackend->CreateBuffer(
 					(EGPUBufferType)cmd._args._argA,
-					(u8*)cmd._args._argB,
-					cmd._args._argC,
-					cmd._args._argD
+					cmd._args._argB
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultBuffer, sizeof(CGPUBufferResource));*/
-				new (_sync->GetResultBuffer().data) CGPUBufferResource(0, 0, EGPUBufferType::Unknown, 0, 0);
+				new (_sync->GetResultBuffer().data) CGPUBufferResource(resultBuffer);
 				break;
 			}
 			case ERenderCommand::BIND_BUFFER:
@@ -169,11 +156,21 @@ void triton::cRenderThread::ExecuteCommands(
 				//gfxBackend->BindBuffer(*buffer);
 				break;
 			}
+			case ERenderCommand::WRITE_BUFFER:
+			{
+				gfxBackend->WriteBuffer(
+					*((CGPUBufferResource*)cmd._args._argA),
+					(usize)cmd._args._argB,
+					(const u8*)cmd._args._argC,
+					(usize)cmd._args._argD
+				);
+				break;
+			}
 			case ERenderCommand::DESTROY_BUFFER:
 			{
-				//gfxBackend->DestroyBuffer(
-				//	*((CGPUBufferResource*)cmd._args._argA)
-				//);
+				gfxBackend->DestroyBuffer(
+					*((CGPUBufferResource*)cmd._args._argA)
+				);
 				break;
 			}
 			case ERenderCommand::CREATE_INPUT_LAYOUT:

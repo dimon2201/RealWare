@@ -634,7 +634,7 @@ triton::CGPUBufferResource triton::XGraphicsBackendOGL::CreateBuffer(
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
-    return CGPUBufferResource(instance, 0, type, byteSize, slot);
+    return CGPUBufferResource(instance, 0, 0, type, byteSize, slot);
 }
 
 void triton::XGraphicsBackendOGL::BindBuffer(const CGPUBufferResource& buffer)

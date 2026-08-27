@@ -59,34 +59,10 @@ triton::CGeometryStorage::~CGeometryStorage()
     _context->Destroy<XDataBuffer>(_skinnedVertexBufferCPU);
     _context->Destroy<XDataBuffer>(_staticVertexBufferCPU);
 
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        (cpuword)&_skinnedIndexBuffer,
-        0,
-        0,
-        0
-    ));
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        (cpuword)&_staticIndexBuffer,
-        0,
-        0,
-        0
-    ));
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        (cpuword)&_skinnedVertexBuffer,
-        0,
-        0,
-        0
-    ));
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::DESTROY_BUFFER,
-        (cpuword)&_staticVertexBuffer,
-        0,
-        0,
-        0
-    ));
+    _context->GetPool<CGPUBufferPool>()->Destroy(_skinnedIndexBuffer);
+    _context->GetPool<CGPUBufferPool>()->Destroy(_staticIndexBuffer);
+    _context->GetPool<CGPUBufferPool>()->Destroy(_skinnedVertexBuffer);
+    _context->GetPool<CGPUBufferPool>()->Destroy(_staticVertexBuffer);
 }
 
 std::optional<triton::SGeometryView> triton::CGeometryStorage::Create(
@@ -122,20 +98,8 @@ std::optional<triton::SGeometryView> triton::CGeometryStorage::Create(
         XGPUBuffer& staticVertexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(_staticVertexBuffer);
         XGPUBuffer& staticIndexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(_staticIndexBuffer);
 
-        _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-            ERenderCommand::WRITE_BUFFER,
-            (cpuword)&staticVertexBuffer.GetGPUResource(),
-            vertexBufferByteSize,
-            verticesByteSize,
-            (cpuword)vertexData
-        ));
-        _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-            ERenderCommand::WRITE_BUFFER,
-            (cpuword)&staticIndexBuffer.GetGPUResource(),
-            indexBufferByteSize,
-            indicesByteSize,
-            (cpuword)indexData
-        ));
+        staticVertexBuffer.Write(vertexBufferByteSize, vertexData, verticesByteSize);
+        staticIndexBuffer.Write(indexBufferByteSize, indexData, indicesByteSize);
 
         SGeometryView geometry;
         geometry._vertexCount = vertexCount;
@@ -171,22 +135,10 @@ std::optional<triton::SGeometryView> triton::CGeometryStorage::Create(
         _skinnedIndexBufferCPU->Write(indices, indicesByteSize, indexBufferByteSize);
 
         XGPUBuffer& skinnedVertexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(_skinnedVertexBuffer);
-        XGPUBuffer& skinnedndexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(_skinnedIndexBuffer);
+        XGPUBuffer& skinnedIndexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(_skinnedIndexBuffer);
 
-        _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-            ERenderCommand::WRITE_BUFFER,
-            (cpuword)&skinnedVertexBuffer.GetGPUResource(),
-            vertexBufferByteSize,
-            verticesByteSize,
-            (cpuword)vertexData
-        ));
-        _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-            ERenderCommand::WRITE_BUFFER,
-            (cpuword)&skinnedndexBuffer.GetGPUResource(),
-            indexBufferByteSize,
-            indicesByteSize,
-            (cpuword)indexData
-        ));
+        skinnedVertexBuffer.Write(vertexBufferByteSize, vertexData, verticesByteSize);
+        skinnedIndexBuffer.Write(indexBufferByteSize, indexData, indicesByteSize);
 
         SGeometryView geometry;
         geometry._vertexCount = vertexCount;

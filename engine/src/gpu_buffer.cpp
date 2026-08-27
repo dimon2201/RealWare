@@ -18,10 +18,9 @@ triton::XGPUBuffer::XGPUBuffer(
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_BUFFER,
         (cpuword)type,
-        (cpuword)data,
-        byteSize,
-        slot
+        byteSize
     ));
+
     _gpuBuffer =
         _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
@@ -34,6 +33,22 @@ triton::XGPUBuffer::~XGPUBuffer()
         ERenderCommand::DESTROY_BUFFER,
         (cpuword)&_gpuBuffer
     ));
+
+    _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<void*>();
+}
+
+void triton::XGPUBuffer::Write(usize offset, const u8* data, usize byteSize)
+{
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::WRITE_BUFFER,
+        (cpuword)&_gpuBuffer,
+        (cpuword)offset,
+        (cpuword)data,
+        (cpuword)byteSize
+    ));
+
     _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
         WaitForRenderCommandResult<void*>();

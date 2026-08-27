@@ -497,10 +497,9 @@ namespace triton
         _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::CREATE_BUFFER,
             (types::cpuword)type,
-            (types::cpuword)nullptr,
-            byteSize,
-            slot
+            byteSize
         ));
+
         buffer = _context->GetSubsystem<CEngine>()->
             GetSynchronization()->
             WaitForRenderCommandResult<CGPUBufferResource>();
@@ -517,6 +516,7 @@ namespace triton
             ERenderCommand::DESTROY_BUFFER,
             (types::cpuword)&_gpuBuffer
         ));
+
         _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
     }
 

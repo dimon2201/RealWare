@@ -8,10 +8,12 @@
 #include "backend.hpp"
 #include "math.hpp"
 #include "input_window_backend.hpp"
+#include "gpu_buffer_types.hpp"
 #include "graphics_device_type_enum.hpp"
 #include "graphics_texture_usage_enum.hpp"
 #include "texture_dimensions.hpp"
 #include "gpu_texture_resource.hpp"
+#include "gpu_buffer_resource.hpp"
 #include "gpu_render_target_resource.hpp"
 #include "gpu_render_pass_resource.hpp"
 #include "gpu_shader_resource.hpp"
@@ -59,6 +61,20 @@ namespace triton
 		) = 0;
 
 		virtual void DestroyTexture(CGPUTextureResource& texture) = 0;
+
+		virtual CGPUBufferResource CreateBuffer(
+			EGPUBufferType type,
+			const types::usize byteSize
+		) = 0;
+
+		virtual void WriteBuffer(
+			const CGPUBufferResource& buffer,
+			types::usize offset,
+			const types::u8* data,
+			types::usize byteSize
+		) = 0;
+		
+		virtual void DestroyBuffer(CGPUBufferResource& buffer) = 0;
 
 		virtual CGPURenderTargetResource CreateRenderTarget(
 			const std::vector<CGPUTextureResource>& colorAttachments,

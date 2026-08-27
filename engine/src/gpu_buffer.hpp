@@ -14,7 +14,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XGPUBuffer)
 
-		CGPUBufferResource _gpuBuffer = CGPUBufferResource(0, 0, EGPUBufferType::Unknown, 0, 0);
+		CGPUBufferResource _gpuBuffer = CGPUBufferResource::Invalid();
 
 	public:
 		explicit XGPUBuffer(
@@ -27,6 +27,8 @@ namespace triton
 		);
 
 		~XGPUBuffer() override;
+
+		void Write(types::usize offset, const types::u8* data, types::usize byteSize);
 
 		inline const CGPUBufferResource& GetGPUResource() const { return _gpuBuffer; }
 
