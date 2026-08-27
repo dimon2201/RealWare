@@ -143,6 +143,8 @@ namespace triton
 
 		void PickPhysicalDevice(EGraphicsDeviceType deviceType);
 
+		void CheckPhysicalDeviceProperties();
+
 		void CheckPhysicalDeviceFeatures();
 
 		void CheckPhysicalDeviceFeaturesVulkan13();

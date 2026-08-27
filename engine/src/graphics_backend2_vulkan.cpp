@@ -1653,10 +1653,47 @@ void triton::BGraphicsBackend2Vulkan::PickPhysicalDevice(EGraphicsDeviceType dev
 		surfaceCapabilities
 	);
 
+	CheckPhysicalDeviceProperties();
 	CheckPhysicalDeviceFeatures();
 	CheckPhysicalDeviceFeaturesVulkan13();
 	CheckPhysicalDeviceFormats();
 	FindQueueFamilies();
+}
+
+void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceProperties()
+{
+	Print(
+		"[Vulkan]: Info: max uniform buffer range: " +
+		std::to_string(_physicalDevice.properties.limits.maxUniformBufferRange)
+	);
+	Print(
+		"[Vulkan]: Info: max storage buffer range: " +
+		std::to_string(_physicalDevice.properties.limits.maxStorageBufferRange)
+	);
+	Print(
+		"[Vulkan]: Info: max memory allocation count: " +
+		std::to_string(_physicalDevice.properties.limits.maxMemoryAllocationCount)
+	);
+	Print(
+		"[Vulkan]: Info: max bound descriptor sets: " +
+		std::to_string(_physicalDevice.properties.limits.maxBoundDescriptorSets)
+	);
+	Print(
+		"[Vulkan]: Info: max color attachments: " +
+		std::to_string(_physicalDevice.properties.limits.maxColorAttachments)
+	);
+	Print(
+		"[Vulkan]: Info: max push constants size: " + 
+		std::to_string(_physicalDevice.properties.limits.maxPushConstantsSize)
+	);
+	Print(
+		"[Vulkan]: Info: max image dimension 2D: " +
+		std::to_string(_physicalDevice.properties.limits.maxImageDimension2D)
+	);
+	Print(
+		"[Vulkan]: Info: max image dimension 3D: " +
+		std::to_string(_physicalDevice.properties.limits.maxImageDimension3D)
+	);
 }
 
 void triton::BGraphicsBackend2Vulkan::CheckPhysicalDeviceFeatures()
