@@ -499,7 +499,7 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 			vertexInputAttributes[1].binding = 0;
 			vertexInputAttributes[1].format = VK_FORMAT_R32G32_SFLOAT;
 			vertexInputAttributes[1].location = 1;
-			vertexInputAttributes[0].offset = offsetof(SRigidVertexGPULayout, texcoord);
+			vertexInputAttributes[1].offset = offsetof(SRigidVertexGPULayout, texcoord);
 
 			vertexInputAttributes[2].binding = 0;
 			vertexInputAttributes[2].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -1160,12 +1160,15 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	}
 	else if (command == ENativeRenderCommand::Draw)
 	{
-		vkCmdDraw(
+		const SNativeCommandDrawInfo& drawInfo = *(SNativeCommandDrawInfo*)commandArgA;
+
+		vkCmdDrawIndexed(
 			_graphicsQueue.commandBuffer,
-			((SNativeCommandDrawInfo*)commandArgA)->vertexCount,
-			((SNativeCommandDrawInfo*)commandArgA)->instanceCount,
-			((SNativeCommandDrawInfo*)commandArgA)->firstVertex,
-			((SNativeCommandDrawInfo*)commandArgA)->firstInstance
+			drawInfo.indexCount,
+			drawInfo.instanceCount,
+			drawInfo.firstIndex,
+			drawInfo.baseVertex,
+			drawInfo.firstInstance
 		);
 	}
 	else if (command == ENativeRenderCommand::EndRenderPass)

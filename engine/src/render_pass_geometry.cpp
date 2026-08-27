@@ -244,29 +244,40 @@ void triton::XRenderPassGeometry::Draw()
         );
     }*/
 
-    XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
-
-    _nativeCommandDrawInfo.vertexCount = 3;
-    _nativeCommandDrawInfo.instanceCount = 1;
-    _nativeCommandDrawInfo.firstVertex = 0;
-    _nativeCommandDrawInfo.firstInstance = 0;
-
     XGPUBuffer::THandle vertexBufferHandle = _context->GetSubsystem<CGeometryStorage>()->GetRigidVertexBuffer();
     XGPUBuffer::THandle indexBufferHandle = _context->GetSubsystem<CGeometryStorage>()->GetRigidIndexBuffer();
     XGPUBuffer& vertexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(vertexBufferHandle);
     XGPUBuffer& indexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(indexBufferHandle);
     const CGPUBufferResource& gpuVertexBuffer = vertexBuffer.GetGPUResource();
     const CGPUBufferResource& gpuIndexBuffer = indexBuffer.GetGPUResource();
+    XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
 
-    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-        ERenderCommand::EXECUTE_RENDER_PASS,
-        (cpuword)&renderTarget.GetGPUResource(),
-        (cpuword)&_gpuRenderPass,
-        (cpuword)&_gpuPipeline,
-        (cpuword)&gpuVertexBuffer,
-        (cpuword)&gpuIndexBuffer,
-        (cpuword)&_nativeCommandDrawInfo
-    ));
+    for (usize i = 0; i < _renderInstancePacks.size(); i++)
+    {
+        XRenderInstancePack& instancePack =
+            *_context->
+            GetPool<CRenderInstancePackPool>()->
+            Get(_renderInstancePacks.at(i));
+
+        const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
+
+        _nativeCommandDrawInfo.vertexCount = sharedGeometry._vertexCount;
+        _nativeCommandDrawInfo.indexCount = sharedGeometry._indexCount;
+        _nativeCommandDrawInfo.instanceCount = 1;
+        _nativeCommandDrawInfo.firstIndex = sharedGeometry._indexElementOffset;
+        _nativeCommandDrawInfo.baseVertex = sharedGeometry._vertexElementOffset;
+        _nativeCommandDrawInfo.firstInstance = instancePack.GetBufferOffset();
+
+        _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+            ERenderCommand::EXECUTE_RENDER_PASS,
+            (cpuword)&renderTarget.GetGPUResource(),
+            (cpuword)&_gpuRenderPass,
+            (cpuword)&_gpuPipeline,
+            (cpuword)&gpuVertexBuffer,
+            (cpuword)&gpuIndexBuffer,
+            (cpuword)&_nativeCommandDrawInfo
+        ));
+    }
 }
 
 void triton::XRenderPassGeometry::Unbind()

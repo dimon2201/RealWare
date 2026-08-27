@@ -56,7 +56,7 @@ namespace triton
         
         void SetShadingModel(EShadingModel shadingModel);
 
-        const XRenderPassGeometry::THandle& GetOpaqueStaticRenderPass() const { return _opaqueRigid; }
+        const XRenderPassGeometry::THandle& GetOpaqueRigidRenderPass() const { return _opaqueRigid; }
 
         const XRenderPassGeometry::THandle& GetOpaqueSkinnedRenderPass() const { return _opaqueSkinned; }
 
