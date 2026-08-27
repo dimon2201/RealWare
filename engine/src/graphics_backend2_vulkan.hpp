@@ -31,9 +31,12 @@ namespace triton
 		std::vector<CGPURenderPassResource>		_swapchainRenderPasses;
 		CGPUShaderResource						_swapchainShader = CGPUShaderResource::Invalid();
 		std::vector<CGPUPipelineResource>		_swapchainPipelines;
-		SSemaphore								_swapchainImageAvailableSemaphore;
+		std::vector<SSemaphore>					_swapchainImageAvailableSemaphores;
 		std::vector<SSemaphore>					_swapchainRenderFinishedSemaphores;
-		SFence									_swapchainFence;
+		std::vector<SFence>						_swapchainFences;
+		std::vector<VkCommandBuffer>			_commandBuffers;
+		types::usize							_framesInFlight = 0;
+		types::usize							_currentFrame = 0;
 		CGPUTextureResource						_swapchainPresentTexture = CGPUTextureResource::Invalid();
 
 	public:
@@ -46,7 +49,8 @@ namespace triton
 			types::boolean bEnableDebugging,
 			const std::vector<const char*> extensions,
 			EGraphicsDeviceType deviceType,
-			const cVector2& swapchainSize
+			const cVector2& swapchainSize,
+			types::usize framesInFlight
 		) override final;
 
 		void Shutdown() override final;
@@ -93,7 +97,8 @@ namespace triton
 			const CGPURenderPassResource& renderPass,
 			const std::vector<CGPUTextureResource>& texturesToBind,
 			EPrimitiveTopology primitiveTopology,
-			EVertexBufferFormat vertexBufferFormat
+			EVertexBufferFormat vertexBufferFormat,
+			types::boolean bUsePushConstants
 		) override final;
 
 		void DestroyPipeline(CGPUPipelineResource& pipeline) override final;
@@ -161,7 +166,7 @@ namespace triton
 
 		void DestroyCommandPoolsAndCommandBuffers();
 
-		void CreateSwapchain(const cVector2& size);
+		void CreateSwapchain(const cVector2& size, types::usize framesInFlight);
 
 		void DestroySwapchain();
 
@@ -188,9 +193,9 @@ namespace triton
 
 		void DestroySwapchainShader();
 
-		void CreateSwapchainSemaphoresAndFence();
+		void CreateSwapchainSemaphoresAndFences();
 
-		void DestroySwapchainSemaphoresAndFence();
+		void DestroySwapchainSemaphoresAndFences();
 
 		SDescriptorSet CreateDescriptorSet(
 			const std::vector<CGPUTextureResource>& texturesToBind

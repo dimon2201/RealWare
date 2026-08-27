@@ -7,6 +7,14 @@ layout(location = 3) in vec3 inTangent;
 
 layout(location = 0) out vec3 color;
 
+layout(push_constant, std430) uniform PushConstants
+{
+    vec3 cameraWorldPosition;
+    uint instanceMotionType;
+    mat4 cameraViewProjectionMatrix;
+    float time;
+} pushConstants;
+
 void main()
 {
     const vec3 colors[] = {
@@ -17,5 +25,8 @@ void main()
 
     color = colors[gl_VertexIndex];
 
-    gl_Position = vec4(inPositionLocalSpace, 1.0);
+    vec3 pos = inPositionLocalSpace;
+    pos.x += pushConstants.time * 0.000001;
+
+    gl_Position = vec4(pos, 1.0);
 }

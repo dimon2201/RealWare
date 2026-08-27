@@ -13,6 +13,7 @@
 #include "render_native_draw_command_info_struct.hpp"
 #include "render_primitive_topology_enum.hpp"
 #include "render_resource_usage_enum.hpp"
+#include "render_pass_push_constants_struct.hpp"
 #include "gpu_pipeline_resource.hpp"
 #include "input_layout.hpp"
 #include "shader.hpp"
@@ -41,6 +42,7 @@ namespace triton
         EShadingModel                               _shadingModel = EShadingModel::PBR;
         CGPUPipelineResource                        _gpuPipeline = CGPUPipelineResource::Invalid();
         SNativeCommandDrawInfo                      _nativeCommandDrawInfo;
+        SRenderPassGPUPushConstantsLayout           _pushConstants;
 
     public:
         explicit XRenderPassGeometry(

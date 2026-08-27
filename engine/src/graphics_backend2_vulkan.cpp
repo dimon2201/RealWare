@@ -83,15 +83,18 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 	boolean bEnableDebugging,
 	const std::vector<const char*> extensions,
 	EGraphicsDeviceType deviceType,
-	const cVector2& swapchainSize
+	const cVector2& swapchainSize,
+	usize framesInFlight
 )
 {
+	_framesInFlight = framesInFlight;
+
 	CreateInstance(bEnableDebugging, extensions);
 	CreateSurface(window);
 	PickPhysicalDevice(deviceType);
 	CreateLogicalDevice();
 	CreateCommandPoolsAndCommandBuffers();
-	CreateSwapchain(swapchainSize);
+	CreateSwapchain(swapchainSize, framesInFlight);
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
@@ -124,7 +127,8 @@ void triton::BGraphicsBackend2Vulkan::FinalizeSwapchain(const CGPUTextureResourc
 				_swapchainRenderPasses[i],
 				texturesToBind,
 				EPrimitiveTopology::TriangleStrip,
-				EVertexBufferFormat::Unknown
+				EVertexBufferFormat::Unknown,
+				False
 			)
 		);
 
@@ -437,7 +441,8 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 	const CGPURenderPassResource& renderPass,
 	const std::vector<CGPUTextureResource>& texturesToBind,
 	EPrimitiveTopology primitiveTopology,
-	EVertexBufferFormat vertexBufferFormat
+	EVertexBufferFormat vertexBufferFormat,
+	types::boolean bUsePushConstants
 )
 {
 	const dword stageMask = shader.GetStageMask();
@@ -590,8 +595,17 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutCreateInfo.setLayoutCount = nativeDescriptorSetCount;
 		pipelineLayoutCreateInfo.pSetLayouts = nativeDescriptorSetCount > 0 ? &nativeDescriptorSet.layout : nullptr;
-		pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
-		pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
+		
+		VkPushConstantRange pushConstantRange = {};
+		if (bUsePushConstants == True)
+		{
+			pushConstantRange.offset = 0;
+			pushConstantRange.size = sizeof(SRenderPassGPUPushConstantsLayout);
+			pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+			pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+			pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
+		}
 
 		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 
@@ -1095,7 +1109,7 @@ void triton::BGraphicsBackend2Vulkan::DestroyShader(CGPUShaderResource& shader)
 void triton::BGraphicsBackend2Vulkan::ResetCommandBuffer()
 {
 	vkResetCommandBuffer(
-		_graphicsQueue.commandBuffer,
+		_commandBuffers[_currentFrame],
 		0
 	);
 }
@@ -1145,7 +1159,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		}
 
 		vkCmdBeginRenderPass(
-			_graphicsQueue.commandBuffer,
+			_commandBuffers[_currentFrame],
 			&renderPassBeginInfo,
 			VK_SUBPASS_CONTENTS_INLINE
 		);
@@ -1153,7 +1167,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	else if (command == ENativeRenderCommand::BindPipeline)
 	{
 		vkCmdBindPipeline(
-			_graphicsQueue.commandBuffer,
+			_commandBuffers[_currentFrame],
 			PipelineBindPointToNative(((CGPUPipelineResource*)commandArgA)->GetBindingPoint()),
 			(VkPipeline)((CGPUPipelineResource*)commandArgA)->GetInstance()
 		);
@@ -1163,7 +1177,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		const SNativeCommandDrawInfo& drawInfo = *(SNativeCommandDrawInfo*)commandArgA;
 
 		vkCmdDrawIndexed(
-			_graphicsQueue.commandBuffer,
+			_commandBuffers[_currentFrame],
 			drawInfo.indexCount,
 			drawInfo.instanceCount,
 			drawInfo.firstIndex,
@@ -1173,7 +1187,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	}
 	else if (command == ENativeRenderCommand::EndRenderPass)
 	{
-		vkCmdEndRenderPass(_graphicsQueue.commandBuffer);
+		vkCmdEndRenderPass(_commandBuffers[_currentFrame]);
 	}
 	else if (command == ENativeRenderCommand::SetScissor)
 	{
@@ -1183,7 +1197,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		nativeScissor.extent.width = viewport.rect.GetZ();
 		nativeScissor.extent.height = viewport.rect.GetW();
 
-		vkCmdSetScissor(_graphicsQueue.commandBuffer, 0, 1, &nativeScissor);
+		vkCmdSetScissor(_commandBuffers[_currentFrame], 0, 1, &nativeScissor);
 	}
 	else if (command == ENativeRenderCommand::SetViewport)
 	{
@@ -1191,7 +1205,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 
 		VkViewport nativeViewport = ViewportToNative(viewport);
 
-		vkCmdSetViewport(_graphicsQueue.commandBuffer, 0, 1, &nativeViewport);
+		vkCmdSetViewport(_commandBuffers[_currentFrame], 0, 1, &nativeViewport);
 	}
 	else if (command == ENativeRenderCommand::BindVertexBuffer)
 	{
@@ -1201,7 +1215,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		VkDeviceSize offset = 0;
 
 		vkCmdBindVertexBuffers(
-			_graphicsQueue.commandBuffer,
+			_commandBuffers[_currentFrame],
 			0,
 			1,
 			&nativeVertexBuffer,
@@ -1215,10 +1229,24 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		VkBuffer nativeIndexBuffer = (VkBuffer)indexBuffer.GetInstance();
 
 		vkCmdBindIndexBuffer(
-			_graphicsQueue.commandBuffer,
+			_commandBuffers[_currentFrame],
 			nativeIndexBuffer,
 			0,
 			VK_INDEX_TYPE_UINT32
+		);
+	}
+	else if (command == ENativeRenderCommand::PushConstants)
+	{
+		SRenderPassGPUPushConstantsLayout& pushConstants = *(SRenderPassGPUPushConstantsLayout*)commandArgA;
+		CGPUPipelineResource& pipeline = *(CGPUPipelineResource*)commandArgB;
+
+		vkCmdPushConstants(
+			_commandBuffers[_currentFrame],
+			(VkPipelineLayout)pipeline.GetLayout(),
+			VK_SHADER_STAGE_VERTEX_BIT,
+			0,
+			sizeof(SRenderPassGPUPushConstantsLayout),
+			&pushConstants
 		);
 	}
 }
@@ -1228,7 +1256,7 @@ void triton::BGraphicsBackend2Vulkan::BeginFrame()
 	vkWaitForFences(
 		_logicalDevice.device,
 		1,
-		&_swapchainFence.fence,
+		&_swapchainFences[_currentFrame].fence,
 		VK_TRUE,
 		UINT64_MAX
 	);
@@ -1236,7 +1264,7 @@ void triton::BGraphicsBackend2Vulkan::BeginFrame()
 	vkResetFences(
 		_logicalDevice.device,
 		1,
-		&_swapchainFence.fence
+		&_swapchainFences[_currentFrame].fence
 	);
 
 	ResetCommandBuffer();
@@ -1245,7 +1273,7 @@ void triton::BGraphicsBackend2Vulkan::BeginFrame()
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
 	VkResult result = vkBeginCommandBuffer(
-		_graphicsQueue.commandBuffer,
+		_commandBuffers[_currentFrame],
 		&beginInfo
 	);
 
@@ -1263,7 +1291,7 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		_logicalDevice.device,
 		_swapchain.swapchain,
 		UINT64_MAX,
-		_swapchainImageAvailableSemaphore.semaphore,
+		_swapchainImageAvailableSemaphores[_currentFrame].semaphore,
 		VK_NULL_HANDLE,
 		&imageIndex
 	);
@@ -1290,13 +1318,13 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	renderPassBeginInfo.pClearValues = &clearValue;
 
 	vkCmdBeginRenderPass(
-		_graphicsQueue.commandBuffer,
+		_commandBuffers[_currentFrame],
 		&renderPassBeginInfo,
 		VK_SUBPASS_CONTENTS_INLINE
 	);
 
 	vkCmdBindPipeline(
-		_graphicsQueue.commandBuffer,
+		_commandBuffers[_currentFrame],
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		(VkPipeline)_swapchainPipelines[imageIndex].GetInstance()
 	);
@@ -1305,7 +1333,7 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		(VkDescriptorSet)_swapchainPipelines[imageIndex].GetDescriptorSets()[0];
 
 	vkCmdBindDescriptorSets(
-		_graphicsQueue.commandBuffer,
+		_commandBuffers[_currentFrame],
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		(VkPipelineLayout)_swapchainPipelines[imageIndex].GetLayout(),
 		0,
@@ -1316,7 +1344,7 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	);
 
 	vkCmdDraw(
-		_graphicsQueue.commandBuffer,
+		_commandBuffers[_currentFrame],
 		4,
 		1,
 		0,
@@ -1324,11 +1352,11 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	);
 
 	vkCmdEndRenderPass(
-		_graphicsQueue.commandBuffer
+		_commandBuffers[_currentFrame]
 	);
 
 	vkEndCommandBuffer(
-		_graphicsQueue.commandBuffer
+		_commandBuffers[_currentFrame]
 	);
 
 	VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -1336,10 +1364,10 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &_swapchainImageAvailableSemaphore.semaphore;
+	submitInfo.pWaitSemaphores = &_swapchainImageAvailableSemaphores[_currentFrame].semaphore;
 	submitInfo.pWaitDstStageMask = &waitStage;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &_graphicsQueue.commandBuffer;
+	submitInfo.pCommandBuffers = &_commandBuffers[_currentFrame];
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &_swapchainRenderFinishedSemaphores[imageIndex].semaphore;
 
@@ -1347,7 +1375,7 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		_graphicsQueue.queue,
 		1,
 		&submitInfo,
-		_swapchainFence.fence
+		_swapchainFences[_currentFrame].fence
 	);
 
 	if (result != VK_SUCCESS)
@@ -1368,6 +1396,8 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to present frame");
+
+	_currentFrame = (_currentFrame + 1) % _framesInFlight;
 }
 
 void triton::BGraphicsBackend2Vulkan::CreateInstance(
@@ -1397,13 +1427,13 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(
 	applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 	applicationInfo.apiVersion = VK_API_VERSION_1_3;
 
-	std::vector<VkValidationFeatureEnableEXT> featureEnables = {
-		VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
-		VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
-		VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-		VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
-		VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
-	};
+	std::vector<VkValidationFeatureEnableEXT> featureEnables = {};
+	//	VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+	//	VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
+	//	VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+	//	VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+	//	VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
+	//};
 
 	VkValidationFeaturesEXT validationFeatures = {};
 	validationFeatures.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
@@ -1930,6 +1960,20 @@ void triton::BGraphicsBackend2Vulkan::CreateCommandPoolsAndCommandBuffers()
 
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to create compute command buffer");
+
+	VkCommandBufferAllocateInfo frameCommandBufferAllocInfo = {};
+	frameCommandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	frameCommandBufferAllocInfo.commandPool = _graphicsQueue.commandPool;
+	frameCommandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	frameCommandBufferAllocInfo.commandBufferCount = _framesInFlight;
+
+	_commandBuffers.resize(_framesInFlight);
+
+	vkAllocateCommandBuffers(
+		_logicalDevice.device,
+		&frameCommandBufferAllocInfo,
+		_commandBuffers.data()
+	);
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroyCommandPoolsAndCommandBuffers()
@@ -1974,7 +2018,7 @@ void triton::BGraphicsBackend2Vulkan::DestroyCommandPoolsAndCommandBuffers()
 	);
 }
 
-void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size)
+void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size, usize framesInFlight)
 {
 	VkResult result;
 
@@ -2114,12 +2158,12 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size)
 
 	CreateSwapchainShader();
 
-	CreateSwapchainSemaphoresAndFence();
+	CreateSwapchainSemaphoresAndFences();
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroySwapchain()
 {
-	DestroySwapchainSemaphoresAndFence();
+	DestroySwapchainSemaphoresAndFences();
 
 	DestroySwapchainShader();
 
@@ -2162,7 +2206,7 @@ VkPresentModeKHR triton::BGraphicsBackend2Vulkan::ChooseSwapchainPresentMode(
 		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			return availablePresentMode;
 
-	return VK_PRESENT_MODE_FIFO_KHR;
+	return VK_PRESENT_MODE_IMMEDIATE_KHR; //VK_PRESENT_MODE_FIFO_KHR
 }
 
 VkExtent2D triton::BGraphicsBackend2Vulkan::ChooseSwapchainExtent(
@@ -2357,22 +2401,27 @@ void triton::BGraphicsBackend2Vulkan::DestroySwapchainShader()
 	}
 }
 
-void triton::BGraphicsBackend2Vulkan::CreateSwapchainSemaphoresAndFence()
+void triton::BGraphicsBackend2Vulkan::CreateSwapchainSemaphoresAndFences()
 {
 	VkResult result;
 
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	result = vkCreateSemaphore(
-		_logicalDevice.device,
-		&semaphoreCreateInfo,
-		nullptr,
-		&_swapchainImageAvailableSemaphore.semaphore
-	);
+	_swapchainImageAvailableSemaphores.resize(_framesInFlight);
 
-	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to create swapchain semaphore");
+	for (usize i = 0; i < _framesInFlight; i++)
+	{
+		result = vkCreateSemaphore(
+			_logicalDevice.device,
+			&semaphoreCreateInfo,
+			nullptr,
+			&_swapchainImageAvailableSemaphores[i].semaphore
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to create swapchain semaphore");
+	}
 
 	const usize renderFinishedSemaphoreCount = _swapchain.images.size();
 	_swapchainRenderFinishedSemaphores.resize(renderFinishedSemaphoreCount);
@@ -2393,19 +2442,31 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainSemaphoresAndFence()
 	VkFenceCreateInfo fenceCreateInfo = {};
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-	result = vkCreateFence(
-		_logicalDevice.device,
-		&fenceCreateInfo,
-		nullptr,
-		&_swapchainFence.fence
-	);
+	_swapchainFences.resize(_framesInFlight);
 
-	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to create swapchain fence");
+	for (usize i = 0; i < _framesInFlight; i++)
+	{
+		result = vkCreateFence(
+			_logicalDevice.device,
+			&fenceCreateInfo,
+			nullptr,
+			&_swapchainFences[i].fence
+		);
+
+		if (result != VK_SUCCESS)
+			Print("[Vulkan]: Error: failed to create swapchain fence");
+	}
 }
 
-void triton::BGraphicsBackend2Vulkan::DestroySwapchainSemaphoresAndFence()
+void triton::BGraphicsBackend2Vulkan::DestroySwapchainSemaphoresAndFences()
 {
+	for (auto& fence : _swapchainFences)
+		vkDestroyFence(
+			_logicalDevice.device,
+			fence.fence,
+			nullptr
+		);
+
 	for (auto& semaphore : _swapchainRenderFinishedSemaphores)
 		vkDestroySemaphore(
 			_logicalDevice.device,
@@ -2413,11 +2474,12 @@ void triton::BGraphicsBackend2Vulkan::DestroySwapchainSemaphoresAndFence()
 			nullptr
 		);
 
-	vkDestroySemaphore(
-		_logicalDevice.device,
-		_swapchainImageAvailableSemaphore.semaphore,
-		nullptr
-	);
+	for (auto& semaphore : _swapchainImageAvailableSemaphores)
+		vkDestroySemaphore(
+			_logicalDevice.device,
+			semaphore.semaphore,
+			nullptr
+		);
 }
 
 triton::SDescriptorSet triton::BGraphicsBackend2Vulkan::CreateDescriptorSet(

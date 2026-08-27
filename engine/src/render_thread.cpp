@@ -23,7 +23,8 @@ void triton::cRenderThread::ThreadFunction()
 	IGraphicsBackend2* gfxBackend = _context->GetBackend<IGraphicsBackend2>();
 
 	// Create graphics contexts for windows
-	CWindow* window = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow();
+	IApplication* app = _context->GetSubsystem<CEngine>()->GetApplication();
+	CWindow* window = app->GetWindow();
 	//gfxBackend->CreateGraphicsContext(window->GetBackendWindow());
 	//gfxBackend->MakeWindowGraphicsContextCurrent(window->GetBackendWindow());
 	EGraphicsDeviceType deviceType =
@@ -32,10 +33,11 @@ void triton::cRenderThread::ThreadFunction()
 		GetCapabilities().preferredGraphicsDevice;
 	gfxBackend->Initialize(
 		window->GetBackendWindow(),
-		True,
+		False,
 		_context->GetBackend<IInputBackend>()->GetBackendWindowVulkanExtensions(),
 		deviceType,
-		window->GetSize()
+		window->GetSize(),
+		app->GetCapabilities().framesInFlight
 	);
 
 	_sync->InitRenderThread();
@@ -289,27 +291,32 @@ void triton::cRenderThread::ExecuteCommands(
 			{
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::BeginRenderPass,
-					(CGPURenderTargetResource*)cmd._args._argA,
-					(CGPURenderPassResource*)cmd._args._argB
+					(const void*)cmd._args._argA,
+					(const void*)cmd._args._argB
 				);
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::BindPipeline,
-					(CGPUPipelineResource*)cmd._args._argC,
+					(const void*)cmd._args._argC,
 					nullptr
 				);
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::BindVertexBuffer,
-					(CGPUPipelineResource*)cmd._args._argD,
+					(const void*)cmd._args._argD,
 					nullptr
 				);
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::BindIndexBuffer,
-					(CGPUPipelineResource*)cmd._args._argE,
+					(const void*)cmd._args._argE,
 					nullptr
 				);
 				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::PushConstants,
+					(const void*)cmd._args._argF,
+					(const void*)cmd._args._argC
+				);
+				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::Draw,
-					(SNativeCommandDrawInfo*)cmd._args._argF,
+					(const void*)cmd._args._argG,
 					nullptr
 				);
 				gfxBackend->AddCommandToBuffer(
@@ -341,7 +348,8 @@ void triton::cRenderThread::ExecuteCommands(
 					*(CGPURenderPassResource*)cmd._args._argD,
 					texturesToBindVector,
 					(EPrimitiveTopology)cmd._args._argG,
-					(EVertexBufferFormat)cmd._args._argH
+					(EVertexBufferFormat)cmd._args._argH,
+					(boolean)cmd._args._argI
 				);
 				
 				new (_sync->GetResultBuffer().data) CGPUPipelineResource(resultPipeline);

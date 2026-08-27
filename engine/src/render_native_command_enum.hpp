@@ -16,6 +16,7 @@ namespace triton
 		Draw,
 		EndRenderPass,
 		BindVertexBuffer,
-		BindIndexBuffer
+		BindIndexBuffer,
+		PushConstants
 	};
 }

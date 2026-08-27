@@ -13,7 +13,7 @@ namespace triton
 
     class XCamera : public iObject
     {
-        TRITON_OBJECT(XCamera)
+        TRITON_CLASS_NAME(XCamera)
 
         cVector3 _eulerAngles = cVector3(0.0f);
         cVector3 _worldPosition = cVector3(0.0f);
@@ -42,6 +42,12 @@ namespace triton
         void Move(types::f32 value);
         void Strafe(types::f32 value);
         void Lift(types::f32 value);
+
+        inline const cVector3& GetWorldPosition() const { return _worldPosition; }
+
+        inline const cMatrix4& GetViewProjectionMatrix() const { return _viewProjectionMatrix; }
+
+        inline void SetWorldPosition(const cVector3& worldPosition) { _worldPosition = worldPosition; }
 
     public:
         struct THandle : public SHandle {};

@@ -71,7 +71,8 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         (cpuword)texturesToBindCount,
         (cpuword)texturesToBind.data(),
         (cpuword)primitiveTopology,
-        (cpuword)EVertexBufferFormat::Rigid_48
+        (cpuword)EVertexBufferFormat::Rigid_48,
+        (cpuword)True
     ));
 
     _gpuPipeline = _context->GetSubsystem<CEngine>()->
@@ -244,6 +245,21 @@ void triton::XRenderPassGeometry::Draw()
         );
     }*/
 
+    auto cameraResult = _context->GetPool<CCameraPool>()->Get(_camera);
+    if (!cameraResult.has_value())
+        return;
+
+    XCamera& camera = *cameraResult;
+    camera.Update(
+        _context->GetBackend<IInputBackend>()->GetMouseDelta(),
+        800,
+        600,
+        65.0f,
+        0.01f,
+        10000.0f,
+        0.1f
+    );
+
     XGPUBuffer::THandle vertexBufferHandle = _context->GetSubsystem<CGeometryStorage>()->GetRigidVertexBuffer();
     XGPUBuffer::THandle indexBufferHandle = _context->GetSubsystem<CGeometryStorage>()->GetRigidIndexBuffer();
     XGPUBuffer& vertexBuffer = *_context->GetPool<CGPUBufferPool>()->Get(vertexBufferHandle);
@@ -261,6 +277,14 @@ void triton::XRenderPassGeometry::Draw()
 
         const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
 
+        _pushConstants.cameraViewProjectionMatrix = camera.GetViewProjectionMatrix();
+        _pushConstants.cameraWorldPosition = camera.GetWorldPosition();
+        _pushConstants.instanceMotionType = 0;
+
+        static f32 time = 0.0f;
+        _pushConstants.time = time;
+        time += 1.0f;
+
         _nativeCommandDrawInfo.vertexCount = sharedGeometry._vertexCount;
         _nativeCommandDrawInfo.indexCount = sharedGeometry._indexCount;
         _nativeCommandDrawInfo.instanceCount = 1;
@@ -275,6 +299,7 @@ void triton::XRenderPassGeometry::Draw()
             (cpuword)&_gpuPipeline,
             (cpuword)&gpuVertexBuffer,
             (cpuword)&gpuIndexBuffer,
+            (cpuword)&_pushConstants,
             (cpuword)&_nativeCommandDrawInfo
         ));
     }

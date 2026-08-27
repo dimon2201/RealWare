@@ -23,6 +23,7 @@
 #include "render_native_command_enum.hpp"
 #include "render_primitive_topology_enum.hpp"
 #include "render_resource_usage_enum.hpp"
+#include "render_pass_push_constants_struct.hpp"
 #include "rasterizer_state.hpp"
 #include "vertex_buffer_format.hpp"
 
@@ -44,7 +45,8 @@ namespace triton
 			types::boolean bEnableDebugging,
 			const std::vector<const char*> extensions,
 			EGraphicsDeviceType deviceType,
-			const cVector2& swapchainSize
+			const cVector2& swapchainSize,
+			types::usize framesInFlight
 		) = 0;
 
 		virtual void Shutdown() = 0;
@@ -91,7 +93,8 @@ namespace triton
 			const CGPURenderPassResource& renderPass,
 			const std::vector<CGPUTextureResource>& texturesToBind,
 			EPrimitiveTopology primitiveTopology,
-			EVertexBufferFormat vertexBufferFormat
+			EVertexBufferFormat vertexBufferFormat,
+			types::boolean bUsePushConstants
 		) = 0;
 
 		virtual void DestroyPipeline(CGPUPipelineResource& pipeline) = 0;

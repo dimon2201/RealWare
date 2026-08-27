@@ -57,5 +57,6 @@ namespace triton
         types::usize maxBoneCountPerVertex = 4;
         EAvailableGraphicsBackend graphicsBackend = EAvailableGraphicsBackend::Unknown;
         EGraphicsDeviceType preferredGraphicsDevice = EGraphicsDeviceType::Unknown;
+        types::usize framesInFlight = 2;
     };
 }
