@@ -90,6 +90,4 @@ void triton::XSynchronization::ReleaseFrame()
 
 	_frameAtomics.releasedFrame.fetch_add(1, std::memory_order_release);
 	_frameAtomics.releasedFrame.notify_one();
-
-	_cmdRecorder->Clear();
 }
