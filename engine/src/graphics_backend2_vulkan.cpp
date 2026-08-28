@@ -95,6 +95,10 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 	CreateLogicalDevice();
 	CreateCommandPoolsAndCommandBuffers();
 	CreateSwapchain(swapchainSize, framesInFlight);
+
+	_debugTexture = CreateTextureDebug(
+		cVector3(swapchainSize.GetX(), swapchainSize.GetY(), 1.0f)
+	);
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
@@ -235,7 +239,7 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 	if (bCreateSampler == True)
 	{
 		VkSamplerCreateInfo samplerCreateInfo = {};
-		samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		/*samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
 		samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
 		samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
@@ -248,9 +252,18 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		samplerCreateInfo.compareEnable = VK_FALSE;
 		samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerCreateInfo.minLod = 0.0f;
-		samplerCreateInfo.maxLod = 1.0f;
-		samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerCreateInfo.maxLod = 0.0f;
+		samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;*/
+		samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+		samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+		samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCreateInfo.minLod = 0.0f;
+		samplerCreateInfo.maxLod = 0.0f;
 
 		result = vkCreateSampler(
 			_logicalDevice.device,
@@ -271,6 +284,137 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		format,
 		usageMask,
 		dimension,
+		size,
+		0
+	);
+}
+
+triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTextureDebug(
+	const cVector3& size
+)
+{
+	const VkFormat nativeFormat = VK_FORMAT_R8G8B8A8_UNORM;
+
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = nativeFormat;
+	imageCreateInfo.extent = {
+		(uint32_t)size.GetX(),
+		(uint32_t)size.GetY(),
+		1
+	};
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+	VkImage image = VK_NULL_HANDLE;
+
+	VkResult result = vkCreateImage(
+		_logicalDevice.device,
+		&imageCreateInfo,
+		nullptr,
+		&image
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create image");
+
+	VkMemoryRequirements memoryRequirements = {};
+	vkGetImageMemoryRequirements(
+		_logicalDevice.device,
+		image,
+		&memoryRequirements
+	);
+
+	VkDeviceMemory memory = AllocateDeviceMemory(memoryRequirements);
+
+	result = vkBindImageMemory(
+		_logicalDevice.device,
+		image,
+		memory,
+		0
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to bind memory to image");
+
+	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	VkImageViewCreateInfo imageViewCreateInfo = {};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.image = image;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = nativeFormat;
+	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+	VkImageView imageView = VK_NULL_HANDLE;
+
+	vkCreateImageView(
+		_logicalDevice.device,
+		&imageViewCreateInfo,
+		nullptr,
+		&imageView
+	);
+
+	VkSampler sampler = VK_NULL_HANDLE;
+	VkSamplerCreateInfo samplerCreateInfo = {};
+	/*samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+	samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.mipLodBias = 0.0f;
+	samplerCreateInfo.anisotropyEnable = VK_FALSE;
+	samplerCreateInfo.maxAnisotropy = 1.0f;
+	samplerCreateInfo.compareEnable = VK_FALSE;
+	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerCreateInfo.minLod = 0.0f;
+	samplerCreateInfo.maxLod = 0.0f;
+	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;*/
+	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+	samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.minLod = 0.0f;
+	samplerCreateInfo.maxLod = 0.0f;
+
+	result = vkCreateSampler(
+		_logicalDevice.device,
+		&samplerCreateInfo,
+		nullptr,
+		&sampler
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create sampler");
+
+	return CGPUTextureResource(
+		(qword)image,
+		(qword)imageView,
+		(qword)sampler,
+		(qword)memory,
+		ETextureFormat::RGBA8,
+		(dword)EResourceUsage::PixelShaderRead,
+		ETextureDimension::Texture2D,
 		size,
 		0
 	);
@@ -893,15 +1037,18 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 	{
 		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependencies[0].dstSubpass = 0;
-		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependencies[0].srcAccessMask = VK_ACCESS_NONE;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dependencies[0].srcAccessMask = 0;
 		dependencies[0].dstStageMask =
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
 			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
 			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		dependencies[0].dstAccessMask =
 			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+		dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
 		dependencies[1].srcSubpass = 0;
 		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
@@ -911,9 +1058,12 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		dependencies[1].srcAccessMask =
 			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 	}
 	else if (dstAttachmentsUsage[0] == EResourceUsage::Present)
 	{
@@ -924,12 +1074,14 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-		dependencies[1].srcSubpass = 0;
+		dependencies.pop_back();
+
+		/*dependencies[1].srcSubpass = 0;
 		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
 		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		dependencies[1].dstAccessMask = VK_ACCESS_NONE;
+		dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;*/
 	}
 
 	VkRenderPassCreateInfo createInfo = {};
@@ -1138,12 +1290,20 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		renderPassBeginInfo.renderArea.extent.height = (uint32_t)renderTarget.GetSize().GetY();
 		
 		VkClearValue clearValues[2] = {};
-		clearValues[0].color = {
+		/*clearValues[0].color = {
 			renderPass.GetColorClearValue().GetX(),
 			renderPass.GetColorClearValue().GetY(),
 			renderPass.GetColorClearValue().GetZ(),
 			renderPass.GetColorClearValue().GetW()
+		};*/
+
+		clearValues[0].color = {
+			glm::max(0.0f, renderPass.GetColorClearValue().GetX() + glm::sin(_time * 0.001f)),
+			renderPass.GetColorClearValue().GetY(),
+			renderPass.GetColorClearValue().GetZ(),
+			renderPass.GetColorClearValue().GetW()
 		};
+
 		clearValues[1].depthStencil = {
 			renderPass.GetDepthClearValue(),
 			0
@@ -1261,12 +1421,6 @@ void triton::BGraphicsBackend2Vulkan::BeginFrame()
 		UINT64_MAX
 	);
 
-	vkResetFences(
-		_logicalDevice.device,
-		1,
-		&_swapchainFences[_currentFrame].fence
-	);
-
 	ResetCommandBuffer();
 
 	VkCommandBufferBeginInfo beginInfo = {};
@@ -1279,6 +1433,30 @@ void triton::BGraphicsBackend2Vulkan::BeginFrame()
 
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to begin command buffer");
+
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcAccessMask = 0;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = (VkImage)_debugTexture.GetInstance();
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+	vkCmdPipelineBarrier(
+		_commandBuffers[_currentFrame],
+		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier
+	);
 }
 
 void triton::BGraphicsBackend2Vulkan::EndFrame()
@@ -1299,13 +1477,89 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to acquire swapchain image");
 
+	vkResetFences(
+		_logicalDevice.device,
+		1,
+		&_swapchainFences[_currentFrame].fence
+	);
+
 	VkClearValue clearValue;
 	clearValue.color = {
-		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetX(),
+		glm::max(0.0f, _swapchainRenderPasses[imageIndex].GetColorClearValue().GetX() + glm::sin(_time * 0.001f)),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetY(),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetZ(),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetW()
 	};
+
+	VkClearValue clearValue2;
+	clearValue2.color = {
+		1.0f - glm::max(0.0f, _swapchainRenderPasses[imageIndex].GetColorClearValue().GetX() + glm::sin(_time * 0.001f)),
+		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetY(),
+		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetZ(),
+		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetW()
+	};
+
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = (VkImage)_debugTexture.GetInstance();
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+	vkCmdPipelineBarrier(
+		_commandBuffers[_currentFrame],
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		VK_PIPELINE_STAGE_TRANSFER_BIT,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier
+	);
+
+	VkImageSubresourceRange range{};
+	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	range.baseMipLevel = 0;
+	range.levelCount = 1;
+	range.baseArrayLayer = 0;
+	range.layerCount = 1;
+	vkCmdClearColorImage(
+		_commandBuffers[_currentFrame],
+		(VkImage)_debugTexture.GetInstance(),
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		&clearValue2.color,
+		1,
+		&range
+	);
+
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = (VkImage)_debugTexture.GetInstance();
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+	vkCmdPipelineBarrier(
+		_commandBuffers[_currentFrame],
+		VK_PIPELINE_STAGE_TRANSFER_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier
+	);
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1372,7 +1626,7 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	submitInfo.pSignalSemaphores = &_swapchainRenderFinishedSemaphores[imageIndex].semaphore;
 
 	result = vkQueueSubmit(
-		_graphicsQueue.queue,
+		_graphicsPresentQueue.queue,
 		1,
 		&submitInfo,
 		_swapchainFences[_currentFrame].fence
@@ -1390,7 +1644,7 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	presentInfo.pImageIndices = &imageIndex;
 
 	result = vkQueuePresentKHR(
-		_presentQueue.queue,
+		_graphicsPresentQueue.queue,
 		&presentInfo
 	);
 
@@ -1398,6 +1652,8 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		Print("[Vulkan]: Error: failed to present frame");
 
 	_currentFrame = (_currentFrame + 1) % _framesInFlight;
+
+	_time += 1.0f;
 }
 
 void triton::BGraphicsBackend2Vulkan::CreateInstance(
@@ -1417,7 +1673,8 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(
 		if (IsZeroTerminated(extensions[i], 1024))
 			validExtensions.push_back(extensions[i]);
 
-	validExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	if (bEnableDebugging == True)
+		validExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -1425,29 +1682,37 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(
 	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	applicationInfo.pEngineName = "TritonEngine";
 	applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	applicationInfo.apiVersion = VK_API_VERSION_1_3;
+	applicationInfo.apiVersion = VK_MAKE_VERSION(1, 0, 66);
 
-	std::vector<VkValidationFeatureEnableEXT> featureEnables = {};
-	//	VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
-	//	VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
-	//	VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-	//	VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
-	//	VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
-	//};
+	std::vector<VkValidationFeatureEnableEXT> featuresEnabled;
+	if (bEnableDebugging == True)
+	{
+		featuresEnabled.resize(3);
+
+		//VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+		//VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
+		featuresEnabled[0] = VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT;
+		featuresEnabled[1] = VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT;
+		featuresEnabled[2] = VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT;
+	};
 
 	VkValidationFeaturesEXT validationFeatures = {};
 	validationFeatures.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-	validationFeatures.enabledValidationFeatureCount = featureEnables.size();
-	validationFeatures.pEnabledValidationFeatures = featureEnables.data();
+	validationFeatures.enabledValidationFeatureCount = featuresEnabled.size();
+	validationFeatures.pEnabledValidationFeatures = featuresEnabled.data();
 
 	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
 	createInfo.enabledExtensionCount = (uint32_t)(validExtensions.size());
 	createInfo.ppEnabledExtensionNames = validExtensions.data();
-	createInfo.enabledLayerCount = 1;
-	createInfo.ppEnabledLayerNames = &kValidationLayer;
-	createInfo.pNext = &validationFeatures;
+
+	if (bEnableDebugging == True)
+	{
+		createInfo.enabledLayerCount = 1;
+		createInfo.ppEnabledLayerNames = &kValidationLayer;
+		createInfo.pNext = &validationFeatures;
+	}
 
 	VkResult result = vkCreateInstance(
 		&createInfo,
@@ -1461,7 +1726,7 @@ void triton::BGraphicsBackend2Vulkan::CreateInstance(
 		return;
 	}
 
-	if (bEnableDebugging)
+	if (bEnableDebugging == True)
 		CreateDebugMessenger();
 }
 
@@ -1787,6 +2052,15 @@ void triton::BGraphicsBackend2Vulkan::FindQueueFamilies()
 		);
 		if (presentSupported == VK_TRUE)
 			_presentQueue = SQueue(i, 0, {});
+
+		if (queueFamilyProperties.queueCount > 0 &&
+			queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT &&
+			presentSupported == VK_TRUE)
+		{
+			_graphicsPresentQueue = SQueue(i, 0, {});
+
+			Print("[Vulkan]: Info: suitable queue family found");
+		}
 	}
 }
 
@@ -1796,7 +2070,8 @@ void triton::BGraphicsBackend2Vulkan::CreateLogicalDevice()
 		_graphicsQueue.familyIndex,
 		_transferQueue.familyIndex,
 		_computeQueue.familyIndex,
-		_presentQueue.familyIndex
+		_presentQueue.familyIndex,
+		_graphicsPresentQueue.familyIndex
 	};
 
 	const float priority = 1.0f;
@@ -1859,6 +2134,13 @@ void triton::BGraphicsBackend2Vulkan::CreateLogicalDevice()
 		_presentQueue.queueIndex,
 		&_presentQueue.queue
 	);
+
+	vkGetDeviceQueue(
+		_logicalDevice.device,
+		_graphicsPresentQueue.familyIndex,
+		_graphicsPresentQueue.queueIndex,
+		&_graphicsPresentQueue.queue
+	);
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroyLogicalDevice()
@@ -1916,6 +2198,21 @@ void triton::BGraphicsBackend2Vulkan::CreateCommandPoolsAndCommandBuffers()
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to create compute command pool");
 
+	VkCommandPoolCreateInfo graphicsPresentCreateInfo = {};
+	graphicsPresentCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	graphicsPresentCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	graphicsPresentCreateInfo.queueFamilyIndex = _graphicsPresentQueue.familyIndex;
+
+	result = vkCreateCommandPool(
+		_logicalDevice.device,
+		&graphicsCreateInfo,
+		nullptr,
+		&_graphicsPresentQueue.commandPool
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to create compute command pool");
+
 	VkCommandBufferAllocateInfo graphicsAllocInfo = {};
 	graphicsAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	graphicsAllocInfo.commandPool = _graphicsQueue.commandPool;
@@ -1963,7 +2260,7 @@ void triton::BGraphicsBackend2Vulkan::CreateCommandPoolsAndCommandBuffers()
 
 	VkCommandBufferAllocateInfo frameCommandBufferAllocInfo = {};
 	frameCommandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	frameCommandBufferAllocInfo.commandPool = _graphicsQueue.commandPool;
+	frameCommandBufferAllocInfo.commandPool = _graphicsPresentQueue.commandPool;
 	frameCommandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	frameCommandBufferAllocInfo.commandBufferCount = _framesInFlight;
 
@@ -1978,6 +2275,13 @@ void triton::BGraphicsBackend2Vulkan::CreateCommandPoolsAndCommandBuffers()
 
 void triton::BGraphicsBackend2Vulkan::DestroyCommandPoolsAndCommandBuffers()
 {
+	vkFreeCommandBuffers(
+		_logicalDevice.device,
+		_graphicsPresentQueue.commandPool,
+		1,
+		&_graphicsPresentQueue.commandBuffer
+	);
+
 	vkFreeCommandBuffers(
 		_logicalDevice.device,
 		_computeQueue.commandPool,
@@ -1997,6 +2301,12 @@ void triton::BGraphicsBackend2Vulkan::DestroyCommandPoolsAndCommandBuffers()
 		_graphicsQueue.commandPool,
 		1,
 		&_graphicsQueue.commandBuffer
+	);
+
+	vkDestroyCommandPool(
+		_logicalDevice.device,
+		_graphicsPresentQueue.commandPool,
+		nullptr
 	);
 
 	vkDestroyCommandPool(
@@ -2113,7 +2423,7 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size, usiz
 	swapchainCreateInfo.imageArrayLayers = 1;
 	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	const uint32_t queueFamilyIndices[] = {
+	/*const uint32_t queueFamilyIndices[] = {
 		_graphicsQueue.familyIndex,
 		_presentQueue.familyIndex
 	};
@@ -2129,7 +2439,11 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size, usiz
 		swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		swapchainCreateInfo.queueFamilyIndexCount = 0;
 		swapchainCreateInfo.pQueueFamilyIndices = nullptr;
-	}
+	}*/
+
+	swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	swapchainCreateInfo.queueFamilyIndexCount = 0;
+	swapchainCreateInfo.pQueueFamilyIndices = nullptr;
 
 	swapchainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
 	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -2206,7 +2520,7 @@ VkPresentModeKHR triton::BGraphicsBackend2Vulkan::ChooseSwapchainPresentMode(
 		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			return availablePresentMode;
 
-	return VK_PRESENT_MODE_IMMEDIATE_KHR; //VK_PRESENT_MODE_FIFO_KHR
+	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
 VkExtent2D triton::BGraphicsBackend2Vulkan::ChooseSwapchainExtent(
@@ -2441,6 +2755,7 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainSemaphoresAndFences()
 
 	VkFenceCreateInfo fenceCreateInfo = {};
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	_swapchainFences.resize(_framesInFlight);
 
@@ -2653,7 +2968,7 @@ usize triton::BGraphicsBackend2Vulkan::FindProperMemoryTypeIndex(
 			return i;
 	}
 
-	Print("[Vulkan]: Info: Selected memory type index: 0");
+	Print("[Vulkan]: Info: selected memory type index: 0");
 
 	return 0;
 }

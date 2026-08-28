@@ -26,7 +26,7 @@ void main()
     color = colors[gl_VertexIndex];
 
     vec3 pos = inPositionLocalSpace;
-    pos.x += pushConstants.time * 0.000001;
+    pos.x += pushConstants.time * 0.0005;
 
     gl_Position = vec4(pos, 1.0);
 }

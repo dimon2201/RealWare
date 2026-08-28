@@ -25,6 +25,7 @@ namespace triton
 		SQueue									_transferQueue = SQueue(0, 0, {});
 		SQueue									_computeQueue = SQueue(0, 0, {});
 		SQueue									_presentQueue = SQueue(0, 0, {});
+		SQueue									_graphicsPresentQueue = SQueue(0, 0, {});
 		SLogicalDevice							_logicalDevice;
 		SSwapchain								_swapchain;
 		std::vector<CGPURenderTargetResource>	_swapchainRenderTargets;
@@ -38,6 +39,9 @@ namespace triton
 		types::usize							_framesInFlight = 0;
 		types::usize							_currentFrame = 0;
 		CGPUTextureResource						_swapchainPresentTexture = CGPUTextureResource::Invalid();
+
+		CGPUTextureResource						_debugTexture = CGPUTextureResource::Invalid();
+		types::f32								_time = 0.0f;
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -64,6 +68,10 @@ namespace triton
 			ETextureFormat format,
 			types::dword usageMask,
 			ETextureDimension dimension,
+			const cVector3& size
+		) override final;
+
+		CGPUTextureResource CreateTextureDebug(
 			const cVector3& size
 		) override final;
 

@@ -22,5 +22,5 @@ void main()
 
     texcoord = texcoords[vertexIndex];
 
-    gl_Position = vec4(positions[vertexIndex], 1.0);
+    gl_Position = vec4(positions[vertexIndex] * 0.5, 1.0);
 }

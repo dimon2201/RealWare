@@ -63,6 +63,10 @@ namespace triton
 			const cVector3& size
 		) = 0;
 
+		virtual CGPUTextureResource CreateTextureDebug(
+			const cVector3& size
+		) = 0;
+
 		virtual void DestroyTexture(CGPUTextureResource& texture) = 0;
 
 		virtual CGPUBufferResource CreateBuffer(

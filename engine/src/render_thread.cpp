@@ -33,7 +33,7 @@ void triton::cRenderThread::ThreadFunction()
 		GetCapabilities().preferredGraphicsDevice;
 	gfxBackend->Initialize(
 		window->GetBackendWindow(),
-		False,
+		True,
 		_context->GetBackend<IInputBackend>()->GetBackendWindowVulkanExtensions(),
 		deviceType,
 		window->GetSize(),

@@ -55,8 +55,8 @@ namespace triton
         types::usize maxRenderBatchCount = 4 * 1024;
         types::usize maxRenderInstanceCount = 4 * 1024;
         types::usize maxBoneCountPerVertex = 4;
-        EAvailableGraphicsBackend graphicsBackend = EAvailableGraphicsBackend::Unknown;
-        EGraphicsDeviceType preferredGraphicsDevice = EGraphicsDeviceType::Unknown;
+        EAvailableGraphicsBackend graphicsBackend = EAvailableGraphicsBackend::Vulkan;
+        EGraphicsDeviceType preferredGraphicsDevice = EGraphicsDeviceType::Discrete;
         types::usize framesInFlight = 2;
     };
 }
