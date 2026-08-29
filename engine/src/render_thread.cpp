@@ -335,18 +335,13 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::CREATE_PIPELINE:
 			{
-				const usize texturesToBindCount = cmd._args._argE;
-				const CGPUTextureResource* texturesToBindPtr = (const CGPUTextureResource*)cmd._args._argF;
-				std::vector<CGPUTextureResource> texturesToBindVector;
-				for (usize i = 0; i < texturesToBindCount; i++)
-					texturesToBindVector.push_back(texturesToBindPtr[i]);
-
 				CGPUPipelineResource resultPipeline = gfxBackend->CreatePipeline(
 					*(CGPUShaderResource*)cmd._args._argA,
 					*(SViewport*)cmd._args._argB,
 					*(CGPURenderTargetResource*)cmd._args._argC,
 					*(CGPURenderPassResource*)cmd._args._argD,
-					texturesToBindVector,
+					*(std::vector<CGPUBufferResource>*)cmd._args._argE,
+					*(std::vector<CGPUTextureResource>*)cmd._args._argF,
 					(EPrimitiveTopology)cmd._args._argG,
 					(EVertexBufferFormat)cmd._args._argH,
 					(boolean)cmd._args._argI

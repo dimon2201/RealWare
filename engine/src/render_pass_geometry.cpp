@@ -57,10 +57,17 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
 
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
+    const usize buffersToBindCount = _inputBuffers.size();
+    std::vector<CGPUBufferResource>* buffersToBind =
+        CObjectAllocator::Create<std::vector<CGPUBufferResource>>(64);
+    for (usize i = 0; i < buffersToBindCount; i++)
+        buffersToBind->push_back(_inputBuffers[i]);
+
     const usize texturesToBindCount = _inputTextures.size();
-    std::vector<CGPUTextureResource> texturesToBind;
+    std::vector<CGPUTextureResource>* texturesToBind =
+        CObjectAllocator::Create<std::vector<CGPUTextureResource>>(64);
     for (usize i = 0; i < texturesToBindCount; i++)
-        texturesToBind.push_back(_inputTextures[i].texture);
+        texturesToBind->push_back(_inputTextures[i].texture);
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_PIPELINE,
@@ -68,8 +75,8 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         (cpuword)&_viewport,
         (cpuword)&gpuRenderTarget,
         (cpuword)&_gpuRenderPass,
-        (cpuword)texturesToBindCount,
-        (cpuword)texturesToBind.data(),
+        (cpuword)buffersToBind,
+        (cpuword)texturesToBind,
         (cpuword)primitiveTopology,
         (cpuword)EVertexBufferFormat::Rigid_48,
         (cpuword)True
@@ -78,6 +85,9 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     _gpuPipeline = _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
         WaitForRenderCommandResult<CGPUPipelineResource>();
+
+    CObjectAllocator::Destroy<std::vector<CGPUBufferResource>>(buffersToBind);
+    CObjectAllocator::Destroy<std::vector<CGPUTextureResource>>(texturesToBind);
 }
 
 triton::XRenderPassGeometry::~XRenderPassGeometry()

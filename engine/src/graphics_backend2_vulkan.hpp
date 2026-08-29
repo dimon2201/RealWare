@@ -96,6 +96,7 @@ namespace triton
 			const SViewport& viewport,
 			CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass,
+			const std::vector<CGPUBufferResource>& buffersToBind,
 			const std::vector<CGPUTextureResource>& texturesToBind,
 			EPrimitiveTopology primitiveTopology,
 			EVertexBufferFormat vertexBufferFormat,
@@ -199,6 +200,7 @@ namespace triton
 		void DestroySwapchainSemaphoresAndFences();
 
 		SDescriptorSet CreateDescriptorSet(
+			const std::vector<CGPUBufferResource>& buffersToBind,
 			const std::vector<CGPUTextureResource>& texturesToBind
 		);
 
