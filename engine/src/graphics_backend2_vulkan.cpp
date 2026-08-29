@@ -2155,7 +2155,7 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size, usiz
 
 	VkExtent2D swapchainExtent = ChooseSwapchainExtent(surfaceCapabilities, size);
 
-	uint32_t swapchainImageCount = surfaceCapabilities.minImageCount + 1;
+	uint32_t swapchainImageCount = 3;
 
 	if (surfaceCapabilities.maxImageCount > 0 &&
 		swapchainImageCount > surfaceCapabilities.maxImageCount)
