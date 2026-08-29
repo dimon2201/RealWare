@@ -56,7 +56,9 @@ namespace triton
             const std::vector<EResourceUsage>& dstAttachmentsUsage,
             const XShader::THandle& shaderHandle,
             EPrimitiveTopology primitiveTopology,
-            const SViewport& viewport
+            const SViewport& viewport,
+            const std::vector<CGPUBufferResource>& inputBuffers,
+            const std::vector<SShaderTextureBinding>& inputTextures
         );
         ~XRenderPassGeometry() override;
 

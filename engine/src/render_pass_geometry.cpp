@@ -28,7 +28,9 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     const std::vector<EResourceUsage>& dstAttachmentsUsage,
     const XShader::THandle& shaderHandle,
     EPrimitiveTopology primitiveTopology,
-    const SViewport& viewport
+    const SViewport& viewport,
+    const std::vector<CGPUBufferResource>& inputBuffers,
+    const std::vector<SShaderTextureBinding>& inputTextures
 ) :
     IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry),
     _bClearRenderTarget(bClearRenderTarget),
@@ -58,12 +60,20 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
     const usize buffersToBindCount = _inputBuffers.size();
+
+    for (usize i = 0; i < buffersToBindCount; ++i)
+        _inputBuffers.push_back(inputBuffers[i]);
+
     std::vector<CGPUBufferResource>* buffersToBind =
         CObjectAllocator::Create<std::vector<CGPUBufferResource>>(64);
     for (usize i = 0; i < buffersToBindCount; i++)
         buffersToBind->push_back(_inputBuffers[i]);
 
     const usize texturesToBindCount = _inputTextures.size();
+
+    for (usize i = 0; i < texturesToBindCount; ++i)
+        _inputTextures.push_back(inputTextures[i]);
+
     std::vector<CGPUTextureResource>* texturesToBind =
         CObjectAllocator::Create<std::vector<CGPUTextureResource>>(64);
     for (usize i = 0; i < texturesToBindCount; i++)

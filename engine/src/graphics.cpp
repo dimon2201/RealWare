@@ -534,6 +534,12 @@ void triton::CGraphics::CreateRenderPasses()
     const std::vector<EResourceUsage> dstAttachmentsUsage =
         { EResourceUsage::PixelShaderRead, EResourceUsage::DepthAttachment };
     
+    const std::vector<CGPUBufferResource> inputBuffers = {
+        _context->GetPool<CRenderInstanceStaticPool>()->GetGPUBuffer()
+    };
+
+    const std::vector<SShaderTextureBinding> inputTextures;
+
     _opaqueRigid = *renderPassGeometryPool->Create(
         _opaqueRenderTarget,
         True,
@@ -543,7 +549,9 @@ void triton::CGraphics::CreateRenderPasses()
         dstAttachmentsUsage,
         _opaqueRigidPBRShader,
         EPrimitiveTopology::TriangleList,
-        viewport
+        viewport,
+        inputBuffers,
+        inputTextures
     );
 }
 
