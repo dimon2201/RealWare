@@ -277,13 +277,11 @@ void triton::XRenderPassGeometry::Draw()
 
         const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
 
-        _pushConstants.cameraViewProjectionMatrix = camera.GetViewProjectionMatrix();
-        _pushConstants.cameraWorldPosition = camera.GetWorldPosition();
-        _pushConstants.instanceMotionType = 0;
+        const usize mainThreadWriteIndex = _context->GetSubsystem<CEngine>()->GetSynchronization()->GetWriteIndex();
 
-        static f32 time = 0.0f;
-        _pushConstants.time = time;
-        time += 1.0f;
+        _pushConstantArrays[mainThreadWriteIndex].cameraViewProjectionMatrix = camera.GetViewProjectionMatrix();
+        _pushConstantArrays[mainThreadWriteIndex].cameraWorldPosition = camera.GetWorldPosition();
+        _pushConstantArrays[mainThreadWriteIndex].instanceMotionType = 0;
 
         _nativeCommandDrawInfo.vertexCount = sharedGeometry._vertexCount;
         _nativeCommandDrawInfo.indexCount = sharedGeometry._indexCount;
@@ -299,7 +297,7 @@ void triton::XRenderPassGeometry::Draw()
             (cpuword)&_gpuPipeline,
             (cpuword)&gpuVertexBuffer,
             (cpuword)&gpuIndexBuffer,
-            (cpuword)&_pushConstants,
+            (cpuword)&_pushConstantArrays[mainThreadWriteIndex],
             (cpuword)&_nativeCommandDrawInfo
         ));
     }

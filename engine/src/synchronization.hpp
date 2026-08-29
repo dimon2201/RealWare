@@ -259,5 +259,9 @@ namespace triton
 		{
 			return _resultBuffer;
 		}
+
+		inline types::usize GetWriteIndex() const { return _writeIndex; }
+
+		inline const std::atomic<types::usize>& GetReadIndex() const { return _readIndex; }
 	};
 }

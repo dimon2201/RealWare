@@ -42,7 +42,7 @@ namespace triton
         EShadingModel                               _shadingModel = EShadingModel::PBR;
         CGPUPipelineResource                        _gpuPipeline = CGPUPipelineResource::Invalid();
         SNativeCommandDrawInfo                      _nativeCommandDrawInfo;
-        SRenderPassGPUPushConstantsLayout           _pushConstants;
+        SRenderPassGPUPushConstantsLayout           _pushConstantArrays[2];
 
     public:
         explicit XRenderPassGeometry(
