@@ -47,6 +47,8 @@ namespace triton
 
         inline const cMatrix4& GetViewProjectionMatrix() const { return _viewProjectionMatrix; }
 
+        inline void SetEulerAngles(const cVector3& eulerAngles) { _eulerAngles = eulerAngles; }
+
         inline void SetWorldPosition(const cVector3& worldPosition) { _worldPosition = worldPosition; }
 
     public:
