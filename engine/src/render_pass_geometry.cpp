@@ -257,7 +257,7 @@ void triton::XRenderPassGeometry::Draw()
         65.0f,
         0.01f,
         10000.0f,
-        1.0f
+        0.25f
     );
 
     XGPUBuffer::THandle vertexBufferHandle = _context->GetSubsystem<CGeometryStorage>()->GetRigidVertexBuffer();

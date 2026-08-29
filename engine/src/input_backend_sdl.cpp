@@ -141,6 +141,7 @@ void triton::CInputBackendSDL::DestroyBackendWindowVulkanSurface(void* instance,
 void triton::CInputBackendSDL::PreparePollEvent()
 {
     _bMouseMoved = False;
+    _mouseDelta = cVector2(0.0f);
 }
 
 triton::SWindowEvent triton::CInputBackendSDL::PollEvent()
@@ -318,7 +319,8 @@ void triton::CInputBackendSDL::SetWindowFocus(boolean isFocused)
 void triton::CInputBackendSDL::SetWindowMouse(const cVector2& cursorPosition, const cVector2& mouseDelta)
 {
     _cursorPosition = cursorPosition;
-    _mouseDelta = mouseDelta;
+    _mouseDelta.AddX(mouseDelta.GetX());
+    _mouseDelta.AddY(mouseDelta.GetY());
 }
 
 void triton::CInputBackendSDL::SetVSync(cpuword flag)
