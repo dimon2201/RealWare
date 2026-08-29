@@ -10,6 +10,8 @@
 #include "camera_pool.hpp"
 #include "render_target_pool.hpp"
 #include "render_instance_pack_pool.hpp"
+#include "render_binding_group_binding_struct.hpp"
+#include "shader_stage_bit_enum.hpp"
 #include "gpu_buffer_pool.hpp"
 #include "input_backend.hpp"
 #include "geometry_storage.hpp"
@@ -57,6 +59,20 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         GetSynchronization()->
         WaitForRenderCommandResult<CGPURenderPassResource>();
 
+    std::vector<SBindingGroupBinding>* bindingGroupBindings =
+        CObjectAllocator::Create<std::vector<SBindingGroupBinding>>(64);
+
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::CreateBindingGroupLayout,
+        (cpuword)bindingGroupBindings
+    ));
+
+    _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<CGPUBindingGroupLayoutResource>();
+
+    CObjectAllocator::Destroy<std::vector<SBindingGroupBinding>>(bindingGroupBindings);
+
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
     const usize buffersToBindCount = _inputBuffers.size();
@@ -85,8 +101,7 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
         (cpuword)&_viewport,
         (cpuword)&gpuRenderTarget,
         (cpuword)&_gpuRenderPass,
-        (cpuword)buffersToBind,
-        (cpuword)texturesToBind,
+        (cpuword)&_gpuBindingGroupLayouts,
         (cpuword)primitiveTopology,
         (cpuword)EVertexBufferFormat::Rigid_48,
         (cpuword)True
@@ -110,6 +125,18 @@ triton::XRenderPassGeometry::~XRenderPassGeometry()
     _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
         WaitForRenderCommandResult<void*>();
+
+    for (auto& gpuBindingGroupLayout : _gpuBindingGroupLayouts)
+    {
+        _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+            ERenderCommand::DestroyBindingGroupLayout,
+            (cpuword)&gpuBindingGroupLayout
+        ));
+
+        _context->GetSubsystem<CEngine>()->
+            GetSynchronization()->
+            WaitForRenderCommandResult<void*>();
+    }
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::DESTROY_RENDER_PASS,

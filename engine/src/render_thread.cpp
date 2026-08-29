@@ -340,11 +340,10 @@ void triton::cRenderThread::ExecuteCommands(
 					*(SViewport*)cmd._args._argB,
 					*(CGPURenderTargetResource*)cmd._args._argC,
 					*(CGPURenderPassResource*)cmd._args._argD,
-					*(std::vector<CGPUBufferResource>*)cmd._args._argE,
-					*(std::vector<CGPUTextureResource>*)cmd._args._argF,
-					(EPrimitiveTopology)cmd._args._argG,
-					(EVertexBufferFormat)cmd._args._argH,
-					(boolean)cmd._args._argI
+					*(std::vector<CGPUBindingGroupLayoutResource>*)cmd._args._argE,
+					(EPrimitiveTopology)cmd._args._argF,
+					(EVertexBufferFormat)cmd._args._argG,
+					(boolean)cmd._args._argH
 				);
 				
 				new (_sync->GetResultBuffer().data) CGPUPipelineResource(resultPipeline);
@@ -355,6 +354,42 @@ void triton::cRenderThread::ExecuteCommands(
 			{
 				gfxBackend->DestroyPipeline(
 					*(CGPUPipelineResource*)cmd._args._argA
+				);
+				break;
+			}
+			case ERenderCommand::CreateBindingGroupLayout:
+			{
+				CGPUBindingGroupLayoutResource resultBindingGroupLayout = gfxBackend->CreateBindingGroupLayout(
+					*(const std::vector<SBindingGroupBinding>*)cmd._args._argA
+				);
+
+				new (_sync->GetResultBuffer().data) CGPUBindingGroupLayoutResource(resultBindingGroupLayout);
+
+				break;
+			}
+			case ERenderCommand::DestroyBindingGroupLayout:
+			{
+				gfxBackend->DestroyBindingGroupLayout(
+					*(CGPUBindingGroupLayoutResource*)cmd._args._argA
+				);
+				break;
+			}
+			case ERenderCommand::CreateBindingGroup:
+			{
+				CGPUBindingGroupResource resultBindingGroup = gfxBackend->CreateBindingGroup(
+					*(const CGPUBindingGroupLayoutResource*)cmd._args._argA,
+					*(const std::vector<CGPUBufferResource>*)cmd._args._argB,
+					*(const std::vector<CGPUTextureResource>*)cmd._args._argC
+				);
+
+				new (_sync->GetResultBuffer().data) CGPUBindingGroupResource(resultBindingGroup);
+
+				break;
+			}
+			case ERenderCommand::DestroyBindingGroup:
+			{
+				gfxBackend->DestroyBindingGroup(
+					*(CGPUBindingGroupResource*)cmd._args._argA
 				);
 				break;
 			}

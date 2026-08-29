@@ -58,5 +58,8 @@ namespace triton
         EAvailableGraphicsBackend graphicsBackend = EAvailableGraphicsBackend::Vulkan;
         EGraphicsDeviceType preferredGraphicsDevice = EGraphicsDeviceType::Discrete;
         types::usize framesInFlight = 2;
+        types::usize maxBindingGroupCount = 1024;
+        types::usize maxStorageBufferBindingCount = maxBindingGroupCount * 16;
+        types::usize maxTextureSamplerBindingCount = maxBindingGroupCount * 16;
     };
 }

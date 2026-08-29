@@ -18,12 +18,15 @@
 #include "gpu_render_pass_resource.hpp"
 #include "gpu_shader_resource.hpp"
 #include "gpu_pipeline_resource.hpp"
+#include "gpu_binding_group_resource.hpp"
+#include "gpu_binding_group_layout_resource.hpp"
 #include "shader_stage_bit_enum.hpp"
 #include "shader_bytecode_files_struct.hpp"
 #include "render_native_command_enum.hpp"
 #include "render_primitive_topology_enum.hpp"
 #include "render_resource_usage_enum.hpp"
 #include "render_pass_push_constants_struct.hpp"
+#include "render_binding_group_binding_struct.hpp"
 #include "rasterizer_state.hpp"
 #include "vertex_buffer_format.hpp"
 
@@ -91,14 +94,27 @@ namespace triton
 			const SViewport& viewport,
 			CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass,
-			const std::vector<CGPUBufferResource>& buffersToBind,
-			const std::vector<CGPUTextureResource>& texturesToBind,
+			const std::vector<CGPUBindingGroupLayoutResource>& bindingGroupLayouts,
 			EPrimitiveTopology primitiveTopology,
 			EVertexBufferFormat vertexBufferFormat,
 			types::boolean bUsePushConstants
 		) = 0;
 
 		virtual void DestroyPipeline(CGPUPipelineResource& pipeline) = 0;
+
+		virtual CGPUBindingGroupLayoutResource CreateBindingGroupLayout(
+			const std::vector<SBindingGroupBinding>& bindings
+		) = 0;
+
+		virtual void DestroyBindingGroupLayout(CGPUBindingGroupLayoutResource& bindingGroupLayout) = 0;
+
+		virtual CGPUBindingGroupResource CreateBindingGroup(
+			const CGPUBindingGroupLayoutResource& bindingGroupLayout,
+			const std::vector<CGPUBufferResource>& buffersToBind,
+			const std::vector<CGPUTextureResource>& texturesToBind
+		) = 0;
+
+		virtual void DestroyBindingGroup(CGPUBindingGroupResource& bindingGroup) = 0;
 
 		virtual CGPURenderPassResource CreateRenderPass(
 			CGPURenderTargetResource& renderTarget,

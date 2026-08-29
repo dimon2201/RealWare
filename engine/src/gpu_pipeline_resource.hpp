@@ -4,6 +4,8 @@
 
 #include <vector>
 #include "gpu_resource.hpp"
+#include "gpu_binding_group_resource.hpp"
+#include "gpu_binding_group_layout_resource.hpp"
 #include "render_pipeline_bind_point_enum.hpp"
 #include "types.hpp"
 
@@ -13,7 +15,7 @@ namespace triton
     {
         EPipelineBindPoint _bindPoint = EPipelineBindPoint::Unknown;
         types::qword _layout = 0;
-        std::vector<types::qword> _descriptorSets;
+        std::vector<CGPUBindingGroupLayoutResource> _bindingGroupLayouts;
 
     public:
         explicit CGPUPipelineResource(
@@ -21,12 +23,12 @@ namespace triton
             types::qword viewInstance,
             EPipelineBindPoint bindPoint,
             types::qword layout,
-            const std::vector<types::qword>& descriptorSets
+            const std::vector<CGPUBindingGroupLayoutResource>& bindingGroupLayouts
         ) :
             CGPUResource(instance, viewInstance),
             _bindPoint(bindPoint),
             _layout(layout),
-            _descriptorSets(descriptorSets) {}
+            _bindingGroupLayouts(bindingGroupLayouts) {}
         ~CGPUPipelineResource() override = default;
 
         static CGPUPipelineResource Invalid()
@@ -38,6 +40,6 @@ namespace triton
 
         inline types::qword GetLayout() const { return _layout; }
 
-        inline const std::vector<types::qword>& GetDescriptorSets() const { return _descriptorSets; }
+        inline const std::vector<CGPUBindingGroupLayoutResource>& GetBindingGroupLayouts() const { return _bindingGroupLayouts; }
     };
 }

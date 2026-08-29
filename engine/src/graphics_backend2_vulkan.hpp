@@ -15,30 +15,33 @@ namespace triton
 	{
 		TRITON_CLASS_NAME(BGraphicsBackend2Vulkan)
 
-		SInstance								_instance;
-		SSurface								_surface;
-		SPhysicalDevice							_physicalDevice = SPhysicalDevice(
+		SInstance										_instance;
+		SSurface										_surface;
+		SPhysicalDevice									_physicalDevice = SPhysicalDevice(
 			EGraphicsDeviceType::Unknown, VK_NULL_HANDLE, {}, {}, {}, {}, std::vector<VkQueueFamilyProperties>(), {}
 		);
-		VkFormat								_physicalDeviceDepthBufferFormat = VK_FORMAT_UNDEFINED;
-		SQueue									_graphicsQueue = SQueue(0, 0, {});
-		SQueue									_transferQueue = SQueue(0, 0, {});
-		SQueue									_computeQueue = SQueue(0, 0, {});
-		SQueue									_presentQueue = SQueue(0, 0, {});
-		SQueue									_graphicsPresentQueue = SQueue(0, 0, {});
-		SLogicalDevice							_logicalDevice;
-		SSwapchain								_swapchain;
-		std::vector<CGPURenderTargetResource>	_swapchainRenderTargets;
-		std::vector<CGPURenderPassResource>		_swapchainRenderPasses;
-		CGPUShaderResource						_swapchainShader = CGPUShaderResource::Invalid();
-		std::vector<CGPUPipelineResource>		_swapchainPipelines;
-		std::vector<SSemaphore>					_swapchainImageAvailableSemaphores;
-		std::vector<SSemaphore>					_swapchainRenderFinishedSemaphores;
-		std::vector<SFence>						_swapchainFences;
-		std::vector<VkCommandBuffer>			_commandBuffers;
-		types::usize							_framesInFlight = 0;
-		types::usize							_currentFrame = 0;
-		CGPUTextureResource						_swapchainPresentTexture = CGPUTextureResource::Invalid();
+		VkFormat										_physicalDeviceDepthBufferFormat = VK_FORMAT_UNDEFINED;
+		SQueue											_graphicsQueue = SQueue(0, 0, {});
+		SQueue											_transferQueue = SQueue(0, 0, {});
+		SQueue											_computeQueue = SQueue(0, 0, {});
+		SQueue											_presentQueue = SQueue(0, 0, {});
+		SQueue											_graphicsPresentQueue = SQueue(0, 0, {});
+		SLogicalDevice									_logicalDevice;
+		SSwapchain										_swapchain;
+		std::vector<CGPURenderTargetResource>			_swapchainRenderTargets;
+		std::vector<CGPURenderPassResource>				_swapchainRenderPasses;
+		CGPUShaderResource								_swapchainShader = CGPUShaderResource::Invalid();
+		std::vector<CGPUPipelineResource>				_swapchainPipelines;
+		CGPUBindingGroupLayoutResource					_swapchainBindingGroupLayout = CGPUBindingGroupLayoutResource::Invalid();
+		std::vector<CGPUBindingGroupResource>			_swapchainBindingGroups;
+		std::vector<SSemaphore>							_swapchainImageAvailableSemaphores;
+		std::vector<SSemaphore>							_swapchainRenderFinishedSemaphores;
+		std::vector<SFence>								_swapchainFences;
+		CGPUTextureResource								_swapchainPresentTexture = CGPUTextureResource::Invalid();
+		VkDescriptorPool								_descriptorPool = VK_NULL_HANDLE;
+		std::vector<VkCommandBuffer>					_commandBuffers;
+		types::usize									_framesInFlight = 0;
+		types::usize									_currentFrame = 0;
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -96,14 +99,27 @@ namespace triton
 			const SViewport& viewport,
 			CGPURenderTargetResource& renderTarget,
 			const CGPURenderPassResource& renderPass,
-			const std::vector<CGPUBufferResource>& buffersToBind,
-			const std::vector<CGPUTextureResource>& texturesToBind,
+			const std::vector<CGPUBindingGroupLayoutResource>& bindingGroupLayouts,
 			EPrimitiveTopology primitiveTopology,
 			EVertexBufferFormat vertexBufferFormat,
 			types::boolean bUsePushConstants
 		) override final;
 
 		void DestroyPipeline(CGPUPipelineResource& pipeline) override final;
+
+		CGPUBindingGroupLayoutResource CreateBindingGroupLayout(
+			const std::vector<SBindingGroupBinding>& bindings
+		) override final;
+
+		void DestroyBindingGroupLayout(CGPUBindingGroupLayoutResource& bindingGroupLayout) override final;
+
+		CGPUBindingGroupResource CreateBindingGroup(
+			const CGPUBindingGroupLayoutResource& bindingGroupLayout,
+			const std::vector<CGPUBufferResource>& buffersToBind,
+			const std::vector<CGPUTextureResource>& texturesToBind
+		) override final;
+
+		void DestroyBindingGroup(CGPUBindingGroupResource& bindingGroup) override final;
 
 		CGPURenderPassResource CreateRenderPass(
 			CGPURenderTargetResource& renderTarget,
@@ -172,6 +188,10 @@ namespace triton
 
 		void DestroySwapchain();
 
+		void CreateDescriptorPool();
+
+		void DestroyDescriptorPool();
+
 		VkSurfaceFormatKHR ChooseSwapchainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats);
 
 		VkPresentModeKHR ChooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& presentModes);
@@ -198,13 +218,6 @@ namespace triton
 		void CreateSwapchainSemaphoresAndFences();
 
 		void DestroySwapchainSemaphoresAndFences();
-
-		SDescriptorSet CreateDescriptorSet(
-			const std::vector<CGPUBufferResource>& buffersToBind,
-			const std::vector<CGPUTextureResource>& texturesToBind
-		);
-
-		void DestroyDescriptorSet(const SDescriptorSet& descriptorSet);
 
 		types::usize FindProperMemoryTypeIndex(
 			VkPhysicalDeviceMemoryProperties memoryProperties,

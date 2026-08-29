@@ -26,23 +26,24 @@ namespace triton
     {
         TRITON_CLASS_NAME(XRenderPassGeometry)
 
-        std::optional<SClearState>                  _clearState = std::nullopt;
-        std::vector<XRenderInstancePack::THandle>   _renderInstancePacks = {};
-        XInputLayout::THandle                       _inputLayout;
-        std::vector<CGPUBufferResource>             _inputBuffers = {};
-        std::vector<SShaderTextureBinding>          _inputTextures = {};
-        SDepthState                                 _depthState;
-        SBlendState                                 _blendState;
-        EPrimitiveTopology                          _primitiveTopology = EPrimitiveTopology::Unknown;
-        SViewport                                   _viewport = {};
-        types::boolean                              _bClearRenderTarget = types::False;
-        XRenderTarget::THandle                      _renderTarget;
-        XShader::THandle                            _shader;
-        XCamera::THandle                            _camera;
-        EShadingModel                               _shadingModel = EShadingModel::PBR;
-        CGPUPipelineResource                        _gpuPipeline = CGPUPipelineResource::Invalid();
-        SNativeCommandDrawInfo                      _nativeCommandDrawInfo;
-        SRenderPassGPUPushConstantsLayout           _pushConstantArrays[2];
+        std::optional<SClearState>                      _clearState = std::nullopt;
+        std::vector<XRenderInstancePack::THandle>       _renderInstancePacks = {};
+        XInputLayout::THandle                           _inputLayout;
+        std::vector<CGPUBufferResource>                 _inputBuffers = {};
+        std::vector<SShaderTextureBinding>              _inputTextures = {};
+        SDepthState                                     _depthState;
+        SBlendState                                     _blendState;
+        EPrimitiveTopology                              _primitiveTopology = EPrimitiveTopology::Unknown;
+        SViewport                                       _viewport = {};
+        types::boolean                                  _bClearRenderTarget = types::False;
+        XRenderTarget::THandle                          _renderTarget;
+        XShader::THandle                                _shader;
+        XCamera::THandle                                _camera;
+        EShadingModel                                   _shadingModel = EShadingModel::PBR;
+        CGPUPipelineResource                            _gpuPipeline = CGPUPipelineResource::Invalid();
+        SNativeCommandDrawInfo                          _nativeCommandDrawInfo;
+        SRenderPassGPUPushConstantsLayout               _pushConstantArrays[2];
+        std::vector<CGPUBindingGroupLayoutResource>     _gpuBindingGroupLayouts;
 
     public:
         explicit XRenderPassGeometry(

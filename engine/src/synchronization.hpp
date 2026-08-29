@@ -52,7 +52,11 @@ namespace triton
 		FinalizeSwapchain,
 		ReleaseSwapchainResources,
 		BindVertexBuffer,
-		BindIndexBuffer
+		BindIndexBuffer,
+		CreateBindingGroupLayout,
+		DestroyBindingGroupLayout,
+		CreateBindingGroup,
+		DestroyBindingGroup
 	};
 
 	struct SRenderCommandArgs
