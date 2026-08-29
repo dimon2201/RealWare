@@ -40,9 +40,6 @@ namespace triton
 		types::usize							_currentFrame = 0;
 		CGPUTextureResource						_swapchainPresentTexture = CGPUTextureResource::Invalid();
 
-		CGPUTextureResource						_debugTexture = CGPUTextureResource::Invalid();
-		types::f32								_time = 0.0f;
-
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
 		~BGraphicsBackend2Vulkan() override = default;
@@ -68,10 +65,6 @@ namespace triton
 			ETextureFormat format,
 			types::dword usageMask,
 			ETextureDimension dimension,
-			const cVector3& size
-		) override final;
-
-		CGPUTextureResource CreateTextureDebug(
 			const cVector3& size
 		) override final;
 

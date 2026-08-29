@@ -95,10 +95,6 @@ void triton::BGraphicsBackend2Vulkan::Initialize(
 	CreateLogicalDevice();
 	CreateCommandPoolsAndCommandBuffers();
 	CreateSwapchain(swapchainSize, framesInFlight);
-
-	_debugTexture = CreateTextureDebug(
-		cVector3(swapchainSize.GetX(), swapchainSize.GetY(), 1.0f)
-	);
 }
 
 void triton::BGraphicsBackend2Vulkan::Shutdown()
@@ -239,7 +235,7 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 	if (bCreateSampler == True)
 	{
 		VkSamplerCreateInfo samplerCreateInfo = {};
-		/*samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
 		samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
 		samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
@@ -254,16 +250,7 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		samplerCreateInfo.minLod = 0.0f;
 		samplerCreateInfo.maxLod = 0.0f;
 		samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;*/
-		samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-		samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
-		samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-		samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerCreateInfo.minLod = 0.0f;
-		samplerCreateInfo.maxLod = 0.0f;
+		samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
 
 		result = vkCreateSampler(
 			_logicalDevice.device,
@@ -284,137 +271,6 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		format,
 		usageMask,
 		dimension,
-		size,
-		0
-	);
-}
-
-triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTextureDebug(
-	const cVector3& size
-)
-{
-	const VkFormat nativeFormat = VK_FORMAT_R8G8B8A8_UNORM;
-
-	VkImageCreateInfo imageCreateInfo = {};
-	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = nativeFormat;
-	imageCreateInfo.extent = {
-		(uint32_t)size.GetX(),
-		(uint32_t)size.GetY(),
-		1
-	};
-	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.arrayLayers = 1;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-	VkImage image = VK_NULL_HANDLE;
-
-	VkResult result = vkCreateImage(
-		_logicalDevice.device,
-		&imageCreateInfo,
-		nullptr,
-		&image
-	);
-
-	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to create image");
-
-	VkMemoryRequirements memoryRequirements = {};
-	vkGetImageMemoryRequirements(
-		_logicalDevice.device,
-		image,
-		&memoryRequirements
-	);
-
-	VkDeviceMemory memory = AllocateDeviceMemory(memoryRequirements);
-
-	result = vkBindImageMemory(
-		_logicalDevice.device,
-		image,
-		memory,
-		0
-	);
-
-	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to bind memory to image");
-
-	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-	VkImageViewCreateInfo imageViewCreateInfo = {};
-	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	imageViewCreateInfo.image = image;
-	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewCreateInfo.format = nativeFormat;
-	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;
-	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-	imageViewCreateInfo.subresourceRange.levelCount = 1;
-	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-	imageViewCreateInfo.subresourceRange.layerCount = 1;
-
-	VkImageView imageView = VK_NULL_HANDLE;
-
-	vkCreateImageView(
-		_logicalDevice.device,
-		&imageViewCreateInfo,
-		nullptr,
-		&imageView
-	);
-
-	VkSampler sampler = VK_NULL_HANDLE;
-	VkSamplerCreateInfo samplerCreateInfo = {};
-	/*samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-	samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerCreateInfo.mipLodBias = 0.0f;
-	samplerCreateInfo.anisotropyEnable = VK_FALSE;
-	samplerCreateInfo.maxAnisotropy = 1.0f;
-	samplerCreateInfo.compareEnable = VK_FALSE;
-	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerCreateInfo.minLod = 0.0f;
-	samplerCreateInfo.maxLod = 0.0f;
-	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;*/
-	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-	samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
-	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerCreateInfo.minLod = 0.0f;
-	samplerCreateInfo.maxLod = 0.0f;
-
-	result = vkCreateSampler(
-		_logicalDevice.device,
-		&samplerCreateInfo,
-		nullptr,
-		&sampler
-	);
-
-	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to create sampler");
-
-	return CGPUTextureResource(
-		(qword)image,
-		(qword)imageView,
-		(qword)sampler,
-		(qword)memory,
-		ETextureFormat::RGBA8,
-		(dword)EResourceUsage::PixelShaderRead,
-		ETextureDimension::Texture2D,
 		size,
 		0
 	);
@@ -937,103 +793,107 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 	if (hasDepth)
 		subpass.pDepthStencilAttachment = &depthReference;
 
-	std::vector<VkSubpassDependency> dependencies(2);
+	std::vector<VkSubpassDependency> dependencies;
 
-	/*for (usize i = 0; i < attachmentCount; ++i)
+	for (usize i = 0; i < attachmentCount; ++i)
 	{
-		const usize inDependencyIndex = i * 2;
-		const usize outDependencyIndex = i * 2 + 1;
+		VkSubpassDependency inDependency = {};
+		VkSubpassDependency outDependency = {};
 
-		dependencies[inDependencyIndex].srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependencies[inDependencyIndex].dstSubpass = 0;
+		inDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+		inDependency.dstSubpass = 0;
+
+		outDependency.srcSubpass = 0;
+		outDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+
+		boolean bUseOutDependency = True;
 
 		if (srcAttachmentsUsage[i] == EResourceUsage::Unknown)
 		{
-			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_NONE;
+			if (dstAttachmentsUsage[i] == EResourceUsage::PixelShaderRead)
+			{
+				inDependency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				inDependency.srcAccessMask = VK_ACCESS_NONE;
+			}
+			else if (dstAttachmentsUsage[i] == EResourceUsage::Present)
+			{
+				inDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				inDependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			}
 		}
 		else if (srcAttachmentsUsage[i] == EResourceUsage::ColorAttachment)
 		{
-			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		}
 		else if (srcAttachmentsUsage[i] == EResourceUsage::DepthAttachment)
 		{
-			dependencies[inDependencyIndex].srcStageMask =
-				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-				VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 		}
 		else if (srcAttachmentsUsage[i] == EResourceUsage::VertexShaderRead)
 		{
-			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		}
 		else if (srcAttachmentsUsage[i] == EResourceUsage::PixelShaderRead)
 		{
-			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			dependencies[inDependencyIndex].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		}
 		else if (srcAttachmentsUsage[i] == EResourceUsage::Present)
 		{
-			dependencies[inDependencyIndex].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			dependencies[inDependencyIndex].srcAccessMask = 0;
 		}
 
 		if (dstAttachmentsUsage[i] == EResourceUsage::Unknown)
 		{
-			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_NONE;
 		}
 		else if (dstAttachmentsUsage[i] == EResourceUsage::ColorAttachment)
 		{
-			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		}
 		else if (dstAttachmentsUsage[i] == EResourceUsage::DepthAttachment)
 		{
-			dependencies[inDependencyIndex].dstStageMask =
+			inDependency.dstStageMask =
 				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
 				VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			inDependency.dstAccessMask =
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+
+			outDependency.srcStageMask =
+				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+				VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			outDependency.srcAccessMask =
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+			outDependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			outDependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		}
 		else if (dstAttachmentsUsage[i] == EResourceUsage::VertexShaderRead)
 		{
-			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		}
 		else if (dstAttachmentsUsage[i] == EResourceUsage::PixelShaderRead)
 		{
-			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			inDependency.dstStageMask =
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			inDependency.dstAccessMask =
+				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+
+			outDependency.srcStageMask =
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			outDependency.srcAccessMask =
+				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+			outDependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			outDependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		}
 		else if (dstAttachmentsUsage[i] == EResourceUsage::Present)
 		{
-			dependencies[inDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			dependencies[inDependencyIndex].dstAccessMask = VK_ACCESS_NONE;
+			inDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			inDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+			bUseOutDependency = False;
 		}
 
-		dependencies[outDependencyIndex].srcSubpass = 0;
-		dependencies[outDependencyIndex].dstSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies.push_back(inDependency);
+		if (bUseOutDependency == True)
+			dependencies.push_back(outDependency);
+	}
 
-		dependencies[outDependencyIndex].srcStageMask =
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-		dependencies[outDependencyIndex].srcAccessMask =
-			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-		if (dstAttachmentsUsage[i] == EResourceUsage::PixelShaderRead)
-			dependencies[outDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		else if (dstAttachmentsUsage[i] == EResourceUsage::Present)
-			dependencies[outDependencyIndex].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		dependencies[outDependencyIndex].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-	}*/
-
-	if (dstAttachmentsUsage[0] == EResourceUsage::PixelShaderRead)
+	/*if (dstAttachmentsUsage[0] == EResourceUsage::PixelShaderRead)
 	{
 		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependencies[0].dstSubpass = 0;
@@ -1073,16 +933,7 @@ triton::CGPURenderPassResource triton::BGraphicsBackend2Vulkan::CreateRenderPass
 		dependencies[0].srcAccessMask = VK_ACCESS_NONE;
 		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		dependencies.pop_back();
-
-		/*dependencies[1].srcSubpass = 0;
-		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;*/
-	}
+	}*/
 
 	VkRenderPassCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -1290,15 +1141,8 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		renderPassBeginInfo.renderArea.extent.height = (uint32_t)renderTarget.GetSize().GetY();
 		
 		VkClearValue clearValues[2] = {};
-		/*clearValues[0].color = {
-			renderPass.GetColorClearValue().GetX(),
-			renderPass.GetColorClearValue().GetY(),
-			renderPass.GetColorClearValue().GetZ(),
-			renderPass.GetColorClearValue().GetW()
-		};*/
-
 		clearValues[0].color = {
-			glm::max(0.0f, renderPass.GetColorClearValue().GetX() + glm::sin(_time * 0.001f)),
+			renderPass.GetColorClearValue().GetX(),
 			renderPass.GetColorClearValue().GetY(),
 			renderPass.GetColorClearValue().GetZ(),
 			renderPass.GetColorClearValue().GetW()
@@ -1433,30 +1277,6 @@ void triton::BGraphicsBackend2Vulkan::BeginFrame()
 
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to begin command buffer");
-
-	VkImageMemoryBarrier barrier = {};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	barrier.srcAccessMask = 0;
-	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = (VkImage)_debugTexture.GetInstance();
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
-	vkCmdPipelineBarrier(
-		_commandBuffers[_currentFrame],
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier
-	);
 }
 
 void triton::BGraphicsBackend2Vulkan::EndFrame()
@@ -1483,83 +1303,13 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		&_swapchainFences[_currentFrame].fence
 	);
 
-	VkClearValue clearValue;
+	VkClearValue clearValue = {};
 	clearValue.color = {
-		glm::max(0.0f, _swapchainRenderPasses[imageIndex].GetColorClearValue().GetX() + glm::sin(_time * 0.001f)),
+		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetX(),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetY(),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetZ(),
 		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetW()
 	};
-
-	VkClearValue clearValue2;
-	clearValue2.color = {
-		1.0f - glm::max(0.0f, _swapchainRenderPasses[imageIndex].GetColorClearValue().GetX() + glm::sin(_time * 0.001f)),
-		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetY(),
-		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetZ(),
-		_swapchainRenderPasses[imageIndex].GetColorClearValue().GetW()
-	};
-
-	VkImageMemoryBarrier barrier = {};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = (VkImage)_debugTexture.GetInstance();
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
-	vkCmdPipelineBarrier(
-		_commandBuffers[_currentFrame],
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier
-	);
-
-	VkImageSubresourceRange range{};
-	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	range.baseMipLevel = 0;
-	range.levelCount = 1;
-	range.baseArrayLayer = 0;
-	range.layerCount = 1;
-	vkCmdClearColorImage(
-		_commandBuffers[_currentFrame],
-		(VkImage)_debugTexture.GetInstance(),
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		&clearValue2.color,
-		1,
-		&range
-	);
-
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = (VkImage)_debugTexture.GetInstance();
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
-	vkCmdPipelineBarrier(
-		_commandBuffers[_currentFrame],
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier
-	);
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1652,8 +1402,6 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		Print("[Vulkan]: Error: failed to present frame");
 
 	_currentFrame = (_currentFrame + 1) % _framesInFlight;
-
-	_time += 1.0f;
 }
 
 void triton::BGraphicsBackend2Vulkan::CreateInstance(
