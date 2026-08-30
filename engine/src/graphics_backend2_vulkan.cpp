@@ -1514,16 +1514,17 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		for (usize i = 0; i < bindingGroups.size(); ++i)
 			nativeDescriptorSets.push_back((VkDescriptorSet)bindingGroups[i].GetInstance());
 
-		vkCmdBindDescriptorSets(
-			_commandBuffers[_currentFrame],
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			(VkPipelineLayout)pipeline.GetLayout(),
-			0,
-			nativeDescriptorSets.size(),
-			nativeDescriptorSets.data(),
-			0,
-			nullptr
-		);
+		if (nativeDescriptorSets.size())
+			vkCmdBindDescriptorSets(
+				_commandBuffers[_currentFrame],
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				(VkPipelineLayout)pipeline.GetLayout(),
+				0,
+				nativeDescriptorSets.size(),
+				nativeDescriptorSets.data(),
+				0,
+				nullptr
+			);
 	}
 }
 

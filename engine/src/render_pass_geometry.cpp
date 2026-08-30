@@ -347,6 +347,7 @@ void triton::XRenderPassGeometry::Draw()
 
         const XMaterial& sharedMaterial = *_context->GetPool<CMaterialPool>()->Get(instancePack.GetSharedMaterial());
 
+        _gpuBindingGroupsPerDrawcall.clear();
         _gpuBindingGroupsPerDrawcall.push_back(sharedMaterial.GetBindingGroup());
 
         const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
