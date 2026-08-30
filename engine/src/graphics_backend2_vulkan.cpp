@@ -611,13 +611,14 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 
-		VkDescriptorSetLayout nativeDescriptorSetLayout = VK_NULL_HANDLE;
+		std::vector<VkDescriptorSetLayout> nativeDescriptorSetLayouts;
 		if (bindingGroupLayouts.size())
 		{
-			nativeDescriptorSetLayout = (VkDescriptorSetLayout)bindingGroupLayouts.at(0).GetInstance();
+			for (usize i = 0; i < bindingGroupLayouts.size(); ++i)
+				nativeDescriptorSetLayouts.push_back((VkDescriptorSetLayout)bindingGroupLayouts.at(i).GetInstance());
 			
-			pipelineLayoutCreateInfo.setLayoutCount = 1;
-			pipelineLayoutCreateInfo.pSetLayouts = &nativeDescriptorSetLayout;
+			pipelineLayoutCreateInfo.setLayoutCount = nativeDescriptorSetLayouts.size();
+			pipelineLayoutCreateInfo.pSetLayouts = nativeDescriptorSetLayouts.data();
 		}
 
 		VkPushConstantRange pushConstantRange = {};

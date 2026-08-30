@@ -314,6 +314,11 @@ void triton::cRenderThread::ExecuteCommands(
 					(const void*)cmd._args._argF,
 					(const void*)cmd._args._argC
 				);
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::BindDescriptorSets,
+					(const void*)cmd._args._argG,
+					(const void*)cmd._args._argC
+				);
 				break;
 			}
 			case ERenderCommand::ExecuteRenderPass:

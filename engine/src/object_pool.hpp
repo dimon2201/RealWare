@@ -94,7 +94,7 @@ namespace triton
             return SBufferView<TObject>(&_objects[0], sizeof(TObject) * _lastObjectCursor);
         }
 
-        inline CGPUBufferResource GetGPUBuffer() const
+        inline const CGPUBufferResource& GetGPUBuffer() const
         {
             return _gpuBuffer;
         }

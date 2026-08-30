@@ -44,6 +44,7 @@ namespace triton
         SNativeCommandDrawInfo                          _nativeCommandDrawInfoArrays[2];
         SRenderPassGPUPushConstantsLayout               _pushConstantArrays[2];
         std::vector<CGPUBindingGroupLayoutResource>     _gpuBindingGroupLayouts;
+        std::vector<CGPUBindingGroupResource>           _gpuBindingGroupBuffersArrays[2];
         std::vector<CGPUBindingGroupResource>           _gpuBindingGroupPerDrawcallArrays[2];
 
     public:
