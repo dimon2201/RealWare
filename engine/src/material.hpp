@@ -2,9 +2,12 @@
 
 #pragma once
 
+#include <optional>
 #include "object.hpp"
 #include "math.hpp"
 #include "texture.hpp"
+#include "gpu_binding_group_resource.hpp"
+#include "gpu_binding_group_layout_resource.hpp"
 
 namespace triton
 {
@@ -12,13 +15,15 @@ namespace triton
     {
         TRITON_OBJECT(XMaterial)
 
-        XTexture::THandle   _diffuseTexture;
-        XTexture::THandle   _normalTexture;
-        XTexture::THandle   _roughnessTexture;
-        XTexture::THandle   _metallicTexture;
-        cVector4            _diffuseColor = cVector4(1.0f);
-        cVector4            _specularColor = cVector4(1.0f);
-        types::f32          _shininess = 0.0f;
+        CGPUBindingGroupLayoutResource  _gpuBindingGroupLayout = CGPUBindingGroupLayoutResource::Invalid();
+        CGPUBindingGroupResource        _gpuBindingGroup = CGPUBindingGroupResource::Invalid();
+        XTexture::THandle               _diffuseTexture;
+        XTexture::THandle               _normalTexture;
+        XTexture::THandle               _roughnessTexture;
+        XTexture::THandle               _metallicTexture;
+        cVector4                        _diffuseColor = cVector4(1.0f);
+        cVector4                        _specularColor = cVector4(1.0f);
+        types::f32                      _shininess = 0.0f;
 
     public:
         explicit XMaterial(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
@@ -26,16 +31,20 @@ namespace triton
         explicit XMaterial(
             cContext* context,
             types::s32 poolIndex,
-            const XTexture::THandle& diffuseTexture,
-            const XTexture::THandle& normalTexture,
-            const XTexture::THandle& roughnessTexture,
-            const XTexture::THandle& metallicTexture,
+            const std::optional<XTexture::THandle>& diffuseTexture,
+            const std::optional<XTexture::THandle>& normalTexture,
+            const std::optional<XTexture::THandle>& roughnessTexture,
+            const std::optional<XTexture::THandle>& metallicTexture,
             const cVector4& diffuseColor,
             const cVector4& specularColor,
             types::f32 shininess
         );
 
         ~XMaterial() override = default;
+
+        inline const CGPUBindingGroupLayoutResource& GetBindingGroupLayout() const { return _gpuBindingGroupLayout; }
+
+        inline const CGPUBindingGroupResource& GetBindingGroup() const { return _gpuBindingGroup; }
 
         inline const XTexture::THandle& GetDiffuseTexture() const { return _diffuseTexture; }
 
