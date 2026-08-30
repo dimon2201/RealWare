@@ -296,6 +296,15 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 	);
 }
 
+void triton::BGraphicsBackend2Vulkan::WriteTexture(
+	const CGPUTextureResource& texture,
+	const cVector3& offset,
+	const u8* data,
+	usize byteSize
+)
+{
+}
+
 void triton::BGraphicsBackend2Vulkan::DestroyTexture(CGPUTextureResource& texture)
 {
 	if (texture.IsValid())
