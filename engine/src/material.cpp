@@ -37,10 +37,10 @@ triton::XMaterial::XMaterial(
     std::vector<SBindingGroupBinding>* bindings =
         CObjectAllocator::Create<std::vector<SBindingGroupBinding>>(64);
 
-    bindings->push_back({ 0, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel });
-    bindings->push_back({ 1, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel });
-    bindings->push_back({ 2, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel });
-    bindings->push_back({ 3, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel });
+    bindings->push_back({ 0, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr });
+    bindings->push_back({ 1, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr });
+    bindings->push_back({ 2, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr });
+    bindings->push_back({ 3, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr });
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CreateBindingGroupLayout,
@@ -54,26 +54,46 @@ triton::XMaterial::XMaterial(
 
     CObjectAllocator::Destroy<std::vector<SBindingGroupBinding>>(bindings);
 
-    std::vector<CGPUBufferResource>* buffersToBind =
-        CObjectAllocator::Create<std::vector<CGPUBufferResource>>(64);
-    std::vector<CGPUTextureResource>* texturesToBind =
-        CObjectAllocator::Create<std::vector<CGPUTextureResource>>(64);
+    std::vector<SBindingGroupBinding>* buffersToBind =
+        CObjectAllocator::Create<std::vector<SBindingGroupBinding>>(64);
+    std::vector<SBindingGroupBinding>* texturesToBind =
+        CObjectAllocator::Create<std::vector<SBindingGroupBinding>>(64);
 
     if (diffuseTexture.has_value())
         texturesToBind->push_back(
-            (*_context->GetPool<PTexturePool>()->Get(diffuseTexture.value())).get().GetGPUResource()
+            {
+                0,
+                EBindingGroupBindingType::TextureSampler,
+                0,
+                (CGPUResource*)&(*_context->GetPool<PTexturePool>()->Get(diffuseTexture.value())).get().GetGPUResource()
+            }
         );
     if (normalTexture.has_value())
         texturesToBind->push_back(
-            (*_context->GetPool<PTexturePool>()->Get(normalTexture.value())).get().GetGPUResource()
+            {
+                1,
+                EBindingGroupBindingType::TextureSampler,
+                0,
+                (CGPUResource*)&(*_context->GetPool<PTexturePool>()->Get(normalTexture.value())).get().GetGPUResource()
+            }
         );
     if (roughnessTexture.has_value())
         texturesToBind->push_back(
-            (*_context->GetPool<PTexturePool>()->Get(roughnessTexture.value())).get().GetGPUResource()
+            {
+                 2,
+                 EBindingGroupBindingType::TextureSampler,
+                 0,
+                 (CGPUResource*)&(*_context->GetPool<PTexturePool>()->Get(roughnessTexture.value())).get().GetGPUResource()
+            }
         );
     if (metallicTexture.has_value())
         texturesToBind->push_back(
-            (*_context->GetPool<PTexturePool>()->Get(metallicTexture.value())).get().GetGPUResource()
+            {
+                3,
+                EBindingGroupBindingType::TextureSampler,
+                0,
+                (CGPUResource*)&(*_context->GetPool<PTexturePool>()->Get(metallicTexture.value())).get().GetGPUResource()
+            }
         );
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
@@ -88,8 +108,8 @@ triton::XMaterial::XMaterial(
         GetSynchronization()->
         WaitForRenderCommandResult<CGPUBindingGroupResource>();
 
-    CObjectAllocator::Destroy<std::vector<CGPUTextureResource>>(texturesToBind);
-    CObjectAllocator::Destroy<std::vector<CGPUBufferResource>>(buffersToBind);
+    CObjectAllocator::Destroy<std::vector<SBindingGroupBinding>>(texturesToBind);
+    CObjectAllocator::Destroy<std::vector<SBindingGroupBinding>>(buffersToBind);
 }
 
 void triton::XMaterial::SetShininess(types::f32 shininess)

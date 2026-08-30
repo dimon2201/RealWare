@@ -62,14 +62,21 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     std::vector<SBindingGroupBinding>* bindingGroupBindings =
         CObjectAllocator::Create<std::vector<SBindingGroupBinding>>(64);
 
+    bindingGroupBindings->push_back({ 0, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr });
+    bindingGroupBindings->push_back({ 1, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr });
+    bindingGroupBindings->push_back({ 2, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr });
+    bindingGroupBindings->push_back({ 3, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr });
+
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CreateBindingGroupLayout,
         (cpuword)bindingGroupBindings
     ));
 
-    _context->GetSubsystem<CEngine>()->
+    _gpuBindingGroupLayouts.push_back(
+        _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
-        WaitForRenderCommandResult<CGPUBindingGroupLayoutResource>();
+        WaitForRenderCommandResult<CGPUBindingGroupLayoutResource>()
+    );
 
     CObjectAllocator::Destroy<std::vector<SBindingGroupBinding>>(bindingGroupBindings);
 
@@ -315,6 +322,22 @@ void triton::XRenderPassGeometry::Draw()
     const CGPUBufferResource& gpuIndexBuffer = indexBuffer.GetGPUResource();
     XRenderTarget& renderTarget = *_context->GetPool<CRenderTargetPool>()->Get(_renderTarget);
 
+    const usize mainThreadWriteIndex = _context->GetSubsystem<CEngine>()->GetSynchronization()->GetWriteIndex();
+
+    _pushConstantArrays[mainThreadWriteIndex].cameraViewProjectionMatrix = camera.GetViewProjectionMatrix();
+    _pushConstantArrays[mainThreadWriteIndex].cameraWorldPosition = camera.GetWorldPosition();
+    _pushConstantArrays[mainThreadWriteIndex].instanceMotionType = 0;
+
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::BeginRenderPass,
+        (cpuword)&_gpuRenderPass,
+        (cpuword)&renderTarget.GetGPUResource(),
+        (cpuword)&_gpuPipeline,
+        (cpuword)&gpuVertexBuffer,
+        (cpuword)&gpuIndexBuffer,
+        (cpuword)&_pushConstantArrays[mainThreadWriteIndex]
+    ));
+
     for (usize i = 0; i < _renderInstancePacks.size(); i++)
     {
         XRenderInstancePack& instancePack =
@@ -322,32 +345,30 @@ void triton::XRenderPassGeometry::Draw()
             GetPool<CRenderInstancePackPool>()->
             Get(_renderInstancePacks.at(i));
 
+        const XMaterial& sharedMaterial = *_context->GetPool<CMaterialPool>()->Get(instancePack.GetSharedMaterial());
+
+        _gpuBindingGroupsPerDrawcall.push_back(sharedMaterial.GetBindingGroup());
+
         const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
-
-        const usize mainThreadWriteIndex = _context->GetSubsystem<CEngine>()->GetSynchronization()->GetWriteIndex();
-
-        _pushConstantArrays[mainThreadWriteIndex].cameraViewProjectionMatrix = camera.GetViewProjectionMatrix();
-        _pushConstantArrays[mainThreadWriteIndex].cameraWorldPosition = camera.GetWorldPosition();
-        _pushConstantArrays[mainThreadWriteIndex].instanceMotionType = 0;
 
         _nativeCommandDrawInfo.vertexCount = sharedGeometry._vertexCount;
         _nativeCommandDrawInfo.indexCount = sharedGeometry._indexCount;
-        _nativeCommandDrawInfo.instanceCount = 1;
+        _nativeCommandDrawInfo.instanceCount = instancePack.GetInstanceCount();
         _nativeCommandDrawInfo.firstIndex = sharedGeometry._indexElementOffset;
         _nativeCommandDrawInfo.baseVertex = sharedGeometry._vertexElementOffset;
         _nativeCommandDrawInfo.firstInstance = instancePack.GetBufferOffset();
 
         _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
-            ERenderCommand::EXECUTE_RENDER_PASS,
-            (cpuword)&renderTarget.GetGPUResource(),
-            (cpuword)&_gpuRenderPass,
+            ERenderCommand::ExecuteRenderPass,
+            (cpuword)&_gpuBindingGroupsPerDrawcall,
             (cpuword)&_gpuPipeline,
-            (cpuword)&gpuVertexBuffer,
-            (cpuword)&gpuIndexBuffer,
-            (cpuword)&_pushConstantArrays[mainThreadWriteIndex],
             (cpuword)&_nativeCommandDrawInfo
         ));
     }
+
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::EndRenderPass
+    ));
 }
 
 void triton::XRenderPassGeometry::Unbind()

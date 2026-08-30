@@ -287,7 +287,7 @@ void triton::cRenderThread::ExecuteCommands(
 				memcpy(&_sync->GetResultBuffer().data[0], &resultRenderPass, sizeof(CGPURenderPassResource));
 				break;
 			}
-			case ERenderCommand::EXECUTE_RENDER_PASS:
+			case ERenderCommand::BeginRenderPass:
 			{
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::BeginRenderPass,
@@ -314,11 +314,24 @@ void triton::cRenderThread::ExecuteCommands(
 					(const void*)cmd._args._argF,
 					(const void*)cmd._args._argC
 				);
+				break;
+			}
+			case ERenderCommand::ExecuteRenderPass:
+			{
+				gfxBackend->AddCommandToBuffer(
+					ENativeRenderCommand::BindDescriptorSets,
+					(const void*)cmd._args._argA,
+					(const void*)cmd._args._argB
+				);
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::Draw,
-					(const void*)cmd._args._argG,
+					(const void*)cmd._args._argC,
 					nullptr
 				);
+				break;
+			}
+			case ERenderCommand::EndRenderPass:
+			{
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::EndRenderPass,
 					nullptr,
@@ -378,8 +391,8 @@ void triton::cRenderThread::ExecuteCommands(
 			{
 				CGPUBindingGroupResource resultBindingGroup = gfxBackend->CreateBindingGroup(
 					*(const CGPUBindingGroupLayoutResource*)cmd._args._argA,
-					*(const std::vector<CGPUBufferResource>*)cmd._args._argB,
-					*(const std::vector<CGPUTextureResource>*)cmd._args._argC
+					*(const std::vector<SBindingGroupBinding>*)cmd._args._argB,
+					*(const std::vector<SBindingGroupBinding>*)cmd._args._argC
 				);
 
 				new (_sync->GetResultBuffer().data) CGPUBindingGroupResource(resultBindingGroup);

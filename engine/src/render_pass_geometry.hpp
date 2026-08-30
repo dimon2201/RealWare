@@ -44,6 +44,7 @@ namespace triton
         SNativeCommandDrawInfo                          _nativeCommandDrawInfo;
         SRenderPassGPUPushConstantsLayout               _pushConstantArrays[2];
         std::vector<CGPUBindingGroupLayoutResource>     _gpuBindingGroupLayouts;
+        std::vector<CGPUBindingGroupResource>           _gpuBindingGroupsPerDrawcall;
 
     public:
         explicit XRenderPassGeometry(

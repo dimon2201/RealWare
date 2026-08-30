@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "gpu_resource.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -18,5 +19,6 @@ namespace triton
 		types::usize index = 0;
 		EBindingGroupBindingType type = EBindingGroupBindingType::Unknown;
 		types::dword shaderStageMask = 0;
+		CGPUResource* resource = nullptr;
 	};
 }

@@ -115,8 +115,8 @@ namespace triton
 
 		CGPUBindingGroupResource CreateBindingGroup(
 			const CGPUBindingGroupLayoutResource& bindingGroupLayout,
-			const std::vector<CGPUBufferResource>& buffersToBind,
-			const std::vector<CGPUTextureResource>& texturesToBind
+			const std::vector<SBindingGroupBinding>& buffersToBind,
+			const std::vector<SBindingGroupBinding>& texturesToBind
 		) override final;
 
 		void DestroyBindingGroup(CGPUBindingGroupResource& bindingGroup) override final;

@@ -45,7 +45,6 @@ namespace triton
 		UNBIND_INPUT_LAYOUT,
 		DESTROY_INPUT_LAYOUT,
 		CREATE_RENDER_PASS,
-		EXECUTE_RENDER_PASS,
 		DESTROY_RENDER_PASS,
 		CREATE_PIPELINE,
 		DESTROY_PIPELINE,
@@ -56,7 +55,10 @@ namespace triton
 		CreateBindingGroupLayout,
 		DestroyBindingGroupLayout,
 		CreateBindingGroup,
-		DestroyBindingGroup
+		DestroyBindingGroup,
+		BeginRenderPass,
+		ExecuteRenderPass,
+		EndRenderPass
 	};
 
 	struct SRenderCommandArgs

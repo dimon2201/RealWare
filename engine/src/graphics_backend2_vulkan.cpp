@@ -121,7 +121,9 @@ void triton::BGraphicsBackend2Vulkan::FinalizeSwapchain(const CGPUTextureResourc
 		_swapchainRenderTargets[0].GetSize().GetY()
 	);
 
-	const std::vector<CGPUTextureResource> texturesToBind = { presentTexture };
+	const std::vector<SBindingGroupBinding> texturesToBind = {
+		{ 0, EBindingGroupBindingType::TextureSampler, 0, (CGPUResource*)&presentTexture }
+	};
 
 	for (usize i = 0; i < _swapchainRenderPasses.size(); i++)
 	{
@@ -725,7 +727,7 @@ triton::CGPUBindingGroupLayoutResource triton::BGraphicsBackend2Vulkan::CreateBi
 
 	for (usize i = 0; i < bindingCount; ++i)
 	{
-		nativeBindings[i].binding = i;
+		nativeBindings[i].binding = bindings[i].index;
 
 		if (bindings[i].type == EBindingGroupBindingType::StorageBuffer)
 			nativeBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -759,7 +761,8 @@ triton::CGPUBindingGroupLayoutResource triton::BGraphicsBackend2Vulkan::CreateBi
 
 	return CGPUBindingGroupLayoutResource(
 		(qword)descriptorSetLayout,
-		0
+		0,
+		bindings
 	);
 }
 
@@ -779,68 +782,84 @@ void triton::BGraphicsBackend2Vulkan::DestroyBindingGroupLayout(CGPUBindingGroup
 
 triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingGroup(
 	const CGPUBindingGroupLayoutResource& bindingGroupLayout,
-	const std::vector<CGPUBufferResource>& buffersToBind,
-	const std::vector<CGPUTextureResource>& texturesToBind
+	const std::vector<SBindingGroupBinding>& buffersToBind,
+	const std::vector<SBindingGroupBinding>& texturesToBind
 )
 {
-	const usize bufferToBindCount = buffersToBind.size();
-	const usize textureToBindCount = texturesToBind.size();
-
-	const usize bindingCount = bufferToBindCount + textureToBindCount;
+	const auto& bindingGroupBindings = bindingGroupLayout.GetBindings();
+	const usize bindingCount = bindingGroupBindings.size();
 
 	if (!bindingCount)
 		return CGPUBindingGroupResource::Invalid();
 
-	std::vector<VkDescriptorSetLayoutBinding> bindings(bindingCount);
+	std::vector<VkDescriptorSetLayoutBinding> nativeBindings(bindingCount);
+	std::vector<VkDescriptorBufferInfo> nativeBindingBufferInfos(bindingCount);
+	std::vector<VkDescriptorImageInfo> nativeBindingImageInfos(bindingCount);
 
-	std::vector<VkDescriptorBufferInfo> bindingBufferInfos(bufferToBindCount);
-	std::vector<VkDescriptorImageInfo> bindingImageInfos(textureToBindCount);
-
-	usize bindingCounter = 0;
-
-	for (usize i = 0; i < bufferToBindCount; ++i, ++bindingCounter)
+	for (usize i = 0; i < bindingCount; i++)
 	{
-		const CGPUBufferResource& bufferToBind = buffersToBind[i];
+		const SBindingGroupBinding& bindingGroupBinding = bindingGroupBindings[i];
 
-		bindings[bindingCounter].binding = bindingCounter;
+		if (bindingGroupBinding.type == EBindingGroupBindingType::StorageBuffer)
+		{
+			const CGPUBufferResource* bufferToBind = nullptr;
+			for (usize j = 0; j < buffersToBind.size(); ++j)
+				if (buffersToBind[j].index == bindingGroupBinding.index)
+					bufferToBind = (const CGPUBufferResource*)buffersToBind[j].resource;
 
-		if (bufferToBind.GetBufferType() == EGPUBufferType::Storage)
-			bindings[bindingCounter].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			if (!bufferToBind)
+			{
+				Print("Error: buffer layout binding " +
+					std::to_string(bindingGroupBinding.index) +
+					" expects resource, but there was no resource bound");
+				continue;
+			}
 
-		bindings[bindingCounter].descriptorCount = 1;
-		bindings[bindingCounter].stageFlags =
-			VK_SHADER_STAGE_VERTEX_BIT |
-			VK_SHADER_STAGE_FRAGMENT_BIT;
+			nativeBindings[bindingGroupBinding.index].binding = bindingGroupBinding.index;
+			nativeBindings[bindingGroupBinding.index].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			nativeBindings[bindingGroupBinding.index].descriptorCount = 1;
+			nativeBindings[bindingGroupBinding.index].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-		VkDescriptorBufferInfo descriptorBufferInfo = {};
-		descriptorBufferInfo.buffer = (VkBuffer)bufferToBind.GetInstance();
-		descriptorBufferInfo.offset = 0;
-		descriptorBufferInfo.range = bufferToBind.GetByteSize();
+			VkDescriptorBufferInfo descriptorBufferInfo = {};
+			descriptorBufferInfo.buffer = (VkBuffer)bufferToBind->GetInstance();
+			descriptorBufferInfo.offset = 0;
+			descriptorBufferInfo.range = bufferToBind->GetByteSize();
 
-		bindingBufferInfos[i] = descriptorBufferInfo;
-	}
+			nativeBindingBufferInfos[bindingGroupBinding.index] = descriptorBufferInfo;
+		}
+		else if (bindingGroupBinding.type == EBindingGroupBindingType::TextureSampler)
+		{
+			const CGPUTextureResource* textureToBind = nullptr;
+			for (usize j = 0; j < texturesToBind.size(); ++j)
+				if (texturesToBind[j].index == bindingGroupBinding.index)
+					textureToBind = (const CGPUTextureResource*)texturesToBind[j].resource;
 
-	for (usize i = 0; i < textureToBindCount; ++i, ++bindingCounter)
-	{
-		const CGPUTextureResource& textureToBind = texturesToBind[i];
+			if (!textureToBind)
+			{
+				Print("Error: texture layout binding " +
+					std::to_string(bindingGroupBinding.index) +
+					" expects resource, but there was no resource bound");
+				continue;
+			}
 
-		bindings[bindingCounter].binding = bindingCounter;
-		bindings[bindingCounter].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		bindings[bindingCounter].descriptorCount = 1;
-		bindings[bindingCounter].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			nativeBindings[bindingGroupBinding.index].binding = bindingGroupBinding.index;
+			nativeBindings[bindingGroupBinding.index].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			nativeBindings[bindingGroupBinding.index].descriptorCount = 1;
+			nativeBindings[bindingGroupBinding.index].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		VkDescriptorImageInfo descriptorImageInfo = {};
-		descriptorImageInfo.sampler = (VkSampler)textureToBind.GetSampler();
-		descriptorImageInfo.imageView = (VkImageView)textureToBind.GetView();
-		descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			VkDescriptorImageInfo descriptorImageInfo = {};
+			descriptorImageInfo.sampler = (VkSampler)textureToBind->GetSampler();
+			descriptorImageInfo.imageView = (VkImageView)textureToBind->GetView();
+			descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		bindingImageInfos[i] = descriptorImageInfo;
+			nativeBindingImageInfos[bindingGroupBinding.index] = descriptorImageInfo;
+		}
 	}
 
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {};
 	descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorSetLayoutInfo.bindingCount = bindingCount;
-	descriptorSetLayoutInfo.pBindings = bindings.data();
+	descriptorSetLayoutInfo.bindingCount = nativeBindings.size();
+	descriptorSetLayoutInfo.pBindings = nativeBindings.data();
 
 	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 
@@ -873,42 +892,44 @@ triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingG
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to allocate descriptor set");
 
-	std::vector<VkWriteDescriptorSet> writeDescriptorSetElements(bindingCount);
+	std::vector<VkWriteDescriptorSet> nativeWriteDescriptorSetElements(bindingCount);
 
-	bindingCounter = 0;
-
-	for (usize i = 0; i < bufferToBindCount; ++i, ++bindingCounter)
+	for (usize i = 0; i < bindingCount; ++i)
 	{
-		VkWriteDescriptorSet writeDescriptorSet = {};
-		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSet.dstSet = descriptorSet;
-		writeDescriptorSet.dstBinding = bindings[bindingCounter].binding;
-		writeDescriptorSet.dstArrayElement = 0;
-		writeDescriptorSet.descriptorType = bindings[bindingCounter].descriptorType;
-		writeDescriptorSet.descriptorCount = 1;
-		writeDescriptorSet.pBufferInfo = &bindingBufferInfos[i];
+		const SBindingGroupBinding& bindingGroupBinding = bindingGroupBindings[i];
 
-		writeDescriptorSetElements[bindingCounter] = writeDescriptorSet;
-	}
+		if (bindingGroupBinding.type == EBindingGroupBindingType::StorageBuffer)
+		{
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = descriptorSet;
+			writeDescriptorSet.dstBinding = bindingGroupBinding.index;
+			writeDescriptorSet.dstArrayElement = 0;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.pBufferInfo = &nativeBindingBufferInfos[bindingGroupBinding.index];
 
-	for (usize i = 0; i < textureToBindCount; ++i, ++bindingCounter)
-	{
-		VkWriteDescriptorSet writeDescriptorSet = {};
-		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSet.dstSet = descriptorSet;
-		writeDescriptorSet.dstBinding = bindings[bindingCounter].binding;
-		writeDescriptorSet.dstArrayElement = 0;
-		writeDescriptorSet.descriptorType = bindings[bindingCounter].descriptorType;
-		writeDescriptorSet.descriptorCount = 1;
-		writeDescriptorSet.pImageInfo = &bindingImageInfos[i];
+			nativeWriteDescriptorSetElements[i] = writeDescriptorSet;
+		}
+		else if (bindingGroupBinding.type == EBindingGroupBindingType::TextureSampler)
+		{
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = descriptorSet;
+			writeDescriptorSet.dstBinding = bindingGroupBinding.index;
+			writeDescriptorSet.dstArrayElement = 0;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.pImageInfo = &nativeBindingImageInfos[bindingGroupBinding.index];
 
-		writeDescriptorSetElements[bindingCounter] = writeDescriptorSet;
+			nativeWriteDescriptorSetElements[i] = writeDescriptorSet;
+		}
 	}
 
 	vkUpdateDescriptorSets(
 		_logicalDevice.device,
-		bindingCount,
-		writeDescriptorSetElements.data(),
+		nativeWriteDescriptorSetElements.size(),
+		nativeWriteDescriptorSetElements.data(),
 		0,
 		nullptr
 	);
@@ -1358,8 +1379,8 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 
 	if (command == ENativeRenderCommand::BeginRenderPass)
 	{
-		CGPURenderTargetResource& renderTarget = *(CGPURenderTargetResource*)commandArgA;
-		CGPURenderPassResource& renderPass = *(CGPURenderPassResource*)commandArgB;
+		CGPURenderPassResource& renderPass = *(CGPURenderPassResource*)commandArgA;
+		CGPURenderTargetResource& renderTarget = *(CGPURenderTargetResource*)commandArgB;
 
 		VkRenderPassBeginInfo renderPassBeginInfo = {};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1481,6 +1502,27 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 			0,
 			sizeof(SRenderPassGPUPushConstantsLayout),
 			&pushConstants
+		);
+	}
+	else if (command == ENativeRenderCommand::BindDescriptorSets)
+	{
+		std::vector<CGPUBindingGroupResource>& bindingGroups = *(std::vector<CGPUBindingGroupResource>*)commandArgA;
+		CGPUPipelineResource& pipeline = *(CGPUPipelineResource*)commandArgB;
+
+		std::vector<VkDescriptorSet> nativeDescriptorSets;
+		
+		for (usize i = 0; i < bindingGroups.size(); ++i)
+			nativeDescriptorSets.push_back((VkDescriptorSet)bindingGroups[i].GetInstance());
+
+		vkCmdBindDescriptorSets(
+			_commandBuffers[_currentFrame],
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			(VkPipelineLayout)pipeline.GetLayout(),
+			0,
+			nativeDescriptorSets.size(),
+			nativeDescriptorSets.data(),
+			0,
+			nullptr
 		);
 	}
 }
@@ -2444,7 +2486,7 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchain(const cVector2& size, usiz
 
 	_swapchainBindingGroupLayout = CreateBindingGroupLayout(
 		{
-			{ 0, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel }
+			{ 0, EBindingGroupBindingType::TextureSampler, (dword)EShaderStageBit::Pixel, nullptr }
 		}
 	);
 
