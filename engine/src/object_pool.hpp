@@ -414,8 +414,8 @@ namespace triton
                 ERenderCommand::WRITE_BUFFER,
                 (types::cpuword)&_gpuBuffer,
                 0,
-                _lastObjectCursor * sizeof(typename TObject::TGPULayout),
-                (types::cpuword)&_staging[0]
+                (types::cpuword)&_staging[0],
+                _lastObjectCursor * sizeof(typename TObject::TGPULayout)
             ));
             _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<void*>();
 

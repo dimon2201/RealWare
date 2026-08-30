@@ -214,7 +214,15 @@ void triton::cTransform::Transform()
 	const glm::quat quatX = glm::angleAxis(cMath::DegreesToRadians(_rotation.GetX()), glm::vec3(1.0f, 0.0f, 0.0f));
 	const glm::quat quatY = glm::angleAxis(cMath::DegreesToRadians(_rotation.GetY()), glm::vec3(0.0f, 1.0f, 0.0f));
 	const glm::quat quatZ = glm::angleAxis(cMath::DegreesToRadians(_rotation.GetZ()), glm::vec3(0.0f, 0.0f, 1.0f));
-	_world._mat = glm::translate(glm::mat4(1.0f), _position._vec) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), _scale._vec);
+	_world._mat =
+		glm::translate(glm::mat4(1.0f), _position._vec) *
+		glm::toMat4(quatZ * quatY * quatX) *
+		glm::scale(glm::mat4(1.0f), _scale._vec);
+
+	// TODO: do transpose() for Vulkan only
+	// ||||||||||||||||||||||||||||||||||||
+	// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+	_world._mat = glm::transpose(_world._mat);
 }
 
 triton::cMath::cMath(cContext* context) : CSubsystem(context) {}

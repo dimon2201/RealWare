@@ -388,7 +388,8 @@ void triton::BGraphicsBackend2Vulkan::WriteBuffer(
 	usize byteSize
 )
 {
-	if (buffer.IsValid() == False)
+	if (buffer.IsValid() == False ||
+		byteSize == 0)
 		return;
 
 	if (offset + byteSize > buffer.GetByteSize())
@@ -745,7 +746,7 @@ triton::CGPUBindingGroupLayoutResource triton::BGraphicsBackend2Vulkan::CreateBi
 
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {};
 	descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorSetLayoutInfo.bindingCount = bindingCount;
+	descriptorSetLayoutInfo.bindingCount = nativeBindings.size();
 	descriptorSetLayoutInfo.pBindings = nativeBindings.data();
 
 	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
@@ -793,88 +794,7 @@ triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingG
 	if (!bindingCount)
 		return CGPUBindingGroupResource::Invalid();
 
-	std::vector<VkDescriptorSetLayoutBinding> nativeBindings(bindingCount);
-	std::vector<VkDescriptorBufferInfo> nativeBindingBufferInfos(bindingCount);
-	std::vector<VkDescriptorImageInfo> nativeBindingImageInfos(bindingCount);
-
-	for (usize i = 0; i < bindingCount; i++)
-	{
-		const SBindingGroupBinding& bindingGroupBinding = bindingGroupBindings[i];
-
-		if (bindingGroupBinding.type == EBindingGroupBindingType::StorageBuffer)
-		{
-			const CGPUBufferResource* bufferToBind = nullptr;
-			for (usize j = 0; j < buffersToBind.size(); ++j)
-				if (buffersToBind[j].index == bindingGroupBinding.index)
-					bufferToBind = (const CGPUBufferResource*)buffersToBind[j].resource;
-
-			if (!bufferToBind)
-			{
-				Print("Error: buffer layout binding " +
-					std::to_string(bindingGroupBinding.index) +
-					" expects resource, but there was no resource bound");
-				continue;
-			}
-
-			nativeBindings[bindingGroupBinding.index].binding = bindingGroupBinding.index;
-			nativeBindings[bindingGroupBinding.index].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			nativeBindings[bindingGroupBinding.index].descriptorCount = 1;
-			nativeBindings[bindingGroupBinding.index].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-			VkDescriptorBufferInfo descriptorBufferInfo = {};
-			descriptorBufferInfo.buffer = (VkBuffer)bufferToBind->GetInstance();
-			descriptorBufferInfo.offset = 0;
-			descriptorBufferInfo.range = bufferToBind->GetByteSize();
-
-			nativeBindingBufferInfos[bindingGroupBinding.index] = descriptorBufferInfo;
-		}
-		else if (bindingGroupBinding.type == EBindingGroupBindingType::TextureSampler)
-		{
-			const CGPUTextureResource* textureToBind = nullptr;
-			for (usize j = 0; j < texturesToBind.size(); ++j)
-				if (texturesToBind[j].index == bindingGroupBinding.index)
-					textureToBind = (const CGPUTextureResource*)texturesToBind[j].resource;
-
-			if (!textureToBind)
-			{
-				Print("Error: texture layout binding " +
-					std::to_string(bindingGroupBinding.index) +
-					" expects resource, but there was no resource bound");
-				continue;
-			}
-
-			nativeBindings[bindingGroupBinding.index].binding = bindingGroupBinding.index;
-			nativeBindings[bindingGroupBinding.index].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			nativeBindings[bindingGroupBinding.index].descriptorCount = 1;
-			nativeBindings[bindingGroupBinding.index].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-			VkDescriptorImageInfo descriptorImageInfo = {};
-			descriptorImageInfo.sampler = (VkSampler)textureToBind->GetSampler();
-			descriptorImageInfo.imageView = (VkImageView)textureToBind->GetView();
-			descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-			nativeBindingImageInfos[bindingGroupBinding.index] = descriptorImageInfo;
-		}
-	}
-
-	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {};
-	descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorSetLayoutInfo.bindingCount = nativeBindings.size();
-	descriptorSetLayoutInfo.pBindings = nativeBindings.data();
-
-	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
-
-	VkResult result;
-
-	result = vkCreateDescriptorSetLayout(
-		_logicalDevice.device,
-		&descriptorSetLayoutInfo,
-		nullptr,
-		&descriptorSetLayout
-	);
-
-	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to create descriptor set layout");
+	VkDescriptorSetLayout descriptorSetLayout = (VkDescriptorSetLayout)bindingGroupLayout.GetInstance();
 
 	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = {};
 	descriptorSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -884,7 +804,7 @@ triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingG
 
 	VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 
-	result = vkAllocateDescriptorSets(
+	VkResult result = vkAllocateDescriptorSets(
 		_logicalDevice.device,
 		&descriptorSetAllocInfo,
 		&descriptorSet
@@ -894,6 +814,8 @@ triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingG
 		Print("[Vulkan]: Error: failed to allocate descriptor set");
 
 	std::vector<VkWriteDescriptorSet> nativeWriteDescriptorSetElements(bindingCount);
+	std::vector<VkDescriptorBufferInfo> nativeDescriptorBufferInfos(bindingCount);
+	std::vector<VkDescriptorImageInfo> nativeDescriptorImageInfos(bindingCount);
 
 	for (usize i = 0; i < bindingCount; ++i)
 	{
@@ -901,6 +823,16 @@ triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingG
 
 		if (bindingGroupBinding.type == EBindingGroupBindingType::StorageBuffer)
 		{
+			const CGPUBufferResource* bufferToBind = nullptr;
+			
+			for (usize j = 0; j < buffersToBind.size(); ++j)
+				if (buffersToBind[j].index == bindingGroupBinding.index)
+					bufferToBind = (const CGPUBufferResource*)buffersToBind[j].resource;
+
+			nativeDescriptorBufferInfos[i].buffer = (VkBuffer)bufferToBind->GetInstance();
+			nativeDescriptorBufferInfos[i].offset = 0;
+			nativeDescriptorBufferInfos[i].range = VK_WHOLE_SIZE;
+
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptorSet.dstSet = descriptorSet;
@@ -908,12 +840,22 @@ triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingG
 			writeDescriptorSet.dstArrayElement = 0;
 			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.pBufferInfo = &nativeBindingBufferInfos[bindingGroupBinding.index];
+			writeDescriptorSet.pBufferInfo = &nativeDescriptorBufferInfos[i];
 
 			nativeWriteDescriptorSetElements[i] = writeDescriptorSet;
 		}
 		else if (bindingGroupBinding.type == EBindingGroupBindingType::TextureSampler)
 		{
+			const CGPUTextureResource* textureToBind = nullptr;
+
+			for (usize j = 0; j < texturesToBind.size(); ++j)
+				if (texturesToBind[j].index == bindingGroupBinding.index)
+					textureToBind = (const CGPUTextureResource*)texturesToBind[j].resource;
+
+			nativeDescriptorImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			nativeDescriptorImageInfos[i].imageView = (VkImageView)textureToBind->GetView();
+			nativeDescriptorImageInfos[i].sampler = (VkSampler)textureToBind->GetSampler();
+
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptorSet.dstSet = descriptorSet;
@@ -921,7 +863,7 @@ triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingG
 			writeDescriptorSet.dstArrayElement = 0;
 			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.pImageInfo = &nativeBindingImageInfos[bindingGroupBinding.index];
+			writeDescriptorSet.pImageInfo = &nativeDescriptorImageInfos[i];
 
 			nativeWriteDescriptorSetElements[i] = writeDescriptorSet;
 		}
@@ -2542,6 +2484,7 @@ void triton::BGraphicsBackend2Vulkan::CreateDescriptorPool()
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 	poolInfo.poolSizeCount = std::size(sizes);
 	poolInfo.pPoolSizes = &sizes[0];
 	poolInfo.maxSets = caps.maxBindingGroupCount;

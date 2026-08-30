@@ -111,10 +111,10 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     const CGPUBufferResource& instanceDynamicBuffer = _context->GetPool<CRenderInstanceDynamicPool>()->GetGPUBuffer();
     const CGPUBufferResource& materialBuffer = _context->GetPool<CMaterialPool>()->GetGPUBuffer();
     const CGPUBufferResource& skinnedBoneBuffer = _context->GetPool<CSkinnedBonesPool>()->GetGPUBuffer();
-    bufferBindingGroupBufferBindings->push_back({ 0, EBindingGroupBindingType::StorageBuffer, (dword)EShaderStageBit::Pixel, (CGPUResource*)&instanceRigidBuffer });
-    bufferBindingGroupBufferBindings->push_back({ 1, EBindingGroupBindingType::StorageBuffer, (dword)EShaderStageBit::Pixel, (CGPUResource*)&instanceDynamicBuffer });
-    bufferBindingGroupBufferBindings->push_back({ 2, EBindingGroupBindingType::StorageBuffer, (dword)EShaderStageBit::Pixel, (CGPUResource*)&materialBuffer });
-    bufferBindingGroupBufferBindings->push_back({ 3, EBindingGroupBindingType::StorageBuffer, (dword)EShaderStageBit::Pixel, (CGPUResource*)&skinnedBoneBuffer });
+    bufferBindingGroupBufferBindings->push_back({ 0, EBindingGroupBindingType::StorageBuffer, (dword)EShaderStageBit::Vertex, (CGPUResource*)&instanceRigidBuffer });
+    bufferBindingGroupBufferBindings->push_back({ 1, EBindingGroupBindingType::StorageBuffer, (dword)EShaderStageBit::Vertex, (CGPUResource*)&instanceDynamicBuffer });
+    bufferBindingGroupBufferBindings->push_back({ 2, EBindingGroupBindingType::StorageBuffer, (dword)EShaderStageBit::Vertex, (CGPUResource*)&materialBuffer });
+    bufferBindingGroupBufferBindings->push_back({ 3, EBindingGroupBindingType::StorageBuffer, (dword)EShaderStageBit::Vertex, (CGPUResource*)&skinnedBoneBuffer });
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CreateBindingGroup,
@@ -137,26 +137,6 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
 
     XShader& shader = *_context->GetPool<CShaderPool>()->Get(_shader);
 
-    const usize buffersToBindCount = _inputBuffers.size();
-
-    for (usize i = 0; i < buffersToBindCount; ++i)
-        _inputBuffers.push_back(inputBuffers[i]);
-
-    std::vector<CGPUBufferResource>* buffersToBind =
-        CObjectAllocator::Create<std::vector<CGPUBufferResource>>(64);
-    for (usize i = 0; i < buffersToBindCount; i++)
-        buffersToBind->push_back(_inputBuffers[i]);
-
-    const usize texturesToBindCount = _inputTextures.size();
-
-    for (usize i = 0; i < texturesToBindCount; ++i)
-        _inputTextures.push_back(inputTextures[i]);
-
-    std::vector<CGPUTextureResource>* texturesToBind =
-        CObjectAllocator::Create<std::vector<CGPUTextureResource>>(64);
-    for (usize i = 0; i < texturesToBindCount; i++)
-        texturesToBind->push_back(_inputTextures[i].texture);
-
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_PIPELINE,
         (cpuword)&shader.GetGPUResource(),
@@ -172,9 +152,6 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     _gpuPipeline = _context->GetSubsystem<CEngine>()->
         GetSynchronization()->
         WaitForRenderCommandResult<CGPUPipelineResource>();
-
-    CObjectAllocator::Destroy<std::vector<CGPUBufferResource>>(buffersToBind);
-    CObjectAllocator::Destroy<std::vector<CGPUTextureResource>>(texturesToBind);
 }
 
 triton::XRenderPassGeometry::~XRenderPassGeometry()
