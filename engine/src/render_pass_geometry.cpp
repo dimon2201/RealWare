@@ -347,23 +347,23 @@ void triton::XRenderPassGeometry::Draw()
 
         const XMaterial& sharedMaterial = *_context->GetPool<CMaterialPool>()->Get(instancePack.GetSharedMaterial());
 
-        _gpuBindingGroupsPerDrawcall.clear();
-        _gpuBindingGroupsPerDrawcall.push_back(sharedMaterial.GetBindingGroup());
+        _gpuBindingGroupPerDrawcallArrays[mainThreadWriteIndex].clear();
+        _gpuBindingGroupPerDrawcallArrays[mainThreadWriteIndex].push_back(sharedMaterial.GetBindingGroup());
 
         const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
 
-        _nativeCommandDrawInfo.vertexCount = sharedGeometry._vertexCount;
-        _nativeCommandDrawInfo.indexCount = sharedGeometry._indexCount;
-        _nativeCommandDrawInfo.instanceCount = instancePack.GetInstanceCount();
-        _nativeCommandDrawInfo.firstIndex = sharedGeometry._indexElementOffset;
-        _nativeCommandDrawInfo.baseVertex = sharedGeometry._vertexElementOffset;
-        _nativeCommandDrawInfo.firstInstance = instancePack.GetBufferOffset();
+        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].vertexCount = sharedGeometry._vertexCount;
+        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].indexCount = sharedGeometry._indexCount;
+        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].instanceCount = instancePack.GetInstanceCount();
+        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].firstIndex = sharedGeometry._indexElementOffset;
+        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].baseVertex = sharedGeometry._vertexElementOffset;
+        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].firstInstance = instancePack.GetBufferOffset();
 
         _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::ExecuteRenderPass,
-            (cpuword)&_gpuBindingGroupsPerDrawcall,
+            (cpuword)&_gpuBindingGroupPerDrawcallArrays[mainThreadWriteIndex],
             (cpuword)&_gpuPipeline,
-            (cpuword)&_nativeCommandDrawInfo
+            (cpuword)&_nativeCommandDrawInfoArrays[mainThreadWriteIndex]
         ));
     }
 

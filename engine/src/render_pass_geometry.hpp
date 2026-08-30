@@ -41,10 +41,10 @@ namespace triton
         XCamera::THandle                                _camera;
         EShadingModel                                   _shadingModel = EShadingModel::PBR;
         CGPUPipelineResource                            _gpuPipeline = CGPUPipelineResource::Invalid();
-        SNativeCommandDrawInfo                          _nativeCommandDrawInfo;
+        SNativeCommandDrawInfo                          _nativeCommandDrawInfoArrays[2];
         SRenderPassGPUPushConstantsLayout               _pushConstantArrays[2];
         std::vector<CGPUBindingGroupLayoutResource>     _gpuBindingGroupLayouts;
-        std::vector<CGPUBindingGroupResource>           _gpuBindingGroupsPerDrawcall;
+        std::vector<CGPUBindingGroupResource>           _gpuBindingGroupPerDrawcallArrays[2];
 
     public:
         explicit XRenderPassGeometry(
