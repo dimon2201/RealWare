@@ -319,6 +319,99 @@ void triton::BGraphicsBackend2Vulkan::WriteTexture(
 	usize byteSize
 )
 {
+	if (texture.IsValid() == False ||
+		!texture.GetStagingBuffer() ||
+		byteSize == 0)
+		return;
+
+	const usize scalarOffset =
+		(
+			offset.GetZ() * texture.GetWidth() * texture.GetHeight() +
+			offset.GetY() * texture.GetWidth() +
+			offset.GetX()
+			) *
+		TextureFormatToChannelCount(texture.GetFormat());
+
+	const CGPUBufferResource& stagingBuffer = *texture.GetStagingBuffer();
+
+	if (scalarOffset + byteSize > stagingBuffer.GetByteSize())
+		return;
+
+	VkDeviceMemory memory = (VkDeviceMemory)texture.GetDeviceMemory();
+	VkDeviceMemory stagingMemory = (VkDeviceMemory)stagingBuffer.GetDeviceMemory();
+
+	void* mappedData = nullptr;
+
+	VkResult result = vkMapMemory(
+		_logicalDevice.device,
+		(VkDeviceMemory)stagingMemory,
+		scalarOffset,
+		byteSize,
+		0,
+		&mappedData
+	);
+
+	if (result != VK_SUCCESS)
+		Print("[Vulkan]: Error: failed to map staging buffer memory");
+
+	memcpy(
+		mappedData,
+		&data[0],
+		byteSize
+	);
+
+	vkUnmapMemory(_logicalDevice.device, stagingMemory);
+
+	VkImageAspectFlags aspectMask = 0;
+
+	if (texture.GetUsageMask() & (dword)ETextureUsageBit::Sampled ||
+		texture.GetUsageMask() & (dword)ETextureUsageBit::ColorAttachment)
+		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	if (texture.GetUsageMask() & (dword)ETextureUsageBit::DepthStencilAttachment)
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+	SNativeRenderCommand commandBarrierBeforeCopy;
+	commandBarrierBeforeCopy.cmd = ENativeRenderCommand::PipelineBufferBarrier;
+	commandBarrierBeforeCopy.args[0] =
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+	commandBarrierBeforeCopy.args[1] = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	commandBarrierBeforeCopy.args[2] = 0;
+	commandBarrierBeforeCopy.args[3] = (qword)&texture;
+	commandBarrierBeforeCopy.args[4] = VK_ACCESS_SHADER_READ_BIT;
+	commandBarrierBeforeCopy.args[5] = VK_ACCESS_TRANSFER_WRITE_BIT;
+	commandBarrierBeforeCopy.args[6] = aspectMask;
+	commandBarrierBeforeCopy.args[7] = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	commandBarrierBeforeCopy.args[8] = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+	_deferredCommands.push_back(commandBarrierBeforeCopy);
+
+	const cVector3& textureSize = texture.GetSize();
+
+	SNativeRenderCommand commandCopy;
+	commandCopy.cmd = ENativeRenderCommand::CopyBufferToImage;
+	commandCopy.args[0] = (qword)&stagingBuffer;
+	commandCopy.args[1] = (qword)&texture;
+	commandCopy.args[2] = (qword)&textureSize;
+	commandCopy.args[3] = aspectMask;
+
+	_deferredCommands.push_back(commandCopy);
+
+	SNativeRenderCommand commandBarrierAfterCopy;
+	commandBarrierAfterCopy.cmd = ENativeRenderCommand::PipelineImageBarrier;
+	commandBarrierAfterCopy.args[0] = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	commandBarrierAfterCopy.args[1] =
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+	commandBarrierAfterCopy.args[2] = 0;
+	commandBarrierAfterCopy.args[3] = (qword)&texture;
+	commandBarrierAfterCopy.args[4] = VK_ACCESS_TRANSFER_WRITE_BIT;
+	commandBarrierAfterCopy.args[5] = VK_ACCESS_SHADER_READ_BIT;
+	commandBarrierAfterCopy.args[6] = aspectMask;
+	commandBarrierAfterCopy.args[7] = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	commandBarrierAfterCopy.args[8] = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	_deferredCommands.push_back(commandBarrierAfterCopy);
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroyTexture(CGPUTextureResource& texture)
@@ -1608,6 +1701,41 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 			nullptr
 		);
 	}
+	else if (command == ENativeRenderCommand::PipelineImageBarrier)
+	{
+		const SNativeRenderCommand& command = *(SNativeRenderCommand*)commandArgA;
+
+		VkImageSubresourceRange imageSubresource = {};
+		imageSubresource.aspectMask = command.args[6];
+		imageSubresource.baseArrayLayer = 0;
+		imageSubresource.baseMipLevel = 0;
+		imageSubresource.layerCount = 1;
+		imageSubresource.levelCount = 1;
+
+		VkImageMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barrier.image = (VkImage)((const CGPUTextureResource*)command.args[3])->GetInstance();
+		barrier.subresourceRange = imageSubresource;
+		barrier.srcAccessMask = command.args[4];
+		barrier.dstAccessMask = command.args[5];
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.oldLayout = (VkImageLayout)command.args[7];
+		barrier.newLayout = (VkImageLayout)command.args[8];
+
+		vkCmdPipelineBarrier(
+			_commandBuffers[_currentFrame],
+			command.args[0],
+			command.args[1],
+			command.args[2],
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&barrier
+		);
+	}
 	else if (command == ENativeRenderCommand::CopyBuffer)
 	{
 		const SNativeRenderCommand& command = *(SNativeRenderCommand*)commandArgA;
@@ -1621,6 +1749,35 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 			_commandBuffers[_currentFrame],
 			(VkBuffer)((const CGPUBufferResource*)command.args[0])->GetInstance(),
 			(VkBuffer)((const CGPUBufferResource*)command.args[1])->GetInstance(),
+			1,
+			&region
+		);
+	}
+	else if (command == ENativeRenderCommand::CopyBufferToImage)
+	{
+		const SNativeRenderCommand& command = *(SNativeRenderCommand*)commandArgA;
+
+		const cVector3& imageSize = *((const cVector3*)command.args[2]);
+
+		VkImageSubresourceLayers imageSubresourceLayers = {};
+		imageSubresourceLayers.aspectMask = command.args[3];
+		imageSubresourceLayers.baseArrayLayer = 0;
+		imageSubresourceLayers.layerCount = 1;
+		imageSubresourceLayers.mipLevel = 0;
+
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = imageSize.GetX();
+		region.bufferImageHeight = imageSize.GetY();
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = { (uint32_t)imageSize.GetX(), (uint32_t)imageSize.GetY(), 1};
+		region.imageSubresource = imageSubresourceLayers;
+
+		vkCmdCopyBufferToImage(
+			_commandBuffers[_currentFrame],
+			(VkBuffer)((const CGPUBufferResource*)command.args[0])->GetInstance(),
+			(VkImage)((const CGPUTextureResource*)command.args[1])->GetInstance(),
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			1,
 			&region
 		);

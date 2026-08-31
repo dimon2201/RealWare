@@ -10,6 +10,6 @@ namespace triton
 	struct SNativeRenderCommand final
 	{
 		ENativeRenderCommand cmd = ENativeRenderCommand::Unknown;
-		types::qword args[8] = {};
+		types::qword args[9] = {};
 	};
 }

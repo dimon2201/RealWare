@@ -64,6 +64,8 @@ namespace triton
 
         inline types::qword GetDeviceMemory() const { return _deviceMemory; }
 
+        inline const cVector3& GetSize() const { return _size; }
+
         inline types::usize GetWidth() const { return _size.GetX(); }
 
         inline types::usize GetHeight() const { return _size.GetY(); }

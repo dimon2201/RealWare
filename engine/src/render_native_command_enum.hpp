@@ -20,6 +20,8 @@ namespace triton
 		PushConstants,
 		BindDescriptorSets,
 		CopyBuffer,
-		PipelineBufferBarrier
+		CopyBufferToImage,
+		PipelineBufferBarrier,
+		PipelineImageBarrier
 	};
 }
