@@ -362,7 +362,6 @@ void triton::XRenderPassGeometry::Draw()
 
     _pushConstantArrays[mainThreadWriteIndex].cameraViewProjectionMatrix = camera.GetViewProjectionMatrix();
     _pushConstantArrays[mainThreadWriteIndex].cameraWorldPosition = camera.GetWorldPosition();
-    _pushConstantArrays[mainThreadWriteIndex].instanceMotionType = 0;
     _pushConstantArrays[mainThreadWriteIndex].time = t;
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
@@ -385,22 +384,20 @@ void triton::XRenderPassGeometry::Draw()
 
         const XMaterial& sharedMaterial = *_context->GetPool<CMaterialPool>()->Get(instancePack.GetSharedMaterial());
 
-        _gpuBindingGroupPerDrawcallArrays[mainThreadWriteIndex].push_back(sharedMaterial.GetBindingGroup());
-
         const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
-
-        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].vertexCount = sharedGeometry._vertexCount;
-        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].indexCount = sharedGeometry._indexCount;
-        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].instanceCount = instancePack.GetInstanceCount();
-        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].firstIndex = sharedGeometry._indexElementOffset;
-        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].baseVertex = sharedGeometry._vertexElementOffset;
-        _nativeCommandDrawInfoArrays[mainThreadWriteIndex].firstInstance = instancePack.GetBufferOffset();
 
         _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::ExecuteRenderPass,
-            (cpuword)&_gpuBindingGroupPerDrawcallArrays[mainThreadWriteIndex],
+            (cpuword)1,
+            (cpuword)&sharedMaterial.GetBindingGroup(),
             (cpuword)&_gpuPipeline,
-            (cpuword)&_nativeCommandDrawInfoArrays[mainThreadWriteIndex]
+            (cpuword)instancePack.GetMotionType(),
+            (cpuword)sharedGeometry._vertexCount,
+            (cpuword)sharedGeometry._indexCount,
+            (cpuword)instancePack.GetInstanceCount(),
+            (cpuword)sharedGeometry._indexElementOffset,
+            (cpuword)sharedGeometry._vertexElementOffset,
+            (cpuword)instancePack.GetBufferOffset()
         ));
     }
 

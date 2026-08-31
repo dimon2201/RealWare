@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "render_instance_motion_type.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -14,5 +15,6 @@ namespace triton
 		types::usize firstIndex = 0;
 		types::usize baseVertex = 0;
 		types::usize firstInstance = 0;
+		ERenderInstanceMotionType instanceMotionType = ERenderInstanceMotionType::Unknown;
 	};
 }

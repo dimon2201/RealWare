@@ -325,21 +325,31 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::ExecuteRenderPass:
 			{
-				std::vector<CGPUBindingGroupResource>& bindingGroups =
-					*(std::vector<CGPUBindingGroupResource>*)cmd._args._argA;
+				const usize bindingGroupCount = cmd._args._argA;
+				CGPUBindingGroupResource* bindingGroups = (CGPUBindingGroupResource*)cmd._args._argB;
+				std::vector<CGPUBindingGroupResource> bindingGroupsVector;
+				for (usize i = 0; i < bindingGroupCount; ++i)
+					bindingGroupsVector.push_back(bindingGroups[i]);
+
+				SNativeCommandDrawInfo drawInfo = {};
+				drawInfo.instanceMotionType = (ERenderInstanceMotionType)cmd._args._argD;
+				drawInfo.vertexCount = cmd._args._argE;
+				drawInfo.indexCount = cmd._args._argF;
+				drawInfo.instanceCount = cmd._args._argG;
+				drawInfo.firstIndex = cmd._args._argH;
+				drawInfo.baseVertex = cmd._args._argI;
+				drawInfo.firstInstance = cmd._args._argJ;
 
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::BindDescriptorSets,
-					(const void*)cmd._args._argA,
-					(const void*)cmd._args._argB
+					(const void*)&bindingGroupsVector,
+					(const void*)cmd._args._argC
 				);
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::Draw,
-					(const void*)cmd._args._argC,
-					nullptr
+					(const void*)&drawInfo,
+					(const void*)cmd._args._argC
 				);
-
-				bindingGroups.clear();
 
 				break;
 			}

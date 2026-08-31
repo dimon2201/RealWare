@@ -1608,6 +1608,16 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	else if (command == ENativeRenderCommand::Draw)
 	{
 		const SNativeCommandDrawInfo& drawInfo = *(SNativeCommandDrawInfo*)commandArgA;
+		CGPUPipelineResource& pipeline = *(CGPUPipelineResource*)commandArgB;
+
+		vkCmdPushConstants(
+			_commandBuffers[_currentFrame],
+			(VkPipelineLayout)pipeline.GetLayout(),
+			VK_SHADER_STAGE_VERTEX_BIT,
+			offsetof(SRenderPassGPUPushConstantsLayout, instanceMotionType),
+			4,
+			&drawInfo.instanceMotionType
+		);
 
 		vkCmdDrawIndexed(
 			_commandBuffers[_currentFrame],

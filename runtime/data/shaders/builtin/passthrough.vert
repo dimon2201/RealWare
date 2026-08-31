@@ -48,6 +48,11 @@ layout(set = 0, binding = 0, std430) readonly buffer StaticInstanceBuffer
     Instance instances[];
 } staticInstanceBuffer;
 
+layout(set = 0, binding = 1, std430) readonly buffer DynamicInstanceBuffer
+{
+    Instance instances[];
+} dynamicInstanceBuffer;
+
 layout(set = 0, binding = 2, std430) readonly buffer MaterialBuffer
 {
     Material materials[];
@@ -55,8 +60,14 @@ layout(set = 0, binding = 2, std430) readonly buffer MaterialBuffer
 
 void main()
 {
-	Instance instance = staticInstanceBuffer.instances[0];
-	Material material = materialBuffer.materials[0];
+	Instance instance;
+
+	if (pushConstants.instanceMotionType == 1)
+		instance = staticInstanceBuffer.instances[gl_InstanceIndex];
+	else if (pushConstants.instanceMotionType == 2)
+		instance = dynamicInstanceBuffer.instances[gl_InstanceIndex];
+
+	Material material = materialBuffer.materials[instance.materialIndex];
 
     vsOutputMaterial.texcoord = vec2(inTexcoord.x, 1.0 - inTexcoord.y);
 	vsOutputMaterial.diffuseColor = material.diffuseColor;

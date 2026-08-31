@@ -16,7 +16,7 @@ namespace triton
 	{
 		TRITON_OBJECT(XRenderInstance)
 
-        ERenderInstanceMotionType   _usage = ERenderInstanceMotionType::Static;
+        ERenderInstanceMotionType   _motionType = ERenderInstanceMotionType::Unknown;
         types::s32                  _indexInInstancePack = -1;
         types::s32                  _accessIndex = -1;
         XMaterial::THandle          _material;
@@ -45,6 +45,8 @@ namespace triton
         inline const cVector3& GetScale() const { return _transform.GetScale(); }
 
         inline const cMatrix4& GetWorldMatrix() const { return _transform.GetWorld(); }
+
+        inline void SetMotionType(ERenderInstanceMotionType motionType) { _motionType = motionType; }
 
         inline void SetIndexInInstancePack(types::s32 indexInInstancePack) { _indexInInstancePack = indexInInstancePack; }
 

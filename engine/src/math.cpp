@@ -218,11 +218,6 @@ void triton::cTransform::Transform()
 		glm::translate(glm::mat4(1.0f), _position._vec) *
 		glm::toMat4(quatZ * quatY * quatX) *
 		glm::scale(glm::mat4(1.0f), _scale._vec);
-
-	// TODO: do transpose() for Vulkan only
-	// ||||||||||||||||||||||||||||||||||||
-	// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-	_world._mat = glm::transpose(_world._mat);
 }
 
 triton::cMath::cMath(cContext* context) : CSubsystem(context) {}

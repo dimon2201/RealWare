@@ -142,18 +142,36 @@ public:
             model.GetMaterial(),
             1
         );
-        auto gameObjectHandle = *gameObjectPool->Create("MyObject");
-        XGameObject& gameObject = *gameObjectPool->Get(gameObjectHandle);
-        gameObject.SetRenderable(
+        XRenderInstancePack::THandle instancePack2Handle = *instancePackPool->Create(
+            ERenderInstanceMotionType::Dynamic,
+            modelGeom,
+            model.GetMaterial(),
+            1
+        );
+        auto gameObject1Handle = *gameObjectPool->Create("MyObject1");
+        XGameObject& gameObject1 = *gameObjectPool->Get(gameObject1Handle);
+        gameObject1.SetRenderable(
             True,
             instancePack1Handle
         );
-        gameObject.SetRotation(
-            cVector3(90.0f, 0.0f, 0.0f)
+        gameObject1.SetRotation(
+            cVector3(-90.0f, 0.0f, 0.0f)
+        );
+        auto gameObject2Handle = *gameObjectPool->Create("MyObject2");
+        XGameObject& gameObject2 = *gameObjectPool->Get(gameObject2Handle);
+        gameObject2.SetRenderable(
+            True,
+            instancePack2Handle
+        );
+        gameObject2.SetWorldPosition(
+            cVector3(0.0f, 128.0f, 0.0f)
+        );
+        gameObject2.SetRotation(
+            cVector3(-90.0f, 0.0f, 0.0f)
         );
 
         opaqueRigidRP.SetCamera(camh);
-        opaqueRigidRP.SetRenderInstancePacks({ instancePack1Handle });
+        opaqueRigidRP.SetRenderInstancePacks({ instancePack1Handle, instancePack2Handle });
 
         /*const usize cGridSize = 2;
         const usize cGridStep = 256;

@@ -64,6 +64,7 @@ std::optional<triton::XRenderInstance::THandle> triton::XRenderInstancePack::Add
 		*renderInstancePool->GetHandle(beginHandle, instanceIndex);
 
 	XRenderInstance& ri = *renderInstancePool->Get(currentHandle);
+	ri.SetMotionType(_motionType);
 	ri.SetIndexInInstancePack(instanceIndex);
 	ri.SetAccessIndex(_bufferOffset + instanceIndex);
 
