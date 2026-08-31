@@ -357,9 +357,13 @@ void triton::XRenderPassGeometry::Draw()
 
     const usize mainThreadWriteIndex = _context->GetSubsystem<CEngine>()->GetSynchronization()->GetWriteIndex();
 
+    static f32 t = 0.0f;
+    t += 1.0f;
+
     _pushConstantArrays[mainThreadWriteIndex].cameraViewProjectionMatrix = camera.GetViewProjectionMatrix();
     _pushConstantArrays[mainThreadWriteIndex].cameraWorldPosition = camera.GetWorldPosition();
     _pushConstantArrays[mainThreadWriteIndex].instanceMotionType = 0;
+    _pushConstantArrays[mainThreadWriteIndex].time = t;
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::BeginRenderPass,
