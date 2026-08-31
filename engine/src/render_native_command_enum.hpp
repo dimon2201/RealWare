@@ -18,6 +18,8 @@ namespace triton
 		BindVertexBuffer,
 		BindIndexBuffer,
 		PushConstants,
-		BindDescriptorSets
+		BindDescriptorSets,
+		CopyBuffer,
+		PipelineBufferBarrier
 	};
 }

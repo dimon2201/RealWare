@@ -207,7 +207,10 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		&memoryRequirements
 	);
 
-	VkDeviceMemory memory = AllocateDeviceMemory(memoryRequirements);
+	VkDeviceMemory memory = AllocateDeviceMemory(
+		memoryRequirements,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+	);
 
 	result = vkBindImageMemory(
 		_logicalDevice.device,
@@ -283,6 +286,18 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 			Print("[Vulkan]: Error: failed to create sampler");
 	}
 
+	const usize imageByteSize =
+		size.GetX() *
+		size.GetY() *
+		size.GetZ() *
+		TextureFormatToChannelCount(format);
+
+	CGPUBufferResource* stagingBuffer =
+		CObjectAllocator::Create<CGPUBufferResource>(
+			64,
+			CreateBuffer(EGPUBufferType::Staging, imageByteSize)
+		);
+
 	return CGPUTextureResource(
 		(qword)image,
 		(qword)imageView,
@@ -292,7 +307,8 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		usageMask,
 		dimension,
 		size,
-		0
+		0,
+		stagingBuffer
 	);
 }
 
@@ -309,6 +325,15 @@ void triton::BGraphicsBackend2Vulkan::DestroyTexture(CGPUTextureResource& textur
 {
 	if (texture.IsValid())
 	{
+		if (texture.GetStagingBuffer())
+		{
+			DestroyBuffer((CGPUBufferResource&)*texture.GetStagingBuffer());
+
+			CObjectAllocator::Destroy<CGPUBufferResource>(
+				(CGPUBufferResource*)texture.GetStagingBuffer()
+			);
+		}
+
 		if (texture.GetSampler())
 			vkDestroySampler(
 				_logicalDevice.device,
@@ -368,7 +393,17 @@ triton::CGPUBufferResource triton::BGraphicsBackend2Vulkan::CreateBuffer(
 		&memoryRequirements
 	);
 
-	VkDeviceMemory memory = AllocateDeviceMemory(memoryRequirements);
+	dword memoryPropertyBits = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+	if (type == EGPUBufferType::Staging)
+		memoryPropertyBits |=
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+	VkDeviceMemory memory = AllocateDeviceMemory(
+		memoryRequirements,
+		memoryPropertyBits
+	);
 
 	result = vkBindBufferMemory(
 		_logicalDevice.device,
@@ -380,13 +415,22 @@ triton::CGPUBufferResource triton::BGraphicsBackend2Vulkan::CreateBuffer(
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to bind memory to buffer");
 
+	CGPUBufferResource* stagingBuffer = nullptr;
+
+	if (type != EGPUBufferType::Staging)
+		stagingBuffer = CObjectAllocator::Create<CGPUBufferResource>(
+			64,
+			CreateBuffer(EGPUBufferType::Staging, byteSize)
+		);
+
 	return CGPUBufferResource(
 		(qword)buffer,
 		0,
 		(qword)memory,
 		type,
 		byteSize,
-		0
+		0,
+		stagingBuffer
 	);
 }
 
@@ -398,19 +442,23 @@ void triton::BGraphicsBackend2Vulkan::WriteBuffer(
 )
 {
 	if (buffer.IsValid() == False ||
+		!buffer.GetStagingBuffer() ||
 		byteSize == 0)
 		return;
 
 	if (offset + byteSize > buffer.GetByteSize())
 		return;
 
+	const CGPUBufferResource& stagingBuffer = *buffer.GetStagingBuffer();
+
 	VkDeviceMemory memory = (VkDeviceMemory)buffer.GetDeviceMemory();
+	VkDeviceMemory stagingMemory = (VkDeviceMemory)stagingBuffer.GetDeviceMemory();
 
 	void* mappedData = nullptr;
 
 	VkResult result = vkMapMemory(
 		_logicalDevice.device,
-		(VkDeviceMemory)memory,
+		(VkDeviceMemory)stagingMemory,
 		offset,
 		byteSize,
 		0,
@@ -418,7 +466,7 @@ void triton::BGraphicsBackend2Vulkan::WriteBuffer(
 	);
 
 	if (result != VK_SUCCESS)
-		Print("[Vulkan]: Error: failed to map buffer memory");
+		Print("[Vulkan]: Error: failed to map staging buffer memory");
 
 	memcpy(
 		mappedData,
@@ -426,13 +474,68 @@ void triton::BGraphicsBackend2Vulkan::WriteBuffer(
 		byteSize
 	);
 
-	vkUnmapMemory(_logicalDevice.device, memory);
+	vkUnmapMemory(_logicalDevice.device, stagingMemory);
+
+	SNativeRenderCommand commandBarrierBeforeCopy;
+	commandBarrierBeforeCopy.cmd = ENativeRenderCommand::PipelineBufferBarrier;
+	commandBarrierBeforeCopy.args[0] =
+		VK_PIPELINE_STAGE_VERTEX_INPUT_BIT |
+		VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+	commandBarrierBeforeCopy.args[1] = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	commandBarrierBeforeCopy.args[2] = 0;
+	commandBarrierBeforeCopy.args[3] = (qword)&buffer;
+	commandBarrierBeforeCopy.args[4] =
+		VK_ACCESS_INDEX_READ_BIT |
+		VK_ACCESS_SHADER_READ_BIT |
+		VK_ACCESS_SHADER_WRITE_BIT;
+	commandBarrierBeforeCopy.args[5] = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+	_deferredCommands.push_back(commandBarrierBeforeCopy);
+
+	SNativeRenderCommand commandCopy;
+	commandCopy.cmd = ENativeRenderCommand::CopyBuffer;
+	commandCopy.args[0] = (qword)&stagingBuffer;
+	commandCopy.args[1] = (qword)&buffer;
+	commandCopy.args[2] = 0;
+	commandCopy.args[3] = 0;
+	commandCopy.args[4] = buffer.GetByteSize();
+
+	_deferredCommands.push_back(commandCopy);
+
+	SNativeRenderCommand commandBarrierAfterCopy;
+	commandBarrierAfterCopy.cmd = ENativeRenderCommand::PipelineBufferBarrier;
+	commandBarrierAfterCopy.args[0] = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	commandBarrierAfterCopy.args[1] =
+		VK_PIPELINE_STAGE_VERTEX_INPUT_BIT |
+		VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+	commandBarrierAfterCopy.args[2] = 0;
+	commandBarrierAfterCopy.args[3] = (qword)&buffer;
+	commandBarrierAfterCopy.args[4] = VK_ACCESS_TRANSFER_WRITE_BIT;
+	commandBarrierAfterCopy.args[5] =
+		VK_ACCESS_INDEX_READ_BIT |
+		VK_ACCESS_SHADER_READ_BIT |
+		VK_ACCESS_SHADER_WRITE_BIT;
+
+	_deferredCommands.push_back(commandBarrierAfterCopy);
 }
 
 void triton::BGraphicsBackend2Vulkan::DestroyBuffer(CGPUBufferResource& buffer)
 {
 	if (buffer.IsValid() == True)
 	{
+		if (buffer.GetStagingBuffer())
+		{
+			DestroyBuffer((CGPUBufferResource&)*buffer.GetStagingBuffer());
+
+			CObjectAllocator::Destroy<CGPUBufferResource>(
+				(CGPUBufferResource*)buffer.GetStagingBuffer()
+			);
+		}
+
 		vkDestroyBuffer(
 			_logicalDevice.device,
 			(VkBuffer)buffer.GetInstance(),
@@ -1478,6 +1581,50 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 				nullptr
 			);
 	}
+	else if (command == ENativeRenderCommand::PipelineBufferBarrier)
+	{
+		const SNativeRenderCommand& command = *(SNativeRenderCommand*)commandArgA;
+
+		VkBufferMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barrier.buffer = (VkBuffer)((const CGPUBufferResource*)command.args[3])->GetInstance();
+		barrier.offset = 0;
+		barrier.size = ((const CGPUBufferResource*)command.args[3])->GetByteSize();
+		barrier.srcAccessMask = command.args[4];
+		barrier.dstAccessMask = command.args[5];
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+		vkCmdPipelineBarrier(
+			_commandBuffers[_currentFrame],
+			command.args[0],
+			command.args[1],
+			command.args[2],
+			0,
+			nullptr,
+			1,
+			&barrier,
+			0,
+			nullptr
+		);
+	}
+	else if (command == ENativeRenderCommand::CopyBuffer)
+	{
+		const SNativeRenderCommand& command = *(SNativeRenderCommand*)commandArgA;
+
+		VkBufferCopy region = {};
+		region.srcOffset = command.args[2];
+		region.dstOffset = command.args[3];
+		region.size = command.args[4];
+
+		vkCmdCopyBuffer(
+			_commandBuffers[_currentFrame],
+			(VkBuffer)((const CGPUBufferResource*)command.args[0])->GetInstance(),
+			(VkBuffer)((const CGPUBufferResource*)command.args[1])->GetInstance(),
+			1,
+			&region
+		);
+	}
 }
 
 void triton::BGraphicsBackend2Vulkan::BeginFrame()
@@ -1527,6 +1674,14 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		1,
 		&_swapchainFences[_currentFrame].fence
 	);
+
+	for (auto& command : _deferredCommands)
+		AddCommandToBuffer(
+			command.cmd,
+			&command,
+			nullptr
+		);
+	_deferredCommands.clear();
 
 	VkClearValue clearValue = {};
 	clearValue.color = {
@@ -1601,7 +1756,7 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	submitInfo.pSignalSemaphores = &_swapchainRenderFinishedSemaphores[imageIndex].semaphore;
 
 	result = vkQueueSubmit(
-		_graphicsPresentQueue.queue,
+		_graphicsTransferPresentQueue.queue,
 		1,
 		&submitInfo,
 		_swapchainFences[_currentFrame].fence
@@ -1619,7 +1774,7 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 	presentInfo.pImageIndices = &imageIndex;
 
 	result = vkQueuePresentKHR(
-		_graphicsPresentQueue.queue,
+		_graphicsTransferPresentQueue.queue,
 		&presentInfo
 	);
 
@@ -2028,11 +2183,18 @@ void triton::BGraphicsBackend2Vulkan::FindQueueFamilies()
 
 		if (queueFamilyProperties.queueCount > 0 &&
 			queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT &&
+			queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT &&
 			presentSupported == VK_TRUE)
 		{
-			_graphicsPresentQueue = SQueue(i, 0, {});
+			_graphicsTransferPresentQueue = SQueue(i, 0, {});
 
 			Print("[Vulkan]: Info: suitable queue family found");
+
+			return;
+		}
+		else
+		{
+			Print("[Vulkan]: Error: suitable queue family was not found");
 		}
 	}
 }
@@ -2044,7 +2206,7 @@ void triton::BGraphicsBackend2Vulkan::CreateLogicalDevice()
 		_transferQueue.familyIndex,
 		_computeQueue.familyIndex,
 		_presentQueue.familyIndex,
-		_graphicsPresentQueue.familyIndex
+		_graphicsTransferPresentQueue.familyIndex
 	};
 
 	const float priority = 1.0f;
@@ -2110,9 +2272,9 @@ void triton::BGraphicsBackend2Vulkan::CreateLogicalDevice()
 
 	vkGetDeviceQueue(
 		_logicalDevice.device,
-		_graphicsPresentQueue.familyIndex,
-		_graphicsPresentQueue.queueIndex,
-		&_graphicsPresentQueue.queue
+		_graphicsTransferPresentQueue.familyIndex,
+		_graphicsTransferPresentQueue.queueIndex,
+		&_graphicsTransferPresentQueue.queue
 	);
 }
 
@@ -2174,13 +2336,13 @@ void triton::BGraphicsBackend2Vulkan::CreateCommandPoolsAndCommandBuffers()
 	VkCommandPoolCreateInfo graphicsPresentCreateInfo = {};
 	graphicsPresentCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	graphicsPresentCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	graphicsPresentCreateInfo.queueFamilyIndex = _graphicsPresentQueue.familyIndex;
+	graphicsPresentCreateInfo.queueFamilyIndex = _graphicsTransferPresentQueue.familyIndex;
 
 	result = vkCreateCommandPool(
 		_logicalDevice.device,
 		&graphicsCreateInfo,
 		nullptr,
-		&_graphicsPresentQueue.commandPool
+		&_graphicsTransferPresentQueue.commandPool
 	);
 
 	if (result != VK_SUCCESS)
@@ -2233,7 +2395,7 @@ void triton::BGraphicsBackend2Vulkan::CreateCommandPoolsAndCommandBuffers()
 
 	VkCommandBufferAllocateInfo frameCommandBufferAllocInfo = {};
 	frameCommandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	frameCommandBufferAllocInfo.commandPool = _graphicsPresentQueue.commandPool;
+	frameCommandBufferAllocInfo.commandPool = _graphicsTransferPresentQueue.commandPool;
 	frameCommandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	frameCommandBufferAllocInfo.commandBufferCount = _framesInFlight;
 
@@ -2250,9 +2412,9 @@ void triton::BGraphicsBackend2Vulkan::DestroyCommandPoolsAndCommandBuffers()
 {
 	vkFreeCommandBuffers(
 		_logicalDevice.device,
-		_graphicsPresentQueue.commandPool,
+		_graphicsTransferPresentQueue.commandPool,
 		1,
-		&_graphicsPresentQueue.commandBuffer
+		&_graphicsTransferPresentQueue.commandBuffer
 	);
 
 	vkFreeCommandBuffers(
@@ -2278,7 +2440,7 @@ void triton::BGraphicsBackend2Vulkan::DestroyCommandPoolsAndCommandBuffers()
 
 	vkDestroyCommandPool(
 		_logicalDevice.device,
-		_graphicsPresentQueue.commandPool,
+		_graphicsTransferPresentQueue.commandPool,
 		nullptr
 	);
 
@@ -2662,7 +2824,8 @@ void triton::BGraphicsBackend2Vulkan::CreateSwapchainRenderTargets()
 			(dword)ETextureUsageBit::ColorAttachment,
 			ETextureDimension::Texture2D,
 			cVector3(_swapchain.size.GetX(), _swapchain.size.GetY(), 0.0f),
-			0
+			0,
+			nullptr
 		);
 
 		const std::vector<CGPUTextureResource> colorAttachmentVec = { colorAttachment };
@@ -2818,7 +2981,8 @@ void triton::BGraphicsBackend2Vulkan::DestroySwapchainSemaphoresAndFences()
 
 usize triton::BGraphicsBackend2Vulkan::FindProperMemoryTypeIndex(
 	VkPhysicalDeviceMemoryProperties memoryProperties,
-	VkMemoryRequirements requirements
+	VkMemoryRequirements requirements,
+	dword requiredMemoryPropertyBits
 )
 {
 	uint32_t memoryTypeIndex = UINT32_MAX;
@@ -2826,11 +2990,6 @@ usize triton::BGraphicsBackend2Vulkan::FindProperMemoryTypeIndex(
 	for (usize i = 0; i < memoryProperties.memoryTypeCount; ++i)
 	{
 		const bool typeSupported = (requirements.memoryTypeBits & (1u << i)) != 0;
-
-		const dword requiredMemoryPropertyBits =
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT |
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
 		const bool propertiesSupported =
 			(memoryProperties.memoryTypes[i].propertyFlags & requiredMemoryPropertyBits)
@@ -2845,7 +3004,24 @@ usize triton::BGraphicsBackend2Vulkan::FindProperMemoryTypeIndex(
 	return 0;
 }
 
-VkDeviceMemory triton::BGraphicsBackend2Vulkan::AllocateDeviceMemory(VkMemoryRequirements requirements)
+usize triton::BGraphicsBackend2Vulkan::TextureFormatToChannelCount(ETextureFormat textureFormat)
+{
+	if (textureFormat == ETextureFormat::R8)
+		return 1;
+	else if (textureFormat == ETextureFormat::RGBA8 ||
+		textureFormat == ETextureFormat::RGBA8_SRGB ||
+		textureFormat == ETextureFormat::RGBA8_SRGB_Mips ||
+		textureFormat == ETextureFormat::BGRA8_SRGB ||
+		textureFormat == ETextureFormat::DepthStencil)
+		return 4;
+
+	return 0;
+}
+
+VkDeviceMemory triton::BGraphicsBackend2Vulkan::AllocateDeviceMemory(
+	VkMemoryRequirements requirements,
+	dword requiredMemoryPropertyBits
+)
 {
 	VkPhysicalDeviceMemoryProperties memoryProperties = {};
 	vkGetPhysicalDeviceMemoryProperties(
@@ -2855,7 +3031,8 @@ VkDeviceMemory triton::BGraphicsBackend2Vulkan::AllocateDeviceMemory(VkMemoryReq
 
 	usize memoryTypeIndex = FindProperMemoryTypeIndex(
 		memoryProperties,
-		requirements
+		requirements,
+		requiredMemoryPropertyBits
 	);
 
 	VkMemoryAllocateInfo memoryAllocateInfo = {};
@@ -2970,6 +3147,8 @@ VkBufferUsageFlags triton::BGraphicsBackend2Vulkan::BufferTypeToNative(EGPUBuffe
 		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 	else if (bufferType == EGPUBufferType::Storage)
 		return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	else if (bufferType == EGPUBufferType::Staging)
+		return VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 	return 0;
 }

@@ -80,7 +80,7 @@ triton::XModel3D::XModel3D(
 							textureFormat,
 							(dword)ETextureUsageBit::Sampled,
 							ETextureDimension::Texture2D,
-							cVector3(assetTextureData.width, assetTextureData.height, 0),
+							cVector3(assetTextureData.width, assetTextureData.height, 1),
 							assetTextureData.pixelByteData,
 							0
 						);

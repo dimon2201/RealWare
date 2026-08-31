@@ -10,6 +10,7 @@ namespace triton
 		Vertex,
 		Index,
 		Uniform,
-		Storage
+		Storage,
+		Staging
 	};
 }

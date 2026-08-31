@@ -197,7 +197,7 @@ triton::SImageBackend triton::BImageDecoderMulti::ReturnPNGData(
 	}
 
 	const usize imageDataByteSize = (usize)(stbWidth * stbHeight * stbDesiredChannels);
-	const cVector3 imageSize = cVector3((f32)stbWidth, (f32)stbHeight, 0.0f);
+	const cVector3 imageSize = cVector3((f32)stbWidth, (f32)stbHeight, 1.0f);
 
 	u8* imageData = (u8*)CObjectAllocator::Allocate(imageDataByteSize, 64);
 	if (!imageData)
@@ -269,7 +269,7 @@ triton::SImageBackend triton::BImageDecoderMulti::ReturnDDSData(
 	const usize channelCount = DetermineChannelCount(expectedDataFormat);
 
 	const usize imageDataByteSize = (usize)(ddsWidth * ddsHeight) * channelCount;
-	const cVector3 imageSize = cVector3((f32)ddsWidth, (f32)ddsHeight, 0.0f);
+	const cVector3 imageSize = cVector3((f32)ddsWidth, (f32)ddsHeight, 1.0f);
 
 	u8* imageData = (u8*)CObjectAllocator::Allocate(imageDataByteSize, 64);
 	if (!imageData)

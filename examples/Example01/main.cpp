@@ -42,14 +42,14 @@ public:
 
         auto camh = *_context->GetPool<CCameraPool>()->Create();
         XCamera& camo = *_context->GetPool<CCameraPool>()->Get(camh);
-        camo._worldPosition = cVector3(0.0f, 1.0f, 1.0f);
+        camo.SetWorldPosition(cVector3(0.0f, 0.0f, 30.0f));
         
-        XRenderPassGeometry& opaqueStaticRP = 
+        XRenderPassGeometry& opaqueRigidRP = 
             *_context->GetPool<CRenderPassGeometryPool>()->Get(
-                _context->GetSubsystem<CGraphics>()->GetOpaqueStaticRenderPass()
+                _context->GetSubsystem<CGraphics>()->GetOpaqueRigidRenderPass()
             );
         
-        opaqueStaticRP.SetCamera(camh);
+        //opaqueStaticRP.SetCamera(camh);
         
         /*m3d = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModelFromAsset(
             "C:/My/My_Projects_Programming/TritonEngine/tools/tasset/bin/Chort2.tasset"
@@ -60,7 +60,7 @@ public:
             m3d
         );*/
 
-        SStaticVertexGPULayout triVerts[3];
+        SRigidVertexGPULayout triVerts[3];
         triVerts[0].position = cVector3(-1.0f, -1.0f, 0.0f);
         triVerts[1].position = cVector3(0.0f, 1.0f, 0.0f);
         triVerts[2].position = cVector3(1.0f, -1.0f, 0.0f);
@@ -69,6 +69,24 @@ public:
         triVerts[2].texcoord = cVector2(1.0f, 0.0f);
         u32 triInds[3] = { 0, 1, 2 };
 
+        SGeometryView triGeom = *gs->Create(
+            EVertexBufferFormat::Rigid_48,
+            (u8*)triVerts,
+            3,
+            (u8*)triInds,
+            3
+        );
+
+        /*XMaterial::THandle material = *materialPool->Create(
+            std::nullopt,
+            std::nullopt,
+            std::nullopt,
+            std::nullopt,
+            cVector4(1.0f),
+            cVector4(1.0f),
+            0.0f
+        );*/
+       
         //SVertex quadVerts[4];
         //quadVerts[0].position = cVector3(-1.0f, -1.0f, 0.0f);
         //quadVerts[1].position = cVector3(-1.0f, 1.0f, 0.0f);
@@ -104,57 +122,69 @@ public:
         //);
         //auto m3dd = *_context->GetSubsystem<XModel3DSubsystem>()->GetPool()->Get(m3d);
 
-        //auto modelHandle = *_context->GetPool<CModel3DPool>()->Create(
-        //    EModel3DFileType::Raw,
-        //    "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/stanford_dragon/stanford_dragon.fbx"
-        //);
-        //XModel3D& model = *_context->GetPool<CModel3DPool>()->Get(modelHandle);
-
-        const usize cGridSize = 16;
-        const usize cGridStep = 8;
-        SGeometryView triGeom = *gs->Create(
-            EVertexBufferFormat::Static_52,
-            (u8*)&triVerts[0],
-            3,
-            (u8*)&triInds[0],
-            3
+        auto modelHandle = *_context->GetPool<CModel3DPool>()->Create(
+            EVertexBufferFormat::Rigid_48,
+            EModel3DFileType::Raw,
+            "C:/My/My_Projects_Programming/TritonEngine/runtime/data/models/lighthouse/lighthouse.fbx"
         );
-        //SGeometryView modelGeom = *gs->Create(
-        //    EVertexBufferFormat::Skinned_84,
-        //    (u8*)model.GetVertices(),
-        //    model.GetVertexCount(),
-        //    (u8*)model.GetIndices(),
-        //    model.GetIndexCount()
-        //);
+        XModel3D& model = *_context->GetPool<CModel3DPool>()->Get(modelHandle);
+
+        SGeometryView modelGeom = *gs->Create(
+            EVertexBufferFormat::Rigid_48,
+            (u8*)model.GetRigidVertices(),
+            model.GetVertexCount(),
+            (u8*)model.GetIndices(),
+            model.GetIndexCount()
+        );
         XRenderInstancePack::THandle instancePack1Handle = *instancePackPool->Create(
             ERenderInstanceMotionType::Static,
-            triGeom,
+            modelGeom,
+            model.GetMaterial(),
+            1
+        );
+        auto gameObjectHandle = *gameObjectPool->Create("MyObject");
+        XGameObject& gameObject = *gameObjectPool->Get(gameObjectHandle);
+        gameObject.SetRenderable(
+            True,
+            instancePack1Handle
+        );
+        gameObject.SetRotation(
+            cVector3(90.0f, 0.0f, 0.0f)
+        );
+
+        opaqueRigidRP.SetCamera(camh);
+        opaqueRigidRP.SetRenderInstancePacks({ instancePack1Handle });
+
+        /*const usize cGridSize = 2;
+        const usize cGridStep = 256;
+        SGeometryView modelGeom = *gs->Create(
+            EVertexBufferFormat::Rigid_48,
+            (u8*)model.GetRigidVertices(),
+            model.GetVertexCount(),
+            (u8*)model.GetIndices(),
+            model.GetIndexCount()
+        );
+        XRenderInstancePack::THandle instancePack1Handle = *instancePackPool->Create(
+            ERenderInstanceMotionType::Static,
+            modelGeom,
+            model.GetMaterial(),
             cGridSize * cGridSize * cGridSize
         );
-        XAtlasTexture::THandle emptyTexHandle = XAtlasTexture::THandle();
+        XTexture::THandle emptyTexHandle = XTexture::THandle();
         auto material1 = *materialPool->Create(
-            cVector4(1.0f, 0.0f, 0.0f, 1.0f),
             emptyTexHandle,
             emptyTexHandle,
             emptyTexHandle,
-            emptyTexHandle
-        );
-        auto material2 = *materialPool->Create(
-            cVector4(0.0f, 1.0f, 0.0f, 1.0f),
             emptyTexHandle,
-            emptyTexHandle,
-            emptyTexHandle,
-            emptyTexHandle
-        );
-        auto material3 = *materialPool->Create(
-            cVector4(0.0f, 0.0f, 1.0f, 1.0f),
-            emptyTexHandle,
-            emptyTexHandle,
-            emptyTexHandle,
-            emptyTexHandle
+            cVector4(1.0f, 1.0f, 1.0f, 1.0f),
+            cVector4(1.0f, 1.0f, 1.0f, 1.0f),
+            1.0f
         );
         
-        opaqueStaticRP.SetRenderInstancePacks({ instancePack1Handle });
+        //opaqueStaticRP.SetRenderInstancePacks({ instancePack1Handle });
+
+        XMaterial& modelMaterial = *_context->GetPool<CMaterialPool>()->Get(model.GetMaterial());
+        modelMaterial.SetShininess(512.0f);
 
         for (s32 x = 0; x < cGridSize; x++)
         {
@@ -168,7 +198,7 @@ public:
                         True,
                         instancePack1Handle
                     );
-                    gameObject.SetMaterial(material1);
+                    gameObject.SetMaterial(model.GetMaterial());
                     gameObject.SetWorldPosition(
                         cVector3(
                             (x - s32(cGridSize / 2)) * (s32)cGridStep,
@@ -176,9 +206,12 @@ public:
                             (z - s32(cGridSize / 2)) * (s32)cGridStep
                         )
                     );
+                    gameObject.SetRotation(cVector3(-90.0f, 0.0f, 0.0f));
                 }
             }
         }
+
+        _context->GetSubsystem<CGraphics>()->SetShadingModel(EShadingModel::PBR);*/
 
         //triGod1.worldPosition = cVector3(-1.0f, 0.0f, 0.0f);
         //triGod1.worldRotation = cVector3(0.0f, 0.0f, 0.0f);
@@ -298,6 +331,9 @@ int main()
     std::cout << "Context initialized." << std::endl;
 
     sCapabilities caps = {};
+    caps.graphicsBackend = EAvailableGraphicsBackend::Vulkan;
+    caps.preferredGraphicsDevice = EGraphicsDeviceType::Discrete;
+    caps.framesInFlight = 2;
     caps.window.title = "My Test Application";
     caps.window.size = cVector2(800, 600);
     caps.window.fullscreen = K_FALSE;

@@ -8,6 +8,7 @@
 #include "graphics_backend2.hpp"
 #include "graphics_backend2_vulkan_structs.hpp"
 #include "texture_formats.hpp"
+#include "render_native_command_struct.hpp"
 
 namespace triton
 {
@@ -25,7 +26,7 @@ namespace triton
 		SQueue											_transferQueue = SQueue(0, 0, {});
 		SQueue											_computeQueue = SQueue(0, 0, {});
 		SQueue											_presentQueue = SQueue(0, 0, {});
-		SQueue											_graphicsPresentQueue = SQueue(0, 0, {});
+		SQueue											_graphicsTransferPresentQueue = SQueue(0, 0, {});
 		SLogicalDevice									_logicalDevice;
 		SSwapchain										_swapchain;
 		std::vector<CGPURenderTargetResource>			_swapchainRenderTargets;
@@ -42,6 +43,7 @@ namespace triton
 		std::vector<VkCommandBuffer>					_commandBuffers;
 		types::usize									_framesInFlight = 0;
 		types::usize									_currentFrame = 0;
+		std::vector<SNativeRenderCommand>				_deferredCommands;
 
 	public:
 		explicit BGraphicsBackend2Vulkan(cContext* context) : IGraphicsBackend2(context) {}
@@ -228,10 +230,13 @@ namespace triton
 
 		types::usize FindProperMemoryTypeIndex(
 			VkPhysicalDeviceMemoryProperties memoryProperties,
-			VkMemoryRequirements requirements
+			VkMemoryRequirements requirements,
+			types::dword requiredMemoryPropertyBits
 		);
+		
+		types::usize TextureFormatToChannelCount(ETextureFormat textureFormat);
 
-		VkDeviceMemory AllocateDeviceMemory(VkMemoryRequirements requirements);
+		VkDeviceMemory AllocateDeviceMemory(VkMemoryRequirements requirements, types::dword requiredMemoryPropertyBits);
 
 		VkFormat TextureFormatToNative(ETextureFormat textureFormat);
 

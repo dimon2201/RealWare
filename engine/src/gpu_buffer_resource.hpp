@@ -14,6 +14,7 @@ namespace triton
         EGPUBufferType _type = EGPUBufferType::Unknown;
         types::usize _byteSize = 0;
         types::s32 _slot = -1;
+        const CGPUBufferResource* _stagingBuffer = nullptr;
 
     public:
         explicit CGPUBufferResource(
@@ -22,19 +23,21 @@ namespace triton
             types::qword deviceMemory,
             EGPUBufferType type,
             types::usize byteSize,
-            types::s32 slot
+            types::s32 slot,
+            const CGPUBufferResource* stagingBuffer
         ) :
             CGPUResource(instance, viewInstance),
             _deviceMemory(deviceMemory),
             _type(type),
             _byteSize(byteSize),
-            _slot(slot) {}
+            _slot(slot),
+            _stagingBuffer(stagingBuffer) {}
         ~CGPUBufferResource() override = default;
 
         static CGPUBufferResource Invalid()
         {
             return CGPUBufferResource(
-                0, 0, 0, EGPUBufferType::Unknown, 0, 0
+                0, 0, 0, EGPUBufferType::Unknown, 0, 0, nullptr
             );
         }
 
@@ -45,5 +48,7 @@ namespace triton
         inline types::usize GetByteSize() const { return _byteSize; }
 
         inline types::s32 GetSlot() const { return _slot; }
+
+        inline const CGPUBufferResource* GetStagingBuffer() const { return _stagingBuffer; }
     };
 }
