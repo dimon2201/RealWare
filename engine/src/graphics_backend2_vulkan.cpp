@@ -129,6 +129,7 @@ void triton::BGraphicsBackend2Vulkan::FinalizeSwapchain(const CGPUTextureResourc
 	{
 		_swapchainBindingGroups.push_back(
 			CreateBindingGroup(
+				0,
 				_swapchainBindingGroupLayout,
 				{},
 				texturesToBind
@@ -166,7 +167,8 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 	ETextureFormat format,
 	dword usageMask,
 	ETextureDimension dimension,
-	const cVector3& size
+	const cVector3& size,
+	CGPUTextureResource* resultTexture // TODO: remove this argument completely and implement separate ERenderCommand::PipelineImageBarrier 
 )
 {
 	const VkFormat nativeFormat = TextureFormatToNative(format);
@@ -298,7 +300,7 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 			CreateBuffer(EGPUBufferType::Staging, imageByteSize)
 		);
 
-	return CGPUTextureResource(
+	CGPUTextureResource resultTextureInstance = CGPUTextureResource(
 		(qword)image,
 		(qword)imageView,
 		bCreateSampler == True ? (qword)sampler : 0,
@@ -310,6 +312,29 @@ triton::CGPUTextureResource triton::BGraphicsBackend2Vulkan::CreateTexture(
 		0,
 		stagingBuffer
 	);
+
+	*resultTexture = resultTextureInstance;
+
+	if (format != ETextureFormat::DepthStencil)
+	{
+		SNativeRenderCommand commandBarrierInitialTransition;
+		commandBarrierInitialTransition.cmd = ENativeRenderCommand::PipelineImageBarrier;
+		commandBarrierInitialTransition.args[0] = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		commandBarrierInitialTransition.args[1] =
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		commandBarrierInitialTransition.args[2] = 0;
+		commandBarrierInitialTransition.args[3] = (qword)resultTexture;
+		commandBarrierInitialTransition.args[4] = VK_ACCESS_NONE;
+		commandBarrierInitialTransition.args[5] = VK_ACCESS_SHADER_READ_BIT;
+		commandBarrierInitialTransition.args[6] = aspectMask;
+		commandBarrierInitialTransition.args[7] = VK_IMAGE_LAYOUT_UNDEFINED;
+		commandBarrierInitialTransition.args[8] = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		_deferredCommands.push_back(commandBarrierInitialTransition);
+	}
+
+	return resultTextureInstance;
 }
 
 void triton::BGraphicsBackend2Vulkan::WriteTexture(
@@ -372,7 +397,7 @@ void triton::BGraphicsBackend2Vulkan::WriteTexture(
 		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
 	SNativeRenderCommand commandBarrierBeforeCopy;
-	commandBarrierBeforeCopy.cmd = ENativeRenderCommand::PipelineBufferBarrier;
+	commandBarrierBeforeCopy.cmd = ENativeRenderCommand::PipelineImageBarrier;
 	commandBarrierBeforeCopy.args[0] =
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
 		VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
@@ -822,7 +847,9 @@ triton::CGPUPipelineResource triton::BGraphicsBackend2Vulkan::CreatePipeline(
 		if (bindingGroupLayouts.size())
 		{
 			for (usize i = 0; i < bindingGroupLayouts.size(); ++i)
-				nativeDescriptorSetLayouts.push_back((VkDescriptorSetLayout)bindingGroupLayouts.at(i).GetInstance());
+				nativeDescriptorSetLayouts.push_back(
+					(VkDescriptorSetLayout)bindingGroupLayouts.at(i).GetInstance()
+				);
 			
 			pipelineLayoutCreateInfo.setLayoutCount = nativeDescriptorSetLayouts.size();
 			pipelineLayoutCreateInfo.pSetLayouts = nativeDescriptorSetLayouts.data();
@@ -989,6 +1016,7 @@ void triton::BGraphicsBackend2Vulkan::DestroyBindingGroupLayout(CGPUBindingGroup
 }
 
 triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingGroup(
+	s32 index,
 	const CGPUBindingGroupLayoutResource& bindingGroupLayout,
 	const std::vector<SBindingGroupBinding>& buffersToBind,
 	const std::vector<SBindingGroupBinding>& texturesToBind
@@ -1086,7 +1114,8 @@ triton::CGPUBindingGroupResource triton::BGraphicsBackend2Vulkan::CreateBindingG
 	return CGPUBindingGroupResource(
 		(qword)descriptorSet,
 		0,
-		(qword)_descriptorPool
+		(qword)_descriptorPool,
+		index
 	);
 }
 
@@ -1656,6 +1685,10 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 	else if (command == ENativeRenderCommand::BindDescriptorSets)
 	{
 		std::vector<CGPUBindingGroupResource>& bindingGroups = *(std::vector<CGPUBindingGroupResource>*)commandArgA;
+		
+		if (!bindingGroups.size())
+			return;
+		
 		CGPUPipelineResource& pipeline = *(CGPUPipelineResource*)commandArgB;
 
 		std::vector<VkDescriptorSet> nativeDescriptorSets;
@@ -1663,17 +1696,18 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		for (usize i = 0; i < bindingGroups.size(); ++i)
 			nativeDescriptorSets.push_back((VkDescriptorSet)bindingGroups[i].GetInstance());
 
-		if (nativeDescriptorSets.size())
-			vkCmdBindDescriptorSets(
-				_commandBuffers[_currentFrame],
-				VK_PIPELINE_BIND_POINT_GRAPHICS,
-				(VkPipelineLayout)pipeline.GetLayout(),
-				0,
-				nativeDescriptorSets.size(),
-				nativeDescriptorSets.data(),
-				0,
-				nullptr
-			);
+		const usize firstSetIndex = bindingGroups[0].GetIndex();
+
+		vkCmdBindDescriptorSets(
+			_commandBuffers[_currentFrame],
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			(VkPipelineLayout)pipeline.GetLayout(),
+			firstSetIndex,
+			nativeDescriptorSets.size(),
+			nativeDescriptorSets.data(),
+			0,
+			nullptr
+		);
 	}
 	else if (command == ENativeRenderCommand::PipelineBufferBarrier)
 	{
@@ -1714,7 +1748,7 @@ void triton::BGraphicsBackend2Vulkan::AddCommandToBuffer(
 		imageSubresource.levelCount = 1;
 
 		VkImageMemoryBarrier barrier = {};
-		barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.image = (VkImage)((const CGPUTextureResource*)command.args[3])->GetInstance();
 		barrier.subresourceRange = imageSubresource;
 		barrier.srcAccessMask = command.args[4];
@@ -1807,6 +1841,14 @@ void triton::BGraphicsBackend2Vulkan::BeginFrame()
 
 	if (result != VK_SUCCESS)
 		Print("[Vulkan]: Error: failed to begin command buffer");
+
+	for (auto& command : _deferredCommands)
+		AddCommandToBuffer(
+			command.cmd,
+			&command,
+			nullptr
+		);
+	_deferredCommands.clear();
 }
 
 void triton::BGraphicsBackend2Vulkan::EndFrame()
@@ -1832,14 +1874,6 @@ void triton::BGraphicsBackend2Vulkan::EndFrame()
 		1,
 		&_swapchainFences[_currentFrame].fence
 	);
-
-	for (auto& command : _deferredCommands)
-		AddCommandToBuffer(
-			command.cmd,
-			&command,
-			nullptr
-		);
-	_deferredCommands.clear();
 
 	VkClearValue clearValue = {};
 	clearValue.color = {
@@ -3235,7 +3269,7 @@ VkImageUsageFlags triton::BGraphicsBackend2Vulkan::TextureUsageToNative(dword te
 	VkImageUsageFlags flags = 0;
 
 	if (textureUsageMask & (dword)ETextureUsageBit::Sampled)
-		flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+		flags |= VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	if (textureUsageMask & (dword)ETextureUsageBit::ColorAttachment)
 		flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	if (textureUsageMask & (dword)ETextureUsageBit::DepthStencilAttachment)

@@ -10,6 +10,7 @@
 #include "graphics_backend2.hpp"
 #include "thread_guard.hpp"
 #include "input_backend.hpp"
+#include "render_native_command_struct.hpp"
 
 using namespace types;
 
@@ -205,7 +206,8 @@ void triton::cRenderThread::ExecuteCommands(
 					(ETextureFormat)cmd._args._argB,
 					(dword)cmd._args._argC,
 					(ETextureDimension)cmd._args._argD,
-					*((const cVector3*)cmd._args._argE)
+					*((const cVector3*)cmd._args._argE),
+					(CGPUTextureResource*)cmd._args._argF
 				);
 				new (_sync->GetResultBuffer().data) CGPUTextureResource(resultTexture);
 				break;
@@ -323,6 +325,9 @@ void triton::cRenderThread::ExecuteCommands(
 			}
 			case ERenderCommand::ExecuteRenderPass:
 			{
+				std::vector<CGPUBindingGroupResource>& bindingGroups =
+					*(std::vector<CGPUBindingGroupResource>*)cmd._args._argA;
+
 				gfxBackend->AddCommandToBuffer(
 					ENativeRenderCommand::BindDescriptorSets,
 					(const void*)cmd._args._argA,
@@ -333,6 +338,9 @@ void triton::cRenderThread::ExecuteCommands(
 					(const void*)cmd._args._argC,
 					nullptr
 				);
+
+				bindingGroups.clear();
+
 				break;
 			}
 			case ERenderCommand::EndRenderPass:
@@ -395,9 +403,10 @@ void triton::cRenderThread::ExecuteCommands(
 			case ERenderCommand::CreateBindingGroup:
 			{
 				CGPUBindingGroupResource resultBindingGroup = gfxBackend->CreateBindingGroup(
-					*(const CGPUBindingGroupLayoutResource*)cmd._args._argA,
-					*(const std::vector<SBindingGroupBinding>*)cmd._args._argB,
-					*(const std::vector<SBindingGroupBinding>*)cmd._args._argC
+					cmd._args._argA,
+					*(const CGPUBindingGroupLayoutResource*)cmd._args._argB,
+					*(const std::vector<SBindingGroupBinding>*)cmd._args._argC,
+					*(const std::vector<SBindingGroupBinding>*)cmd._args._argD
 				);
 
 				new (_sync->GetResultBuffer().data) CGPUBindingGroupResource(resultBindingGroup);

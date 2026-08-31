@@ -123,7 +123,7 @@ void triton::XTexture::CreateOnGpu(
 	s32 slot
 )
 {
-	const cVector3* textureSize = CObjectAllocator::Create<cVector3>(64, size);
+	cVector3* textureSize = CObjectAllocator::Create<cVector3>(64, size);
 
 	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::CREATE_TEXTURE,
@@ -131,7 +131,8 @@ void triton::XTexture::CreateOnGpu(
 		(cpuword)format,
 		(cpuword)usageMask,
 		(cpuword)ETextureDimension::Texture2D,
-		(cpuword)textureSize
+		(cpuword)textureSize,
+		(cpuword)&_gpuTexture
 	));
 
 	_gpuTexture =
@@ -145,10 +146,16 @@ void triton::XTexture::CreateOnGpu(
 		textureSize->GetZ() *
 		TextureFormatToChannelCount(format);
 
+	textureSize->SetX(0.0f);
+	textureSize->SetY(0.0f);
+	textureSize->SetZ(0.0f);
+
+	const cVector3* writeOffset = textureSize;
+
 	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::WRITE_TEXTURE,
 		(cpuword)&_gpuTexture,
-		(cpuword)textureSize,
+		(cpuword)writeOffset,
 		(cpuword)data,
 		(cpuword)dataByteSize
 	));

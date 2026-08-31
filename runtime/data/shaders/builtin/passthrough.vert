@@ -14,6 +14,8 @@ layout(location = 1) in vec2 inTexcoord;
 layout(location = 2) in vec3 inNormal;
 layout(location = 3) in vec3 inTangent;
 
+layout(location = 0) out vec2 texcoord;
+
 layout(push_constant, std430) uniform PushConstants
 {
     vec3 cameraWorldPosition;
@@ -29,6 +31,9 @@ layout(set = 0, binding = 0, std430) readonly buffer RigidInstanceBuffer
 
 void main()
 {
+    texcoord = inTexcoord;
+    texcoord.y = 1.0 - texcoord.y;
+
     gl_Position =
         pushConstants.cameraViewProjectionMatrix *
         rigidInstanceBuffer.instances[0].worldMatrix *

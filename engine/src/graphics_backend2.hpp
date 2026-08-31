@@ -63,7 +63,8 @@ namespace triton
 			ETextureFormat format,
 			types::dword usageMask,
 			ETextureDimension dimension,
-			const cVector3& size
+			const cVector3& size,
+			CGPUTextureResource* resultTexture
 		) = 0;
 
 		virtual void WriteTexture(
@@ -116,6 +117,7 @@ namespace triton
 		virtual void DestroyBindingGroupLayout(CGPUBindingGroupLayoutResource& bindingGroupLayout) = 0;
 
 		virtual CGPUBindingGroupResource CreateBindingGroup(
+			types::s32 index,
 			const CGPUBindingGroupLayoutResource& bindingGroupLayout,
 			const std::vector<SBindingGroupBinding>& buffersToBind,
 			const std::vector<SBindingGroupBinding>& texturesToBind

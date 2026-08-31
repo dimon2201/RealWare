@@ -118,6 +118,7 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CreateBindingGroup,
+        (cpuword)0,
         (cpuword)&_gpuBindingGroupLayouts[0],
         (cpuword)bufferBindingGroupBufferBindings,
         (cpuword)bufferBindingGroupTextureBindings
@@ -397,8 +398,6 @@ void triton::XRenderPassGeometry::Draw()
             (cpuword)&_gpuPipeline,
             (cpuword)&_nativeCommandDrawInfoArrays[mainThreadWriteIndex]
         ));
-
-        _gpuBindingGroupPerDrawcallArrays[mainThreadWriteIndex].pop_back();
     }
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(

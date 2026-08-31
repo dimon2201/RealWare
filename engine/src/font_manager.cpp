@@ -169,7 +169,7 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         }
     }
 
-    const cVector3* atlasSize = CObjectAllocator::Create<cVector3>(64, cVector3(atlasWidth, atlasHeight, 1.0f));
+    cVector3* atlasSize = CObjectAllocator::Create<cVector3>(64, cVector3(atlasWidth, atlasHeight, 1.0f));
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
@@ -177,7 +177,8 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         (cpuword)ETextureFormat::R8,
         (cpuword)ETextureUsageBit::Sampled,
         (cpuword)ETextureDimension::Texture2D,
-        (cpuword)atlasSize
+        (cpuword)atlasSize,
+        (cpuword)&_atlas
     ));
 
     _atlas = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
@@ -190,10 +191,16 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         atlasSize->GetZ() *
         XTexture::TextureFormatToChannelCount(ETextureFormat::R8);
 
+    atlasSize->SetX(0.0f);
+    atlasSize->SetY(0.0f);
+    atlasSize->SetZ(0.0f);
+
+    const cVector3* writeOffset = atlasSize;
+
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::WRITE_TEXTURE,
         (cpuword)&_atlas,
-        (cpuword)atlasSize,
+        (cpuword)writeOffset,
         (cpuword)pixelsU8,
         (cpuword)dataByteSize
     ));

@@ -64,7 +64,7 @@ triton::XMaterial::XMaterial(
             {
                 0,
                 EBindingGroupBindingType::TextureSampler,
-                0,
+                (dword)EShaderStageBit::Pixel,
                 (CGPUResource*)&(*_context->GetPool<PTexturePool>()->Get(diffuseTexture.value())).get().GetGPUResource()
             }
         );
@@ -73,7 +73,7 @@ triton::XMaterial::XMaterial(
             {
                 1,
                 EBindingGroupBindingType::TextureSampler,
-                0,
+                (dword)EShaderStageBit::Pixel,
                 (CGPUResource*)&(*_context->GetPool<PTexturePool>()->Get(normalTexture.value())).get().GetGPUResource()
             }
         );
@@ -82,7 +82,7 @@ triton::XMaterial::XMaterial(
             {
                  2,
                  EBindingGroupBindingType::TextureSampler,
-                 0,
+                 (dword)EShaderStageBit::Pixel,
                  (CGPUResource*)&(*_context->GetPool<PTexturePool>()->Get(roughnessTexture.value())).get().GetGPUResource()
             }
         );
@@ -91,13 +91,14 @@ triton::XMaterial::XMaterial(
             {
                 3,
                 EBindingGroupBindingType::TextureSampler,
-                0,
+                (dword)EShaderStageBit::Pixel,
                 (CGPUResource*)&(*_context->GetPool<PTexturePool>()->Get(metallicTexture.value())).get().GetGPUResource()
             }
         );
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CreateBindingGroup,
+        (cpuword)1,
         (cpuword)&_gpuBindingGroupLayout,
         (cpuword)buffersToBind,
         (cpuword)texturesToBind
