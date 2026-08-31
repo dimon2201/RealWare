@@ -4,6 +4,8 @@
 #include "context.hpp"
 #include "synchronization.hpp"
 #include "image_decoder.hpp"
+#include "graphics_texture_usage_enum.hpp"
+#include "object_allocator.hpp"
 
 using namespace types;
 
@@ -121,23 +123,41 @@ void triton::XTexture::CreateOnGpu(
 	s32 slot
 )
 {
+	const cVector3* textureSize = CObjectAllocator::Create<cVector3>(64, size);
+
 	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
 		ERenderCommand::CREATE_TEXTURE,
 		(cpuword)bCreateSampler,
 		(cpuword)format,
 		(cpuword)usageMask,
-		(cpuword)dimension,
-		(cpuword)size.GetX(),
-		(cpuword)size.GetY(),
-		(cpuword)size.GetZ(),
-		(cpuword)data,
-		(cpuword)slot
+		(cpuword)ETextureDimension::Texture2D,
+		(cpuword)textureSize
 	));
 
 	_gpuTexture =
 		_context->GetSubsystem<CEngine>()->
 		GetSynchronization()->
 		WaitForRenderCommandResult<CGPUTextureResource>();
+
+	const usize dataByteSize =
+		textureSize->GetX() *
+		textureSize->GetY() *
+		textureSize->GetZ() *
+		TextureFormatToChannelCount(format);
+
+	_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+		ERenderCommand::WRITE_TEXTURE,
+		(cpuword)&_gpuTexture,
+		(cpuword)textureSize,
+		(cpuword)data,
+		(cpuword)dataByteSize
+	));
+
+	_context->GetSubsystem<CEngine>()->
+		GetSynchronization()->
+		WaitForRenderCommandResult<void*>();
+
+	CObjectAllocator::Destroy<cVector3>((cVector3*)textureSize);
 }
 
 void triton::XTexture::GenerateMips()
@@ -153,4 +173,18 @@ void triton::XTexture::GenerateMips()
 			GetSynchronization()->
 			WaitForRenderCommandResult<void*>();
 	}
+}
+
+usize triton::XTexture::TextureFormatToChannelCount(ETextureFormat textureFormat)
+{
+	if (textureFormat == ETextureFormat::R8)
+		return 1;
+	else if (textureFormat == ETextureFormat::RGBA8 ||
+		textureFormat == ETextureFormat::RGBA8_SRGB ||
+		textureFormat == ETextureFormat::RGBA8_SRGB_Mips ||
+		textureFormat == ETextureFormat::BGRA8_SRGB ||
+		textureFormat == ETextureFormat::DepthStencil)
+		return 4;
+
+	return 0;
 }

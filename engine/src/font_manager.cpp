@@ -11,6 +11,7 @@
 #include "graphics_backend.hpp"
 #include "object_allocator.hpp"
 #include "window.hpp"
+#include "graphics_texture_usage_enum.hpp"
 
 using namespace types;
 
@@ -168,19 +169,40 @@ void triton::cFontFace::FillAtlasWithGlyphs(usize& atlasWidth, usize& atlasHeigh
         }
     }
 
+    const cVector3* atlasSize = CObjectAllocator::Create<cVector3>(64, cVector3(atlasWidth, atlasHeight, 1.0f));
+
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::CREATE_TEXTURE,
-        atlasWidth,
-        atlasHeight,
-        0,
-        (cpuword)ETextureDimension::Texture2D,
+        (cpuword)True,
         (cpuword)ETextureFormat::R8,
-        (cpuword)atlasPixels,
-        0
+        (cpuword)ETextureUsageBit::Sampled,
+        (cpuword)ETextureDimension::Texture2D,
+        (cpuword)atlasSize
     ));
+
     _atlas = _context->GetSubsystem<CEngine>()->GetSynchronization()->WaitForRenderCommandResult<CGPUTextureResource>();
 
     memoryAllocator->Deallocate(atlasPixels);
+
+    const usize dataByteSize =
+        atlasSize->GetX() *
+        atlasSize->GetY() *
+        atlasSize->GetZ() *
+        XTexture::TextureFormatToChannelCount(ETextureFormat::R8);
+
+    _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
+        ERenderCommand::WRITE_TEXTURE,
+        (cpuword)&_atlas,
+        (cpuword)atlasSize,
+        (cpuword)pixelsU8,
+        (cpuword)dataByteSize
+    ));
+
+    _context->GetSubsystem<CEngine>()->
+        GetSynchronization()->
+        WaitForRenderCommandResult<void*>();
+
+    CObjectAllocator::Destroy<cVector3>((cVector3*)atlasSize);
 }
 
 triton::cText::cText() {}

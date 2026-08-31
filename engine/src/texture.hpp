@@ -71,6 +71,8 @@ namespace triton
 
 		inline types::s32 GetSlot() const { return _gpuTexture.GetSlot(); }
 
+		static types::usize TextureFormatToChannelCount(ETextureFormat textureFormat);
+
 		struct THandle : public SHandle {};
 
 		struct TGPULayout {};

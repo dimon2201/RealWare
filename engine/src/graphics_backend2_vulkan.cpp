@@ -321,7 +321,8 @@ void triton::BGraphicsBackend2Vulkan::WriteTexture(
 {
 	if (texture.IsValid() == False ||
 		!texture.GetStagingBuffer() ||
-		byteSize == 0)
+		!data ||
+		!byteSize)
 		return;
 
 	const usize scalarOffset =

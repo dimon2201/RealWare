@@ -205,19 +205,19 @@ void triton::cRenderThread::ExecuteCommands(
 					(ETextureFormat)cmd._args._argB,
 					(dword)cmd._args._argC,
 					(ETextureDimension)cmd._args._argD,
-					cVector3(cmd._args._argE, cmd._args._argF, cmd._args._argG)
+					*((const cVector3*)cmd._args._argE)
 				);
-				memcpy(&_sync->GetResultBuffer().data[0], &resultTexture, sizeof(CGPUTextureResource));
+				new (_sync->GetResultBuffer().data) CGPUTextureResource(resultTexture);
 				break;
 			}
 			case ERenderCommand::WRITE_TEXTURE:
 			{
-				/*gfxBackend->WriteTexture(
+				gfxBackend->WriteTexture(
 					*((CGPUTextureResource*)cmd._args._argA),
-					cVector3(cmd._args._argB, cmd._args._argC, cmd._args._argD),
-					cVector2(cmd._args._argE, cmd._args._argF),
-					(u8*)cmd._args._argG
-				);*/
+					*((const cVector3*)cmd._args._argB),
+					(u8*)cmd._args._argC,
+					cmd._args._argD
+				);
 				break;
 			}
 			case ERenderCommand::GENERATE_TEXTURE_MIPS:
