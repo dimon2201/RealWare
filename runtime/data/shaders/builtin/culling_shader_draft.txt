@@ -1,0 +1,99 @@
+// thread_count = 64
+
+struct Camera {
+	mat4 viewProjectionMatrix;
+};
+
+struct GeometryView {
+	uint indexCount;
+    uint firstIndex;
+    int vertexOffset;
+    uint firstInstance;
+};
+
+struct RenderGroupInstance {
+	uint cameraIndex;
+	uint motionType;
+	uint startInstanceOffset;
+	uint instanceCount; // reset to zero before culling pass
+	GeometryView sharedGeometry;
+};
+
+struct Instance {
+	mat4 worldMatrix;
+};
+
+struct IndirectDrawCommand {
+	uint indexCount;
+    uint instanceCount;
+    uint firstIndex;
+    int vertexOffset;
+    uint firstInstance;
+};
+
+readonly buffer Cameras {
+	Camera cameras[];
+};
+
+readonly buffer RenderGroupInstancesToCull {
+	uint indices[];
+} renderGroupInstancesToCull;
+
+buffer RenderGroupInstances {
+	RenderGroupInstance instances[];
+} renderGroupInstances;
+
+readonly buffer StaticRenderInstances {
+	Instance instances[];
+} staticRenderInstances;
+
+writeonly buffer CulledStaticRenderInstances {
+	Instances instances[];
+} culledStaticRenderInstances;
+
+buffer IndirectDrawCount {
+	uint count;
+} indirectDrawCount;
+
+buffer IndirectDrawCommands {
+	IndirectDrawCommand cmds[];
+} indirectDrawCommands;
+
+void main()
+{
+	uint renderGroupLookup = WorkgroupIDToLinearIndex(workgroupID);
+	uint instanceLookup = ThreadIDToLinearIndex(threadID);
+	
+	uint renderGroupInstanceLookup = renderGroupInstancesToCull.indices[ renderGroupLookup ];
+	RenderGroupInstance renderGroupInstance = renderGroupInstances.instances[ renderGroupInstanceLookup ];
+	
+	Instance instance = staticRenderInstances.instances[ renderGroupInstance.startInstanceOffset + instanceLookup ];
+	
+	Camera camera = cameras[ renderGroupInstance.cameraIndex ];
+	
+	if (!IsCulled(instance, camera))
+	{
+		uint visibleInstanceLookup = atomicLoad(renderGroupInstance.instanceCount);
+		atomicAdd(renderGroupInstance.instanceCount, 1);
+		
+		culledStaticRenderInstances.instances[ renderGroupInstance.startInstanceOffset + visibleInstanceLookup ] = instance;
+	}
+	
+	uint groupInstanceVisibleInstanceCount = atomicLoad(renderGroupInstance.instanceCount);
+	
+	if (threadID == uvec3(0) &&
+		groupInstanceVisibleInstanceCount > 0)
+	{
+		uint indirectDrawCommandLookup = atomicLoad(indirectDrawCount.count);
+		atomicAdd(indirectDrawCount.count, 1);
+		
+		IndirectDrawCommand indirectDrawCommand;
+		indirectDrawCommand.indexCount = renderGroupInstance.sharedGeometry.indexCount;
+		indirectDrawCommand.instanceCount = groupInstanceVisibleInstanceCount;
+		indirectDrawCommand.firstIndex = renderGroupInstance.sharedGeometry.firstIndex;
+		indirectDrawCommand.vertexOffset = renderGroupInstance.sharedGeometry.vertexOffset;
+		indirectDrawCommand.firstInstance = renderGroupInstance.sharedGeometry.firstInstance;
+		
+		indirectDrawCommands.cmds[ indirectDrawCommandLookup ] = indirectDrawCommand;
+	}
+}
