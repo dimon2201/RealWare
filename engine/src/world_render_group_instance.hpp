@@ -5,7 +5,7 @@
 #include <vector>
 #include "object.hpp"
 #include "world_render_group_struct.hpp"
-#include "render_instance.hpp"
+#include "world_render_instance.hpp"
 
 namespace triton
 {
@@ -18,6 +18,8 @@ namespace triton
 		explicit XRenderGroupInstance(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
 
 		~XRenderGroupInstance() override = default;
+
+		inline const XCamera::THandle& GetCamera() { return _group.camera; }
 
 		inline ERenderInstanceMotionType GetMotionType() { return _group.motionType; }
 

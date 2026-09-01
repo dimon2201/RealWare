@@ -19,6 +19,8 @@ namespace triton
 
 		~XRenderGroup() override = default;
 
+		inline const XCamera::THandle& GetCamera() { return _group.camera; }
+
 		inline ERenderInstanceMotionType GetMotionType() { return _group.motionType; }
 
 		inline const SGeometryView& GetSharedGeometry() { return _group.sharedGeometry; }
