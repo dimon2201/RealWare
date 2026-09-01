@@ -27,6 +27,7 @@
 - Feature: GPU-driven renderer
 - Feature: Move everything in engine to "Handle-based Resource Management" foundation
 - Refactor: Tidy up the code in XModel3DBackendAssimp (model3d_backend_assimp.cpp:*)
+- Feature: Inverse kinematics
 - GFX: Frustum culling
 - GFX: Clustered deferred shading
 - GFX: HDR
