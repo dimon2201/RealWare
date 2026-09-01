@@ -3,6 +3,7 @@
 #pragma once
 
 #include "object_pool.hpp"
+#include "skin.hpp"
 
 namespace triton
 {

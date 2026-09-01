@@ -11,11 +11,10 @@
 #include "geometry_storage.hpp"
 #include "model3d_pool.hpp"
 #include "skin_pool.hpp"
-#include "game_object_pool.hpp"
 #include "render_pass_pools.hpp"
-#include "render_instance_pack_pool.hpp"
 #include "material_pool.hpp"
 #include "geometry_storage.hpp"
+#include "world_object_pool.hpp"
 
 using namespace triton;
 using namespace types;
@@ -35,9 +34,8 @@ public:
     {
         CGeometryStorage* gs = _context->GetSubsystem<CGeometryStorage>();
         CGraphics* gfx = _context->GetSubsystem<CGraphics>();
-        CRenderInstancePackPool* instancePackPool = _context->GetPool<CRenderInstancePackPool>();
         CMaterialPool* materialPool = _context->GetPool<CMaterialPool>();
-        CGameObjectPool* gameObjectPool = _context->GetPool<CGameObjectPool>();
+        CWorldObjectPool* worldObjectPool = _context->GetPool<CWorldObjectPool>();
         CModel3DPool* model3DPool = _context->GetPool<CModel3DPool>();
 
         auto camh = *_context->GetPool<CCameraPool>()->Create();
@@ -136,19 +134,8 @@ public:
             (u8*)model.GetIndices(),
             model.GetIndexCount()
         );
-        XRenderInstancePack::THandle instancePack1Handle = *instancePackPool->Create(
-            ERenderInstanceMotionType::Static,
-            modelGeom,
-            model.GetMaterial(),
-            1
-        );
-        XRenderInstancePack::THandle instancePack2Handle = *instancePackPool->Create(
-            ERenderInstanceMotionType::Dynamic,
-            modelGeom,
-            model.GetMaterial(),
-            1
-        );
-        auto gameObject1Handle = *gameObjectPool->Create("MyObject1");
+        
+        /*auto gameObject1Handle = *gameObjectPool->Create("MyObject1");
         XGameObject& gameObject1 = *gameObjectPool->Get(gameObject1Handle);
         gameObject1.SetRenderable(
             True,
@@ -168,10 +155,9 @@ public:
         );
         gameObject2.SetRotation(
             cVector3(-90.0f, 0.0f, 0.0f)
-        );
+        );*/
 
         opaqueRigidRP.SetCamera(camh);
-        opaqueRigidRP.SetRenderInstancePacks({ instancePack1Handle, instancePack2Handle });
 
         /*const usize cGridSize = 2;
         const usize cGridStep = 256;

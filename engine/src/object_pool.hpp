@@ -353,10 +353,10 @@ namespace triton
         types::usize localIndex
     )
     {
-        if (index > frame.count)
+        if (localIndex > frame.count)
             return std::nullopt;
 
-        const handle = GetHandle(frame.begin.index + localIndex);
+        const auto handle = GetHandle(frame.begin.index + localIndex);
 
         return _objects[handle.index];
     }

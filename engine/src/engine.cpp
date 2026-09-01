@@ -22,12 +22,10 @@
 #include "model3d_backend.hpp"
 #include "model3d_backend_assimp.hpp"
 #include "animation_pool.hpp"
-#include "render_instance_pack_pool.hpp"
 #include "synchronization.hpp"
 #include "render_thread.hpp"
 #include "camera_pool.hpp"
 #include "skinned_bones_pool.hpp"
-#include "game_object_pool.hpp"
 #include "model3d_pool.hpp"
 #include "skin_pool.hpp"
 #include "animation_pool.hpp"
@@ -39,9 +37,14 @@
 #include "render_instance_static_pool.hpp"
 #include "render_instance_dynamic_pool.hpp"
 #include "texture_pool.hpp"
+#include "world_render_domain_pool.hpp"
+#include "world_render_group_pool.hpp"
+#include "world_render_group_instance_pool.hpp"
+#include "world_object_pool.hpp"
 #include "window.hpp"
 #include "image_decoder_multi.hpp"
 #include "graphics_backend2_vulkan.hpp"
+#include "world.hpp"
 
 using namespace types;
 
@@ -107,8 +110,6 @@ void triton::CEngine::Initialize()
 
 	_context->RegisterPool(new CRenderTargetPool(_context, K_TRUE));
 
-	_context->RegisterPool(new CRenderInstancePackPool(_context, K_TRUE));
-
 	_context->RegisterPool(new CRenderInstanceStaticPool(
 		_context,
 		K_TRUE,
@@ -126,8 +127,6 @@ void triton::CEngine::Initialize()
 	));
 
 	_context->RegisterPool(new CAnimationPool(_context, K_TRUE));
-
-	_context->RegisterPool(new CGameObjectPool(_context, K_TRUE));
 
 	_context->RegisterPool(new CMaterialPool(
 		_context,
@@ -151,9 +150,19 @@ void triton::CEngine::Initialize()
 
 	_context->RegisterPool(new CSkinPool(_context, K_TRUE));
 
+	_context->RegisterPool(new CRenderDomainPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CRenderGroupPool(_context, K_TRUE));
+
+	_context->RegisterPool(new CRenderGroupInstancePool(_context, K_TRUE));
+
+	_context->RegisterPool(new CWorldObjectPool(_context, K_TRUE));
+
 	_context->RegisterSubsystem(new CGeometryStorage(_context));
 
 	_context->RegisterSubsystem(new CGraphics(_context));
+
+	_context->RegisterSubsystem(new UWorld(_context));
 }
 
 void triton::CEngine::Shutdown()
@@ -259,6 +268,9 @@ void triton::CEngine::MainThreadFunction()
 			_context->GetPool<CRenderInstanceDynamicPool>()->Update();
 			_context->GetPool<CMaterialPool>()->Update();
 			_context->GetPool<CSkinnedBonesPool>()->Update();
+			_context->GetPool<CRenderDomainPool>()->Update();
+			_context->GetPool<CRenderGroupPool>()->Update();
+			_context->GetPool<CRenderGroupInstancePool>()->Update();
 
 			_context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->Clear();
 			_context->GetSubsystem<CGraphics>()->ExecutePasses();

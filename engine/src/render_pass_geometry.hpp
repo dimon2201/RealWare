@@ -8,7 +8,6 @@
 #include "math.hpp"
 #include "render_target.hpp"
 #include "shader_texture_binding.hpp"
-#include "render_instance_pack.hpp"
 #include "render_shading_model_enum.hpp"
 #include "render_native_draw_command_info_struct.hpp"
 #include "render_primitive_topology_enum.hpp"
@@ -27,7 +26,6 @@ namespace triton
         TRITON_CLASS_NAME(XRenderPassGeometry)
 
         std::optional<SClearState>                      _clearState = std::nullopt;
-        std::vector<XRenderInstancePack::THandle>       _renderInstancePacks = {};
         XInputLayout::THandle                           _inputLayout;
         std::vector<CGPUBufferResource>                 _inputBuffers = {};
         std::vector<SShaderTextureBinding>              _inputTextures = {};
@@ -73,8 +71,6 @@ namespace triton
         inline EShadingModel GetShadingModel() const { return _shadingModel; }
 
         void SetClearState(const std::optional<SClearState>& clearState) { _clearState = clearState; }
-
-        void SetRenderInstancePacks(const std::vector<XRenderInstancePack::THandle>& packs) { _renderInstancePacks = packs; }
 
         void SetInputLayout(const XInputLayout::THandle& inputLayout) { _inputLayout = inputLayout; }
 

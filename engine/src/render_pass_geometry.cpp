@@ -9,7 +9,6 @@
 #include "input_layout_pool.hpp"
 #include "camera_pool.hpp"
 #include "render_target_pool.hpp"
-#include "render_instance_pack_pool.hpp"
 #include "skinned_bones_pool.hpp"
 #include "render_binding_group_binding_struct.hpp"
 #include "shader_stage_bit_enum.hpp"
@@ -375,7 +374,7 @@ void triton::XRenderPassGeometry::Draw()
         (cpuword)&_gpuBindingGroupBuffersArrays[mainThreadWriteIndex]
     ));
 
-    for (usize i = 0; i < _renderInstancePacks.size(); i++)
+    /*for (usize i = 0; i < _renderInstancePacks.size(); i++)
     {
         XRenderInstancePack& instancePack =
             *_context->
@@ -399,7 +398,7 @@ void triton::XRenderPassGeometry::Draw()
             (cpuword)sharedGeometry._vertexElementOffset,
             (cpuword)instancePack.GetBufferOffset()
         ));
-    }
+    }*/
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::EndRenderPass

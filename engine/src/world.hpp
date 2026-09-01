@@ -3,11 +3,10 @@
 #pragma once
 
 #include "subsystem.hpp"
+#include "world_object.hpp"
 
 namespace triton
 {
-	class cContext;
-
 	class UWorld : public CSubsystem
 	{
 		TRITON_CLASS_NAME(UWorld)
@@ -15,6 +14,6 @@ namespace triton
 	public:
 		explicit UWorld(cContext* context) : CSubsystem(context) {}
 		
-		virtual ~UWorld() = default;
+		~UWorld() override = default;
 	};
 }

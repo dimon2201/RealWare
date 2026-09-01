@@ -11,23 +11,37 @@ namespace triton
 {
 	class XRenderGroup : public iObject
 	{
+		TRITON_CLASS_NAME(XRenderGroup)
+
 		SRenderGroupData _group;
-		std::vector<XRenderGroupInstance> _instances;
 
 	public:
 		explicit XRenderGroup(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
 
+		explicit XRenderGroup(
+			cContext* context,
+			types::s32 poolIndex,
+			const SHandle& renderDomain,
+			ERenderInstanceMotionType motionType,
+			const SGeometryView& sharedGeometry,
+			const XMaterial::THandle& sharedMaterial
+		) :
+			iObject(context, poolIndex),
+			_group(renderDomain, motionType, sharedGeometry, sharedMaterial) {}
+
 		~XRenderGroup() override = default;
 
-		inline const XCamera::THandle& GetCamera() { return _group.camera; }
+		XRenderGroupInstance::THandle CreateInstance(types::usize maxInstanceCount);
 
-		inline ERenderInstanceMotionType GetMotionType() { return _group.motionType; }
+		void DestroyInstance(const XRenderGroupInstance::THandle& instance);
 
-		inline const SGeometryView& GetSharedGeometry() { return _group.sharedGeometry; }
+		inline const SHandle& GetRenderDomain() const { return _group.renderDomain; }
 
-		inline const XMaterial::THandle& GetSharedMaterial() { return _group.sharedMaterial; }
+		inline ERenderInstanceMotionType GetMotionType() const { return _group.motionType; }
 
-		inline const std::vector<XRenderGroupInstance>& GetInstances() { return _instances; }
+		inline const SGeometryView& GetSharedGeometry() const { return _group.sharedGeometry; }
+
+		inline const XMaterial::THandle& GetSharedMaterial() const { return _group.sharedMaterial; }
 
 		struct THandle : public SHandle {};
 

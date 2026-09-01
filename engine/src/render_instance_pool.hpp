@@ -6,6 +6,7 @@
 #include "skeleton_pool.hpp"
 #include "material_pool.hpp"
 #include "math.hpp"
+#include "world_render_instance.hpp"
 
 namespace triton
 {

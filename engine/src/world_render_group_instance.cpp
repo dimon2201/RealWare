@@ -9,9 +9,16 @@ using namespace types;
 
 triton::XRenderGroupInstance::XRenderGroupInstance(
 	cContext* context,
-	types::s32 poolIndex,
-	types::usize maxInstanceCount
-) : iObject(context, poolIndex), _maxInstanceCount(maxInstanceCount)
+	s32 poolIndex,
+	const SHandle& renderDomain,
+	ERenderInstanceMotionType motionType,
+	const SGeometryView& sharedGeometry,
+	const XMaterial::THandle& sharedMaterial,
+	usize maxInstanceCount
+) :
+	iObject(context, poolIndex),
+	_group(renderDomain, motionType, sharedGeometry, sharedMaterial),
+	_maxInstanceCount(maxInstanceCount)
 {
 	CRenderInstancePool* renderInstancePool = nullptr;
 
