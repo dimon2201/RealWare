@@ -45,6 +45,8 @@ namespace triton
 
         ~XModel3D() override;
 
+        inline EVertexBufferFormat GetVertexFormat() { return _vertexDataFormat; }
+
         inline const SRigidVertexGPULayout* GetRigidVertices() const { return _data.rigidVertexData; }
 
         inline const SSkinnedVertexGPULayout* GetSkinnedVertices() const { return _data.skinnedVertexData; }

@@ -128,7 +128,7 @@ public:
         XModel3D& model = *_context->GetPool<CModel3DPool>()->Get(modelHandle);
 
         SGeometryView modelGeom = *gs->Create(
-            EVertexBufferFormat::Rigid_48,
+            model.GetVertexFormat(),
             (u8*)model.GetRigidVertices(),
             model.GetVertexCount(),
             (u8*)model.GetIndices(),
