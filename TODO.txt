@@ -27,6 +27,8 @@
 - Feature: GPU-driven renderer
 - Feature: Move everything in engine to "Handle-based Resource Management" foundation
 - Refactor: Tidy up the code in XModel3DBackendAssimp (model3d_backend_assimp.cpp:*)
+- GFX: Frustum culling
+- GFX: Clustered deferred shading
 - GFX: PBR optimization using LUT
 - GFX: HDR
 - GFX: Tonemapping
@@ -41,7 +43,7 @@
 - GFX: Film Grain
 - GFX: Chromatic Abberation
 - GFX: Sharpen
-- GFX: Frustum and Occlusion culling (HiZ)
+- GFX: Occlusion culling (HiZ)
 - GFX: SSR
 - GFX: TAA
 - GFX: Volumetric Fog
