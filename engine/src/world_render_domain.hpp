@@ -3,9 +3,11 @@
 #pragma once
 
 #include <vector>
+#include <optional>
 #include "camera.hpp"
 #include "object.hpp"
 #include "world_render_group_instance.hpp"
+#include "handle.hpp"
 
 namespace triton
 {
@@ -14,6 +16,7 @@ namespace triton
 		TRITON_CLASS_NAME(XRenderDomain)
 
 		XCamera::THandle _camera;
+		std::vector<SHandle> _renderGroupInstances;
 
 	public:
 		explicit XRenderDomain(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
@@ -26,7 +29,17 @@ namespace triton
 
 		~XRenderDomain() override = default;
 
-		std::vector<XRenderGroupInstance::THandle> QueryRenderGroupInstances();
+		std::optional<SHandle> CreateRenderGroup(
+			ERenderInstanceMotionType motionType,
+			const SGeometryView& geometry,
+			const SHandle& material
+		);
+
+		void RemoveRenderGroup(const SHandle& renderGroup);
+
+		void QueryRenderGroupInstances();
+
+		inline const std::vector<SHandle>& GetRenderGroupInstances() const { return _renderGroupInstances; }
 
 		inline const XCamera::THandle& GetCamera() const { return _camera; }
 

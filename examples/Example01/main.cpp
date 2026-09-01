@@ -42,11 +42,6 @@ public:
         XCamera& camo = *_context->GetPool<CCameraPool>()->Get(camh);
         camo.SetWorldPosition(cVector3(0.0f, 0.0f, 30.0f));
         
-        XRenderPassGeometry& opaqueRigidRP = 
-            *_context->GetPool<CRenderPassGeometryPool>()->Get(
-                _context->GetSubsystem<CGraphics>()->GetOpaqueRigidRenderPass()
-            );
-        
         //opaqueStaticRP.SetCamera(camh);
         
         /*m3d = *_context->GetSubsystem<XModel3DSubsystem>()->CreateModelFromAsset(
@@ -134,7 +129,7 @@ public:
             (u8*)model.GetIndices(),
             model.GetIndexCount()
         );
-        
+
         /*auto gameObject1Handle = *gameObjectPool->Create("MyObject1");
         XGameObject& gameObject1 = *gameObjectPool->Get(gameObject1Handle);
         gameObject1.SetRenderable(
@@ -156,8 +151,6 @@ public:
         gameObject2.SetRotation(
             cVector3(-90.0f, 0.0f, 0.0f)
         );*/
-
-        opaqueRigidRP.SetCamera(camh);
 
         /*const usize cGridSize = 2;
         const usize cGridStep = 256;

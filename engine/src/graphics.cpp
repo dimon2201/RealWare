@@ -17,6 +17,8 @@
 #include "texture.hpp"
 #include "window.hpp"
 #include "shader_stage_bit_enum.hpp"
+#include "camera_pool.hpp"
+#include "world_render_domain_pool.hpp"
 
 using namespace types;
 
@@ -28,6 +30,7 @@ triton::CGraphics::CGraphics(cContext* context) : CSubsystem(context)
     //CreateInputLayouts();
     CreateShaders();
     CGPUTextureResource presentTexture = CreateRenderTargets();
+    CreateCameraAndRenderDomain();
     CreateRenderPasses();
     FinalizeSwapchain(presentTexture);
 }
@@ -37,8 +40,9 @@ triton::CGraphics::~CGraphics()
     // TODO Vulkan backend: uncomment and rewrite when Vulkan backend will be ready
     // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-    //DestroyRenderPasses();
     ReleaseSwapchainResources();
+    DestroyRenderPasses();
+    DestroyCameraAndRenderDomain();
     DestroyRenderTargets();
     DestroyShaders();
     DestroyInputLayouts();
@@ -390,6 +394,13 @@ triton::CGPUTextureResource triton::CGraphics::CreateRenderTargets()
     return presentTexture;
 }
 
+void triton::CGraphics::CreateCameraAndRenderDomain()
+{
+    _camera = *_context->GetPool<CCameraPool>()->Create();
+
+    _renderDomain = *_context->GetPool<CRenderDomainPool>()->Create((XCamera::THandle)_camera);
+}
+
 void triton::CGraphics::CreateRenderPasses()
 {
     /*cVector2 windowSize = _context->GetSubsystem<CEngine>()->GetApplication()->GetWindow()->GetSize();
@@ -541,6 +552,7 @@ void triton::CGraphics::CreateRenderPasses()
     const std::vector<SShaderTextureBinding> inputTextures;
 
     _opaqueRigid = *renderPassGeometryPool->Create(
+        _renderDomain,
         _opaqueRenderTarget,
         True,
         cVector4(0.45f, 0.45f, 0.45f, 1.0f),
@@ -601,7 +613,14 @@ void triton::CGraphics::DestroyRenderTargets()
 
     //renderTargetPool->Destroy(_transparentRenderTarget);
     renderTargetPool->Destroy(_opaqueRenderTarget);
-};
+}
+
+void triton::CGraphics::DestroyCameraAndRenderDomain()
+{
+    _context->GetPool<CRenderDomainPool>()->Destroy((XRenderDomain::THandle)_renderDomain);
+
+    _context->GetPool<CCameraPool>()->Destroy((XCamera::THandle)_camera);
+}
 
 void triton::CGraphics::DestroyRenderPasses()
 {

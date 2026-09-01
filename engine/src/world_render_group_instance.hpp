@@ -20,6 +20,7 @@ namespace triton
 		SRenderGroupData _group;
 		types::usize _maxInstanceCount = 0;
 		types::usize _instanceCount = 0;
+		types::usize _instanceBufferOffset = 0;
 		SObjectFrame<XRenderInstance::THandle> _instances;
 
 	public:
@@ -52,6 +53,10 @@ namespace triton
 		inline const XMaterial::THandle& GetSharedMaterial() const { return _group.sharedMaterial; }
 
 		inline const SObjectFrame<XRenderInstance::THandle>& GetInstances() const { return _instances; }
+
+		inline types::usize GetInstanceCount() const { return _instanceCount; }
+
+		inline types::usize GetInstanceBufferOffset() const { return _instanceBufferOffset; }
 
 		struct THandle : public SHandle {};
 

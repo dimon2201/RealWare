@@ -37,6 +37,8 @@ namespace triton
         XShader::THandle                    _compositeFinalShader;
         XRenderTarget::THandle              _opaqueRenderTarget;
         XRenderTarget::THandle              _transparentRenderTarget;
+        SHandle                             _camera;
+        SHandle                             _renderDomain;
         XRenderPassGeometry::THandle        _opaqueRigid;
         XRenderPassGeometry::THandle        _opaqueSkinned;
         XRenderPassGeometry::THandle        _transparent;
@@ -55,6 +57,8 @@ namespace triton
         void LoadShaderFiles(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc);
         
         void SetShadingModel(EShadingModel shadingModel);
+
+        inline const SHandle& GetCamera() const { return _camera; }
 
         const XRenderPassGeometry::THandle& GetOpaqueRigidRenderPass() const { return _opaqueRigid; }
 
@@ -75,6 +79,8 @@ namespace triton
 
         CGPUTextureResource CreateRenderTargets();
 
+        void CreateCameraAndRenderDomain();
+
         void CreateRenderPasses();
 
         void FinalizeSwapchain(const CGPUTextureResource& presentTexture);
@@ -84,6 +90,8 @@ namespace triton
         void DestroyShaders();
 
         void DestroyRenderTargets();
+
+        void DestroyCameraAndRenderDomain();
 
         void DestroyRenderPasses();
 

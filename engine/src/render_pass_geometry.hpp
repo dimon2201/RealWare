@@ -25,6 +25,7 @@ namespace triton
     {
         TRITON_CLASS_NAME(XRenderPassGeometry)
 
+        SHandle                                         _renderDomain;
         std::optional<SClearState>                      _clearState = std::nullopt;
         XInputLayout::THandle                           _inputLayout;
         std::vector<CGPUBufferResource>                 _inputBuffers = {};
@@ -36,8 +37,6 @@ namespace triton
         types::boolean                                  _bClearRenderTarget = types::False;
         XRenderTarget::THandle                          _renderTarget;
         XShader::THandle                                _shader;
-        XCamera::THandle                                _camera;
-        EShadingModel                                   _shadingModel = EShadingModel::PBR;
         CGPUPipelineResource                            _gpuPipeline = CGPUPipelineResource::Invalid();
         SNativeCommandDrawInfo                          _nativeCommandDrawInfoArrays[2];
         SRenderPassGPUPushConstantsLayout               _pushConstantArrays[2];
@@ -48,6 +47,7 @@ namespace triton
         explicit XRenderPassGeometry(
             cContext* context,
             types::s32 poolIndex,
+            const SHandle& renderDomain,
             const XRenderTarget::THandle& renderTargetHandle,
             types::boolean bClearRenderTarget,
             const cVector4& clearColor,
@@ -68,37 +68,15 @@ namespace triton
 
         inline XShader::THandle GetShader() { return _shader; }
 
-        inline EShadingModel GetShadingModel() const { return _shadingModel; }
-
-        void SetClearState(const std::optional<SClearState>& clearState) { _clearState = clearState; }
-
-        void SetInputLayout(const XInputLayout::THandle& inputLayout) { _inputLayout = inputLayout; }
-
-        void SetInputBuffers(const std::vector<CGPUBufferResource>& inputBuffers) { _inputBuffers = inputBuffers; }
-
-        void SetInputTextures(const std::vector<SShaderTextureBinding>& inputTextures) { _inputTextures = inputTextures; }
-
-        void SetDepthState(const SDepthState& depthState) { _depthState = depthState; }
-
-        void SetBlendState(const SBlendState& blendState) { _blendState = blendState; }
-
-        void SetViewport(const SViewport& viewport) { _viewport = viewport; }
-
-        void SetRenderTarget(const XRenderTarget::THandle& renderTarget) { _renderTarget = renderTarget; }
-
-        void SetShader(const XShader::THandle& shader) { _shader = shader; }
-
-        void SetCamera(const XCamera::THandle& camera) { _camera = camera; }
-
-        void SetShadingModel(EShadingModel shadingModel) { _shadingModel = shadingModel; }
-
         struct THandle : public SHandle {};
 
         struct TGPULayout {};
 
     private:
         void Bind();
+
         void Draw();
+
         void Unbind();
     };
 }

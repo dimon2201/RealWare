@@ -16,12 +16,17 @@
 #include "input_backend.hpp"
 #include "geometry_storage.hpp"
 #include "gpu_buffer.hpp"
+#include "world_render_domain.hpp"
+#include "world_render_domain_pool.hpp"
+#include "world_render_group_instance_pool.hpp"
+#include "graphics.hpp"
 
 using namespace types;
 
 triton::XRenderPassGeometry::XRenderPassGeometry(
     cContext* context,
     s32 poolIndex,
+    const SHandle& renderDomain,
     const XRenderTarget::THandle& renderTargetHandle,
     boolean bClearRenderTarget,
     const cVector4& clearColor,
@@ -35,6 +40,7 @@ triton::XRenderPassGeometry::XRenderPassGeometry(
     const std::vector<SShaderTextureBinding>& inputTextures
 ) :
     IRenderPass(context, poolIndex, ERenderPassDispatch::Geometry),
+    _renderDomain(renderDomain),
     _bClearRenderTarget(bClearRenderTarget),
     _renderTarget(renderTargetHandle),
     _shader(shaderHandle),
@@ -331,7 +337,9 @@ void triton::XRenderPassGeometry::Draw()
         );
     }*/
 
-    auto cameraResult = _context->GetPool<CCameraPool>()->Get(_camera);
+    auto cameraResult = _context->GetPool<CCameraPool>()->Get(
+        (XCamera::THandle)_context->GetSubsystem<CGraphics>()->GetCamera()
+    );
     if (!cameraResult.has_value())
         return;
 
@@ -374,31 +382,41 @@ void triton::XRenderPassGeometry::Draw()
         (cpuword)&_gpuBindingGroupBuffersArrays[mainThreadWriteIndex]
     ));
 
-    /*for (usize i = 0; i < _renderInstancePacks.size(); i++)
+    auto renderDomainLookup = _context->GetPool<CRenderDomainPool>()->Get((XRenderDomain::THandle)_renderDomain);
+
+    if (!renderDomainLookup.has_value())
+        return;
+
+    XRenderDomain& renderDomain = *renderDomainLookup;
+    const std::vector<SHandle>& renderGroupInstances = renderDomain.GetRenderGroupInstances();
+
+    for (usize i = 0; i < renderGroupInstances.size(); i++)
     {
-        XRenderInstancePack& instancePack =
+        XRenderGroupInstance& renderGroupInstance =
             *_context->
-            GetPool<CRenderInstancePackPool>()->
-            Get(_renderInstancePacks.at(i));
+            GetPool<CRenderGroupInstancePool>()->
+            Get((XRenderGroupInstance::THandle)renderGroupInstances.at(i));
 
-        const XMaterial& sharedMaterial = *_context->GetPool<CMaterialPool>()->Get(instancePack.GetSharedMaterial());
+        const XMaterial& sharedMaterial =
+            *_context->GetPool<CMaterialPool>()->Get(renderGroupInstance.GetSharedMaterial());
 
-        const SGeometryView sharedGeometry = instancePack.GetSharedGeometry();
+        const SGeometryView sharedGeometry =
+            renderGroupInstance.GetSharedGeometry();
 
         _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
             ERenderCommand::ExecuteRenderPass,
             (cpuword)1,
             (cpuword)&sharedMaterial.GetBindingGroup(),
             (cpuword)&_gpuPipeline,
-            (cpuword)instancePack.GetMotionType(),
+            (cpuword)renderGroupInstance.GetMotionType(),
             (cpuword)sharedGeometry._vertexCount,
             (cpuword)sharedGeometry._indexCount,
-            (cpuword)instancePack.GetInstanceCount(),
+            (cpuword)renderGroupInstance.GetInstanceCount(),
             (cpuword)sharedGeometry._indexElementOffset,
             (cpuword)sharedGeometry._vertexElementOffset,
-            (cpuword)instancePack.GetBufferOffset()
+            (cpuword)renderGroupInstance.GetInstanceBufferOffset()
         ));
-    }*/
+    }
 
     _context->GetSubsystem<CEngine>()->GetRenderCommandRecorder()->PushCommand(SRenderCommand(
         ERenderCommand::EndRenderPass

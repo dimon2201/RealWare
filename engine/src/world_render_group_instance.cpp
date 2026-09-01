@@ -18,8 +18,12 @@ triton::XRenderGroupInstance::XRenderGroupInstance(
 ) :
 	iObject(context, poolIndex),
 	_group(renderDomain, motionType, sharedGeometry, sharedMaterial),
-	_maxInstanceCount(maxInstanceCount)
+	_maxInstanceCount(maxInstanceCount),
+	_instanceCount(0)
 {
+	if (!_maxInstanceCount)
+		return;
+
 	CRenderInstancePool* renderInstancePool = nullptr;
 
 	if (_group.motionType == ERenderInstanceMotionType::Static)
@@ -27,10 +31,9 @@ triton::XRenderGroupInstance::XRenderGroupInstance(
 	else if (_group.motionType == ERenderInstanceMotionType::Dynamic)
 		renderInstancePool = _context->GetPool<CRenderInstanceDynamicPool>();
 
-	_maxInstanceCount = maxInstanceCount;
-	_instanceCount = 0;
-
 	_instances = *renderInstancePool->CreateFrame(_maxInstanceCount);
+
+	_instanceBufferOffset = _instances.begin.index;
 }
 
 triton::XRenderGroupInstance::~XRenderGroupInstance()
