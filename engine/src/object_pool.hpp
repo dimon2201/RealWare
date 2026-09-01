@@ -74,6 +74,11 @@ namespace triton
 
         std::optional<std::reference_wrapper<TObject>> Get(const typename TObject::THandle& handle);
 
+        std::optional<std::reference_wrapper<TObject>> GetFrame(
+            const SObjectFrame<typename TObject::THandle>& frame,
+            types::usize localIndex
+        );
+
         void WriteToStaging(types::usize bufferIndex, const TObject& object);
 
         types::usize GetPackedIndex(const typename TObject::THandle& handle);
@@ -338,6 +343,20 @@ namespace triton
         if (handle.generation != _slots[handle.index].generation ||
             _slots[handle.index].alive == types::K_FALSE)
             return std::nullopt;
+
+        return _objects[handle.index];
+    }
+
+    template <typename TObject>
+    std::optional<std::reference_wrapper<TObject>> CObjectPool<TObject>::GetFrame(
+        const SObjectFrame<typename TObject::THandle>& frame,
+        types::usize localIndex
+    )
+    {
+        if (index > frame.count)
+            return std::nullopt;
+
+        const handle = GetHandle(frame.begin.index + localIndex);
 
         return _objects[handle.index];
     }

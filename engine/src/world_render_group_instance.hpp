@@ -12,12 +12,24 @@ namespace triton
 	class XRenderGroupInstance : public iObject
 	{
 		SRenderGroupData _group;
-		std::vector<XRenderInstance> _instances;
+		types::usize _maxInstanceCount = 0;
+		types::usize _instanceCount = 0;
+		SObjectFrame<XRenderInstance::THandle> _instances;
 
 	public:
 		explicit XRenderGroupInstance(cContext* context, types::s32 poolIndex) : iObject(context, poolIndex) {}
 
+		explicit XRenderGroupInstance(
+			cContext* context,
+			types::s32 poolIndex,
+			types::usize maxInstanceCount
+		);
+
 		~XRenderGroupInstance() override = default;
+
+		const XRenderInstance::THandle& AddInstance();
+
+		void RemoveInstance(const XRenderInstance::THandle& instance);
 
 		inline const XCamera::THandle& GetCamera() { return _group.camera; }
 

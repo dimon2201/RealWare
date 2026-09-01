@@ -29,6 +29,15 @@ namespace triton
             types::s32 indexInGroup
         ) : iObject(context, poolIndex), _indexInGroup(indexInGroup) {}
 
+        XRenderInstance& operator=(const XRenderInstance& other)
+        {
+            _material = other._material;
+            _skinnedBoneBufferOffset = other._skinnedBoneBufferOffset;
+            _transform = other._transform;
+
+            return *this;
+        }
+
         ~XRenderInstance() override = default;
 
         inline void Transform() { _transform.Transform(); }

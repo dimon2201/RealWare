@@ -78,5 +78,7 @@ namespace triton
 
 		inline cContext* GetContext() const { return _context; }
 		inline const cTag& GetID() const { return _id; }
+
+		inline types::s32 GetPoolIndex() const { return _poolIndex; }
 	};
 }
