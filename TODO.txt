@@ -44,9 +44,9 @@
 - GFX: Chromatic Abberation
 - GFX: Sharpen
 - GFX: Occlusion culling (HiZ)
-- GFX: SSR
+- GFX: SSR/SSPR
 - GFX: TAA
-- GFX: Volumetric Fog
 - GFX: Contact Shadows
+- GFX: Volumetric froxel fog
 - GFX: World Space Global Illumination using surfels
 - GFX: Shadows (NVIDIA Hybrid Ray Traced Shadows)
