@@ -29,9 +29,9 @@
 - Refactor: Tidy up the code in XModel3DBackendAssimp (model3d_backend_assimp.cpp:*)
 - GFX: Frustum culling
 - GFX: Clustered deferred shading
-- GFX: PBR optimization using LUT
 - GFX: HDR
 - GFX: Tonemapping
+- GFX: PBR optimization using LUT
 - GFX: Shadows (classical, with shadow acne and peter-panning)
 - GFX: Shadows (cascaded shadow maps)
 - GFX: IBL
